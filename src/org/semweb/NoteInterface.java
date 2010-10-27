@@ -66,6 +66,10 @@ public class NoteInterface {
 		}		
 	}
 
+	public String link() {
+		return "http://test.org/";	
+	}
+	
 	public Object [] query(String queryStr) {
 		try {
 			List<Object> out = new LinkedList<Object>();

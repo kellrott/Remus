@@ -1,10 +1,12 @@
 package org.semweb;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Map;
 
 
@@ -12,7 +14,6 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.WrapFactory;
 
 public class JSRunner {
@@ -20,71 +21,59 @@ public class JSRunner {
 	Context cx;
 	Scriptable scope;
 	NoteInterface note;
-
+	ByteArrayOutputStream outBuffer;
+	PrintWriter outWriter;
+	
 	public JSRunner() {
 
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
 
 		cx.setWrapFactory( new WrapFactory() {
-			/*
-			@Override
-			public Object wrap(Context cx, Scriptable scope, Object obj,
-					Class<?> staticType)
-			{
-				System.err.println( obj + " " + staticType );
-				if (obj instanceof String || obj instanceof Number ||
-						obj instanceof Boolean)
-				{
-					return obj;
-				} else if (obj instanceof Character) {
-					char[] a = { ((Character)obj).charValue() };
-					return new String(a);
-				}
-				return super.wrap(cx, scope, obj, staticType);
-			}
-			 */
+			@SuppressWarnings("unchecked")
 			@Override
 			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, java.lang.Object javaObject, java.lang.Class<?> staticType) {
 				if ( javaObject instanceof Map ) {
-					/*
-					ScriptableObject out = new ScriptableObject() {						
-						@Override
-						public String getClassName() {
-							return "ScriptMap";
-						}
-					};
-					Map map = ((Map) javaObject);
-					for ( Object key : map.keySet() ) {
-						System.out.println("wrapkey: "+ key.toString() );
-						out.put(key.toString(), null, map.get(key));
-					}
-					return out;
-				*/
 					return new ScriptMap( (Map)javaObject );
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}			
 		});
 
+		outBuffer = new ByteArrayOutputStream();
+		outWriter = new PrintWriter(outBuffer);
 		
-		Object wrappedOut = Context.javaToJS(System.out, scope);
+		Object wrappedOut = Context.javaToJS(outWriter, scope);
 		ScriptableObject.putProperty(scope, "out", wrappedOut);
 
-		note = new NoteInterface("test_db");
-		ScriptableObject.putProperty(scope, "note", note);
-
+	}
+	
+	
+	public void addInterface(String name, Object obj) {
+		ScriptableObject.putProperty(scope, name, obj);		
 	}
 
 
-	public void runScript( String script ) {
+	public String eval(String code, Boolean outPrint) {
+		outBuffer.reset();
 		try {
-			Object result = cx.evaluateString(scope, script, "<cmd>", 1, null);
-			//System.out.println();
-			//System.out.print(cx.toString( result ));		
+			//System.err.println("EVAL=" + code );
+			Object result = cx.evaluateString(scope, code, "<cmd>", 1, null);			
+			if ( !outPrint ) {
+				return Context.toString( result );
+			} else {
+				outBuffer.flush();
+				outWriter.flush();
+				return outBuffer.toString();
+			}
+			//System.err.print("RES=" + outBuffer.toString() );
 		} catch (EcmaError e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		return "";
 	}
 
 
@@ -100,7 +89,9 @@ public class JSRunner {
 		} while (line != null);
 
 		JSRunner js = new JSRunner();
-		js.runScript( sb.toString() );
+		js.eval( sb.toString(), true );
 
 	}
+
+
 }
