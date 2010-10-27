@@ -7,9 +7,39 @@
   	<servlet-class>org.semweb.JSServer</servlet-class>
   </servlet>
 
+  <servlet>
+    <servlet-name>StaticPage</servlet-name>
+    <servlet-class>org.semweb.StaticPage</servlet-class>
+  </servlet>
+  
+  <servlet>
+	  <servlet-name>DynamicPage</servlet-name>
+	  <servlet-class>org.semweb.DynamicPage</servlet-class>
+  </servlet>
+
+  <servlet>
+  	<servlet-name>SparqlPage</servlet-name>
+  	<servlet-class>org.semweb.SparqlPage</servlet-class>
+  </servlet>
+
   <servlet-mapping>
   	<servlet-name>HelloWorld</servlet-name>
   	<url-pattern>/hello</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>StaticPage</servlet-name>
+    <url-pattern>/fs/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+  	<servlet-name>DynamicPage</servlet-name>
+  	<url-pattern>/js/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet-mapping>
+  	<servlet-name>SparqlPage</servlet-name>
+  	<url-pattern>/sparql</url-pattern>
   </servlet-mapping>
   
   <welcome-file-list>
