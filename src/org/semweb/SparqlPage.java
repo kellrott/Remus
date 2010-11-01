@@ -38,7 +38,7 @@ public class SparqlPage extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		try {
-			dataDir = getServletContext().getRealPath( "" ) + "/WEB-INF/rdfStore";
+			dataDir = getServletConfig().getInitParameter("rdfStorePath");
 			repo = new SailRepository( new NativeStore( new File(dataDir) ) );
 			repo.initialize();
 		} catch (RepositoryException e) {
