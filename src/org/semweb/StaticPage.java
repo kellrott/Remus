@@ -16,8 +16,14 @@ public class StaticPage extends HttpServlet {
 	 */
 	private static final long serialVersionUID = -4327048299783011752L;
 
+	String basePath;
+	@Override
+	public void init() throws ServletException {
+		getServletConfig().getInitParameter("staticPagePath");
+	}
+	
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
-		String basePath = getServletContext().getRealPath( "" ) + "/WEB-INF/fileSystem";
+		//String basePath = getServletContext().getRealPath( "" ) + "/WEB-INF/fileSystem";
 		String path = req.getPathInfo();	
 		File file = new File( basePath + path );
 		if ( file.exists() ) {

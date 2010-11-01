@@ -3,6 +3,7 @@ package org.semweb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.servlet.ServletException;
@@ -19,28 +20,45 @@ public class DynamicPage extends HttpServlet{
 	String basePath;
 	JSRunner jsRunner;
 	NoteInterface note;
-	
-	public DynamicPage() {		
-		basePath = getServletContext().getRealPath( "" ) + "/WEB-INF/dynamicSystem";
+
+	String rdfStorePath;
+	String dynamicFilePath;
+
+	@Override
+	public void init() throws ServletException {
+		rdfStorePath = getServletConfig().getInitParameter("rdfStorePath");
+		dynamicFilePath = getServletConfig().getInitParameter("dynamicFilePath");
 		jsRunner = new JSRunner();
-		note = new NoteInterface(getServletContext().getRealPath( "" ) + "/WEB-INF/rdfStore");
+		note = new NoteInterface( rdfStorePath );
 		jsRunner.addInterface("note", note );
 
 	}
 	
+	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();	
-		File file = new File( basePath + path );
+		File file = new File( dynamicFilePath + File.separator + path );
 		if ( file.exists() ) {
-			
-			FileInputStream is = new FileInputStream( file );
-			OutputStream os = res.getOutputStream();
-			byte[] buffer = new byte[1024]; // Adjust if you want
+			InputStream is = new FileInputStream( file );
+			PageParser parser = new PageParser(is, path, jsRunner);
+			OutputStream out = res.getOutputStream();
+
 			int bytesRead;
-			while ((bytesRead = is.read(buffer)) != -1) {
-				os.write(buffer, 0, bytesRead);
+			byte [] buffer = new byte[1000];
+			while ((bytesRead = parser.read(buffer)) != -1) {
+				out.write(buffer, 0, bytesRead);				
 			}
-			is.close();		
+			//res.getWriter().print( parser );
+			/*
+			StringBuilder sb = new StringBuilder();
+			int bytesRead;
+			byte [] buffer = new byte[1000];
+			while ((bytesRead = is.read(buffer)) != -1) {
+				sb.append( new String( buffer, 0, bytesRead) );
+			}
+			res.getWriter().print( jsRunner.eval(sb.toString(), path, false ) );
+			*/
+			
 		} else {
 			res.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		

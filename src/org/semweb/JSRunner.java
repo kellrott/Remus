@@ -1,12 +1,10 @@
 package org.semweb;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.Map;
 
 
@@ -21,14 +19,11 @@ public class JSRunner {
 	Context cx;
 	Scriptable scope;
 	NoteInterface note;
-	ByteArrayOutputStream outBuffer;
-	PrintWriter outWriter;
 	
 	public JSRunner() {
-
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
-
+		
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -37,48 +32,36 @@ public class JSRunner {
 					return new ScriptMap( (Map)javaObject );
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
-			}			
+			}
 		});
-
-		outBuffer = new ByteArrayOutputStream();
-		outWriter = new PrintWriter(outBuffer);
 		
-		Object wrappedOut = Context.javaToJS(outWriter, scope);
-		ScriptableObject.putProperty(scope, "out", wrappedOut);
-
 	}
 	
 	
 	public void addInterface(String name, Object obj) {
-		ScriptableObject.putProperty(scope, name, obj);		
+		Object wrappedOut = Context.javaToJS(obj, scope);
+		ScriptableObject.putProperty(scope, name, wrappedOut);		
 	}
 
-
-	public String eval(String code, Boolean outPrint) {
-		outBuffer.reset();
+	public String eval(String code, String fileName, PageInterface page ) {
 		try {
+			cx = Context.enter();
 			//System.err.println("EVAL=" + code );
-			Object result = cx.evaluateString(scope, code, "<cmd>", 1, null);			
-			if ( !outPrint ) {
-				return Context.toString( result );
-			} else {
-				outBuffer.flush();
-				outWriter.flush();
-				return outBuffer.toString();
-			}
+			if ( page != null )
+				addInterface("page", page );
+
+			Object result = cx.evaluateString(scope, code, fileName, 1, null);			
+			
+			return Context.toString( result );
 			//System.err.print("RES=" + outBuffer.toString() );
 		} catch (EcmaError e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		return "";
 	}
 
 
 	public static void main(String []args) throws IOException {
-
 		BufferedReader br = new BufferedReader( new InputStreamReader(  new FileInputStream(new File(args[0])) ));
 		StringBuilder sb = new StringBuilder();
 		String line;
@@ -89,8 +72,11 @@ public class JSRunner {
 		} while (line != null);
 
 		JSRunner js = new JSRunner();
-		js.eval( sb.toString(), true );
-
+		js.addInterface("note", new NoteInterface("test_rdf"));
+		PageInterface page = PageInterface.newInstance();
+		System.err.println( js.eval( sb.toString(), args[0], page ) );	
+		System.out.println( page.outStream.toString() );
+		System.out.println( page.paramMap );
 	}
 
 
