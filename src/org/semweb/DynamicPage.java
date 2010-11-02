@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.semweb.config.ExtManager;
+
 public class DynamicPage extends HttpServlet{
 
 	/**
@@ -19,7 +21,6 @@ public class DynamicPage extends HttpServlet{
 	private static final long serialVersionUID = -8086862946229880731L;
 	String basePath;
 	JSRunner jsRunner;
-	NoteInterface note;
 
 	String rdfStorePath;
 	String dynamicFilePath;
@@ -28,10 +29,9 @@ public class DynamicPage extends HttpServlet{
 	public void init() throws ServletException {
 		rdfStorePath = getServletConfig().getInitParameter("rdfStorePath");
 		dynamicFilePath = getServletConfig().getInitParameter("dynamicFilePath");
-		jsRunner = new JSRunner();
-		note = new NoteInterface( rdfStorePath );
-		jsRunner.addInterface("note", note );
-
+		String extPath = getServletContext().getRealPath( "WEB-INF/extConfig.xml" );
+		ExtManager ext = new ExtManager(new File(extPath ));
+		jsRunner = new JSRunner(ext);
 	}
 	
 	@Override

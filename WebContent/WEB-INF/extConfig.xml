@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extConfig>
+	<dataSource>
+		<className>org.semweb.datasource.MySQLSource</className>
+		<plugName>mysql</plugName>
+		<config>
+			<name>dbuser</name>
+			<driver>com.mysql.jdbc.Driver</driver>
+			<url>jdbc:mysql://localhost:3306/test_db</url>
+		</config>
+	</dataSource>
+	<dataSource>
+		<className>org.semweb.datasource.SparqlSource</className>
+		<plugName>note</plugName>
+		<config>
+			<endpoint>http://localhost:9090/openrdf-sesame/repositories/test</endpoint>
+		</config>
+	</dataSource>
+</extConfig>
