@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.datasource;
 
 import java.io.File;
 
@@ -26,31 +26,12 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.nativerdf.NativeStore;
+import org.semweb.config.ConfigMap;
 
 
-public class NoteInterface {
+public class SparqlSource extends DataSource {
 
 	Repository repo;
-
-	NoteInterface(String path) {			
-		repo = new HTTPRepository( path );
-		/*
-		File dataDir = new File(path);
-		//if ( !dataDir.exists() ) {
-		repo = new SailRepository( new NativeStore(dataDir) );
-		try {
-			repo.initialize();
-		} catch (RepositoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//} else {
-		//	repo = new SailRepository( new NativeStore(dataDir) );
-		//}
-		 		
-		 */
-	}
-
 
 	public void AddRDF( File rdfFile, String graph ) {
 		try {
@@ -108,9 +89,24 @@ public class NoteInterface {
 		return null;
 	}
 
-	public static void main(String []args) {
-		NoteInterface note = new NoteInterface(args[2]);
-		note.AddRDF(new File(args[0]), args[1] );
+	@Override
+	public void init(ConfigMap configMap) throws InitException {		
+		repo = new HTTPRepository( (String) configMap.get("endpoint") );
+		/*
+		File dataDir = new File(path);
+		//if ( !dataDir.exists() ) {
+		repo = new SailRepository( new NativeStore(dataDir) );
+		try {
+			repo.initialize();
+		} catch (RepositoryException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//} else {
+		//	repo = new SailRepository( new NativeStore(dataDir) );
+		//}
+		 		
+		 */
 	}
 
 }

@@ -5,31 +5,41 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
 
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
+import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
+import org.semweb.config.ExtManager;
+import org.semweb.datasource.SparqlSource;
 
 public class JSRunner {
 
 	Context cx;
 	Scriptable scope;
-	NoteInterface note;
+	SparqlSource note;
+	ExtManager extManager;
 	
-	public JSRunner() {
+	public JSRunner(ExtManager extManager) {
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
+		this.extManager = extManager;
 		
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, java.lang.Object javaObject, java.lang.Class<?> staticType) {
+				//System.out.println( javaObject );
 				if ( javaObject instanceof Map ) {
 					return new ScriptMap( (Map)javaObject );
+				}
+				if ( javaObject instanceof List ) {
+					return new NativeArray( ((List)javaObject).toArray() );
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}
@@ -38,7 +48,7 @@ public class JSRunner {
 	}
 	
 	
-	public void addInterface(String name, Object obj) {
+	private void addInterface(String name, Object obj) {
 		Object wrappedOut = Context.javaToJS(obj, scope);
 		ScriptableObject.putProperty(scope, name, wrappedOut);		
 	}
@@ -49,7 +59,9 @@ public class JSRunner {
 			//System.err.println("EVAL=" + code );
 			if ( page != null )
 				addInterface("page", page );
-
+			for ( String dsName : extManager.getDataSourceNames() ) {
+				addInterface( dsName, extManager.getDataSource(dsName) );
+			}			
 			Object result = cx.evaluateString(scope, code, fileName, 1, null);			
 			
 			return Context.toString( result );
@@ -71,8 +83,8 @@ public class JSRunner {
 				sb.append(line);
 		} while (line != null);
 
-		JSRunner js = new JSRunner();
-		js.addInterface("note", new NoteInterface("test_rdf"));
+		JSRunner js = new JSRunner(null);
+		//js.addInterface("note", new NoteInterface("test_rdf"));
 		PageInterface page = PageInterface.newInstance();
 		System.err.println( js.eval( sb.toString(), args[0], page ) );	
 		System.out.println( page.outStream.toString() );
