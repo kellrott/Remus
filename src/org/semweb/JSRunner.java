@@ -25,10 +25,8 @@ public class JSRunner {
 	PrintWriter outWriter;
 	
 	public JSRunner() {
-
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
-
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -39,13 +37,10 @@ public class JSRunner {
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}			
 		});
-
 		outBuffer = new ByteArrayOutputStream();
-		outWriter = new PrintWriter(outBuffer);
-		
+		outWriter = new PrintWriter(outBuffer);		
 		Object wrappedOut = Context.javaToJS(outWriter, scope);
 		ScriptableObject.putProperty(scope, "out", wrappedOut);
-
 	}
 	
 	
@@ -54,11 +49,12 @@ public class JSRunner {
 	}
 
 
-	public String eval(String code, Boolean outPrint) {
+	public String eval(String code, String fileName, Boolean outPrint) {
 		outBuffer.reset();
 		try {
+			cx = Context.enter();
 			//System.err.println("EVAL=" + code );
-			Object result = cx.evaluateString(scope, code, "<cmd>", 1, null);			
+			Object result = cx.evaluateString(scope, code, fileName, 1, null);			
 			if ( !outPrint ) {
 				return Context.toString( result );
 			} else {
@@ -89,7 +85,7 @@ public class JSRunner {
 		} while (line != null);
 
 		JSRunner js = new JSRunner();
-		js.eval( sb.toString(), true );
+		js.eval( sb.toString(), args[0], true );
 
 	}
 

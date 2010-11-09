@@ -3,7 +3,7 @@ package org.semweb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,36 +11,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class DynamicPage extends HttpServlet{
-
-	/**
+	/*
 	 * 
 	 */
 	private static final long serialVersionUID = -8086862946229880731L;
 	String basePath;
 	JSRunner jsRunner;
 	NoteInterface note;
-	
-	public DynamicPage() {		
-		basePath = getServletContext().getRealPath( "" ) + "/WEB-INF/dynamicSystem";
+
+	String rdfStorePath;
+	String dynamicFilePath;
+
+	@Override
+	public void init() throws ServletException {
+		rdfStorePath = getServletConfig().getInitParameter("rdfStorePath");
+		dynamicFilePath = getServletConfig().getInitParameter("dynamicFilePath");
 		jsRunner = new JSRunner();
-		note = new NoteInterface(getServletContext().getRealPath( "" ) + "/WEB-INF/rdfStore");
+		note = new NoteInterface( rdfStorePath );
 		jsRunner.addInterface("note", note );
 
 	}
 	
+	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();	
-		File file = new File( basePath + path );
+		File file = new File( dynamicFilePath + File.separator + path );
 		if ( file.exists() ) {
-			
-			FileInputStream is = new FileInputStream( file );
-			OutputStream os = res.getOutputStream();
-			byte[] buffer = new byte[1024]; // Adjust if you want
+			InputStream is = new FileInputStream( file );
+			PageParse parser = new PageParse(is, path, jsRunner);
+			res.getWriter().print( parser );
+			/*
+			StringBuilder sb = new StringBuilder();
 			int bytesRead;
+			byte [] buffer = new byte[1000];
 			while ((bytesRead = is.read(buffer)) != -1) {
-				os.write(buffer, 0, bytesRead);
+				sb.append( new String( buffer, 0, bytesRead) );
 			}
-			is.close();		
+			res.getWriter().print( jsRunner.eval(sb.toString(), path, false ) );
+			*/			
 		} else {
 			res.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		
