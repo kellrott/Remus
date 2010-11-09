@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,13 +13,16 @@ import javax.servlet.http.HttpServletResponse;
 import org.semweb.config.ExtManager;
 
 public class DynamicPage extends HttpServlet{
-
-	/**
+	/*
 	 * 
 	 */
 	private static final long serialVersionUID = -8086862946229880731L;
 	String basePath;
 	JSRunner jsRunner;
+	NoteInterface note;
+
+	String rdfStorePath;
+	String dynamicFilePath;
 
 	String rdfStorePath;
 	String dynamicFilePath;
@@ -40,6 +42,7 @@ public class DynamicPage extends HttpServlet{
 		File file = new File( dynamicFilePath + File.separator + path );
 		if ( file.exists() ) {
 			InputStream is = new FileInputStream( file );
+
 			PageParser parser = new PageParser(is, path, jsRunner);
 			OutputStream out = res.getOutputStream();
 
@@ -49,6 +52,9 @@ public class DynamicPage extends HttpServlet{
 				out.write(buffer, 0, bytesRead);				
 			}
 			//res.getWriter().print( parser );
+			//PageParse parser = new PageParse(is, path, jsRunner);
+			//res.getWriter().print( parser );
+
 			/*
 			StringBuilder sb = new StringBuilder();
 			int bytesRead;
@@ -57,8 +63,7 @@ public class DynamicPage extends HttpServlet{
 				sb.append( new String( buffer, 0, bytesRead) );
 			}
 			res.getWriter().print( jsRunner.eval(sb.toString(), path, false ) );
-			*/
-			
+			*/					
 		} else {
 			res.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		

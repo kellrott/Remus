@@ -139,9 +139,7 @@ public class PageParser extends InputStream {
 	public static void main(String []args) throws FileNotFoundException {
 		InputStream is = new FileInputStream( new File(args[0]) );
 		JSRunner jsRunner = new JSRunner(null);
-		//jsRunner.addInterface("note", new NoteInterface("test_db") );
 		PageParser page = new PageParser(is, args[0], jsRunner );
-
 		System.out.print( page );
 	}
 

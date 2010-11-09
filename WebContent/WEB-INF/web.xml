@@ -16,7 +16,7 @@
 	  <servlet-class>org.semweb.DynamicPage</servlet-class>
 	  <init-param>
     	<param-name>rdfStorePath</param-name>
-    	<param-value>http://localhost:9090/openrdf-sesame/repositories/test</param-value>
+    	<param-value>/opt/semweb/rdfStore</param-value>
 	 </init-param>
 	 <init-param>
    		<param-name>dynamicFilePath</param-name>
@@ -29,7 +29,7 @@
   	<servlet-class>org.semweb.SparqlPage</servlet-class>
   	 <init-param>
     	<param-name>rdfStorePath</param-name>
-    	<param-value>http://localhost:9090/openrdf-sesame/repositories/test</param-value>
+    	<param-value>/opt/semweb/rdfStore</param-value>
 	 </init-param>
   </servlet>
 
