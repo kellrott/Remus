@@ -72,7 +72,7 @@ public class PageParse {
 	
 	public String evalCode(String code, Boolean outPrint) {
 		if ( code.length() > 0 )
-			return codeRunner.eval( code, outPrint );	
+			return codeRunner.eval( code, curPageName, outPrint );	
 		return "";
 	}
 	
@@ -86,9 +86,11 @@ public class PageParse {
 	
 	StringBuilder outSB;
 	JSRunner codeRunner;
-
-	public PageParse(InputStream is, JSRunner codeRunner ) {		
-		this.codeRunner = codeRunner;		
+	String curPageName;
+	
+	public PageParse(InputStream is, String pageName, JSRunner codeRunner ) {		
+		this.codeRunner = codeRunner;	
+		curPageName = pageName;
 		outSB = new StringBuilder();
 		try {
 			SAXParserFactory sax = SAXParserFactory.newInstance();
@@ -113,7 +115,7 @@ public class PageParse {
 		InputStream is = new FileInputStream( new File(args[0]) );
 		JSRunner jsRunner = new JSRunner();
 		jsRunner.addInterface("note", new NoteInterface("test_db") );
-		PageParse page = new PageParse(is, jsRunner );
+		PageParse page = new PageParse(is, args[0], jsRunner );
 		System.out.print( page );		
 	}
 	

@@ -1,7 +1,6 @@
 package org.semweb;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,16 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.nativerdf.NativeStore;
 
 public class SparqlPage extends HttpServlet {
 
@@ -32,23 +23,15 @@ public class SparqlPage extends HttpServlet {
 	 */
 	private static final long serialVersionUID = 3002607162096773136L;
 
-	Repository repo;
-	String dataDir;
+	RepoHandler repo;
 
 	@Override
 	public void init() throws ServletException {
-		try {
-			dataDir = getServletContext().getRealPath( "" ) + "/WEB-INF/rdfStore";
-			repo = new SailRepository( new NativeStore( new File(dataDir) ) );
-			repo.initialize();
-		} catch (RepositoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		String dataDir = getServletConfig().getInitParameter("rdfStorePath");
+		repo = RepoHandler.getRepoHandler( (new File(dataDir)).getAbsolutePath() );
 	}
 
-	
+
 	public void writeHTML( TupleQueryResult result, PrintWriter out ) throws QueryEvaluationException {
 		List<String> colNames = result.getBindingNames();		
 		out.print("<html><table><tr>");
@@ -66,25 +49,16 @@ public class SparqlPage extends HttpServlet {
 		}
 		out.print("</table></html>");
 	}
-	
+
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String queryStr = req.getParameter("query");		
 		if ( queryStr != null ) {
-			try {
-				RepositoryConnection conn = repo.getConnection();
-				TupleQuery query = conn.prepareTupleQuery( QueryLanguage.SPARQL , queryStr);
-				TupleQueryResult result = query.evaluate();
-				writeHTML( result, res.getWriter() );
-			} catch (RepositoryException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (MalformedQueryException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (QueryEvaluationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				TupleQueryResult result = repo.query( queryStr );
+				try {
+					writeHTML( result, res.getWriter() );
+				} catch (QueryEvaluationException e) {
+					e.printStackTrace();
+				}
 		} else {
 			InputStream is = SparqlPage.class.getResourceAsStream("sparql.html");
 			OutputStream os = res.getOutputStream();
