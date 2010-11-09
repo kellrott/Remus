@@ -29,7 +29,6 @@ public class JSRunner {
 		cx = Context.enter();
 		scope = cx.initStandardObjects();
 		this.extManager = extManager;
-		
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
 			@Override
@@ -44,7 +43,6 @@ public class JSRunner {
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}
 		});
-		
 	}
 	
 	
