@@ -25,7 +25,7 @@ public class RepoHandler {
 
 	final static Map<String,RepoHandler> repoMap = new HashMap<String,RepoHandler>();
 
-	static RepoHandler getRepoHandler(String dataDir) {
+	public static RepoHandler getRepoHandler(String dataDir) {
 		if ( !repoMap.containsKey(dataDir) ) {
 			RepoHandler repo = new RepoHandler( dataDir );
 			repoMap.put(dataDir, repo);

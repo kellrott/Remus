@@ -15,17 +15,18 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
+import org.semweb.RepoHandler;
+import org.semweb.config.ConfigMap;
 
 
 public class SparqlSource extends DataSource {
 
 	RepoHandler repo;
 
-	SparqlSource(String path) {
-		File dataDir = new File(path);
-		repo = RepoHandler.getRepoHandler( dataDir.getAbsolutePath() );			
+	public SparqlSource() {
+		
 	}
-
+	
 	public void AddRDF( File rdfFile, String graph ) {
 		try {
 			FileInputStream fis = new FileInputStream( rdfFile );
@@ -62,23 +63,10 @@ public class SparqlSource extends DataSource {
 	}
 
 	@Override
-	public void init(ConfigMap configMap) throws InitException {		
-		repo = new HTTPRepository( (String) configMap.get("endpoint") );
-		/*
+	public void init(ConfigMap configMap) throws InitException {	
+		String path = (String) configMap.get("endpoint");
 		File dataDir = new File(path);
-		//if ( !dataDir.exists() ) {
-		repo = new SailRepository( new NativeStore(dataDir) );
-		try {
-			repo.initialize();
-		} catch (RepositoryException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//} else {
-		//	repo = new SailRepository( new NativeStore(dataDir) );
-		//}
-		 		
-		 */
-	}
+		repo = RepoHandler.getRepoHandler( dataDir.getAbsolutePath() );		
+	}	
 
 }

@@ -6,14 +6,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.xml.parsers.*;
 
-import org.mozilla.javascript.WrapFactory;
+//import org.mozilla.javascript.WrapFactory;
 import org.xml.sax.Attributes;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.antlr.stringtemplate.*;
 
@@ -72,8 +77,14 @@ public class PageParser extends InputStream {
 			//System.err.println( new String(ch, start, length) );
 			curBuffer.append(ch, start, length );
 		}
-
 	}
+
+
+	public class BlankResolver implements EntityResolver {
+		public InputSource resolveEntity (String publicId, String systemId) {
+			return null;
+		}
+	} 
 
 	public String evalCode(String code, PageInterface page) {
 		if ( code.length() > 0 )
@@ -90,31 +101,38 @@ public class PageParser extends InputStream {
 	StringBuilder stringBuiler;
 	JSRunner codeRunner;
 	String curPageName;
-	String outString;
-	ByteArrayInputStream outStream;
-
+	String outString = null;
+	ByteArrayInputStream outStream = null;
+	StringTemplate st = null;
+	
 	public PageParser(InputStream is, String pageName, JSRunner codeRunner ) {		
 		this.codeRunner = codeRunner;	
 		curPageName = pageName;
 		stringBuiler = new StringBuilder();
 		try {
+
 			page = PageInterface.newInstance();
-			SAXParserFactory sax = SAXParserFactory.newInstance();
-			SAXParser parser;
-			parser = sax.newSAXParser();
+
+			XMLReader parser = XMLReaderFactory.createXMLReader();
+
+			//SAXParserFactory sax = SAXParserFactory.newInstance();
+			//SAXParser parser;
+			//parser = sax.newSAXParser();
 			DefaultHandler ph= new PageHandler();
-			parser.parse(is, ph );
+
+			parser.setContentHandler(ph);
+			parser.setEntityResolver( new BlankResolver() );
+
+			parser.parse( new InputSource(is) );
 			//System.out.println(stringBuiler.toString());
-			StringTemplate st = new StringTemplate(stringBuiler.toString());
+			st = new StringTemplate(stringBuiler.toString());
 			for ( String key : page.paramMap.keySet() ) {
 				//System.err.println(key);
 				st.setAttribute(key, page.paramMap.get(key) );
-			}
-			outString = st.toString();
-			outStream = new ByteArrayInputStream( outString.getBytes() );
-		} catch (ParserConfigurationException e) {
+			}			
+			//} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//	e.printStackTrace();
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -124,14 +142,33 @@ public class PageParser extends InputStream {
 		}
 	}
 
+	
+	public void render() {
+		render(null);		
+	}
+	
+	public void render(Map<String,String> content) {
+		if ( content != null) {
+			for ( String name : content.keySet() ) {
+				st.setAttribute(name, content.get(name));
+			}
+		}
+		outString = st.toString();
+		outStream = new ByteArrayInputStream( outString.getBytes() );
+	}
+	
 	@Override
 	public String toString() {
+		if ( outString == null )
+			render();
 		return outString;
 	}
 
 
 	@Override
 	public int read() throws IOException {
+		if ( outStream == null )
+			render();
 		return outStream.read();
 	}
 

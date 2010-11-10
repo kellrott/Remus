@@ -49,7 +49,9 @@ public class ExtManager {
 				String className = classPath.evaluate(curNode);
 				String plugName = namePath.evaluate(curNode);
 				try {
-					Class<?> c = Class.forName(className);					
+					System.out.println("LOADING: " + className );
+					System.out.flush();
+					Class<?> c = Class.forName(className);
 					DataSource ds = (DataSource) c.newInstance();
 					Node configNode = (Node) configPath.evaluate( curNode, XPathConstants.NODE );
 					ConfigMap config = ConfigMap.XmlNodeParse(configNode);
@@ -82,7 +84,6 @@ public class ExtManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 
 	public Set<String>  getDataSourceNames() {
