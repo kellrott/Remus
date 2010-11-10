@@ -11,9 +11,6 @@ public class MySQLSource extends DataSource {
 
 	private Connection conn;
 
-	public MySQLSource() {
-
-	}
 
 	public List<Map<String,Object>> query(String queryStr) {
 		List<Map<String,Object>> outList = null;		

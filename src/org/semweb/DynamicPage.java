@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -19,10 +22,6 @@ public class DynamicPage extends HttpServlet{
 	private static final long serialVersionUID = -8086862946229880731L;
 	String basePath;
 	JSRunner jsRunner;
-	NoteInterface note;
-
-	String rdfStorePath;
-	String dynamicFilePath;
 
 	String rdfStorePath;
 	String dynamicFilePath;
@@ -40,30 +39,27 @@ public class DynamicPage extends HttpServlet{
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();	
 		File file = new File( dynamicFilePath + File.separator + path );
+		File templateFile = new File( dynamicFilePath + File.separator + "template.html" );
 		if ( file.exists() ) {
+
 			InputStream is = new FileInputStream( file );
-
 			PageParser parser = new PageParser(is, path, jsRunner);
-			OutputStream out = res.getOutputStream();
-
+			
+			InputStream tis = new FileInputStream( templateFile );
+			PageParser templateParser = new PageParser(tis, "template", jsRunner);
+			Map<String,String> pageMap = new HashMap<String,String>();
+			System.out.println( parser.toString() );
+			System.out.flush();
+			pageMap.put( "content", parser.toString() );
+			templateParser.render(pageMap);
+			
+			OutputStream out = res.getOutputStream();			
 			int bytesRead;
 			byte [] buffer = new byte[1000];
-			while ((bytesRead = parser.read(buffer)) != -1) {
+			while ((bytesRead = templateParser.read(buffer)) != -1) {
 				out.write(buffer, 0, bytesRead);				
 			}
-			//res.getWriter().print( parser );
-			//PageParse parser = new PageParse(is, path, jsRunner);
-			//res.getWriter().print( parser );
-
-			/*
-			StringBuilder sb = new StringBuilder();
-			int bytesRead;
-			byte [] buffer = new byte[1000];
-			while ((bytesRead = is.read(buffer)) != -1) {
-				sb.append( new String( buffer, 0, bytesRead) );
-			}
-			res.getWriter().print( jsRunner.eval(sb.toString(), path, false ) );
-			*/					
+			
 		} else {
 			res.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		

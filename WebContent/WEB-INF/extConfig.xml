@@ -13,7 +13,7 @@
 		<className>org.semweb.datasource.SparqlSource</className>
 		<plugName>note</plugName>
 		<config>
-			<endpoint>http://localhost:9090/openrdf-sesame/repositories/test</endpoint>
-		</config>
+			<endpoint>/opt/semweb/rdfStore/</endpoint>
+		</config>		
 	</dataSource>
 </extConfig>

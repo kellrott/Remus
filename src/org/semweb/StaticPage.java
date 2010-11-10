@@ -18,14 +18,16 @@ public class StaticPage extends HttpServlet {
 
 	String basePath;
 	@Override
-	public void init() throws ServletException {
-		getServletConfig().getInitParameter("staticPagePath");
+	public void init() throws ServletException {		
+		basePath = getServletConfig().getInitParameter("staticPagePath");
 	}
 	
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		//String basePath = getServletContext().getRealPath( "" ) + "/WEB-INF/fileSystem";
 		String path = req.getPathInfo();	
-		File file = new File( basePath + path );
+		File file = new File( basePath + File.separator + path );
+		System.out.println("FETCH:" + file.getAbsolutePath() );
+		System.out.flush();
 		if ( file.exists() ) {
 			FileInputStream is = new FileInputStream( file );
 			OutputStream os = res.getOutputStream();

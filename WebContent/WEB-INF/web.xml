@@ -4,9 +4,9 @@
 
   <servlet>
     <servlet-name>StaticPage</servlet-name>
-    <servlet-class>org.semweb.StaticPage</servlet-class>
+    <servlet-class>org.semweb.FileServlet</servlet-class>
     <init-param>
-    	<param-name>staticPagePath</param-name>
+    	<param-name>basePath</param-name>
  		<param-value>/opt/semweb/fileSystem</param-value>
     </init-param>
   </servlet>

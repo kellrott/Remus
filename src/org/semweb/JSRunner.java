@@ -42,7 +42,11 @@ public class JSRunner {
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}
-		});
+		});		
+		
+		for ( String name : extManager.getDataSourceNames() ) {
+			addInterface(name, extManager.getDataSource(name));
+		}
 	}
 	
 	
