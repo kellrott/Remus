@@ -41,22 +41,26 @@ public class DynamicPage extends HttpServlet{
 		File file = new File( dynamicFilePath + File.separator + path );
 		File templateFile = new File( dynamicFilePath + File.separator + "template.html" );
 		if ( file.exists() ) {
-
+		
 			InputStream is = new FileInputStream( file );
-			PageParser parser = new PageParser(is, path, jsRunner);
-			
-			InputStream tis = new FileInputStream( templateFile );
-			PageParser templateParser = new PageParser(tis, "template", jsRunner);
-			Map<String,String> pageMap = new HashMap<String,String>();
-			System.out.println( parser.toString() );
-			System.out.flush();
-			pageMap.put( "content", parser.toString() );
-			templateParser.render(pageMap);
+			PageParser parser = new PageParser(is, path, req.getParameterMap(), jsRunner);
+
+			PageParser outParser = null;
+			if ( parser.page.template ) {
+				InputStream tis = new FileInputStream( templateFile );
+				PageParser templateParser = new PageParser(tis, "template", req.getParameterMap(), jsRunner);
+				Map<String,String> pageMap = new HashMap<String,String>();
+				pageMap.put( "content", parser.toString() );
+				templateParser.render(pageMap);			
+				outParser = templateParser;
+			} else {
+				outParser = parser;
+			}
 			
 			OutputStream out = res.getOutputStream();			
 			int bytesRead;
 			byte [] buffer = new byte[1000];
-			while ((bytesRead = templateParser.read(buffer)) != -1) {
+			while ((bytesRead = outParser.read(buffer)) != -1) {
 				out.write(buffer, 0, bytesRead);				
 			}
 			
