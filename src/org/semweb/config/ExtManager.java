@@ -94,6 +94,10 @@ public class ExtManager {
 		return dsList.get(name);
 	}
 
+	public void setDataSource(String name, DataSource ds) {
+		dsList.put(name, ds);
+	}
+	
 	static public void main(String [] args) {
 		new ExtManager(new File( "WebContent/WEB-INF/extConfig.xml" ) );
 	}

@@ -105,13 +105,15 @@ public class PageParser extends InputStream {
 	ByteArrayInputStream outStream = null;
 	StringTemplate st = null;
 	
-	public PageParser(InputStream is, String pageName, JSRunner codeRunner ) {		
-		this.codeRunner = codeRunner;	
+	public PageParser(InputStream is, String pageName, Map paramMap, JSRunner codeRunner ) {		
+		this.codeRunner = codeRunner;
+
 		curPageName = pageName;
 		stringBuiler = new StringBuilder();
 		try {
-
 			page = PageInterface.newInstance();
+			page.args = paramMap;
+			codeRunner.extManager.setDataSource("page", page );
 
 			XMLReader parser = XMLReaderFactory.createXMLReader();
 
@@ -126,6 +128,7 @@ public class PageParser extends InputStream {
 			parser.parse( new InputSource(is) );
 			//System.out.println(stringBuiler.toString());
 			st = new StringTemplate(stringBuiler.toString());
+			st.setAttribute("page", page);
 			for ( String key : page.paramMap.keySet() ) {
 				//System.err.println(key);
 				st.setAttribute(key, page.paramMap.get(key) );
@@ -142,6 +145,7 @@ public class PageParser extends InputStream {
 		}
 	}
 
+	
 	
 	public void render() {
 		render(null);		
@@ -171,14 +175,5 @@ public class PageParser extends InputStream {
 			render();
 		return outStream.read();
 	}
-
-
-	public static void main(String []args) throws FileNotFoundException {
-		InputStream is = new FileInputStream( new File(args[0]) );
-		JSRunner jsRunner = new JSRunner(null);
-		PageParser page = new PageParser(is, args[0], jsRunner );
-		System.out.print( page );
-	}
-
 
 }

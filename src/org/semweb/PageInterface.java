@@ -2,22 +2,25 @@ package org.semweb;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
+import org.semweb.config.ConfigMap;
+import org.semweb.datasource.DataSource;
+import org.semweb.datasource.InitException;
 
-public class PageInterface {
+public class PageInterface extends DataSource {
 
 	static PageInterface newInstance() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		return new PageInterface(out);
 	}
 
+	public Map<String,String> args = null;
+	public boolean template = true;
+	
 	Map<String,Object> paramMap;
 	ByteArrayOutputStream outStream;
 	
@@ -72,5 +75,11 @@ public class PageInterface {
 
 	public Object remove(Object key) {
 		return paramMap.remove(key);
+	}
+
+	@Override
+	public void init(ConfigMap configMap) throws InitException {
+		// TODO Auto-generated method stub
+		
 	}
 }
