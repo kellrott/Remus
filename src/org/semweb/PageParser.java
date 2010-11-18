@@ -25,9 +25,12 @@ import org.antlr.stringtemplate.*;
 
 public class PageParser extends InputStream {
 
+	static String PageExt = ".semweb";
+	
 	public class PageHandler extends DefaultHandler {
 		Pattern codeRE = Pattern.compile("\\&\\{(.*?)\\}\\&", Pattern.DOTALL );		
 		StringBuilder curBuffer = null;
+		boolean serverCode = false;
 		@Override
 		public void processingInstruction(String target, String data)
 		throws SAXException {
@@ -46,36 +49,48 @@ public class PageParser extends InputStream {
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
-
-			XMLOutput(curBuffer.toString());
-			XMLOutput( "<" + qName );			
-			for ( int i = 0; i < attributes.getLength(); i++ ) {
-				String name = attributes.getLocalName(i);
-				String value = attributes.getValue(i);
-				if ( name.startsWith("eval:") ) {
-					XMLOutput( " " + name.substring(5) + "='" + evalCode(value, null)  + "'" );
-
-				} else {
-					XMLOutput( " " + name + "='" + value + "'" );
-				}
+			if ( qName.compareTo("script") == 0 ) {
+				if ( attributes.getValue("type").compareTo( "server/javascript" ) == 0 ) {
+					serverCode = true;
+				}				
 			}
-			XMLOutput(">");
-			curBuffer = new StringBuilder();			
+			if ( !serverCode ) {
+				XMLOutput(curBuffer.toString());
+				XMLOutput( "<" + qName );
+				for ( int i = 0; i < attributes.getLength(); i++ ) {
+					String name = attributes.getLocalName(i);
+					String value = attributes.getValue(i);
+					if ( name.startsWith("eval:") ) {
+						XMLOutput( " " + name.substring(5) + "='" + evalCode(value, null)  + "'" );
+
+					} else {
+						XMLOutput( " " + name + "='" + value + "'" );
+					}
+				}
+				XMLOutput(">");
+				curBuffer = new StringBuilder();
+			}
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName)
-		throws SAXException {			
-			XMLOutput(curBuffer.toString());
-			curBuffer = new StringBuilder();
-			XMLOutput("</" + qName + ">");
+		throws SAXException {
+			if ( ! serverCode ) {
+				XMLOutput(curBuffer.toString());
+				curBuffer = new StringBuilder();
+				XMLOutput("</" + qName + ">");
+			} else {
+				serverCode = false;
+			}
 		}
 
 		@Override
 		public void characters(char[] ch, int start, int length)
 		throws SAXException {
 			//System.err.println( new String(ch, start, length) );
-			curBuffer.append(ch, start, length );
+			if ( !serverCode ) {
+				curBuffer.append(ch, start, length );
+			}
 		}
 	}
 
@@ -104,7 +119,7 @@ public class PageParser extends InputStream {
 	String outString = null;
 	ByteArrayInputStream outStream = null;
 	StringTemplate st = null;
-	
+
 	public PageParser(InputStream is, String pageName, Map paramMap, JSRunner codeRunner ) {		
 		this.codeRunner = codeRunner;
 
@@ -145,12 +160,12 @@ public class PageParser extends InputStream {
 		}
 	}
 
-	
-	
+
+
 	public void render() {
 		render(null);		
 	}
-	
+
 	public void render(Map<String,String> content) {
 		if ( content != null) {
 			for ( String name : content.keySet() ) {
@@ -160,7 +175,7 @@ public class PageParser extends InputStream {
 		outString = st.toString();
 		outStream = new ByteArrayInputStream( outString.getBytes() );
 	}
-	
+
 	@Override
 	public String toString() {
 		if ( outString == null )
