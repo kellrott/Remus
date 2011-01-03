@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.servlets;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +22,11 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.semweb.app.PageParser;
+import org.semweb.app.PageRender;
+import org.semweb.app.SemWebApp;
 import org.semweb.config.ExtManager;
+import org.semweb.plugins.PageInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,86 +39,31 @@ public class DynamicPage extends HttpServlet{
 	 */
 	private static final long serialVersionUID = -8086862946229880731L;
 	String basePath;
-	JSRunner jsRunner;
-
 	String rdfStorePath;
 	String baseFilePath;
-
-	FileServlet fileServlet;
+	SemWebApp semApp;
 	
 	@Override
 	public void init() throws ServletException {
 		rdfStorePath = getServletConfig().getInitParameter("rdfStorePath");
 		baseFilePath = getServletConfig().getInitParameter("basePath");
-		String extPath = getServletContext().getRealPath( "WEB-INF/extConfig.xml" );
-		ExtManager ext = new ExtManager(new File(extPath ));
-		jsRunner = new JSRunner(ext);
+		String extPath = getServletContext().getRealPath( "WEB-INF/SemWebConfig.xml" );
+		semApp = new SemWebApp( new File(extPath) );
 		
 		
-		fileServlet = new FileServlet();		
-		fileServlet.init(this.getServletConfig());		
-		fileServlet.init();
+		
+		//fileServlet = new FileServlet();		
+		//fileServlet.init(this.getServletConfig());		
+		//fileServlet.init();
 	}
 	
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();
-		
-		if ( path.contains(":") ) {
-			String[] ps = path.split(":");
-			if ( ps.length == 2 ) {
-			File semfile = new File( baseFilePath + File.separator + ps[0] + PageParser.PageExt );
-			try {
-				DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
-				DocumentBuilder db = df.newDocumentBuilder();
-				Document doc = db.parse(semfile);			
-
-				XPathFactory xpf = XPathFactory.newInstance();
-				XPath xpath = xpf.newXPath();
-				XPathExpression idPath = xpath.compile("//*[@id='" + ps[1] + "']");
-				Element scriptNode = (Element) idPath.evaluate( doc, XPathConstants.NODE );
-				if ( scriptNode == null ) {
-					res.sendError(HttpServletResponse.SC_NOT_FOUND);
-					return;
-				}
-				
-				PageInterface page = PageInterface.newInstance();
-				jsRunner.eval(scriptNode.getTextContent(), path, page);				
-				res.getWriter().print( page.toString() );
-				return;
-			} catch (XPathExpressionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ParserConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (SAXException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			}
-		}
-		
-		File file = new File( baseFilePath + File.separator + path );
-		File semfile = new File( baseFilePath + File.separator + path + PageParser.PageExt );
-		
-		if ( semfile.exists() ) {
-				pageRender( semfile, path, req.getParameterMap(), res.getOutputStream() );
-		} else {
-			if ( file.isDirectory() ) {
-				File indexFile = new File( semfile.toString() + File.separator + "index.html" + PageParser.PageExt );
-				if ( indexFile.exists() ) {
-					pageRender( indexFile, path, req.getParameterMap(), res.getOutputStream() );
-				} else {
-
-				}
-			} else {
-				fileServlet.doGet(req, res);			
-			}
-		}		
+		semApp.readPage(path);
 	}
 	
-	
+	/*
 	private void pageRender(File semfile, String reqPath, Map paramMap, OutputStream out) throws IOException {
 		InputStream is = new FileInputStream( semfile );
 		PageParser parser = new PageParser(is, reqPath, paramMap, jsRunner);
@@ -136,5 +85,6 @@ public class DynamicPage extends HttpServlet{
 			out.write(buffer, 0, bytesRead);				
 		}		
 	}
+	*/
 	
 }

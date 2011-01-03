@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

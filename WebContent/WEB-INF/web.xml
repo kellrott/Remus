@@ -3,6 +3,11 @@
   <display-name>SemWeb</display-name>
   
   <servlet>
+  	<servlet-name>Configure</servlet-name>
+  	<servlet-class>org.semweb.config.ConfigPage</servlet-class>
+  </servlet>
+  
+  <!--  servlet>
 	  <servlet-name>DynamicPage</servlet-name>
 	  <servlet-class>org.semweb.DynamicPage</servlet-class>
 	  <init-param>
@@ -22,24 +27,22 @@
     	<param-name>rdfStorePath</param-name>
     	<param-value>/opt/semweb/rdfStore</param-value>
 	 </init-param>
-  </servlet>
+  </servlet -->
 
-  <servlet-mapping>
+  <!--  servlet-mapping>
   	<servlet-name>DynamicPage</servlet-name>
   	<url-pattern>/*</url-pattern>
-  </servlet-mapping>
-  
+  </servlet-mapping -->
+
   <servlet-mapping>
+  	<servlet-name>Configure</servlet-name>
+  	<url-pattern>/@config</url-pattern>
+  </servlet-mapping>
+
+  
+  <!-- servlet-mapping>
   	<servlet-name>SparqlPage</servlet-name>
   	<url-pattern>/sparql</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping -->
   
-  <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-    <welcome-file>index.htm</welcome-file>
-    <welcome-file>index.jsp</welcome-file>
-    <welcome-file>default.html</welcome-file>
-    <welcome-file>default.htm</welcome-file>
-    <welcome-file>default.jsp</welcome-file>
-  </welcome-file-list>
 </web-app>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<semwebConfig>
+	<workdir>/tmp/semweb</workdir>
+	<semweb>
+		<semwebName>Topsan</semwebName>
+		<gitpath>/opt/data/semwebTopsan</gitpath>
+	</semweb>
+</semwebConfig>

@@ -1,4 +1,4 @@
-package org.semweb.datasource;
+package org.semweb.plugins;
 
 import java.io.File;
 
@@ -15,11 +15,11 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
-import org.semweb.RepoHandler;
 import org.semweb.config.ConfigMap;
+import org.semweb.config.ExtConfig;
 
 
-public class SparqlSource extends DataSource {
+public class SparqlSource implements ExtInterface {
 
 	RepoHandler repo;
 
@@ -63,10 +63,11 @@ public class SparqlSource extends DataSource {
 	}
 
 	@Override
-	public void init(ConfigMap configMap) throws InitException {	
-		String path = (String) configMap.get("endpoint");
+	public void init(ExtConfig config) throws InitException {
+		String path = (String) config.get("endpoint");
 		File dataDir = new File(path);
 		repo = RepoHandler.getRepoHandler( dataDir.getAbsolutePath() );		
-	}	
+	}
+
 
 }

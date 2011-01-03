@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.servlets;
 
 import java.io.File;
 import java.io.FileInputStream;
