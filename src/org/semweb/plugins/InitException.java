@@ -1,4 +1,4 @@
-package org.semweb.datasource;
+package org.semweb.plugins;
 
 public class InitException extends Exception {
 

@@ -1,4 +1,4 @@
-package org.semweb.datarequest;
+package org.semweb.plugins;
 
 import org.semweb.config.ConfigMap;
 import org.semweb.config.RequestKey;

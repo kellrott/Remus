@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.plugins;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,13 +7,11 @@ import java.util.Map;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
-import org.semweb.config.ConfigMap;
-import org.semweb.datasource.DataSource;
-import org.semweb.datasource.InitException;
+import org.semweb.config.ExtConfig;
 
-public class PageInterface extends DataSource {
+public class PageInterface implements ExtInterface {
 
-	static PageInterface newInstance() {
+	static public PageInterface newInstance() {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		return new PageInterface(out);
 	}
@@ -21,8 +19,8 @@ public class PageInterface extends DataSource {
 	public Map<String,String> args = null;
 	public boolean template = true;
 	
-	Map<String,Object> paramMap;
-	ByteArrayOutputStream outStream;
+	public Map<String,Object> paramMap;
+	public ByteArrayOutputStream outStream;
 	
 	public PageInterface( ByteArrayOutputStream out ) {
 		paramMap = new HashMap<String,Object>();
@@ -78,7 +76,7 @@ public class PageInterface extends DataSource {
 	}
 
 	@Override
-	public void init(ConfigMap configMap) throws InitException {
+	public void init(ExtConfig config) throws InitException {
 		// TODO Auto-generated method stub
 		
 	}

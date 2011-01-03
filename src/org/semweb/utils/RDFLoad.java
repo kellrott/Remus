@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.utils;
 
 public class RDFLoad {
 

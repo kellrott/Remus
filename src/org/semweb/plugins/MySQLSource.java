@@ -1,4 +1,4 @@
-package org.semweb.datasource;
+package org.semweb.plugins;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.semweb.config.ConfigMap;
+import org.semweb.config.ExtConfig;
 
-public class MySQLSource extends DataSource {
+public class MySQLSource implements ExtInterface {
 
 	private Connection conn;
-
-
+	
 	public List<Map<String,Object>> query(String queryStr) {
 		List<Map<String,Object>> outList = null;		
 		try {
@@ -46,12 +46,12 @@ public class MySQLSource extends DataSource {
 	}
 
 	@Override
-	public void init(ConfigMap configMap) throws InitException {
+	public void init(ExtConfig config) throws InitException {
 		try {			
-			String userName = (String)configMap.get("name");
-			String password = (String)configMap.get("password");
-			String url = (String)configMap.get("url");
-			String driver = (String)configMap.get("driver");
+			String userName = (String)config.get("name");
+			String password = (String)config.get("password");
+			String url = (String)config.get("url");
+			String driver = (String)config.get("driver");
 
 			Class.forName (driver).newInstance ();
 

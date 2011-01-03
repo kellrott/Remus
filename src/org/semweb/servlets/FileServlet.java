@@ -15,7 +15,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.semweb;
+package org.semweb.servlets;
 
 import java.io.Closeable;
 import java.io.File;

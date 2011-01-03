@@ -1,4 +1,4 @@
-package org.semweb;
+package org.semweb.scripting;
 
 import java.util.Map;
 

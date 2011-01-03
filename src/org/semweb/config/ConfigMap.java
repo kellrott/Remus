@@ -1,13 +1,11 @@
 package org.semweb.config;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 
 
 public class ConfigMap extends HashMap<String,Object> {
