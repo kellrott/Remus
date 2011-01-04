@@ -6,9 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.semweb.app.SemWebPage.CodeFragment;
+
 import org.semweb.config.ScriptingManager;
-import org.semweb.scripting.ScriptingInterface;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -25,14 +24,16 @@ public class PageParser {
 		Pattern codeRE = Pattern.compile("\\&\\{(.*?)\\}\\&", Pattern.DOTALL );		
 		StringBuilder curBuffer = null;
 		boolean serverCode = false;
-		String curLang = null, curID=null;
+		String curLang = null, curID=null, curHREF=null;
 		StringBuilder stringBuiler;
-		Map<String,CodeFragment> codeMap;
+		CodeFragment curCode;
+		InputConnection curInput;
+		Map<String,SemWebApplet> codeMap;
 		PageHandler() {
 			stringBuiler = new StringBuilder();
-			codeMap = new HashMap<String,CodeFragment>();
+			codeMap = new HashMap<String,SemWebApplet>();
 		}
-		
+
 		/*
 		@Override
 		public void processingInstruction(String target, String data)
@@ -44,7 +45,7 @@ public class PageParser {
 			}
 		}
 		 */
-		
+
 		@Override
 		public void startDocument() throws SAXException {
 			curBuffer = new StringBuilder();
@@ -54,14 +55,11 @@ public class PageParser {
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
 			if ( qName.compareTo("semweb") == 0 ) {
-				if ( attributes.getValue("lang") != null && attributes.getValue("id") != null) {
-					if ( scriptMan.hasLang( attributes.getValue("lang") ) ) {
-						serverCode = true;
-						curLang =  attributes.getValue("lang");
-						curID = attributes.getValue("id");
-						curBuffer = new StringBuilder();
-					}
-				}				
+				XMLOutput(curBuffer.toString());
+				curBuffer = new StringBuilder();
+
+				serverCode = true;
+				curID = attributes.getValue("id");
 			}
 			if ( !serverCode ) {
 				XMLOutput(curBuffer.toString());
@@ -73,6 +71,24 @@ public class PageParser {
 				}
 				XMLOutput(">");
 				curBuffer = new StringBuilder();
+			} else {
+				if ( qName.compareTo("input") == 0) {
+					if ( attributes.getValue("lang") != null ) {
+						if ( parent.scriptMan.hasLang( attributes.getValue("lang") ) ) {
+							curLang = attributes.getValue("lang");
+						}
+					} else if ( attributes.getValue("href") != null ) {
+						curHREF = attributes.getValue("href");
+					}
+				}
+				if ( qName.compareTo("mapper") == 0 || qName.compareTo("writer") == 0) {
+					if ( attributes.getValue("lang") != null ) {
+						if ( parent.scriptMan.hasLang( attributes.getValue("lang") ) ) {
+							curLang = attributes.getValue("lang");
+						}
+					}
+				}
+				curBuffer = new StringBuilder();
 			}
 		}
 
@@ -81,12 +97,25 @@ public class PageParser {
 		throws SAXException {
 			if ( ! serverCode ) {
 				XMLOutput(curBuffer.toString());
-				curBuffer = new StringBuilder();
 				XMLOutput("</" + qName + ">");
 			} else {
-				addCode(curID, curLang, curBuffer.toString());
-				serverCode = false;
+				if ( qName.compareTo("input") == 0 ) {
+					curInput = new InputConnection();
+					curInput.inputHREF = curHREF;
+					curInput.inputLang = curLang;
+					curInput.inputSource = curBuffer.toString();
+				} else if ( qName.compareTo("mapper") == 0 ) {
+					curCode = new CodeFragment(curLang, curBuffer.toString(), CodeFragment.MAPPER);
+				} else if ( qName.compareTo("writer") == 0 ) {
+					curCode = new CodeFragment(curLang, curBuffer.toString(), CodeFragment.WRITER);
+				} else if ( qName.compareTo("semweb") == 0 ) {
+					addApplet(curID, curInput, curCode );
+					serverCode = false;
+					curInput = null;
+					curCode = null;
+				}
 			}
+			curBuffer = new StringBuilder();
 		}
 
 		@Override
@@ -94,30 +123,27 @@ public class PageParser {
 		throws SAXException {
 			//System.err.println( new String(ch, start, length) );
 			//if ( !serverCode ) {
-				curBuffer.append(ch, start, length );
+			curBuffer.append(ch, start, length );
 			//}
 		}
-		
+
 		private void XMLOutput( String str ) {
 			stringBuiler.append( str );
 		}
-		
-		
-		public void addCode(String id, String lang, String source) {
-			if ( source.length() > 0 ) {
-				//ScriptingInterface si = scriptMan.getLang(lang);
-				CodeFragment code = new CodeFragment();
-				code.lang = lang;
-				code.source = source;
-				codeMap.put(id, code);
-			}
+
+
+		public void addApplet(String id, InputConnection conn, CodeFragment code) {
+			SemWebApplet applet = new SemWebApplet();
+			applet.code = code;
+			applet.input = conn;
+			codeMap.put(id, applet);
 		}
 
 		public SemWebPage getPage() {
-			SemWebPage page = new SemWebPage(stringBuiler.toString(), codeMap);
+			SemWebPage page = new SemWebPage(parent, pageName, stringBuiler.toString(), codeMap);
 			return page;
 		}
-		
+
 	}
 
 
@@ -126,15 +152,16 @@ public class PageParser {
 			return null;
 		}
 	} 
-	
-	ScriptingManager scriptMan;
 
-	public PageParser( ScriptingManager scriptManager ) {
-		this.scriptMan = scriptManager;		
+	PageManager parent;
+	String pageName;
+	public PageParser( PageManager parent ) {
+		this.parent = parent;		
 	}
-	
+
 	public SemWebPage parse(InputStream is, String pageName) {		
 		try {
+			this.pageName = pageName;
 			XMLReader parser = XMLReaderFactory.createXMLReader();
 			PageHandler ph= new PageHandler();
 			parser.setContentHandler(ph);

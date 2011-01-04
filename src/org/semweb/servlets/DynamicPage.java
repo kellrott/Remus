@@ -23,7 +23,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.semweb.app.PageParser;
-import org.semweb.app.PageRender;
+import org.semweb.app.PageManager;
 import org.semweb.app.SemWebApp;
 import org.semweb.config.ExtManager;
 import org.semweb.plugins.PageInterface;
@@ -48,19 +48,19 @@ public class DynamicPage extends HttpServlet{
 		rdfStorePath = getServletConfig().getInitParameter("rdfStorePath");
 		baseFilePath = getServletConfig().getInitParameter("basePath");
 		String extPath = getServletContext().getRealPath( "WEB-INF/SemWebConfig.xml" );
-		semApp = new SemWebApp( new File(extPath) );
-		
-		
-		
-		//fileServlet = new FileServlet();		
-		//fileServlet.init(this.getServletConfig());		
-		//fileServlet.init();
+		semApp = new SemWebApp( new File("/opt/webapps/tcga/") );
 	}
 	
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();
-		semApp.readPage(path);
+		InputStream is = semApp.readPage(path);
+		OutputStream os = res.getOutputStream();
+		byte buffer[] = new byte[1024];
+		int readSize;
+	 	while ( (readSize = is.read( buffer )) > -1 ) {
+	 		os.write(buffer, 0, readSize);	 		
+	 	}
 	}
 	
 	/*

@@ -1,16 +1,20 @@
 package org.semweb.scripting;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
+import org.mozilla.javascript.serialize.ScriptableOutputStream;
 import org.semweb.config.ScriptingConfig;
 
 public class JSInterface implements ScriptingInterface {
@@ -39,6 +43,8 @@ public class JSInterface implements ScriptingInterface {
 
 	}
 	
+	OutputStream curOUT;
+	
 	@Override
 	public void addInterface(String name, Object obj) {
 		Object wrappedOut = Context.javaToJS(obj, scope);
@@ -49,15 +55,25 @@ public class JSInterface implements ScriptingInterface {
 	public void eval(String source, String fileName) {
 		try {
 			cx = Context.enter();
-			System.out.println( source );
-			cx.evaluateString(scope, source, fileName, 1, null);
+			//System.out.println( source );
+			Object out = cx.evaluateString(scope, source, fileName, 1, null);
+			if ( out instanceof ScriptableObject ) {
+				curOUT.write(  JSONUtils.toJSONString(out).getBytes() );
+			}
 		} catch (EcmaError e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 	}
 
 	@Override
 	public void setStdout(OutputStream os) {
+		curOUT = os;
 		Object wrappedOut = Context.javaToJS( new PrintWriter(os), scope);
 		ScriptableObject.putProperty(scope, "stdout", wrappedOut);
 	}
