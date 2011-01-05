@@ -4,9 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.semweb.scripting.ScriptingFunction;
 import org.semweb.scripting.ScriptingInterface;
+import org.semweb.template.TemplateInterface;
 
 public class SemWebPage extends InputStream {
 
@@ -26,25 +29,32 @@ public class SemWebPage extends InputStream {
 	}
 	
 	public InputStream render(Map<String,String> paramMap) {
+		Map<String,String> inMap = new HashMap<String,String>();
 		if ( paramMap != null) {
 			for ( String name : paramMap.keySet() ) {
-				//st.setAttribute(name, content.get(name));
+				inMap.put( name, paramMap.get(name) );
 			}
 		}
 		
 		for ( String id : codeMap.keySet() ) {
 			SemWebApplet applet = codeMap.get(id);
+			
+			if ( applet.code.type == CodeFragment.MAPPER ) {
+				inMap.put(id, "");
+			}			
 			if ( applet.code.type == CodeFragment.WRITER ) {
-				ByteArrayOutputStream bout = new ByteArrayOutputStream();
+				ByteArrayOutputStream inputOut = new ByteArrayOutputStream();
 				ScriptingInterface inputLang = parent.scriptMan.getLang( applet.input.inputLang );
-				inputLang.setStdout( bout );
-				inputLang.eval( applet.input.inputSource, path + ":" + id );
-				//return new ByteArrayInputStream( bout.toByteArray() );
+				inputLang.setStdout( inputOut );
+				inputLang.eval( applet.input.inputSource, path + ":" + id + ":input" );
+				//return new ByteArrayInputStream( bout.toByteArray() );				
+				ScriptingFunction func = inputLang.compileFunction( applet.code.source, path + ":" + id + ":writer");
+				String out = func.call( null );
+				inMap.put(id, out);
 			}
 		}
-		
-		//outString = st.toString();
-		return new ByteArrayInputStream( text.getBytes() );
+		TemplateInterface ti = parent.templateMan.getTemplateInterface();
+		return ti.render( text, inMap );
 	}
 
 	public void render() {

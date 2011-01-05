@@ -18,7 +18,7 @@ public class ExtManager {
 		for ( String plugName : exts.keySet() ) {
 			try {
 				ExtConfig config = exts.get(plugName);
-				System.out.println("LOADING: " + config.classPath );
+				//System.out.println("LOADING: " + config.classPath );
 				System.out.flush();
 				Class<?> c = Class.forName(config.classPath);
 				ExtInterface ds = (ExtInterface) c.newInstance();

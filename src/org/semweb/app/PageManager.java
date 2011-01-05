@@ -5,13 +5,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.StringWriter;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -20,10 +26,9 @@ import javax.xml.xpath.XPathFactory;
 
 import org.semweb.config.ExtManager;
 import org.semweb.config.ScriptingManager;
+import org.semweb.config.TemplateManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 public class PageManager {
@@ -31,11 +36,13 @@ public class PageManager {
 	SemWebApp parent;
 	ExtManager exts;
 	ScriptingManager scriptMan;
+	TemplateManager templateMan;
 
 	public PageManager( SemWebApp parent ) {
 		this.parent = parent;
 		exts = new ExtManager( parent );	
-		scriptMan = new ScriptingManager( parent );			
+		scriptMan = new ScriptingManager( parent );	
+		templateMan = new TemplateManager( parent );
 	}
 
 	public PageRequest openPage( String path, Map<String,String> paramMap ) {
@@ -54,10 +61,16 @@ public class PageManager {
 						XPath xpath = xpf.newXPath();
 						XPathExpression idPath = xpath.compile("//*[@id='" + ps[1] + "']");
 						Element scriptNode = (Element) idPath.evaluate( doc, XPathConstants.NODE );
-
-						DOMImplementationLS domImplLS = (DOMImplementationLS) doc.getImplementation();
-						LSSerializer serializer = domImplLS.createLSSerializer();
-						String scriptStr = serializer.writeToString(scriptNode);
+						if ( scriptNode == null)
+							return null;
+										
+						TransformerFactory transFactory = TransformerFactory.newInstance();
+						Transformer transformer = transFactory.newTransformer();
+						StringWriter buffer = new StringWriter();
+						transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+						transformer.transform(new DOMSource(scriptNode),
+						      new StreamResult(buffer));
+						String scriptStr = buffer.toString();
 						
 						PageParser parser = new PageParser( this );
 						SemWebPage page = parser.parse(new ByteArrayInputStream(scriptStr.getBytes()), path );
@@ -74,6 +87,12 @@ public class PageManager {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (TransformerConfigurationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (TransformerException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

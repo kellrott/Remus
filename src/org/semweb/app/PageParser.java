@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 
 import org.semweb.config.ScriptingManager;
+import org.semweb.template.TemplateInterface;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -110,6 +111,8 @@ public class PageParser {
 					curCode = new CodeFragment(curLang, curBuffer.toString(), CodeFragment.WRITER);
 				} else if ( qName.compareTo("semweb") == 0 ) {
 					addApplet(curID, curInput, curCode );
+					TemplateInterface ti = parent.templateMan.getTemplateInterface();
+					XMLOutput( ti.replaceCode(curID) );
 					serverCode = false;
 					curInput = null;
 					curCode = null;

@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,18 +22,10 @@ public class SemWebApp {
 	File configDir;
 	Map <String,ExtConfig> extMap;
 	Map <String,ScriptingConfig> scriptingMap;
+	public String templatingClass;
 	PageManager pageRender;
 	public SemWebApp(File base) {
-		/*
-		 Repository db = new Repository(new File(file, Constants.DOT_GIT).getAbsolutePath());
-		 db.create();
-		 db.getConfig().setBoolean("core", null, "bare", false);
-		 db.getConfig().save();
-		 saveRemote(uri);
-		 final FetchResult r = runFetch();
-		 final Ref branch = guessHEAD(r);
-		 doCheckout(branch);
-		 */
+		
 		appBase = base;
 
 		configDir = new File(base, ".semweb");
@@ -74,7 +65,10 @@ public class SemWebApp {
 					scriptingMap.put(name, config );
 				}
 			}
-
+			if ( js.has("templating") ) {
+				JSONObject templateInfo = js.getJSONObject("templating");
+				templatingClass = templateInfo.getString("class");				
+			}
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,18 +81,10 @@ public class SemWebApp {
 
 	public InputStream readPage(String path ) {
 		PageRequest page = pageRender.openPage(path, null);
+		if (page == null)
+			return null;
 		InputStream is = page.open();
-		
-		try {
-			int i;
-			while ( (i = is.read()) != -1 ) {
-				System.out.print( (char)i ) ;
-			}
-		} catch ( IOException e ) {
-
-		}
-		
-		return null;
+		return is;
 	}
 
 	public void createConfig() {
@@ -125,8 +111,6 @@ public class SemWebApp {
 
 	public static void main(String [] args) {
 		SemWebApp app = new SemWebApp( new File(args[0]) );
-		app.readPage( args[1] );
-		/*
 		InputStream is = app.readPage( args[1] );
 		try {
 			int i;
@@ -136,7 +120,6 @@ public class SemWebApp {
 		} catch ( IOException e ) {
 
 		}
-		*/
 	}
 
 
