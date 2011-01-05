@@ -55,6 +55,10 @@ public class DynamicPage extends HttpServlet{
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 		String path = req.getPathInfo();
 		InputStream is = semApp.readPage(path);
+		if ( is == null ) {
+			res.sendError( HttpServletResponse.SC_NOT_FOUND );
+			return;
+		}
 		OutputStream os = res.getOutputStream();
 		byte buffer[] = new byte[1024];
 		int readSize;

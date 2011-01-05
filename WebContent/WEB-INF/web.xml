@@ -4,45 +4,23 @@
   
   <servlet>
   	<servlet-name>Configure</servlet-name>
-  	<servlet-class>org.semweb.config.ConfigPage</servlet-class>
+  	<servlet-class>org.semweb.servlets.ConfigPage</servlet-class>
   </servlet>
   
-  <!--  servlet>
-	  <servlet-name>DynamicPage</servlet-name>
-	  <servlet-class>org.semweb.DynamicPage</servlet-class>
-	  <init-param>
-    	<param-name>rdfStorePath</param-name>
-    	<param-value>/opt/semweb/rdfStore</param-value>
-	 </init-param>
-	 <init-param>
-   		<param-name>basePath</param-name>
-   		<param-value>/opt/semweb/pages</param-value>
-	</init-param>
-  </servlet>
-
   <servlet>
-  	<servlet-name>SparqlPage</servlet-name>
-  	<servlet-class>org.semweb.SparqlPage</servlet-class>
-  	 <init-param>
-    	<param-name>rdfStorePath</param-name>
-    	<param-value>/opt/semweb/rdfStore</param-value>
-	 </init-param>
-  </servlet -->
-
-  <!--  servlet-mapping>
-  	<servlet-name>DynamicPage</servlet-name>
-  	<url-pattern>/*</url-pattern>
-  </servlet-mapping -->
+	  <servlet-name>DynamicPage</servlet-name>
+	  <servlet-class>org.semweb.servlets.DynamicPage</servlet-class>
+  </servlet>
 
   <servlet-mapping>
   	<servlet-name>Configure</servlet-name>
   	<url-pattern>/@config</url-pattern>
   </servlet-mapping>
 
-  
-  <!-- servlet-mapping>
-  	<servlet-name>SparqlPage</servlet-name>
-  	<url-pattern>/sparql</url-pattern>
-  </servlet-mapping -->
+  <servlet-mapping>
+  	<servlet-name>DynamicPage</servlet-name>
+  	<url-pattern>/*</url-pattern>
+  </servlet-mapping>
+ 
   
 </web-app>

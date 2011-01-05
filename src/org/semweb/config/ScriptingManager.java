@@ -16,7 +16,7 @@ public class ScriptingManager {
 		for ( String plugName : exts.keySet() ) {
 			try {
 				ScriptingConfig scConfig = exts.get(plugName);
-				System.out.println("LOADING: " + scConfig.classPath );
+				//System.out.println("LOADING: " + scConfig.classPath );
 				System.out.flush();
 				Class<?> c = Class.forName(scConfig.classPath);
 				ScriptingInterface ds = (ScriptingInterface) c.newInstance();
