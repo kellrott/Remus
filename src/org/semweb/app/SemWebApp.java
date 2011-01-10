@@ -12,59 +12,51 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.json.*;
-import org.semweb.config.ExtConfig;
-import org.semweb.config.ScriptingConfig;
+import org.semweb.config.PluginConfig;
+import org.semweb.config.SemwebConfig;
 
 
 public class SemWebApp {
 
 	File appBase;
-	File configDir;
-	Map <String,ExtConfig> extMap;
-	Map <String,ScriptingConfig> scriptingMap;
+	File configDir, configFile;
+	Map <String,PluginConfig> pluginMap;
 	public String templatingClass;
-	PageManager pageRender;
+	PageManager pageMan;
 	public SemWebApp(File base) {
-		
+
 		appBase = base;
 
 		configDir = new File(base, ".semweb");
-		if ( !configDir.exists() ) {
+		configFile = new File(configDir, "config");
+		if ( !configDir.exists()  || !configFile.exists()) {
 			createConfig();
 		}	
 		try {
-			JSONTokener jt = new JSONTokener( new InputStreamReader( new FileInputStream(new File(configDir, "config"))));
+			JSONTokener jt = new JSONTokener( new InputStreamReader( new FileInputStream(configFile)));
 			JSONObject js = new JSONObject(jt);
 			//System.out.println( js );
-			extMap = new HashMap<String, ExtConfig>();
+			pluginMap = new HashMap<String, PluginConfig>();
 			if ( js.has("plugins") ) {
 				JSONObject pluginList = js.getJSONObject("plugins");
 				Iterator i = pluginList.keys();
 				while ( i.hasNext() ) {
 					String name = (String)i.next();
-					ExtConfig config =  new ExtConfig( pluginList.getJSONObject(name).getString("class") ) ;
+					PluginConfig config =  new PluginConfig( pluginList.getJSONObject(name).getString("class") ) ;
 					config.param = new HashMap<String, String>();
-					JSONObject paramList = pluginList.getJSONObject(name).getJSONObject("param"); 
-					Iterator i2 = paramList.keys();
-					while ( i2.hasNext() ) {
-						String key = (String)i2.next();
-						config.param.put(key, paramList.getString(key));
+					if ( pluginList.getJSONObject(name).has("param") ) {
+						JSONObject paramList = pluginList.getJSONObject(name).getJSONObject("param"); 
+						Iterator i2 = paramList.keys();
+						while ( i2.hasNext() ) {
+							String key = (String)i2.next();
+							config.param.put(key, paramList.getString(key));
+						}
 					}
-					extMap.put(name, config );
+					pluginMap.put(name, config );
 				}
 			}
 
-			scriptingMap = new HashMap<String, ScriptingConfig>();
-			if ( js.has("scripting") ) {
-				JSONObject scriptingList = js.getJSONObject("scripting");
-				Iterator i = scriptingList.keys();
-				while ( i.hasNext() ) {
-					String name = (String)i.next();
-					String classPath = scriptingList.getJSONObject(name).getString("class");
-					ScriptingConfig config = new ScriptingConfig( classPath );
-					scriptingMap.put(name, config );
-				}
-			}
+
 			if ( js.has("templating") ) {
 				JSONObject templateInfo = js.getJSONObject("templating");
 				templatingClass = templateInfo.getString("class");				
@@ -76,11 +68,11 @@ public class SemWebApp {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		pageRender = new PageManager(this);
+		pageMan = new PageManager(this);
 	}
 
 	public InputStream readPage(String path ) {
-		PageRequest page = pageRender.openPage(path, null);
+		PageRequest page = pageMan.openWebPage(path);
 		if (page == null)
 			return null;
 		InputStream is = page.open();
@@ -91,22 +83,25 @@ public class SemWebApp {
 		configDir.mkdir();
 		File configFile = new File( configDir, "config" );
 		try {
+			InputStream is = SemwebConfig.class.getResourceAsStream("default.config");
 			FileOutputStream fos = new FileOutputStream(configFile);
-			fos.write("{}".getBytes());
-			configFile.createNewFile();
+			byte [] buffer = new byte[2000];
+			int len;
+			while ( (len=is.read(buffer)) > 0 ) {
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public Map<String, ExtConfig> getExtMap() {
-		return extMap;
+	public Map<String, PluginConfig> getPluginMap() {
+		return pluginMap;
 	}
 
-	public Map<String, ScriptingConfig> getScriptingMap() {
-		return scriptingMap;
-	}
+
 
 
 	public static void main(String [] args) {
@@ -120,6 +115,14 @@ public class SemWebApp {
 		} catch ( IOException e ) {
 
 		}
+	}
+
+	public File getPageBase() {
+		return appBase;
+	}
+
+	public PageManager getPageManager() {
+		return pageMan;
 	}
 
 

@@ -1,8 +1,9 @@
-package org.semweb.scripting;
+package org.semweb.plugins;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +15,18 @@ import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
-import org.semweb.config.ScriptingConfig;
+import org.semweb.config.PluginConfig;
+import org.semweb.pluginterface.MapCallback;
+import org.semweb.pluginterface.MapperInterface;
+import org.semweb.pluginterface.ReducerInterface;
+import org.semweb.pluginterface.SplitCallback;
+import org.semweb.pluginterface.SpliterInterface;
+import org.semweb.pluginterface.WriterInterface;
 
-public class JSInterface implements ScriptingInterface {
+public class JSInterface implements MapperInterface, ReducerInterface, SpliterInterface, WriterInterface {
 	Context cx;	
-	@Override
-	public void init(ScriptingConfig config) {
+	
+	public void init(PluginConfig config) {
 		cx = Context.enter();
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
@@ -40,13 +47,11 @@ public class JSInterface implements ScriptingInterface {
 
 	OutputStream curOUT;
 
-	@Override
 	public void addInterface(String name, Object obj) {
 		//Object wrappedOut = Context.javaToJS(obj, scope);
 		//ScriptableObject.putProperty(scope, name, wrappedOut);				
 	}
 
-	@Override
 	public void eval(String source, String fileName) {
 		try {
 			Scriptable scope = cx.initStandardObjects();
@@ -72,12 +77,11 @@ public class JSInterface implements ScriptingInterface {
 	}
 
 
-	class JSFunction implements ScriptingFunction {
+	class JSFunction  {
 
 		public Function func;
 		public FakeDOM dom;
 
-		@Override
 		public String call(Object val) {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
@@ -87,8 +91,7 @@ public class JSInterface implements ScriptingInterface {
 
 	}
 
-	@Override
-	public ScriptingFunction compileFunction(String source, String fileName) {
+	public JSFunction compileFunction(String source, String fileName) {
 		try {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
@@ -110,7 +113,6 @@ public class JSInterface implements ScriptingInterface {
 		return dom;
 	}
 
-	@Override
 	public void setStdout(OutputStream os) {
 		curOUT = os;
 		//Object wrappedOut = Context.javaToJS( new PrintWriter(os), scope);
@@ -130,6 +132,53 @@ public class JSInterface implements ScriptingInterface {
 		public String toString() {
 			return out.toString();
 		}
+	}
+
+	@Override
+	public void prepReducer(String config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void reduce(Serializable key, Serializable val) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void prepSpliter(String config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void split(InputStream input, SplitCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	JSFunction currentWriter;
+	@Override
+	public void prepWriter(String config) {
+		currentWriter = compileFunction(config, "test");		
+	}
+
+	@Override
+	public Object write(Serializable val) {
+		return currentWriter.call(val);
+	}
+
+	@Override
+	public void map(Serializable val, MapCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void prepMapper(String config) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

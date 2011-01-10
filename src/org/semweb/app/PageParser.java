@@ -1,13 +1,11 @@
 package org.semweb.app;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-
-import org.semweb.config.ScriptingManager;
 import org.semweb.template.TemplateInterface;
 import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
@@ -22,15 +20,23 @@ public class PageParser {
 	static String PageExt = ".semweb";
 
 	public class PageHandler extends DefaultHandler {
-		Pattern codeRE = Pattern.compile("\\&\\{(.*?)\\}\\&", Pattern.DOTALL );		
 		StringBuilder curBuffer = null;
 		boolean serverCode = false;
-		String curLang = null, curID=null, curHREF=null;
+		String curLang = null, curID=null;
 		StringBuilder stringBuiler;
 		CodeFragment curCode;
 		InputConnection curInput;
 		Map<String,SemWebApplet> codeMap;
+		
+		Map<String,Integer> semwebTags;
+		
 		PageHandler() {
+			semwebTags = new HashMap<String,Integer>();
+			semwebTags.put("semweb_writer", CodeFragment.WRITER);
+			semwebTags.put("semweb_splitter", CodeFragment.SPLITTER);
+			semwebTags.put("semweb_mapper", CodeFragment.MAPPER );
+			semwebTags.put("semweb_reducer", CodeFragment.REDUCER );
+			
 			stringBuiler = new StringBuilder();
 			codeMap = new HashMap<String,SemWebApplet>();
 		}
@@ -55,12 +61,33 @@ public class PageParser {
 		@Override
 		public void startElement(String uri, String localName, String qName,
 				Attributes attributes) throws SAXException {
-			if ( qName.compareTo("semweb") == 0 ) {
+			if ( semwebTags.containsKey(qName ) ) {
 				XMLOutput(curBuffer.toString());
 				curBuffer = new StringBuilder();
-
 				serverCode = true;
 				curID = attributes.getValue("id");
+				
+				if ( qName.compareTo("semweb_writer") == 0) {
+					if ( attributes.getValue("type") != null ) {
+						if ( parent.plugMan.hasPlugin( attributes.getValue("type") ) ) {
+							curLang = attributes.getValue("type");
+						}
+					}
+					if ( attributes.getValue("input") != null ) {
+						curInput = new InputConnection( parent, attributes.getValue("input"), new File(pageName) );
+					}
+				}
+				/*
+				if ( qName.compareTo("mapper") == 0 || qName.compareTo("writer") == 0) {
+					if ( attributes.getValue("lang") != null ) {
+						if ( parent.scriptMan.hasLang( attributes.getValue("lang") ) ) {
+							curLang = attributes.getValue("lang");
+						}
+					}
+				}
+				*/
+				curBuffer = new StringBuilder();
+				
 			}
 			if ( !serverCode ) {
 				XMLOutput(curBuffer.toString());
@@ -72,25 +99,7 @@ public class PageParser {
 				}
 				XMLOutput(">");
 				curBuffer = new StringBuilder();
-			} else {
-				if ( qName.compareTo("input") == 0) {
-					if ( attributes.getValue("lang") != null ) {
-						if ( parent.scriptMan.hasLang( attributes.getValue("lang") ) ) {
-							curLang = attributes.getValue("lang");
-						}
-					} else if ( attributes.getValue("href") != null ) {
-						curHREF = attributes.getValue("href");
-					}
-				}
-				if ( qName.compareTo("mapper") == 0 || qName.compareTo("writer") == 0) {
-					if ( attributes.getValue("lang") != null ) {
-						if ( parent.scriptMan.hasLang( attributes.getValue("lang") ) ) {
-							curLang = attributes.getValue("lang");
-						}
-					}
-				}
-				curBuffer = new StringBuilder();
-			}
+			} 
 		}
 
 		@Override
@@ -100,22 +109,15 @@ public class PageParser {
 				XMLOutput(curBuffer.toString());
 				XMLOutput("</" + qName + ">");
 			} else {
-				if ( qName.compareTo("input") == 0 ) {
-					curInput = new InputConnection();
-					curInput.inputHREF = curHREF;
-					curInput.inputLang = curLang;
-					curInput.inputSource = curBuffer.toString();
-				} else if ( qName.compareTo("mapper") == 0 ) {
-					curCode = new CodeFragment(curLang, curBuffer.toString(), CodeFragment.MAPPER);
-				} else if ( qName.compareTo("writer") == 0 ) {
-					curCode = new CodeFragment(curLang, curBuffer.toString(), CodeFragment.WRITER);
-				} else if ( qName.compareTo("semweb") == 0 ) {
+				if ( semwebTags.containsKey( qName ) ) {
+					curCode = new CodeFragment(curLang, curBuffer.toString(), semwebTags.get(qName) );
 					addApplet(curID, curInput, curCode );
 					TemplateInterface ti = parent.templateMan.getTemplateInterface();
 					XMLOutput( ti.replaceCode(curID) );
 					serverCode = false;
 					curInput = null;
 					curCode = null;
+					serverCode = false;
 				}
 			}
 			curBuffer = new StringBuilder();

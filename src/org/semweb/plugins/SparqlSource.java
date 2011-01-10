@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,12 +16,32 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResult;
 import org.openrdf.rio.RDFFormat;
-import org.semweb.config.ConfigMap;
-import org.semweb.config.ExtConfig;
+import org.semweb.config.PluginConfig;
+import org.semweb.pluginterface.SplitCallback;
+import org.semweb.pluginterface.SpliterInterface;
 
 
-public class SparqlSource implements ExtInterface {
+public class SparqlSource implements SpliterInterface {
 
+	@Override
+	public void prepSpliter(String config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void split(InputStream input, SplitCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void init(PluginConfig config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/*
 	RepoHandler repo;
 
 	public SparqlSource() {
@@ -69,5 +90,5 @@ public class SparqlSource implements ExtInterface {
 		repo = RepoHandler.getRepoHandler( dataDir.getAbsolutePath() );		
 	}
 
-
+*/
 }

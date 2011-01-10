@@ -4,25 +4,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.semweb.app.SemWebApp;
-import org.semweb.plugins.ExtInterface;
+import org.semweb.pluginterface.InterfaceBase;
 
 
-public class ExtManager {
-	Map<String, ExtInterface> dsList;
+public class PluginManager {
+	Map<String, InterfaceBase> pluginList;
 
-	public ExtManager(SemWebApp app) {
+	public PluginManager(SemWebApp app) {
 
-		Map<String, ExtConfig> exts = app.getExtMap();
-		dsList = new HashMap<String, ExtInterface>();
+		Map<String, PluginConfig> exts = app.getPluginMap();
+		pluginList = new HashMap<String, InterfaceBase>();
 
 		for ( String plugName : exts.keySet() ) {
 			try {
-				ExtConfig config = exts.get(plugName);
+				PluginConfig config = exts.get(plugName);
 				//System.out.println("LOADING: " + config.classPath );
 				System.out.flush();
 				Class<?> c = Class.forName(config.classPath);
-				ExtInterface ds = (ExtInterface) c.newInstance();
-				dsList.put( plugName , ds);
+				InterfaceBase ds = (InterfaceBase) c.newInstance();
+				ds.init(config);
+				pluginList.put( plugName , ds);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -36,16 +37,11 @@ public class ExtManager {
 		}
 	}
 	
-	public Set<String>  getDataSourceNames() {
-		return dsList.keySet();
+	public InterfaceBase getPlugin(String name) {
+		return pluginList.get(name);
 	}
 
-	public ExtInterface getDataSource(String name) {
-		return dsList.get(name);
+	public boolean hasPlugin(String name) {
+		return pluginList.containsKey(name);
 	}
-
-	public void setDataSource(String name, ExtInterface ds) {
-		dsList.put(name, ds);
-	}
-
 }

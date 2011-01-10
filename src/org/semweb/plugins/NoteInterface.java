@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,11 +25,31 @@ import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParseException;
 import org.openrdf.sail.nativerdf.NativeStore;
-import org.semweb.config.ConfigMap;
-import org.semweb.config.ExtConfig;
+import org.semweb.config.PluginConfig;
+import org.semweb.pluginterface.SplitCallback;
+import org.semweb.pluginterface.SpliterInterface;
 
-public class NoteInterface implements ExtInterface {
+public class NoteInterface implements SpliterInterface {
 
+	@Override
+	public void prepSpliter(String config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void split(InputStream input, SplitCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void init(PluginConfig config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/*
 	Repository repo;
 
 	@Override
@@ -105,4 +126,6 @@ public class NoteInterface implements ExtInterface {
 		}
 		return null;
 	}
+	*/
+	
 }
