@@ -2,8 +2,8 @@ package org.semweb.config;
 
 import java.util.Map;
 
-public class ExtConfig {
-	public ExtConfig(String string) {
+public class PluginConfig {
+	public PluginConfig(String string) {
 		classPath = string;
 	}
 

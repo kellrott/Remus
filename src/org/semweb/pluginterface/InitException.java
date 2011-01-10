@@ -1,4 +1,4 @@
-package org.semweb.plugins;
+package org.semweb.pluginterface;
 
 public class InitException extends Exception {
 

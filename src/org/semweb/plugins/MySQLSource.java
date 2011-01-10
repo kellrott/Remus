@@ -1,15 +1,18 @@
 package org.semweb.plugins;
 
+import java.io.InputStream;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.semweb.config.ConfigMap;
-import org.semweb.config.ExtConfig;
+import org.semweb.config.PluginConfig;
+import org.semweb.pluginterface.SplitCallback;
+import org.semweb.pluginterface.SpliterInterface;
 
-public class MySQLSource implements ExtInterface {
+public class MySQLSource implements SpliterInterface {
 
+	/*
 	private Connection conn;
 	
 	public List<Map<String,Object>> query(String queryStr) {
@@ -73,6 +76,24 @@ public class MySQLSource implements ExtInterface {
 			e.printStackTrace();
 			throw new InitException();
 		}
+	}
+*/
+	@Override
+	public void prepSpliter(String config) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void split(InputStream input, SplitCallback callback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void init(PluginConfig config) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

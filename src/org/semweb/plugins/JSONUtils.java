@@ -1,4 +1,4 @@
-package org.semweb.scripting;
+package org.semweb.plugins;
 
 /**
  * Copyright (C) 2005-2009 Alfresco Software Limited.

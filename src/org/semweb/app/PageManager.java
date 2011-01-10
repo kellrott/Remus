@@ -24,8 +24,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.semweb.config.ExtManager;
-import org.semweb.config.ScriptingManager;
+import org.semweb.config.PluginManager;
 import org.semweb.config.TemplateManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,23 +33,25 @@ import org.xml.sax.SAXException;
 public class PageManager {
 
 	SemWebApp parent;
-	ExtManager exts;
-	ScriptingManager scriptMan;
+	PluginManager plugMan;
 	TemplateManager templateMan;
 
 	public PageManager( SemWebApp parent ) {
 		this.parent = parent;
-		exts = new ExtManager( parent );	
-		scriptMan = new ScriptingManager( parent );	
+		plugMan = new PluginManager( parent );	
 		templateMan = new TemplateManager( parent );
 	}
 
-	public PageRequest openPage( String path, Map<String,String> paramMap ) {
+	public PageRequest openWebPage( String path ) {
+		return openPage( (new File(parent.appBase, path)).getAbsolutePath() );
+	}
+	
+	public PageRequest openPage( String path ) {
 
 		if ( path.contains(":") ) {
 			String[] ps = path.split(":");
 			if ( ps.length == 2 ) {
-				File semfile = new File( parent.appBase, ps[0]  + PageParser.PageExt );
+				File semfile = new File( ps[0]  + PageParser.PageExt );
 				if ( semfile.exists() ) {
 					try {
 						DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
@@ -100,8 +101,8 @@ public class PageManager {
 			}
 		}
 
-		File file = new File( parent.appBase, path );
-		File semfile = new File( parent.appBase, path + PageParser.PageExt );
+		File file = new File( path );
+		File semfile = new File( path + PageParser.PageExt );
 		if ( semfile.exists() ) {
 			try{		
 				PageParser parser = new PageParser( this );

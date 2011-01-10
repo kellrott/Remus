@@ -13,6 +13,9 @@ public class CodeFragment {
 		
 		public static final int MAPPER = 1;
 		public static final int WRITER = 2;
+		public static final int SPLITTER = 3;
+		public static final int REDUCER = 4;
+		
 
 		public CodeFragment(String lang, String source, int type) {
 			this.source = source;
