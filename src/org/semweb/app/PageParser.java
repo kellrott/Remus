@@ -1,6 +1,7 @@
 package org.semweb.app;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class PageParser {
 
-	static String PageExt = ".semweb";
+	public static String PageExt = ".semweb";
 
 	public class PageHandler extends DefaultHandler {
 		StringBuilder curBuffer = null;
@@ -25,7 +26,7 @@ public class PageParser {
 		String curLang = null, curID=null;
 		StringBuilder stringBuiler;
 		CodeFragment curCode;
-		InputConnection curInput;
+		PageReference curInput;
 		Map<String,SemWebApplet> codeMap;
 		
 		Map<String,Integer> semwebTags;
@@ -74,7 +75,13 @@ public class PageParser {
 						}
 					}
 					if ( attributes.getValue("input") != null ) {
-						curInput = new InputConnection( parent, attributes.getValue("input"), new File(pageName) );
+							try {
+								curInput = new PageReference( parent, attributes.getValue("input"), new File(parent.parent.getPageBase(), pagePath) );
+							} catch (FileNotFoundException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						
 					}
 				}
 				/*
@@ -137,15 +144,19 @@ public class PageParser {
 		}
 
 
-		public void addApplet(String id, InputConnection conn, CodeFragment code) {
-			SemWebApplet applet = new SemWebApplet();
-			applet.code = code;
-			applet.input = conn;
-			codeMap.put(id, applet);
+		public void addApplet(String id, PageReference conn, CodeFragment code) {
+			
+			try {
+				SemWebApplet applet = new SemWebApplet( new PageReference(parent, ":" + id, new File(parent.parent.appBase, pagePath)), conn, code);
+				codeMap.put(id, applet);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		public SemWebPage getPage() {
-			SemWebPage page = new SemWebPage(parent, pageName, stringBuiler.toString(), codeMap);
+			SemWebPage page = new SemWebPage(parent, pagePath, stringBuiler.toString(), codeMap);
 			return page;
 		}
 
@@ -159,14 +170,14 @@ public class PageParser {
 	} 
 
 	PageManager parent;
-	String pageName;
+	String pagePath;
 	public PageParser( PageManager parent ) {
 		this.parent = parent;		
 	}
 
-	public SemWebPage parse(InputStream is, String pageName) {		
+	public SemWebPage parse(InputStream is, String pagePath) {		
 		try {
-			this.pageName = pageName;
+			this.pagePath = pagePath;
 			XMLReader parser = XMLReaderFactory.createXMLReader();
 			PageHandler ph= new PageHandler();
 			parser.setContentHandler(ph);
