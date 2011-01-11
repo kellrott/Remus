@@ -72,7 +72,7 @@ public class SemWebApp {
 	}
 
 	public InputStream readPage(String path ) {
-		PageRequest page = pageMan.openWebPage(path);
+		PageRequest page = pageMan.openPage(path);
 		if (page == null)
 			return null;
 		InputStream is = page.open();

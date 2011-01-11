@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -42,12 +41,9 @@ public class PageManager {
 		templateMan = new TemplateManager( parent );
 	}
 
-	public PageRequest openWebPage( String path ) {
-		return openPage( (new File(parent.appBase, path)).getAbsolutePath() );
-	}
 	
-	public PageRequest openPage( String path ) {
-
+	public PageRequest openPage( String requestPath ) {
+		String path = (new File(parent.appBase, requestPath)).getAbsolutePath();
 		if ( path.contains(":") ) {
 			String[] ps = path.split(":");
 			if ( ps.length == 2 ) {
@@ -74,9 +70,9 @@ public class PageManager {
 						String scriptStr = buffer.toString();
 						
 						PageParser parser = new PageParser( this );
-						SemWebPage page = parser.parse(new ByteArrayInputStream(scriptStr.getBytes()), path );
+						SemWebPage page = parser.parse(new ByteArrayInputStream(scriptStr.getBytes()), requestPath );
 						
-						PageRequest request = new PageRequest(this, semfile, path, PageRequest.DYNAMIC, page);
+						PageRequest request = new PageRequest(this, semfile, requestPath, PageRequest.DYNAMIC, page);
 						return request;
 					} catch (XPathExpressionException e) {
 						// TODO Auto-generated catch block
@@ -106,8 +102,8 @@ public class PageManager {
 		if ( semfile.exists() ) {
 			try{		
 				PageParser parser = new PageParser( this );
-				SemWebPage page = parser.parse(new FileInputStream(semfile), path );
-				PageRequest request = new PageRequest(this, semfile, path, PageRequest.DYNAMIC, page);
+				SemWebPage page = parser.parse(new FileInputStream(semfile), requestPath );
+				PageRequest request = new PageRequest(this, semfile, requestPath, PageRequest.DYNAMIC, page);
 				return request;
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -117,13 +113,13 @@ public class PageManager {
 			if ( file.isDirectory() ) {
 				File indexFile = new File( semfile.toString(), "index.html" + PageParser.PageExt );
 				if ( indexFile.exists() ) {
-					return new PageRequest(this, indexFile, path, PageRequest.DYNAMIC, null);
+					return new PageRequest(this, indexFile, requestPath, PageRequest.DYNAMIC, null);
 				} else {
 					
 				}
 			} else {
 				if ( file.exists() ) {
-					return new PageRequest(this, file, path, PageRequest.STATIC, null);
+					return new PageRequest(this, file, requestPath, PageRequest.STATIC, null);
 				}
 			}
 		}	

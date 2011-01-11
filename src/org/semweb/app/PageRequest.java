@@ -13,12 +13,20 @@ public class PageRequest {
 		this.sourceFile = sourceFile;
 		this.type = type;
 		this.parent = parent;
-		this.cachedPage = cachePage;
+		this.requestPath = requestPage;
+		this.cachedPage = cachePage;		
+		try {
+			pageRef = new PageReference(parent, requestPage, sourceFile);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static final int STATIC=1;
 	public static final int DYNAMIC=2;
 
+	PageReference pageRef;
 	String requestPath;
 	File sourceFile;
 	int type;
@@ -58,8 +66,33 @@ public class PageRequest {
 		return null;
 	}
 	
+	public Map<String,SemWebApplet> getApplets() {
+		if ( cachedPage != null ) {
+			return cachedPage.codeMap;
+		}
+		try {
+			PageParser parser = new PageParser(parent);
+			InputStream	is = new FileInputStream( sourceFile );
+			cachedPage = parser.parse( is, requestPath);
+			is.close();
+			return cachedPage.codeMap;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public String toString() {
 		return sourceFile.toString();
+	}
+	
+	public String getURL() {
+		return requestPath;
 	}
 }
