@@ -69,7 +69,7 @@ class semWebGraph(semWebNode):
 		running = False
 		for key in self.nodes:
 			outPath = "%s/%s.output" % ( self.id, key )
-			if ( not os.path.exists( outPath ) or os.path.getsize(outPath) == 0 ):
+			if ( not os.path.exists( outPath )  ):
 				if ( isinstance( self.nodes[ key ].input, list ) ):
 					if isinstance(self.nodes[ key ],semWebMerger):
 						lRef = self.nodes[ key ].input[0]
@@ -148,12 +148,12 @@ class semWebGraph(semWebNode):
 			print "Running Mapper", node.id
 			for line in inHandle:
 				j = json.loads( line )
-				curFunc( j )
+				for k in j:
+					curFunc( k, j[k] )
 		
 		elif isinstance(node,semWebSplitter):
 			print "Running Splitter", node.id
-			j = json.loads( inHandle.read() )
-			curFunc( j )
+			curFunc( inHandle )
 		
 		elif isinstance(node,semWebReducer):
 			print "Running Reducer", node.id
@@ -171,8 +171,7 @@ class semWebGraph(semWebNode):
 		elif isinstance(node,semWebOutput):
 			print "Running Output", node.id		
 			jSplitter = jsonSplitter( inHandle )
-			out = curFunc( jSplitter )
-			outHandle.write( json.dumps(out) )
+			curFunc( jSplitter )
 			
 class semWebMapper(semWebNode):
 	def __init__(self, id, input):
