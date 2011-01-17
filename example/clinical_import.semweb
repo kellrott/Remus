@@ -1,17 +1,26 @@
 <html>
+<semweb_splitter id="file_list" input="fileset.list">
+<![CDATA[
+import semweb
+@semweb.splitter
+def testfunc( handle ):
+	for line in handle:
+		semweb.emit( line.rstrip(), None )
+]]>
 
+</semweb_splitter>
 <!-- 
 load a csv file and map each row with named columns to the 
 sample name (first column)  
 -->
-<semweb_mapper id="mapper_csv" type="python" input="fileset.list">
+<semweb_mapper id="mapper_csv" type="python" input=":file_list">
 <![CDATA[
 import semweb
 import re
 reTab = re.compile(r'\t')
 @semweb.mapper
-def testfunc( val ):
-	handle = open( val )
+def testfunc( key, val ):
+	handle = open( key )
 	header = None	
 	for line in handle:
 		tmp = reTab.split( line.rstrip() )
@@ -40,10 +49,9 @@ def listReduce( key, vals ):
 <![CDATA[
 import semweb
 @semweb.mapper
-def colmap( vals ):
-	for key1 in vals:
-		for key2 in vals[ key1 ]: 
-			semweb.emit( key2, vals[ key1 ][ key2 ] )
+def col_map( key, vals ):
+	for key2 in vals: 
+		semweb.emit( key2, vals[ key2 ] )
 ]]>
 </semweb_mapper>
 <semweb_reducer id="col_reduce" input=":col_map" type="python">
@@ -198,28 +206,14 @@ def sample_write( key, vals ):
 import semweb
 @semweb.output
 def col_list( handle ):
-	outlist = []
+	outset = {}
 	i = 0
 	for a in handle:
-		outlist.append( { a.keys()[0] : i } )
+		outset[ a.keys()[0] ] = i 
 		i += 1
-	return outlist
+	semweb.emit( None, outset )
 ]]>
 </semweb_output>
-
-
-<semweb_splitter id="list_splitter" input=":col_list">
-<![CDATA[
-import semweb
-@semweb.splitter
-def list_split( data ):
-	out = {}
-	for val in data:
-		for key in val:
-			out[ key ] = val[key]
-	semweb.emit( "col_names", out )
-]]>
-</semweb_splitter>
 
 <semweb_output id="col_2_ra" input=":col_filter" type="python">
 <![CDATA[
@@ -246,13 +240,43 @@ def col_2_ra( handle ):
 </semweb_output>
 
 
-<semweb_merger id="col_number" left=":sample_combiner" right=":list_splitter" type="python">
+<semweb_merger id="col_number" left=":sample_combiner" right=":col_list" type="python">
 <![CDATA[
 import semweb
 @semweb.merger
 def col_number( key_left, vals_left, key_right, vals_right ):
-	semweb.emit( key_left, key_right )
+	col_order = [ b[0] for b in sorted(  vals_right[0].items(), lambda x,y : y[1] > x[1] ) ]
+	vals = vals_left[0]
+	out = []
+	for col in col_order:
+		if vals.has_key( col ):
+			out.append( vals[ col ] )
+		else:
+			out.append( None )
+	semweb.emit( key_left, out )
 ]]>
 </semweb_merger>
+
+<semweb_output id="col_print" input=":col_list,:col_number">
+<![CDATA[
+import semweb
+@semweb.output
+def col_print( handle ):
+	oHandle = open( "col_db.tab", "w" )
+	header = None
+	for val in handle:
+		if header is None:
+			header = val
+			oHandle.write( "ID\t%s\n" % "\t".join( val.values()[0] ) )
+		else:
+			a = []
+			for b in val.values()[0]:
+				if b is None or b == "null":
+					a.append( "\N" )
+				else:
+					a.append( str(b) )
+			oHandle.write( "%s\t%s\n" % (val.keys()[0], "\t".join( a ) ) )
+]]>
+</semweb_output>
 
 </html>
