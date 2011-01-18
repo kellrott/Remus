@@ -86,6 +86,11 @@ class semWebGraph(semWebNode):
 					self.callNode( self.nodes[ key ], sys.stdin, out )
 					out.close()
 					running = True
+				elif ( self.nodes[ key ].input is None or len( self.nodes[ key ].input ) == 0 ):
+					out = open( outPath, "w" )
+					self.callNode( self.nodes[ key ], None, out )
+					out.close()
+					running = True
 				else:
 					fileList = []
 					ready = True
