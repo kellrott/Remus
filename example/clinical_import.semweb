@@ -208,7 +208,12 @@ import semweb
 def col_list( handle ):
 	outset = {}
 	i = 0
+	oHandle = open("codes.tab", "w")
 	for a in handle:
+		key = a.keys()[0]
+		if ( a[ key ][ "::coltype" ] == "enum" ):
+			for val in a[ key ][ "::enum" ]:
+				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, a[ key ][ "::enum" ][ val ], val) )
 		outset[ a.keys()[0] ] = i 
 		i += 1
 	semweb.emit( None, outset )
