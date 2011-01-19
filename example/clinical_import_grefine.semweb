@@ -34,7 +34,8 @@ def testfunc( key, val ):
 		else:
 			out = {}
 			for i in range(1, len(tmp)):
-				out[ header[i] ] = tmp[i]
+				if ( tmp[i] != "null" ):
+					out[ header[i] ] = tmp[i]
 			semweb.emit( tmp[0], out )
 	handle.close()
 ]]>
@@ -123,7 +124,7 @@ def colfilter( key, vals ):
 
 		
 		for val in vals[0]:			
-			if not enumMap.has_key( val ):
+			if not enumMap.has_key( val ) and val != "null":
 				enumMap[ val ] = len( enumMap )	
 		#don't emit enumerations with only value
 		if ( len( enumMap ) > 1 ):
@@ -175,8 +176,8 @@ def sample_combine( key, vals ):
 			for a in out:
 				if enumMap[ a[1][ key ] ] != "null":
 					semweb.emit( a[0], { key: enumMap[ a[1][ key ] ] } )
-				else:
-					semweb.emit( a[0], { key: "null" } )
+				#else:
+				#	semweb.emit( a[0], { key: "null" } )
 
 		else:
 			for a in out:
@@ -186,8 +187,8 @@ def sample_combine( key, vals ):
 						semweb.emit( a[0], {key: float(val.replace(unitScale,"") )} )
 					else:
 						semweb.emit( a[0], {key: float(val) } )
-				else:
-					semweb.emit( a[0], {key: "null"} )
+				#else:
+				#	semweb.emit( a[0], {key: "null"} )
 				
 ]]>
 </semweb_reducer>
