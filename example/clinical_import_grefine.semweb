@@ -3,12 +3,14 @@
 <![CDATA[
 import semweb
 import gRefine
+import re
 @semweb.splitter
 def testfunc( handle ):
 	ref = gRefine.Refine( "http://localhost:3333" )
 	projects = ref.projectList()
 	for projID in projects:
-		semweb.emit( projID, None )
+		name = re.split( "_", projects[projID]["name"] )[1]
+		semweb.emit( projID, name )
 ]]>
 
 </semweb_splitter>
@@ -30,7 +32,12 @@ def testfunc( key, val ):
 	for line in handle:
 		tmp = reTab.split( line.rstrip() )
 		if header is None:
-			header = tmp
+			header = []
+			for name in tmp:
+				if name.startswith( val ):
+					header.append( name )
+				else:
+					header.append( "%s_%s" % (val, name) )
 		else:
 			out = {}
 			for i in range(1, len(tmp)):
@@ -51,6 +58,33 @@ def listReduce( key, vals ):
 	semweb.emit( key, vals )
 ]]>
 </semweb_reducer>
+<!--
+Merge existing sample entries so that IDs that are shorter fragments of longer
+IDs are replicated into the rows. This is done because the PatientID is a subsequence
+of the SampleID, there are multiple Samples per Patient, so the primary key is the Sample,
+with the Patient info replicated across the child sample entries.
+-->
+<semweb_merger id="sample_merge" left=":reducer_sequence" right=":reducer_sequence" type="python">
+<![CDATA[
+import semweb
+@semweb.merger
+def sample_merge( left_key, left_vals, right_key, right_vals ):
+	if ( left_key.startswith( right_key ) and left_key != right_key):
+		out = []
+		for samples in left_vals:
+			for sample in samples:
+				out.append( sample )
+		for samples in right_vals:
+			for sample in samples:
+				out.append( sample )
+		semweb.emit( left_key, out )
+]]>
+</semweb_merger>
+<!--
+This takes that csv output and transposes it, so that the keys are 
+now the column names, the sampleIDs aren't passed along because we will only
+be using the set of values you create an enumerated set of all possible values.
+-->
 <semweb_mapper id="col_map" input=":mapper_csv" type="python">
 <![CDATA[
 import semweb
@@ -60,6 +94,9 @@ def col_map( key, vals ):
 		semweb.emit( key2, vals[ key2 ] )
 ]]>
 </semweb_mapper>
+<!--
+Before enumeration the set of all possible values, remove duplicates
+-->
 <semweb_reducer id="col_reduce" input=":col_map" type="python">
 <![CDATA[
 import semweb
@@ -137,8 +174,10 @@ def colfilter( key, vals ):
 <!--
 Flip the CSV values so that are reference by column name,
 this way elemnts can removed based on columns that are being removed
+This is just like the col_map step, except is preserves the sampleID information,
+so that the rows can be rebuilt later
 -->
-<semweb_reducer id="csv_flipper" input=":reducer_sequence" type="python">
+<semweb_reducer id="csv_flipper" input=":sample_merge" type="python">
 <![CDATA[
 import semweb
 @semweb.reducer
@@ -150,48 +189,52 @@ def csv_flipper(key, vals):
 ]]>
 </semweb_reducer>
 <!--
-Print out the values in columns that are 
+Print out the values in columns that haven't been filtered out
+When producing the values, use the enumeration maps is needed
 -->
-<semweb_reducer id="sample_flipper" input=":csv_flipper,:col_filter" type="python">
+<semweb_merger id="sample_flipper" left=":csv_flipper" right=":col_filter" type="python">
 <![CDATA[
 import semweb
-@semweb.reducer
-def sample_combine( key, vals ):
-	outType = None
-	enumMap = None
-	unitScale = None
-	out = []
-	for a in vals:
-		if a.has_key("::coltype"):
-			outType = a["::coltype"]
+@semweb.merger
+def sample_combine( left_key, left_vals, right_key, right_vals ):
+	if ( left_key == right_key ):
+		outType = None
+		enumMap = None
+		unitScale = None
+		out = []
+		for a in right_vals:
+			if a.has_key("::coltype"):
+				outType = a["::coltype"]
 			if a.has_key( "::enum" ):
 				enumMap = a[ "::enum" ]
 			if a.has_key("::unitscale" ):
 				unitScale = a[ "::unitscale" ]
-		else:
+				
+		for a in left_vals:
 			for b in a:
-				out.append( ( b, { key : a[b] }) )			
-	if outType is not None:
-		if enumMap is not None:
-			for a in out:
-				if enumMap[ a[1][ key ] ] != "null":
-					semweb.emit( a[0], { key: enumMap[ a[1][ key ] ] } )
-				#else:
-				#	semweb.emit( a[0], { key: "null" } )
+				out.append( ( b, { left_key : a[b] }) )			
 
-		else:
-			for a in out:
-				if a[1][ key ] != "null":
-					val = a[1][key].replace(",", "")
-					if unitScale is not None:
-						semweb.emit( a[0], {key: float(val.replace(unitScale,"") )} )
-					else:
-						semweb.emit( a[0], {key: float(val) } )
-				#else:
-				#	semweb.emit( a[0], {key: "null"} )
+		if outType is not None:
+			if enumMap is not None:
+				for a in out:
+					if enumMap[ a[1][ left_key ] ] != "null":
+						semweb.emit( a[0], { left_key: enumMap[ a[1][ left_key ] ] } )
+					#else:
+					#	semweb.emit( a[0], { left_key: "null" } )
+
+			else:
+				for a in out:
+					if a[1][ left_key ] != "null":
+						val = a[1][left_key].replace(",", "")
+						if unitScale is not None:
+							semweb.emit( a[0], {left_key: float(val.replace(unitScale,"") )} )
+						else:
+							semweb.emit( a[0], {left_key: float(val) } )
+					#else:
+					#	semweb.emit( a[0], {key: "null"} )
 				
 ]]>
-</semweb_reducer>
+</semweb_merger>
 
 <semweb_reducer id="sample_combiner" input=":sample_flipper" type="python">
 <![CDATA[
@@ -220,33 +263,66 @@ def col_list( handle ):
 		if ( a[ key ][ "::coltype" ] == "enum" ):
 			for val in a[ key ][ "::enum" ]:
 				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, a[ key ][ "::enum" ][ val ], val) )
-		outset[ a.keys()[0] ] = i 
+		outset[ a.keys()[0] ] = { i : a[ key ][ "::coltype" ] } 
 		i += 1
 	semweb.emit( None, outset )
 ]]>
 </semweb_output>
 
-<semweb_output id="col_2_ra" input=":col_filter" type="python">
+<semweb_merger id="col_infomerge" left=":col_filter" right=":col_list">
+<![CDATA[
+import semweb
+@semweb.merger
+def col_infomerge( left_key, left_vals, right_key, right_vals ):
+	for vals in left_vals:
+		out = {}
+		for key in vals:
+			out[key] = vals[key]
+		out["::colnum"] = right_vals[0][ left_key ].keys()[0]
+		semweb.emit( left_key, out )
+]]>
+</semweb_merger>
+
+
+
+<semweb_output id="col_2_ra" input=":col_infomerge" type="python">
 <![CDATA[
 import semweb
 @semweb.output
 def col_2_ra( handle ):
 	prior = 1
 	oHandle = open( "columnDb_clinical.ra", "w" )
-	for col in handle:
-		name = col.keys()[0]
+	sHandle = open("codes.sql", "w")
+	sHandle.write("""
+CREATE TABLE codes	(
+	tableName varchar(255) default NULL,
+	colName varchar(255) default NULL,
+	code int(11) default NULL,
+	val varchar(255) default NULL
+) TYPE=MyISAM;
+""")	
+	
+	for vals in handle:
+		name = vals.keys()[0]
+		idNum = vals[ name ][ "::colnum" ]
+		colName = "clinicalData_%d" % ( int(idNum) )
 		oHandle.write("name %s\n" % (name) )
 		oHandle.write("shortLabel %s\n" % (name) )
 		oHandle.write("longLabel %s\n" % (name) )
 		oHandle.write("priority %d\n" % (prior) )
 		prior += 1
 		oHandle.write("visibility on\n")
-		oHandle.write("type lookup sampleCount patientId %s\n" % (name) )
-		if ( col[ name ][ "::coltype" ] == "enum" ):
+		oHandle.write("type lookup codes patientId %s\n" % (colName) )
+		if ( vals[ name ][ "::coltype" ] == "enum" ):
 			oHandle.write("filterType coded\n\n")
+			for enum in vals[ name ][ "::enum" ]:
+				sHandle.write( "INSERT INTO codes VALUES( '%s','%s',%d,'%s' );\n" % 
+					( "clincalFeatures", name,  vals[ name ][ "::enum" ][enum], enum  ) )
 		else:
 			oHandle.write("filterType minMax\n\n")
+	sHandle.close()
 	oHandle.close()	
+		
 ]]>
 </semweb_output>
 
@@ -256,7 +332,8 @@ def col_2_ra( handle ):
 import semweb
 @semweb.merger
 def col_number( key_left, vals_left, key_right, vals_right ):
-	col_order = [ b[0] for b in sorted(  vals_right[0].items(), lambda x,y : y[1] > x[1] ) ]
+	rVal = vals_right[0]
+	col_order = [ b for b in sorted(  rVal.keys(), lambda x,y : int(rVal[ x ].keys()[0]) -   int(rVal[ y ].keys()[0]) ) ]
 	vals = vals_left[0]
 	out = []
 	for col in col_order:
@@ -273,20 +350,29 @@ def col_number( key_left, vals_left, key_right, vals_right ):
 import semweb
 @semweb.output
 def col_print( handle ):
-	oHandle = open( "col_db.tab", "w" )
+	oHandle = open( "clinicalFeatures.sql", "w" )
 	header = None
 	for val in handle:
 		if header is None:
-			header = val
-			oHandle.write( "ID\t%s\n" % "\t".join( val.values()[0] ) )
+			header = True
+			oHandle.write( "CREATE TABLE clinicalFeatures (\n\tpatientID varchar(255) default NULL,\n" )
+			rVal = val.values()[0]
+			col_order = [ b for b in sorted(  rVal.keys(), lambda x,y : int(rVal[ x ].keys()[0]) - int(rVal[ y ].keys()[0]) ) ]
+			for a in col_order:
+				colNum = rVal[a].keys()[0]
+				if rVal[a][colNum] == "enum":
+					oHandle.write( "\tclinicalData_%d int(11) default NULL,\n" % (int(colNum)) )
+				else:
+					oHandle.write( "\tclinicalData_%d float(11) default NULL,\n" % (int(colNum)) )
+			oHandle.write("\tKEY patientID (patientID)\n);\n\n")
 		else:
 			a = []
 			for b in val.values()[0]:
 				if b is None or b == "null":
 					a.append( "\N" )
 				else:
-					a.append( str(b) )
-			oHandle.write( "%s\t%s\n" % (val.keys()[0], "\t".join( a ) ) )
+					a.append( "'%s'" % (str(b)) )
+			oHandle.write( "INSERT INTO clinicalFeatures VALUES( '%s', %s );\n" % (val.keys()[0], ",".join( a ) ) )
 ]]>
 </semweb_output>
 
