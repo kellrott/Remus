@@ -22,17 +22,31 @@ public class BTreeStore implements MPStore {
 		long fileLoc;
 		boolean stored;
 	}
+	
+	class BTKey implements Comparable<BTKey> {
+		Comparable key;
+		long index;
+		BTKey( Comparable key ) {
+			this.key = key;	
+		}
+		@Override
+		public int compareTo(BTKey o) {
+			return this.key.compareTo( o.key );
+		}
+		
+
+	}
 
 	class BTNode {
 		BTNode parent;
 		BTNode children[];
-		Comparable keys[];
+		BTKey  keys[];
 		BTData values[];
 		boolean leaf;
 		int n;
 		BTNode() {
 			children = new BTNode[2 * order];
-			keys = new Comparable[2 * order - 1];
+			keys = new BTKey[2 * order - 1];
 			values = new BTData[2*order-1];
 			parent = null;
 			leaf = true;
@@ -77,7 +91,7 @@ public class BTreeStore implements MPStore {
 			}			
 		}
 
-		public void insertNode(Comparable newKey, Serializable value) {
+		public void insertNode(BTKey newKey, Serializable value) {
 			int i = n - 1;
 			if ( leaf ) {
 				while ( i >= 0 && newKey.compareTo(keys[i]) < 0 ) {
@@ -107,10 +121,10 @@ public class BTreeStore implements MPStore {
 
 		public void treeCollect(Comparable searchKey, List out) {
 			int i = 0; 
-			while ( i < n && searchKey.compareTo(keys[i]) > 0 ) {
+			while ( i < n && searchKey.compareTo(keys[i].key) > 0 ) {
 				i++;
 			}
-			while ( i < n && searchKey.equals(keys[i]) ) {
+			while ( i < n && searchKey.compareTo(keys[i].key)==0 ) {
 				out.add( values[i].data );
 				if ( !leaf ) {
 					read(children[i]);
@@ -126,7 +140,7 @@ public class BTreeStore implements MPStore {
 
 		public Serializable getFirst(Comparable searchKey) {
 			int i = 0; 
-			while ( i < n && searchKey.compareTo(keys[i]) > 0 ) {
+			while ( i < n && searchKey.compareTo(keys[i].key) > 0 ) {
 				i++;
 			}
 			if ( i < n && searchKey.equals(keys[i]) ) {
@@ -144,12 +158,12 @@ public class BTreeStore implements MPStore {
 				for ( int i = 0; i <= n; i++) {
 					children[i].explore( prefix + "\t");
 					if ( i<n ) {
-						System.err.println( prefix + Integer.toString(i) + ":" + keys[i] + "(" + values[i].data + ")" );
+						System.err.println( prefix + Integer.toString(i) + ":" + keys[i].key + "=" + keys[i].index + "(" + values[i].data + ")" );
 					}
 				}
 			} else {
 				for ( int i = 0; i < n; i++) {
-					System.err.println( prefix + Integer.toString(i) + ":" + keys[i] + "(" + values[i].data + ")" );
+					System.err.println( prefix + Integer.toString(i) + ":" + keys[i].key + "=" + keys[i].index + "(" + values[i].data + ")" );
 				}
 			}
 
@@ -171,12 +185,33 @@ public class BTreeStore implements MPStore {
 			return sb.toString();
 		}
 
+		int indexKeys( int idx ) {
+			if ( leaf ) {
+				for ( int i = 0; i < n; i++) {
+					keys[i].index = idx;
+					idx++;
+				}
+			} else {
+				int i = 0; 
+				while ( i < n ) {
+					idx = children[i].indexKeys(idx);
+					keys[i].index = idx;
+					idx++;
+					i++;
+				}
+				idx = children[i].indexKeys(idx);
+			}
+			return idx;
+			
+		}
+		
 	}
 
 
 	RandomAccessFile dataFile, indexFile;
 	BTNode root;
-
+	long keyCount;
+	
 	public BTreeStore(File fileBase) throws FileNotFoundException {
 		root = allocateNode();
 		root.leaf = true;
@@ -211,10 +246,10 @@ public class BTreeStore implements MPStore {
 			//explore();
 			s.splitChild(0);
 			//explore();
-			s.insertNode( key, data );
+			s.insertNode( new BTKey(key), data );
 			//explore();
 		} else {
-			r.insertNode(key, data);
+			r.insertNode( new BTKey(key), data);
 		}
 	}
 
@@ -224,20 +259,17 @@ public class BTreeStore implements MPStore {
 		return outList;
 	}
 
+	/*
 	public class KeyIterator implements Iterable<Comparable>, Iterator<Comparable> {
 		BTNode curNode;
+		//LinkedList<Comparable> outStack;
 		Comparable outKey;
 		LinkedList<Integer> pointStack;
 		int curPoint;
 		KeyIterator( ) {
-			curNode = null;
-			pointStack = new LinkedList<Integer>();
 			curNode = root;
-			while ( !curNode.leaf ) {
-				curNode = curNode.children[0];
-				pointStack.add(0);
-			}
-			curPoint = 0;				
+			curPoint = 0;
+			pointStack = new LinkedList<Integer>();
 		}
 
 		public Iterator<Comparable> iterator() {			
@@ -246,27 +278,28 @@ public class BTreeStore implements MPStore {
 
 		public boolean hasNext() {
 			outKey = null;
-			if ( curPoint < curNode.n ) {
-				outKey = curNode.keys[ curPoint ];
-				if ( !curNode.leaf ) {
+			if ( curPoint <= curNode.n && !curNode.leaf ) {				
+				while ( !curNode.leaf ) {
 					curNode = curNode.children[ curPoint ];
 					pointStack.add(curPoint);
 					curPoint = 0;
-				} else {
-					curPoint++;
 				}
-			} else {
+				outKey = curNode.keys[ curPoint ];
+				curPoint++;
+			} else if ( curPoint < curNode.n && curNode.leaf ) {
+				outKey = curNode.keys[ curPoint ];
+				curPoint++;
+			} else {			
 				if ( curNode.parent != null ) {
-					curPoint = pointStack.removeLast();					
+					curPoint = pointStack.removeLast();
 					curNode = curNode.parent;
 					outKey = curNode.keys[ curPoint ];
+					curPoint++;
 				}
 			}
-			
 			if ( outKey != null ) 
 				return true;
-			return false;
-			
+			return false;			
 		}
 
 		public Comparable next() {
@@ -275,17 +308,23 @@ public class BTreeStore implements MPStore {
 
 		public void remove() { }	
 	}
-
-	public Iterable<Comparable> listKeys() {
-		return new KeyIterator();
+	*/
+	
+	
+	void indexKeys(  ) {
+		keyCount = root.indexKeys(0);
 	}
-
+	
+	
+	public Iterable<Comparable> listKeys() {
+		//return new KeyIterator();
+		return null;
+	}	
 
 	BTNode allocateNode() {
 		return new BTNode();
 	}
-
-
+	
 	public static void main(String [] args) throws FileNotFoundException {
 		BTreeStore bt = new BTreeStore(new File("test_data"));
 
@@ -308,15 +347,34 @@ public class BTreeStore implements MPStore {
 		bt.add("test_b", "data_b_2");
 		bt.add("test_e", "data_e_1");
 		bt.add("test_e", "data_e_2");
+		bt.add("test_e", "data_e_3");
+		bt.add("test_e", "data_e_4");
+		bt.add("test_e", "data_e_5");
+		bt.add("test_e", "data_e_6");
+
+		bt.add("test_a", "data_a_4");
+		bt.add("test_a", "data_a_5");
+		bt.add("test_a", "data_a_6");
+		bt.add("test_a", "data_a_7");
 
 
-		//for ( int i = 0; i < 100; i++ ) {
-		//	bt.add( UUID.randomUUID().toString(), UUID.randomUUID().toString() );
-		//}		
+		
+		for ( int i = 0; i < 100; i++ ) {
+			bt.add( UUID.randomUUID().toString(), UUID.randomUUID().toString() );
+		}		
 
+		bt.indexKeys();		
+		bt.explore();
+
+		
+		/*
+		int i = 0;
 		for (Comparable key : bt.listKeys() ) {
 			System.out.println( key );
+			i++;
 		}
+		System.out.println( i );
+		*/
 		
 		/*
 		for ( Serializable key : bt.get("test_a") ) {

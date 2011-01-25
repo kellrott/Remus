@@ -118,7 +118,7 @@ class semWebGraph(semWebNode):
 	def callMerge( self, node, leftPath, rightPath, oHandle ):
 		semweb.setoutput( oHandle )
 		curFunc = semweb.getFunction( node.id )
-		print "Running Merger", node.id
+		sys.stderr.write( "Running Merger %s\n" % (node.id) )
 		lHandle = open( leftPath )
 		lSort = {}
 		for lLine in lHandle:
@@ -150,18 +150,18 @@ class semWebGraph(semWebNode):
 		semweb.setoutput( outHandle )
 		curFunc = semweb.getFunction( node.id )
 		if isinstance(node,semWebMapper):
-			print "Running Mapper", node.id
+			sys.stderr.write( "Running Mapper %s\n" % (node.id) )
 			for line in inHandle:
 				j = json.loads( line )
 				for k in j:
 					curFunc( k, j[k] )
 		
 		elif isinstance(node,semWebSplitter):
-			print "Running Splitter", node.id
+			sys.stderr.write( "Running Splitter %s\n" % (node.id) )
 			curFunc( inHandle )
 		
 		elif isinstance(node,semWebReducer):
-			print "Running Reducer", node.id
+			sys.stderr.write( "Running Reducer %s\n" % (node.id) )
 			reduce_sort = {}
 			for line in inHandle:
 				j = json.loads( line )
@@ -174,7 +174,7 @@ class semWebGraph(semWebNode):
 				curFunc( key, reduce_sort[key] )
 		
 		elif isinstance(node,semWebOutput):
-			print "Running Output", node.id		
+			sys.stderr.write( "Running Outputer %s\n" % (node.id) )
 			jSplitter = jsonSplitter( inHandle )
 			curFunc( jSplitter )
 			
