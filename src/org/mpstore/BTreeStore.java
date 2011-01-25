@@ -22,19 +22,23 @@ public class BTreeStore implements MPStore {
 		long fileLoc;
 		boolean stored;
 	}
-	
+
 	class BTKey implements Comparable<BTKey> {
 		Comparable key;
 		long index;
 		BTKey( Comparable key ) {
 			this.key = key;	
 		}
-		@Override
+		//@Override
 		public int compareTo(BTKey o) {
 			return this.key.compareTo( o.key );
 		}
-		
 
+
+	}
+
+	public interface BTVisitor {
+		public void visit( BTKey key, BTData val );
 	}
 
 	class BTNode {
@@ -202,16 +206,32 @@ public class BTreeStore implements MPStore {
 				idx = children[i].indexKeys(idx);
 			}
 			return idx;
-			
+
 		}
-		
+
+
+		void visitorScan( BTVisitor visitor) {
+			if ( leaf ) {
+				for ( int i = 0; i < n; i++) {
+					visitor.visit( keys[i], values[i] );					
+				}
+			} else {
+				int i = 0; 
+				while ( i < n ) {
+					children[i].visitorScan(visitor);
+					visitor.visit( keys[i], values[i] );					
+					i++;					
+				}
+				children[i].visitorScan(visitor);				
+			}
+		}
 	}
 
 
 	RandomAccessFile dataFile, indexFile;
 	BTNode root;
 	long keyCount;
-	
+
 	public BTreeStore(File fileBase) throws FileNotFoundException {
 		root = allocateNode();
 		root.leaf = true;
@@ -258,6 +278,60 @@ public class BTreeStore implements MPStore {
 		root.treeCollect(key, outList );
 		return outList;
 	}
+
+	public class KeyIterator implements Iterable<Comparable>, Iterator<Comparable> {
+		class VisitThread extends Thread implements BTVisitor {
+			byte []ready_mark = new byte[1];
+			byte []wait_mark = new byte[1];
+			BTKey outKey = null;
+			boolean finish;
+			@Override
+			public void run() {
+				finish = false;
+				visitTree(this);
+				finish = true;
+			}
+			public void visit(BTKey key, BTData val) {
+				try {
+					ready_mark.notify();
+					outKey = key;
+					wait_mark.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		private VisitThread visitThread;
+		public KeyIterator() {
+			visitThread = new VisitThread();
+			visitThread.start();
+			try {
+				visitThread.ready_mark.wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		public Iterator<Comparable> iterator() {
+			return this;
+		}
+
+		public boolean hasNext() {
+			return !visitThread.finish;
+		}
+
+		public Comparable next() {
+			return visitThread.outKey;
+		}
+
+		public void remove() { }
+
+
+	}
+
 
 	/*
 	public class KeyIterator implements Iterable<Comparable>, Iterator<Comparable> {
@@ -308,14 +382,17 @@ public class BTreeStore implements MPStore {
 
 		public void remove() { }	
 	}
-	*/
-	
-	
-	void indexKeys(  ) {
+	 */
+
+
+	void indexKeys(  ) {				
 		keyCount = root.indexKeys(0);
 	}
-	
-	
+
+	void visitTree( BTVisitor visitor ) {
+		root.visitorScan(visitor);
+	}
+
 	public Iterable<Comparable> listKeys() {
 		//return new KeyIterator();
 		return null;
@@ -324,13 +401,13 @@ public class BTreeStore implements MPStore {
 	BTNode allocateNode() {
 		return new BTNode();
 	}
-	
+
 	public static void main(String [] args) throws FileNotFoundException {
 		BTreeStore bt = new BTreeStore(new File("test_data"));
 
 
 		for ( int i = 0; i < 100; i++ ) {
-		//	bt.add( UUID.randomUUID().toString(), UUID.randomUUID().toString() );
+			//	bt.add( UUID.randomUUID().toString(), UUID.randomUUID().toString() );
 		}
 
 		bt.add("test_a", "data_a_1");
@@ -358,7 +435,7 @@ public class BTreeStore implements MPStore {
 		bt.add("test_a", "data_a_7");
 
 
-		
+
 		for ( int i = 0; i < 100; i++ ) {
 			bt.add( UUID.randomUUID().toString(), UUID.randomUUID().toString() );
 		}		
@@ -366,7 +443,7 @@ public class BTreeStore implements MPStore {
 		bt.indexKeys();		
 		bt.explore();
 
-		
+
 		/*
 		int i = 0;
 		for (Comparable key : bt.listKeys() ) {
@@ -374,8 +451,8 @@ public class BTreeStore implements MPStore {
 			i++;
 		}
 		System.out.println( i );
-		*/
-		
+		 */
+
 		/*
 		for ( Serializable key : bt.get("test_a") ) {
 			System.out.println( key );
