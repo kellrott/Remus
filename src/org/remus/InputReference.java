@@ -28,7 +28,7 @@ public class InputReference {
 				idTest = tmp[1];
 			}
 			if ( fileTest.startsWith("/") ) {				
-				localFile = new File( parent.parent.srcbase, fileTest + RemusParser.PageExt);
+				localFile = new File( parent.parent.srcbase, fileTest );
 				if ( !localFile.exists() ) {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
@@ -37,7 +37,7 @@ public class InputReference {
 			} else if ( url.startsWith(":") ) {
 				localFile = reqPage;
 				localID = idTest;
-				finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "").replaceFirst(RemusParser.PageExt + "$", "") + ":" + localID;
+				finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "" ) + ":" + localID;
 			} else {
 				localFile = new File( reqPage.getParentFile(), fileTest);
 				if ( !localFile.exists() ) {
@@ -45,13 +45,11 @@ public class InputReference {
 				}
 				localID = idTest;
 				if ( localID == null ) 
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "").replaceFirst(RemusParser.PageExt + "$", "");
+					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "");
 				else
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "").replaceFirst(RemusParser.PageExt + "$", "") + ":" + localID;
-				
+					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "") + ":" + localID;
 			}
-		}		
-
+		}
 	}
 
 	public String getURL() {

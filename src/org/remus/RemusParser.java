@@ -1,160 +1,60 @@
 package org.remus;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class RemusParser {
 
-	public static String PageExt = ".semweb";
 
-	public class PageHandler extends DefaultHandler {
-		StringBuilder curBuffer = null;
-		boolean serverCode = false;
-		String curLang = null, curID=null;
-		StringBuilder stringBuiler;
-		CodeFragment curCode;
-		Map<String,RemusApplet> codeMap;
+	public List<CodeFragment> parse(InputStream is, String pagePath) {
 
-		Map<String,Integer> semwebTags;
-
-		PageHandler() {
-			semwebTags = new HashMap<String,Integer>();
-			semwebTags.put("semweb_splitter", CodeFragment.SPLITTER);
-			semwebTags.put("semweb_mapper", CodeFragment.MAPPER );
-			semwebTags.put("semweb_reducer", CodeFragment.REDUCER );
-
-			stringBuiler = new StringBuilder();
-			codeMap = new HashMap<String,RemusApplet>();
-		}
-
-		/*
-		@Override
-		public void processingInstruction(String target, String data)
-		throws SAXException {
-			if ( target.compareTo("js") == 0 ) {
-				page.reset();
-				evalCode(data, page);
-				XMLOutput( page.toString() );				
-			}
-		}
-		 */
-
-		@Override
-		public void startDocument() throws SAXException {
-			curBuffer = new StringBuilder();
-		}
-
-		@Override
-		public void startElement(String uri, String localName, String qName,
-				Attributes attributes) throws SAXException {
-			if ( semwebTags.containsKey(qName ) ) {
-				XMLOutput(curBuffer.toString());
-				curBuffer = new StringBuilder();
-				serverCode = true;
-				curID = attributes.getValue("id");
-
-				if ( qName.compareTo("semweb_writer") == 0) {
-					if ( attributes.getValue("type") != null ) {
-						curLang = attributes.getValue("type");
-
-					}					
-				}
-				curBuffer = new StringBuilder();
-
-			}
-			if ( !serverCode ) {
-				XMLOutput(curBuffer.toString());
-				XMLOutput( "<" + qName );
-				for ( int i = 0; i < attributes.getLength(); i++ ) {
-					String name = attributes.getLocalName(i);
-					String value = attributes.getValue(i);
-					XMLOutput( " " + name + "='" + value + "'" );
-				}
-				XMLOutput(">");
-				curBuffer = new StringBuilder();
-			} 
-		}
-
-		@Override
-		public void endElement(String uri, String localName, String qName)
-		throws SAXException {
-			if ( ! serverCode ) {
-				XMLOutput(curBuffer.toString());
-				XMLOutput("</" + qName + ">");
-			} else {
-				if ( semwebTags.containsKey( qName ) ) {
-					curCode = new CodeFragment(curLang, curBuffer.toString(), semwebTags.get(qName) );
-					serverCode = false;
-					curCode = null;
-					serverCode = false;
-				}
-			}
-			curBuffer = new StringBuilder();
-		}
-
-		@Override
-		public void characters(char[] ch, int start, int length)
-		throws SAXException {
-			//System.err.println( new String(ch, start, length) );
-			//if ( !serverCode ) {
-			curBuffer.append(ch, start, length );
-			//}
-		}
-
-		private void XMLOutput( String str ) {
-			stringBuiler.append( str );
-		}
-
-
-		public void addApplet(String id, InputReference conn, CodeFragment code) {
-
-			try {
-				RemusApplet applet = new RemusApplet( new InputReference(parent, ":" + id, new File(parent.parent.srcbase, pagePath)), conn, code);
-				codeMap.put(id, applet);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-
-	}
-
-
-	public class BlankResolver implements EntityResolver {
-		public InputSource resolveEntity (String publicId, String systemId) {
-			return null;
-		}
-	} 
-
-	CodeManager parent;
-	String pagePath;
-	public RemusParser( CodeManager parent ) {
-		this.parent = parent;		
-	}
-
-	/*
-	public SemWebPage parse(InputStream is, String pagePath) {		
 		try {
-			this.pagePath = pagePath;
-			XMLReader parser = XMLReaderFactory.createXMLReader();
-			PageHandler ph= new PageHandler();
-			parser.setContentHandler(ph);
-			parser.setEntityResolver( new BlankResolver() );
-			parser.parse( new InputSource(is) );
-			return ph.getPage();
+			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = df.newDocumentBuilder();
+			Document doc = db.parse(is);			
+
+
+			XPathFactory xpf = XPathFactory.newInstance();
+			XPath xpath = xpf.newXPath();
+			XPathExpression mapperPath = xpath.compile("//*/remus_mapper");
+			XPathExpression splitterPath = xpath.compile("//*/remus_splitter");
+			XPathExpression reducerPath = xpath.compile("//*/remus_reducer");
+			XPathExpression mergerPath = xpath.compile("//*/remus_merger");
+			XPathExpression pipePath = xpath.compile("//*/remus_pipe");
+
+			List<CodeFragment> outList = new LinkedList<CodeFragment>();
+			
+			NodeList mapperNodes = (NodeList) mapperPath.evaluate( doc, XPathConstants.NODESET );
+			for ( int i = 0; i < mapperNodes.getLength(); i++ ) {
+				outList.add( new CodeFragment("python",  mapperNodes.item(i).getTextContent(), CodeFragment.MAPPER) ); 
+			}
+			
+			return outList;
+
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -162,7 +62,11 @@ public class RemusParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		return null;
 	}
-	 */
+	public static void main(String [] args) throws FileNotFoundException {
+		RemusParser p = new RemusParser();
+		p.parse(new FileInputStream(new File(args[0])), args[0]);
+	}
 }
