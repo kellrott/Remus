@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,13 +19,14 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class RemusParser {
 
 
-	public List<CodeFragment> parse(InputStream is, String pagePath) {
+	public static List<CodeFragment> parse(InputStream is, String pagePath) {
 
 		try {
 			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
@@ -34,19 +36,23 @@ public class RemusParser {
 
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath xpath = xpf.newXPath();
-			XPathExpression mapperPath = xpath.compile("//*/remus_mapper");
-			XPathExpression splitterPath = xpath.compile("//*/remus_splitter");
-			XPathExpression reducerPath = xpath.compile("//*/remus_reducer");
-			XPathExpression mergerPath = xpath.compile("//*/remus_merger");
-			XPathExpression pipePath = xpath.compile("//*/remus_pipe");
-
-			List<CodeFragment> outList = new LinkedList<CodeFragment>();
 			
-			NodeList mapperNodes = (NodeList) mapperPath.evaluate( doc, XPathConstants.NODESET );
-			for ( int i = 0; i < mapperNodes.getLength(); i++ ) {
-				outList.add( new CodeFragment("python",  mapperNodes.item(i).getTextContent(), CodeFragment.MAPPER) ); 
-			}
-			
+			HashMap<Integer, XPathExpression> codeTypes = new HashMap<Integer, XPathExpression>();
+			codeTypes.put( CodeFragment.MAPPER,  xpath.compile("//*/remus_mapper") );
+			codeTypes.put( CodeFragment.SPLITTER,xpath.compile("//*/remus_splitter"));
+			codeTypes.put( CodeFragment.REDUCER, xpath.compile("//*/remus_reducer"));
+			codeTypes.put( CodeFragment.MERGER,  xpath.compile("//*/remus_merger"));
+			codeTypes.put( CodeFragment.PIPE,    xpath.compile("//*/remus_pipe"));
+			List<CodeFragment> outList = new LinkedList<CodeFragment>();			
+			for ( Integer codeType : codeTypes.keySet() ) {
+				NodeList nodes = (NodeList) codeTypes.get( codeType ).evaluate( doc, XPathConstants.NODESET );
+				for ( int i = 0; i < nodes.getLength(); i++ ) {
+					NamedNodeMap attr = nodes.item(i).getAttributes();
+					String id = pagePath + ":" + attr.getNamedItem("id").getTextContent();
+					System.out.println(id);
+					outList.add( new CodeFragment("python", nodes.item(i).getTextContent(), id, codeType) ); 
+				}
+			}			
 			return outList;
 
 		} catch (XPathExpressionException e) {
@@ -67,6 +73,8 @@ public class RemusParser {
 	}
 	public static void main(String [] args) throws FileNotFoundException {
 		RemusParser p = new RemusParser();
-		p.parse(new FileInputStream(new File(args[0])), args[0]);
+		for ( CodeFragment code : p.parse(new FileInputStream(new File(args[0])), args[0]) ) {
+			System.out.println( code );
+		}
 	}
 }

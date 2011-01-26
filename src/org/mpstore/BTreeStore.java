@@ -11,6 +11,12 @@ import java.util.UUID;
 
 public class BTreeStore implements MPStore {
 
+	@Override
+	public void init(String path) {
+		// TODO Auto-generated method stub
+	}
+
+
 	private int order = 5;
 
 	class BTData {
@@ -254,7 +260,8 @@ public class BTreeStore implements MPStore {
 
 	}
 
-	public void add(Comparable key, Serializable data) {
+	@Override
+	public void add(File file, Comparable key, Serializable data) {
 		BTNode r = root;
 		if ( r.n == 2 * order -1 ) {
 			BTNode s = allocateNode();
@@ -272,8 +279,9 @@ public class BTreeStore implements MPStore {
 			r.insertNode( new BTKey(key), data);
 		}
 	}
-
-	public Iterable<Serializable> get(Comparable key) {
+	
+	@Override
+	public Iterable<Serializable> get(File file, Comparable key) {
 		LinkedList<Serializable>  outList = new LinkedList<Serializable>();
 		root.treeCollect(key, outList );
 		return outList;
@@ -392,8 +400,9 @@ public class BTreeStore implements MPStore {
 	void visitTree( BTVisitor visitor ) {
 		root.visitorScan(visitor);
 	}
-
-	public Iterable<Comparable> listKeys() {
+	
+	@Override
+	public Iterable<Comparable> listKeys(File file) {
 		//return new KeyIterator();
 		return null;
 	}	
@@ -402,6 +411,7 @@ public class BTreeStore implements MPStore {
 		return new BTNode();
 	}
 
+	/*
 	public static void main(String [] args) throws FileNotFoundException {
 		BTreeStore bt = new BTreeStore(new File("test_data"));
 
@@ -471,6 +481,13 @@ public class BTreeStore implements MPStore {
 		}
 		 */
 		//bt.explore();
+	//}
+
+	@Override
+	public boolean containsKey(File reqFile, String string) {
+		// TODO Auto-generated method stub
+		return false;
 	}
+
 
 }
