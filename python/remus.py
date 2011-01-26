@@ -4,32 +4,32 @@ import sys
 import inspect
 import imp
 
-global semweb_functions
+global remus_functions
 
 def mapper(f):
-	global semweb_functions
-	semweb_functions[ f.__module__ ] = f
+	global remus_functions
+	remus_functions[ f.__module__ ] = f
 	return f
 
 def reducer(f):
-	global semweb_functions
-	semweb_functions[ f.__module__ ] = f
+	global remus_functions
+	remus_functions[ f.__module__ ] = f
 	return f
 
 def output(f):
-	global semweb_functions
-	semweb_functions[ f.__module__ ] = f
+	global remus_functions
+	remus_functions[ f.__module__ ] = f
 	return f
 
 
 def merger(f):
-	global semweb_functions
-	semweb_functions[ f.__module__ ] = f
+	global remus_functions
+	remus_functions[ f.__module__ ] = f
 	return f
 
 def splitter(f):
-	global semweb_functions
-	semweb_functions[ f.__module__ ] = f
+	global remus_functions
+	remus_functions[ f.__module__ ] = f
 	return f
 
 global out_handle_map
@@ -44,11 +44,11 @@ def setoutput( outmap ):
 
 def getFunction(name):
 	global out_handle_map
-	return semweb_functions[name]
+	return remus_functions[name]
 
 def init():
-	global semweb_functions
+	global remus_functions
 	global out_handle_map
 	out_handle_map = {}
-	semweb_functions = {}
+	remus_functions = {}
 	out_handle = sys.stdout

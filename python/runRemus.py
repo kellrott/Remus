@@ -1,71 +1,21 @@
 #!/usr/bin/env python
 
-import semweb
+import remus
 import sys
 import os
-from xml.dom.minidom import parseString
-import imp
 import json
 
-class semWebNode(object):
-	def __init__(self, id):
-		self.id = id
-
-	def loadSrc( self, code ):
-		self.module = imp.new_module( self.id )	
-		self.module.__dict__["__name__"] = self.id
-		exec code in self.module.__dict__
-
-class fileStreamer:
-	def __init__(self, pathList):
-		self.pathList = pathList
-	def __iter__(self):
-		for path in self.pathList:
-			handle = open( path )
-			for line in handle:
-				yield line
-			handle.close()
-	
-	def read(self):
-		out = ""
-		for path in self.pathList:
-			handle = open( path )
-			out += handle.read()
-			handle.close()
-		return out
-
-
-class jsonPairSplitter:
-	def __init__(self, iHandle):
-		self.handle = iHandle
-	
-	def __iter__(self):
-		for line in self.handle:
-			data  = json.loads( line )
-			for key in data:
-				yield key, data[key]
+from remusLib import *
 				
-class semWebGraph(semWebNode):
+class remusGraph(remusNode):
 	def __init__(self, id):
-		super(semWebGraph, self).__init__( id )
+		super(remusGraph, self).__init__( id )
 		self.nodes = {}
 		if not os.path.exists( id ):
 			os.mkdir( id )
 
-	def addMapper(self, mapper):
-		self.nodes[ mapper.id ] = mapper
-
-	def addReducer(self, reducer):
-		self.nodes[ reducer.id ] = reducer
-
-	def addMerger(self, reducer):
-		self.nodes[ reducer.id ] = reducer
-
-	def addOutput(self, merger):
-		self.nodes[ merger.id ] = merger
-
-	def addSplitter(self, splitter):
-		self.nodes[ splitter.id ] = splitter
+	def addNode(self, node):
+		self.nodes[ node.id ] = node
 
 	def cycleEngine(self):
 		running = False
@@ -73,7 +23,7 @@ class semWebGraph(semWebNode):
 			outPath = "%s/%s.output" % ( self.id, key )
 			if ( not os.path.exists( outPath )  ):
 				if ( isinstance( self.nodes[ key ].input, list ) ):
-					if isinstance(self.nodes[ key ],semWebMerger):
+					if isinstance(self.nodes[ key ],remusMerger):
 						lRef = self.nodes[ key ].input[0]
 						rRef = self.nodes[ key ].input[1]
 						leftPath = "%s/%s.output" % ( self.id, lRef[1:] )
@@ -134,8 +84,8 @@ class semWebGraph(semWebNode):
 		return running
 	
 	def callMerge( self, node, leftPath, rightPath, outmap ):
-		semweb.setoutput( outmap )
-		curFunc = semweb.getFunction( node.id )
+		remus.setoutput( outmap )
+		curFunc = remus.getFunction( node.id )
 		sys.stderr.write( "Running Merger %s\n" % (node.id) )
 		lHandle = open( leftPath )
 		lSort = {}
@@ -165,20 +115,20 @@ class semWebGraph(semWebNode):
 
 	
 	def callNode(self, node, inHandle, outMap):
-		semweb.setoutput( outMap )
-		curFunc = semweb.getFunction( node.id )
-		if isinstance(node,semWebMapper):
+		remus.setoutput( outMap )
+		curFunc = remus.getFunction( node.id )
+		if isinstance(node,remusMapper):
 			sys.stderr.write( "Running Mapper %s\n" % (node.id) )
 			for line in inHandle:
 				j = json.loads( line )
 				for k in j:
 					curFunc( k, j[k] )
 		
-		elif isinstance(node,semWebSplitter):
+		elif isinstance(node,remusSplitter):
 			sys.stderr.write( "Running Splitter %s\n" % (node.id) )
 			curFunc( inHandle )
 		
-		elif isinstance(node,semWebReducer):
+		elif isinstance(node,remusReducer):
 			sys.stderr.write( "Running Reducer %s\n" % (node.id) )
 			reduce_sort = {}
 			for line in inHandle:
@@ -191,88 +141,19 @@ class semWebGraph(semWebNode):
 			for key in reduce_sort:
 				curFunc( key, reduce_sort[key] )
 		
-		elif isinstance(node,semWebOutput):
+		elif isinstance(node,remusOutput):
 			sys.stderr.write( "Running Outputer %s\n" % (node.id) )
 			jSplitter = jsonPairSplitter( inHandle )
 			curFunc( jSplitter )
 
-class semWebXmlNode(semWebNode):
-	def __init__(self, xmlNode):
-		inputStr   = xmlNode.getAttribute("input")
-		includeStr = xmlNode.getAttribute("include")
-		idStr      = xmlNode.getAttribute("id")
-		self.input = inputStr
-		if xmlNode.hasAttribute("output"):
-			self.output = xmlNode.getAttribute("output")
-		else:
-			self.output = None
-		super(semWebXmlNode, self).__init__(idStr)		
-		code = getText( xmlNode.childNodes )				
-		self.loadSrc( code )
-
-class semWebMapper(semWebXmlNode):
-	def __init__(self, xmlNode):
-		super(semWebMapper, self).__init__(xmlNode)
-
-class semWebReducer(semWebXmlNode):
-	def __init__(self, xmlNode):
-		super(semWebReducer, self).__init__(xmlNode)
-
-class semWebSplitter(semWebXmlNode):
-	def __init__(self, xmlNode):
-		super(semWebSplitter, self).__init__(xmlNode)
-
-class semWebMerger(semWebXmlNode):
-	def __init__(self, xmlNode ):
-		super(semWebMerger, self).__init__(xmlNode)
-		mergerLeft = xmlNode.getAttribute("left")
-		mergerRight = xmlNode.getAttribute("right")
-		self.input = [ mergerLeft, mergerRight ]
-
-class semWebOutput(semWebXmlNode):
-	def __init__(self, xmlNode):
-		super(semWebOutput, self).__init__(xmlNode)
-
-def getText( node ):
-	out = ""
-	for c in node:
-		out += c.data
-	return out
 
 if __name__=="__main__":
-	semweb.init()
+	remus.init()
 	
-	graph = semWebGraph("outgraph")
-	
-	handle = open( sys.argv[1] )
-	data = handle.read()
+	graph = remusGraph("outgraph")
+	handle = open( sys.argv[1] )	
+	parseRemus( graph, handle )
 	handle.close()
-	dom = parseString(data)
-	mappers = dom.getElementsByTagName('semweb_mapper')
-	for mapper in mappers:
-		m = semWebMapper( mapper )
-		graph.addMapper( m )
-	
-	reducers = dom.getElementsByTagName("semweb_reducer")
-	for reducer in reducers:
-		m = semWebReducer( reducer )
-		graph.addReducer( m )
-		
-	outputs = dom.getElementsByTagName("semweb_output")
-	for output in outputs:
-		m = semWebOutput( output )
-		graph.addOutput( m )
-	
-	splitters = dom.getElementsByTagName("semweb_splitter")
-	for splitter in splitters:
-		m = semWebSplitter( splitter )
-		graph.addSplitter( m )
-		
-	mergers = dom.getElementsByTagName("semweb_merger")
-	for merger in mergers:
-		m = semWebMerger( merger )
-		graph.addMerger( m )
-
 
 	while ( graph.cycleEngine() ):
 		pass
