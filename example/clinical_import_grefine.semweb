@@ -1,30 +1,30 @@
 <html>
-<semweb_splitter id="file_list">
+<remus_splitter id="file_list">
 <![CDATA[
 import semweb
 import gRefine
 import re
-@semweb.splitter
+@remus.splitter
 def testfunc( handle ):
 	ref = gRefine.Refine( "http://localhost:3333" )
 	projects = ref.projectList()
 	for projID in projects:
 		name = re.split( "_", projects[projID]["name"] )[1]
-		semweb.emit( projID, name )
+		remus.emit( projID, name )
 ]]>
 
-</semweb_splitter>
+</remus_splitter>
 <!-- 
 load a csv file and map each row with named columns to the 
 sample name (first column)  
 -->
-<semweb_mapper id="mapper_csv" type="python" input=":file_list">
+<remus_mapper id="mapper_csv" type="python" input=":file_list">
 <![CDATA[
-import semweb
+import remus
 import re
 import gRefine
 reTab = re.compile(r'\t')
-@semweb.mapper
+@remus.mapper
 def testfunc( key, val ):
 	ref = gRefine.Refine( "http://localhost:3333" )
 	handle = ref.getTSV( key )
@@ -43,31 +43,31 @@ def testfunc( key, val ):
 			for i in range(1, len(tmp)):
 				if ( tmp[i] != "null" ):
 					out[ header[i] ] = tmp[i]
-			semweb.emit( tmp[0], out )
+			remus.emit( tmp[0], out )
 	handle.close()
 ]]>
-</semweb_mapper>
+</remus_mapper>
 <!--
 combine records from the CSV files into connected arrays
 -->
-<semweb_reducer id="reducer_sequence" input=":mapper_csv" type="python">
+<remus_reducer id="reducer_sequence" input=":mapper_csv" type="python">
 <![CDATA[
-import semweb
-@semweb.reducer
+import remus
+@remus.reducer
 def listReduce( key, vals ):
-	semweb.emit( key, vals )
+	remus.emit( key, vals )
 ]]>
-</semweb_reducer>
+</remus_reducer>
 <!--
 Merge existing sample entries so that IDs that are shorter fragments of longer
 IDs are replicated into the rows. This is done because the PatientID is a subsequence
 of the SampleID, there are multiple Samples per Patient, so the primary key is the Sample,
 with the Patient info replicated across the child sample entries.
 -->
-<semweb_merger id="sample_merge" left=":reducer_sequence" right=":reducer_sequence" type="python">
+<remus_merger id="sample_merge" left=":reducer_sequence" right=":reducer_sequence" type="python">
 <![CDATA[
-import semweb
-@semweb.merger
+import remus
+@remus.merger
 def sample_merge( left_key, left_vals, right_key, right_vals ):
 	if ( left_key.startswith( right_key ) and left_key != right_key):
 		out = []
@@ -77,49 +77,49 @@ def sample_merge( left_key, left_vals, right_key, right_vals ):
 		for samples in right_vals:
 			for sample in samples:
 				out.append( sample )
-		semweb.emit( left_key, out )
+		remus.emit( left_key, out )
 ]]>
-</semweb_merger>
+</remus_merger>
 <!--
 This takes that csv output and transposes it, so that the keys are 
 now the column names, the sampleIDs aren't passed along because we will only
 be using the set of values you create an enumerated set of all possible values.
 -->
-<semweb_mapper id="col_map" input=":mapper_csv" type="python">
+<remus_mapper id="col_map" input=":mapper_csv" type="python">
 <![CDATA[
-import semweb
-@semweb.mapper
+import remus
+@remus.mapper
 def col_map( key, vals ):
 	for key2 in vals: 
-		semweb.emit( key2, vals[ key2 ] )
+		remus.emit( key2, vals[ key2 ] )
 ]]>
-</semweb_mapper>
+</remus_mapper>
 <!--
 Before enumeration the set of all possible values, remove duplicates
 -->
-<semweb_reducer id="col_reduce" input=":col_map" type="python">
+<remus_reducer id="col_reduce" input=":col_map" type="python">
 <![CDATA[
-import semweb
-@semweb.reducer
+import remus
+@remus.reducer
 def colcount( key, vals ):
 	a = {}
 	for val in vals:
 		a[ val ] = 1
-	semweb.emit( key, a.keys() )
+	remus.emit( key, a.keys() )
 ]]>
-</semweb_reducer>
+</remus_reducer>
 <!-- 
 Filter out columns that add no data and enumerate colums that do
 -->
-<semweb_reducer id="col_filter" input=":col_reduce" type="python">
+<remus_reducer id="col_filter" input=":col_reduce" type="python">
 <![CDATA[
 
 skipCol = { "bcr_analyte_barcode" : True, "bcr_aliquot_barcode" : True,
 "bcr_examination_barcode" : True, "bcr_radiation_barcode" : True,
 "bcr_slide_barcode" : True, "bcr_drug_barcode" : True }
 
-import semweb
-@semweb.reducer
+import remus
+@remus.reducer
 def colfilter( key, vals ):
 	colType = None
 	if (not (len(vals[0]) == 1 and vals[0][0] == "null")) and key.count("barcode") == 0 and not skipCol.has_key( key ):
@@ -132,7 +132,7 @@ def colfilter( key, vals ):
 				allFloat = False
 		enumMap = {}
 		if allFloat:
-			semweb.emit( key, { "::coltype" : "float" } )
+			remus.emit( key, { "::coltype" : "float" } )
 			return
 		
 		allFloat = True
@@ -154,9 +154,9 @@ def colfilter( key, vals ):
 				allFloat = False
 		if allFloat:
 			if ( unitScale is not None ):
-				semweb.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float", "::unitscale" : unitScale } )
+				remus.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float", "::unitscale" : unitScale } )
 			else:
-				semweb.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float" } )
+				remus.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float" } )
 			return
 
 		
@@ -165,10 +165,10 @@ def colfilter( key, vals ):
 				enumMap[ val ] = len( enumMap )	
 		#don't emit enumerations with only value
 		if ( len( enumMap ) > 1 ):
-			semweb.emit( key, { "::coltype" : "enum", "::enum" : enumMap } )
+			remus.emit( key, { "::coltype" : "enum", "::enum" : enumMap } )
 
 ]]>
-</semweb_reducer>
+</remus_reducer>
 
 
 <!--
@@ -177,25 +177,25 @@ this way elemnts can removed based on columns that are being removed
 This is just like the col_map step, except is preserves the sampleID information,
 so that the rows can be rebuilt later
 -->
-<semweb_reducer id="csv_flipper" input=":sample_merge" type="python">
+<remus_reducer id="csv_flipper" input=":sample_merge" type="python">
 <![CDATA[
-import semweb
-@semweb.reducer
+import remus
+@remus.reducer
 def csv_flipper(key, vals):
 	for a in vals:
 		for b in a:
 			for c in b:
-				semweb.emit( c, { key : b[c] } )
+				remus.emit( c, { key : b[c] } )
 ]]>
-</semweb_reducer>
+</remus_reducer>
 <!--
 Print out the values in columns that haven't been filtered out
 When producing the values, use the enumeration maps is needed
 -->
-<semweb_merger id="sample_flipper" left=":csv_flipper" right=":col_filter" type="python">
+<remus_merger id="sample_flipper" left=":csv_flipper" right=":col_filter" type="python">
 <![CDATA[
-import semweb
-@semweb.merger
+import remus
+@remus.merger
 def sample_combine( left_key, left_vals, right_key, right_vals ):
 	if ( left_key == right_key ):
 		outType = None
@@ -218,42 +218,42 @@ def sample_combine( left_key, left_vals, right_key, right_vals ):
 			if enumMap is not None:
 				for a in out:
 					if enumMap[ a[1][ left_key ] ] != "null":
-						semweb.emit( a[0], { left_key: enumMap[ a[1][ left_key ] ] } )
+						remus.emit( a[0], { left_key: enumMap[ a[1][ left_key ] ] } )
 					#else:
-					#	semweb.emit( a[0], { left_key: "null" } )
+					#	remus.emit( a[0], { left_key: "null" } )
 
 			else:
 				for a in out:
 					if a[1][ left_key ] != "null":
 						val = a[1][left_key].replace(",", "")
 						if unitScale is not None:
-							semweb.emit( a[0], {left_key: float(val.replace(unitScale,"") )} )
+							remus.emit( a[0], {left_key: float(val.replace(unitScale,"") )} )
 						else:
-							semweb.emit( a[0], {left_key: float(val) } )
+							remus.emit( a[0], {left_key: float(val) } )
 					#else:
-					#	semweb.emit( a[0], {key: "null"} )
+					#	remus.emit( a[0], {key: "null"} )
 				
 ]]>
-</semweb_merger>
+</remus_merger>
 
-<semweb_reducer id="sample_combiner" input=":sample_flipper" type="python">
+<remus_reducer id="sample_combiner" input=":sample_flipper" type="python">
 <![CDATA[
-import semweb
-@semweb.reducer
+import remus
+@remus.reducer
 def sample_write( key, vals ):
 	outmap = {}
 	for a in vals:
 		for b in a:
 			outmap[b] = a[b]
-	semweb.emit( key, outmap )
+	remus.emit( key, outmap )
 
 ]]>
-</semweb_reducer>
+</remus_reducer>
 
-<semweb_output id="col_list" input=":col_filter">
+<remus_output id="col_list" input=":col_filter">
 <![CDATA[
-import semweb
-@semweb.output
+import remus
+@remus.output
 def col_list( handle ):
 	outset = {}
 	i = 0
@@ -265,30 +265,30 @@ def col_list( handle ):
 				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, a[ key ][ "::enum" ][ val ], val) )
 		outset[ a.keys()[0] ] = { i : a[ key ][ "::coltype" ] } 
 		i += 1
-	semweb.emit( None, outset )
+	remus.emit( None, outset )
 ]]>
-</semweb_output>
+</remus_output>
 
-<semweb_merger id="col_infomerge" left=":col_filter" right=":col_list">
+<remus_merger id="col_infomerge" left=":col_filter" right=":col_list">
 <![CDATA[
-import semweb
-@semweb.merger
+import remus
+@remus.merger
 def col_infomerge( left_key, left_vals, right_key, right_vals ):
 	for vals in left_vals:
 		out = {}
 		for key in vals:
 			out[key] = vals[key]
 		out["::colnum"] = right_vals[0][ left_key ].keys()[0]
-		semweb.emit( left_key, out )
+		remus.emit( left_key, out )
 ]]>
-</semweb_merger>
+</remus_merger>
 
 
 
-<semweb_output id="col_2_ra" input=":col_infomerge" type="python">
+<remus_output id="col_2_ra" input=":col_infomerge" type="python">
 <![CDATA[
-import semweb
-@semweb.output
+import remus
+@remus.output
 def col_2_ra( handle ):
 	prior = 1
 	oHandle = open( "columnDb_clinical.ra", "w" )
@@ -324,13 +324,13 @@ CREATE TABLE codes	(
 	oHandle.close()	
 		
 ]]>
-</semweb_output>
+</remus_output>
 
 
-<semweb_merger id="col_number" left=":sample_combiner" right=":col_list" type="python">
+<remus_merger id="col_number" left=":sample_combiner" right=":col_list" type="python">
 <![CDATA[
-import semweb
-@semweb.merger
+import remus
+@remus.merger
 def col_number( key_left, vals_left, key_right, vals_right ):
 	rVal = vals_right[0]
 	col_order = [ b for b in sorted(  rVal.keys(), lambda x,y : int(rVal[ x ].keys()[0]) -   int(rVal[ y ].keys()[0]) ) ]
@@ -341,14 +341,14 @@ def col_number( key_left, vals_left, key_right, vals_right ):
 			out.append( vals[ col ] )
 		else:
 			out.append( None )
-	semweb.emit( key_left, out )
+	remus.emit( key_left, out )
 ]]>
-</semweb_merger>
+</remus_merger>
 
-<semweb_output id="col_print" input=":col_list,:col_number">
+<remus_output id="col_print" input=":col_list,:col_number">
 <![CDATA[
-import semweb
-@semweb.output
+import remus
+@remus.output
 def col_print( handle ):
 	oHandle = open( "clinicalFeatures.sql", "w" )
 	header = None
@@ -374,6 +374,6 @@ def col_print( handle ):
 					a.append( "'%s'" % (str(b)) )
 			oHandle.write( "INSERT INTO clinicalFeatures VALUES( '%s', %s );\n" % (val.keys()[0], ",".join( a ) ) )
 ]]>
-</semweb_output>
+</remus_output>
 
 </html>
