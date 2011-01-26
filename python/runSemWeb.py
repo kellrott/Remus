@@ -35,14 +35,16 @@ class fileStreamer:
 		return out
 
 
-class jsonSplitter:
+class jsonPairSplitter:
 	def __init__(self, iHandle):
 		self.handle = iHandle
 	
 	def __iter__(self):
 		for line in self.handle:
-			yield json.loads( line )
-
+			data  = json.loads( line )
+			for key in data:
+				yield key, data[key]
+				
 class semWebGraph(semWebNode):
 	def __init__(self, id):
 		super(semWebGraph, self).__init__( id )
@@ -77,19 +79,31 @@ class semWebGraph(semWebNode):
 						leftPath = "%s/%s.output" % ( self.id, lRef[1:] )
 						rightPath = "%s/%s.output" % ( self.id, rRef[1:] )
 						if os.path.exists( leftPath ) and os.path.exists( rightPath ):
-							oHandle = open( outPath, "w" )
-							self.callMerge( self.nodes[ key ], leftPath, rightPath, oHandle )
-							oHandle.close()
+							out = { None : open( outPath, "w" ) }
+							if self.nodes[ key ].output is not None:
+								for oName in self.nodes[ key ].output.split(","):
+									out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
+							self.callMerge( self.nodes[ key ], leftPath, rightPath, out )
+							for oKey in out:
+								out[ oKey ].close()
 							running = True
 				elif ( self.nodes[ key ].input == "?" ):
-					out = open( outPath, "w" )
+					out = { None : open( outPath, "w" ) }
+					if self.nodes[ key ].output is not None:
+						for oName in self.nodes[ key ].output.split(","):
+							out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
 					self.callNode( self.nodes[ key ], sys.stdin, out )
-					out.close()
+					for oKey in out:
+						out[ oKey ].close()
 					running = True
 				elif ( self.nodes[ key ].input is None or len( self.nodes[ key ].input ) == 0 ):
-					out = open( outPath, "w" )
+					out = { None : open( outPath, "w" ) }
+					if self.nodes[ key ].output is not None:
+						for oName in self.nodes[ key ].output.split(","):
+							out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
 					self.callNode( self.nodes[ key ], None, out )
-					out.close()
+					for oKey in out:
+						out[ oKey ].close()
 					running = True
 				else:
 					fileList = []
@@ -108,15 +122,19 @@ class semWebGraph(semWebNode):
 								ready = False
 					
 					if ready:
-						oHandle = open( outPath, "w" )
+						out = { None : open( outPath, "w" ) }
+						if self.nodes[ key ].output is not None:
+							for oName in self.nodes[ key ].output.split(","):
+								out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
 						iHandle = fileStreamer( fileList )
-						self.callNode( self.nodes[ key ], iHandle, oHandle )
-						oHandle.close()
+						self.callNode( self.nodes[ key ], iHandle, out )
+						for oKey in out:
+							out[ oKey ].close()
 						running = True
 		return running
 	
-	def callMerge( self, node, leftPath, rightPath, oHandle ):
-		semweb.setoutput( oHandle )
+	def callMerge( self, node, leftPath, rightPath, outmap ):
+		semweb.setoutput( outmap )
 		curFunc = semweb.getFunction( node.id )
 		sys.stderr.write( "Running Merger %s\n" % (node.id) )
 		lHandle = open( leftPath )
@@ -146,8 +164,8 @@ class semWebGraph(semWebNode):
 				curFunc( l, lSort[l], r, rSort[r] ) 
 
 	
-	def callNode(self, node, inHandle, outHandle):
-		semweb.setoutput( outHandle )
+	def callNode(self, node, inHandle, outMap):
+		semweb.setoutput( outMap )
 		curFunc = semweb.getFunction( node.id )
 		if isinstance(node,semWebMapper):
 			sys.stderr.write( "Running Mapper %s\n" % (node.id) )
@@ -175,35 +193,45 @@ class semWebGraph(semWebNode):
 		
 		elif isinstance(node,semWebOutput):
 			sys.stderr.write( "Running Outputer %s\n" % (node.id) )
-			jSplitter = jsonSplitter( inHandle )
+			jSplitter = jsonPairSplitter( inHandle )
 			curFunc( jSplitter )
-			
-class semWebMapper(semWebNode):
-	def __init__(self, id, input):
-		super(semWebMapper, self).__init__(id)
-		self.input = input
 
-class semWebReducer(semWebNode):
-	def __init__(self, id, input):
-		super(semWebReducer, self).__init__(id)
-		self.input = input		
+class semWebXmlNode(semWebNode):
+	def __init__(self, xmlNode):
+		inputStr   = xmlNode.getAttribute("input")
+		includeStr = xmlNode.getAttribute("include")
+		idStr      = xmlNode.getAttribute("id")
+		self.input = inputStr
+		if xmlNode.hasAttribute("output"):
+			self.output = xmlNode.getAttribute("output")
+		else:
+			self.output = None
+		super(semWebXmlNode, self).__init__(idStr)		
+		code = getText( xmlNode.childNodes )				
+		self.loadSrc( code )
 
-class semWebSplitter(semWebNode):
-	def __init__(self, id, input):
-		super(semWebSplitter, self).__init__(id)
-		self.input = input		
+class semWebMapper(semWebXmlNode):
+	def __init__(self, xmlNode):
+		super(semWebMapper, self).__init__(xmlNode)
 
+class semWebReducer(semWebXmlNode):
+	def __init__(self, xmlNode):
+		super(semWebReducer, self).__init__(xmlNode)
 
-class semWebMerger(semWebNode):
-	def __init__(self, id, left, right ):
-		super(semWebMerger, self).__init__(id)
-		self.input = [ left, right ]
+class semWebSplitter(semWebXmlNode):
+	def __init__(self, xmlNode):
+		super(semWebSplitter, self).__init__(xmlNode)
 
+class semWebMerger(semWebXmlNode):
+	def __init__(self, xmlNode ):
+		super(semWebMerger, self).__init__(xmlNode)
+		mergerLeft = xmlNode.getAttribute("left")
+		mergerRight = xmlNode.getAttribute("right")
+		self.input = [ mergerLeft, mergerRight ]
 
-class semWebOutput(semWebNode):
-	def __init__(self, id, input):
-		super(semWebOutput, self).__init__(id)
-		self.input = input		
+class semWebOutput(semWebXmlNode):
+	def __init__(self, xmlNode):
+		super(semWebOutput, self).__init__(xmlNode)
 
 def getText( node ):
 	out = ""
@@ -222,54 +250,27 @@ if __name__=="__main__":
 	dom = parseString(data)
 	mappers = dom.getElementsByTagName('semweb_mapper')
 	for mapper in mappers:
-		mapperInput = mapper.getAttribute("input")
-		mapperFile = mapper.getAttribute("include")
-		mapperID = mapper.getAttribute("id")
-		code = getText( mapper.childNodes )				
-		m = semWebMapper( mapperID, mapperInput )
-		m.loadSrc( code )
+		m = semWebMapper( mapper )
 		graph.addMapper( m )
 	
 	reducers = dom.getElementsByTagName("semweb_reducer")
 	for reducer in reducers:
-		reducerInput = reducer.getAttribute("input")
-		reducerFile = reducer.getAttribute("include")
-		reducerID = reducer.getAttribute("id")
-		code = getText( reducer.childNodes )				
-		m = semWebReducer( reducerID, reducerInput )
-		m.loadSrc( code )
+		m = semWebReducer( reducer )
 		graph.addReducer( m )
 		
 	outputs = dom.getElementsByTagName("semweb_output")
 	for output in outputs:
-		outputInput = output.getAttribute("input")
-		outputFile = output.getAttribute("include")
-		outputID = output.getAttribute("id")
-		code = getText( output.childNodes )				
-		m = semWebOutput( outputID, outputInput )
-		m.loadSrc( code )
+		m = semWebOutput( output )
 		graph.addOutput( m )
-	
 	
 	splitters = dom.getElementsByTagName("semweb_splitter")
 	for splitter in splitters:
-		splitterInput = splitter.getAttribute("input")
-		splitterFile = splitter.getAttribute("include")
-		splitterID = splitter.getAttribute("id")
-		code = getText( splitter.childNodes )				
-		m = semWebSplitter( splitterID, splitterInput )
-		m.loadSrc( code )
+		m = semWebSplitter( splitter )
 		graph.addSplitter( m )
 		
 	mergers = dom.getElementsByTagName("semweb_merger")
 	for merger in mergers:
-		mergerLeft = merger.getAttribute("left")
-		mergerRight = merger.getAttribute("right")
-		mergerFile = merger.getAttribute("include")
-		mergerID = merger.getAttribute("id")
-		code = getText( merger.childNodes )				
-		m = semWebMerger( mergerID, mergerLeft, mergerRight )
-		m.loadSrc( code )
+		m = semWebMerger( merger )
 		graph.addMerger( m )
 
 
