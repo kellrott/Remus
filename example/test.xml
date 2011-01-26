@@ -1,0 +1,12 @@
+<html>
+
+<remus_splitter id="genomic_list" input="genomic.list" type="python">
+<![CDATA[
+import remus
+@remus.splitter
+def genomic_list( handle ):
+	for line in handle:
+		remus.emit( line.rstrip(), None )
+]]>
+</remus_splitter>
+</html>
