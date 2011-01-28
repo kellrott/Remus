@@ -96,10 +96,20 @@ public class MasterServlet extends HttpServlet {
 	throws ServletException, IOException {		
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
 
-		if ( app.codeManager.codeMap.containsKey( reqInfo.path ) ) {
+		if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api == null ) {
 				PrintWriter out = resp.getWriter();
-				out.write( app.codeManager.codeMap.get(reqInfo.path).getSource() );
+
+				RemusApplet applet = app.codeManager.get( reqInfo.path );
+				resp.setContentType( "text/html" );
+				out.println( "APPLET: " + applet.getPath()  );
+				out.println( "<br/>CODE: <a href='" + applet.getPath() + "@code'> CODE </a>" );
+				out.println("<ul>");
+				for ( InputReference input : applet.getInputs() ) {
+					out.println( "<li>INPUT: <a href='" + input.finalURL + "'>" + input.finalURL + "</a></li>");
+				}
+				out.println("</ul>");
+			
 			} else {
 				PrintWriter out = resp.getWriter();
 
@@ -117,14 +127,21 @@ public class MasterServlet extends HttpServlet {
 					for ( Comparable key : ds.listKeys( reqInfo.file ) ) {
 						out.println( key );
 					}
+				} else if ( reqInfo.apiMap.containsKey("code")  ) {
+					out.write( app.codeManager.get(reqInfo.path).getSource() );
 				}
 			}
 		} else if ( reqInfo.path.compareTo("/") == 0 ) {
 			PrintWriter out = resp.getWriter();
 			resp.setContentType( "text/html" );
 			out.println( "Code list: <ul>");
-			for ( String path : app.codeManager.codeMap.keySet() ) {
+			for ( String path : app.codeManager.keySet() ) {
 				out.println( "<li><a href='" + path + "'>" + path + "</a>" );
+			}
+			out.println("</ul>");
+			out.println( "Code list: <ul>");
+			for ( RemusPipeline pipeline : app.codeManager.pipelines ) {
+				out.println( "<li><a href='" + pipeline + "'>" + pipeline + "</a>" );
 			}
 			out.println("</ul>");
 		} else if (reqInfo.srcFile.exists() ) {
@@ -147,7 +164,7 @@ public class MasterServlet extends HttpServlet {
 	throws ServletException, IOException {
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
 
-		if ( app.codeManager.codeMap.containsKey( reqInfo.path ) ) {
+		if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api != null ) {
 				if ( reqInfo.apiMap.containsKey("key") ) {
 

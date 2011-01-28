@@ -3,6 +3,7 @@ package org.remus;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.util.concurrent.Semaphore;
 
 
 public class InputReference {
@@ -12,8 +13,8 @@ public class InputReference {
 	String finalURL;
 	File localFile;
 	String localID = null;
-	CodeManager parent;
-	public InputReference(CodeManager parent, String url, File reqPage) throws FileNotFoundException {
+	RemusApp parent;
+	public InputReference(RemusApp parent, String url, String reqPath) throws FileNotFoundException {
 		this.parent = parent;
 		inputHREF = url;
 		if ( url.startsWith("http://") || url.startsWith("https://") ) {
@@ -28,32 +29,28 @@ public class InputReference {
 				idTest = tmp[1];
 			}
 			if ( fileTest.startsWith("/") ) {				
-				localFile = new File( parent.parent.srcbase, fileTest );
+				localFile = new File( parent.srcbase, fileTest );
 				if ( !localFile.exists() ) {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
 				localID = idTest;
 				finalURL = url;
 			} else if ( url.startsWith(":") ) {
-				localFile = reqPage;
+				localFile = new File( parent.getSrcBase(), reqPath );
 				localID = idTest;
-				finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "" ) + ":" + localID;
+				finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" ) + ":" + localID;
 			} else {
-				localFile = new File( reqPage.getParentFile(), fileTest);
+				localFile = new File( (new File( parent.getSrcBase(), reqPath )).getParentFile(), fileTest);
 				if ( !localFile.exists() ) {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
 				localID = idTest;
 				if ( localID == null ) 
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "");
+					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "");
 				else
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.parent.getSrcBase().toString(), "") + ":" + localID;
+					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "") + ":" + localID;
 			}
 		}
-	}
-
-	public String getURL() {
-		return finalURL.toString();
 	}
 	
 	public File getLocalFile() {
@@ -68,6 +65,10 @@ public class InputReference {
 		//PageRequest page = parent.openPage( localFile.getAbsolutePath() );
 		//return page.open();
 		return "pageContents";
+	}
+
+	public String getPath() {
+		return finalURL.toString();
 	}
 
 }

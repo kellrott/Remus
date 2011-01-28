@@ -19,18 +19,11 @@ public class CodeFragment {
 	public static final int PIPE = 4;
 
 
-	public CodeFragment(String lang, String source, String path, int type) {
+	public CodeFragment(String lang, String source, int type) {
 		this.source = source;
 		this.lang = lang;
 		this.type = type;
-		this.path = path;
 	}
-
-
-	public String getPath() {
-		return path;
-	}
-
 
 	public String getSource() {
 		return source;
