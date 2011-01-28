@@ -20,15 +20,16 @@ public class RemusApp {
 		this.workStore = workStore;
 		codeManager = new CodeManager(this);
 		scanSource(srcbase);
+		codeManager.mapPipelines();
 	}
-
+	
 	void scanSource(File curFile) {
-
 		if ( curFile.isFile() && curFile.getName().endsWith( ".xml" ) ) {
 			try { 
 				FileInputStream fis = new FileInputStream(curFile);
 				String pagePath = curFile.getAbsolutePath().replaceFirst( "^" + srcbase.getAbsolutePath(), "" ).replaceFirst(".xml$", "");
-				for ( CodeFragment code : RemusParser.parse(fis, pagePath) ) {
+				RemusParser p = new RemusParser(this);
+				for ( RemusApplet code : p.parse(fis, pagePath) ) {
 					codeManager.put(code.getPath(), code);
 				}
 			} catch (FileNotFoundException e) {

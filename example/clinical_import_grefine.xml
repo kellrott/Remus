@@ -1,7 +1,7 @@
 <html>
 <remus_splitter id="file_list">
 <![CDATA[
-import semweb
+import remus
 import gRefine
 import re
 @remus.splitter
@@ -9,8 +9,10 @@ def testfunc( handle ):
 	ref = gRefine.Refine( "http://localhost:3333" )
 	projects = ref.projectList()
 	for projID in projects:
-		name = re.split( "_", projects[projID]["name"] )[1]
-		remus.emit( projID, name )
+		tmp = re.split( "_", projects[projID]["name"] )
+		if ( tmp[-1] == "COAD" ):
+			name = tmp[1]
+			remus.emit( projID, name )
 ]]>
 
 </remus_splitter>
@@ -258,12 +260,11 @@ def col_list( handle ):
 	outset = {}
 	i = 0
 	oHandle = open("codes.tab", "w")
-	for a in handle:
-		key = a.keys()[0]
-		if ( a[ key ][ "::coltype" ] == "enum" ):
-			for val in a[ key ][ "::enum" ]:
-				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, a[ key ][ "::enum" ][ val ], val) )
-		outset[ a.keys()[0] ] = { i : a[ key ][ "::coltype" ] } 
+	for key, val in handle:
+		if ( val[ "::coltype" ] == "enum" ):
+			for a in val[ "::enum" ]:
+				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, val[ "::enum" ][ a ], a) )
+		outset[ key ] = { i : val[ "::coltype" ] } 
 		i += 1
 	remus.emit( None, outset )
 ]]>
@@ -294,35 +295,85 @@ def col_2_ra( handle ):
 	oHandle = open( "columnDb_clinical.ra", "w" )
 	sHandle = open("codes.sql", "w")
 	sHandle.write("""
+drop table if exists codes ;
 CREATE TABLE codes	(
 	tableName varchar(255) default NULL,
 	colName varchar(255) default NULL,
 	code int(11) default NULL,
 	val varchar(255) default NULL
 ) TYPE=MyISAM;
-""")	
-	
-	for vals in handle:
-		name = vals.keys()[0]
-		idNum = vals[ name ][ "::colnum" ]
+""")
+	showList = None
+	try:
+		liHandle = open( "importantColumns.list" )
+		showList = {}
+		for line in liHandle:
+			showList[ line.rstrip() ] = True
+		liHandle.close()
+	except IOError:
+		pass
+	for key, val in handle:
+		name = key
+		idNum = val[ "::colnum" ]
 		colName = "clinicalData_%d" % ( int(idNum) )
-		oHandle.write("name %s\n" % (name) )
+		oHandle.write("name %s\n" % (colName) )
 		oHandle.write("shortLabel %s\n" % (name) )
 		oHandle.write("longLabel %s\n" % (name) )
 		oHandle.write("priority %d\n" % (prior) )
 		prior += 1
-		oHandle.write("visibility on\n")
-		oHandle.write("type lookup codes patientId %s\n" % (colName) )
-		if ( vals[ name ][ "::coltype" ] == "enum" ):
+		if ( showList is None or showList.has_key( name ) ):
+			oHandle.write("visibility on\n")
+		else:
+			oHandle.write("visibility off\n")
+		
+		oHandle.write("type lookup clinicalFeatures patientId %s\n" % (colName) )
+		if ( val[ "::coltype" ] == "enum" ):
 			oHandle.write("filterType coded\n\n")
-			for enum in vals[ name ][ "::enum" ]:
+			for enum in val[ "::enum" ]:
 				sHandle.write( "INSERT INTO codes VALUES( '%s','%s',%d,'%s' );\n" % 
-					( "clincalFeatures", name,  vals[ name ][ "::enum" ][enum], enum  ) )
+					( "clinicalFeatures", colName,  val[ "::enum" ][enum], enum  ) )
 		else:
 			oHandle.write("filterType minMax\n\n")
 	sHandle.close()
 	oHandle.close()	
 		
+]]>
+</remus_output>
+
+
+<remus_merger id="tsv_merge" left=":sample_merge" right=":col_list">
+<![CDATA[
+import remus
+@remus.merger
+def tsv_merger( key_left, vals_left, key_right, vals_right ):
+	colmap = {}
+	for colName in vals_right[0]:
+		colmap[ colName ] = int( vals_right[0][colName].keys()[0] )		
+	colVals = ["null"] * len(colmap)
+
+	for curSet in vals_left[0]:
+		for curCol in curSet:
+			if colmap.has_key( curCol ):
+				colVals[ colmap[ curCol ] ] = curSet[ curCol ]
+	remus.emit( key_left, colVals )
+]]>
+</remus_merger>
+
+<remus_output id="tsv_print" input=":col_list,:tsv_merge">
+<![CDATA[
+import remus
+@remus.output
+def col_print( handle ):
+	oHandle = open( "clinicalFeatures.tsv", "w" )
+	header = None
+	for key, val in handle:
+		if header is None:
+			header = True
+			col_order = [ b for b in sorted(  val.keys(), lambda x,y : int(val[ x ].keys()[0]) - int(val[ y ].keys()[0]) ) ]
+			oHandle.write( "sampleID\t%s\n" % ( "\t".join( col_order ) ) )
+		else:
+			oHandle.write( "%s\t%s\n" % (key, "\t".join(val)) )
+	oHandle.close()
 ]]>
 </remus_output>
 
@@ -352,27 +403,28 @@ import remus
 def col_print( handle ):
 	oHandle = open( "clinicalFeatures.sql", "w" )
 	header = None
-	for val in handle:
+	for key, val in handle:
 		if header is None:
 			header = True
-			oHandle.write( "CREATE TABLE clinicalFeatures (\n\tpatientID varchar(255) default NULL,\n" )
-			rVal = val.values()[0]
-			col_order = [ b for b in sorted(  rVal.keys(), lambda x,y : int(rVal[ x ].keys()[0]) - int(rVal[ y ].keys()[0]) ) ]
+			oHandle.write( """
+drop table if exists clinicalFeatures;
+CREATE TABLE clinicalFeatures (\n\tpatientID varchar(255) default NULL,\n""" )
+			col_order = [ b for b in sorted(  val.keys(), lambda x,y : int(val[ x ].keys()[0]) - int(val[ y ].keys()[0]) ) ]
 			for a in col_order:
-				colNum = rVal[a].keys()[0]
-				if rVal[a][colNum] == "enum":
+				colNum = val[a].keys()[0]
+				if val[a][colNum] == "enum":
 					oHandle.write( "\tclinicalData_%d int(11) default NULL,\n" % (int(colNum)) )
 				else:
 					oHandle.write( "\tclinicalData_%d float(11) default NULL,\n" % (int(colNum)) )
 			oHandle.write("\tKEY patientID (patientID)\n);\n\n")
 		else:
 			a = []
-			for b in val.values()[0]:
+			for b in val:
 				if b is None or b == "null":
 					a.append( "\N" )
 				else:
 					a.append( "'%s'" % (str(b)) )
-			oHandle.write( "INSERT INTO clinicalFeatures VALUES( '%s', %s );\n" % (val.keys()[0], ",".join( a ) ) )
+			oHandle.write( "INSERT INTO clinicalFeatures VALUES( '%s', %s );\n" % (key, ",".join( a ) ) )
 ]]>
 </remus_output>
 
