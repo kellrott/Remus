@@ -12,6 +12,7 @@ public class InputReference {
 	String srcPage;
 	String finalURL;
 	File localFile;
+	Boolean dynamicInput = false;
 	String localID = null;
 	RemusApp parent;
 	public InputReference(RemusApp parent, String url, String reqPath) throws FileNotFoundException {
@@ -39,6 +40,11 @@ public class InputReference {
 				localFile = new File( parent.getSrcBase(), reqPath );
 				localID = idTest;
 				finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" ) + ":" + localID;
+			} else if ( url.compareTo("?") == 0) {
+				localFile = null;
+				localID = null;
+				finalURL = null;
+				dynamicInput = true;
 			} else {
 				localFile = new File( (new File( parent.getSrcBase(), reqPath )).getParentFile(), fileTest);
 				if ( !localFile.exists() ) {
@@ -68,6 +74,8 @@ public class InputReference {
 	}
 
 	public String getPath() {
+		if ( dynamicInput )
+			return "?";
 		return finalURL.toString();
 	}
 

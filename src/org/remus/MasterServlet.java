@@ -141,7 +141,13 @@ public class MasterServlet extends HttpServlet {
 			out.println("</ul>");
 			out.println( "Code list: <ul>");
 			for ( RemusPipeline pipeline : app.codeManager.pipelines ) {
-				out.println( "<li><a href='" + pipeline + "'>" + pipeline + "</a>" );
+				if ( pipeline.dynamic )
+					out.println( "<li> Dynamic " + pipeline + "</li>" );
+				else
+					out.println( "<li> Static " + pipeline + "</li>" );
+				for ( RemusApplet applet : pipeline.members ) {
+					out.println( "----- " + applet.getPath() + "<br/>" );
+				}
 			}
 			out.println("</ul>");
 		} else if (reqInfo.srcFile.exists() ) {
