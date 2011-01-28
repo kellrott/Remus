@@ -16,7 +16,7 @@ public class CodeFragment {
 	public static final int MERGER = 2;
 	public static final int SPLITTER = 3;
 	public static final int REDUCER = 4;
-	public static final int PIPE = 4;
+	public static final int PIPE = 5;
 
 
 	public CodeFragment(String lang, String source, int type) {

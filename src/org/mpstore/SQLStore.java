@@ -22,7 +22,7 @@ public class SQLStore implements MPStore {
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
 			
 			Class.forName("com.mysql.jdbc.Driver");
-			connect = DriverManager.getConnection("jdbc:mysql://localhost/webcache?user=kellrott" );
+			connect = DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott" );
 			
 			Statement st = connect.createStatement();
 			try {

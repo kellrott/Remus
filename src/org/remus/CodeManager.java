@@ -36,7 +36,6 @@ public class CodeManager {
 	
 	void mapPipelines() {
 		HashMap<String,Integer> colorMap = new HashMap<String,Integer>();
-
 		int i = 0;
 		for ( String path : codeMap.keySet() ) {
 			colorMap.put(path, i);
@@ -60,17 +59,19 @@ public class CodeManager {
 				}
 			}			
 		} while (change);
-		
-		pipelines = new LinkedList<RemusPipeline>();
+		Map<Integer,RemusPipeline> out = new HashMap<Integer, RemusPipeline>();
 		for ( int color : colorMap.values() ) {
-			RemusPipeline pipeline = new RemusPipeline(this);
-			for ( String path : codeMap.keySet() ) {
-				if ( colorMap.get(path) == color ) {
-					pipeline.addApplet( codeMap.get(path) );
+			if ( !out.containsKey(color) ) {
+				RemusPipeline pipeline = new RemusPipeline(this);
+				for ( String path : codeMap.keySet() ) {
+					if ( colorMap.get(path) == color ) {
+						pipeline.addApplet( codeMap.get(path) );
+					}
 				}
+				out.put(color, pipeline);
 			}
-			pipelines.add(pipeline);
-		}				
+		}	
+		pipelines = new LinkedList<RemusPipeline>( out.values() );
 	}
 	
 	
