@@ -53,37 +53,16 @@ public class MasterServlet extends HttpServlet {
 	private static final long serialVersionUID = -8067165004515233805L;
 
 	class RequestInfo {
-		String path;
-		String api;
+		public String path;
+		public String api;
 		File file, srcFile;
 
-		Map<String,String> apiMap;
 		public RequestInfo( String pathinfo ) {
 			String [] tmp = pathinfo.split("@");
 			path = tmp[0];
 			api = null;
 			if ( tmp.length > 1 ) {
 				api = tmp[1];
-				apiMap = new HashMap<String, String>();
-				for ( String block : api.split("&") ) {
-					String [] parts = block.split("=");
-					if ( parts.length== 2) {
-						try {
-							apiMap.put( URLDecoder.decode(parts[0],"UTF-8" ), URLDecoder.decode(parts[1],"UTF-8" ) );
-						} catch (UnsupportedEncodingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					} else {
-						try {
-							apiMap.put( URLDecoder.decode(parts[0],"UTF-8" ), null );
-						} catch (UnsupportedEncodingException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-
 			}
 			file = new File( path );	
 			path = file.getAbsolutePath();
@@ -109,47 +88,54 @@ public class MasterServlet extends HttpServlet {
 					out.println( "<li>INPUT: <a href='" + input.finalURL + "'>" + input.finalURL + "</a></li>");
 				}
 				out.println("</ul>");
-			
+
 			} else {
 				PrintWriter out = resp.getWriter();
 
-				if ( reqInfo.apiMap.containsKey("key") ) {
+				if ( req.getParameterMap().containsKey("key") ) {
 					MPStore ds = app.getDataStore();
-					if ( ds.containsKey( reqInfo.file, reqInfo.apiMap.get("key")  ) ) {
-						for ( Serializable value : ds.get( reqInfo.file, reqInfo.apiMap.get("key") ) ) {
+					if ( ds.containsKey( reqInfo.file, (String)req.getParameterMap().get("key")  ) ) {
+						for ( Serializable value : ds.get( reqInfo.file, (String)req.getParameterMap().get("key") ) ) {
 							out.println( value );
 						}
 					} else {
 						resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 					}
-				} else if ( reqInfo.apiMap.containsKey("keys") ) {
+				} else if ( reqInfo.api.compareTo("keys") == 0 ) {
 					MPStore ds = app.getDataStore();
 					for ( Comparable key : ds.listKeys( reqInfo.file ) ) {
 						out.println( key );
 					}
-				} else if ( reqInfo.apiMap.containsKey("code")  ) {
+				} else if ( reqInfo.api.compareTo("code") == 0  ) {
 					out.write( app.codeManager.get(reqInfo.path).getSource() );
 				}
 			}
 		} else if ( reqInfo.path.compareTo("/") == 0 ) {
-			PrintWriter out = resp.getWriter();
-			resp.setContentType( "text/html" );
-			out.println( "Code list: <ul>");
-			for ( String path : app.codeManager.keySet() ) {
-				out.println( "<li><a href='" + path + "'>" + path + "</a>" );
-			}
-			out.println("</ul>");
-			out.println( "Code list: <ul>");
-			for ( RemusPipeline pipeline : app.codeManager.pipelines ) {
-				if ( pipeline.dynamic )
-					out.println( "<li> Dynamic " + pipeline + "</li>" );
-				else
-					out.println( "<li> Static " + pipeline + "</li>" );
-				for ( RemusApplet applet : pipeline.members ) {
-					out.println( "----- " + applet.getPath() + "<br/>" );
+			if ( reqInfo.api == null ) {
+				PrintWriter out = resp.getWriter();
+				resp.setContentType( "text/html" );
+				out.println( "Code list: <ul>");
+				for ( String path : app.codeManager.keySet() ) {
+					out.println( "<li><a href='" + path + "'>" + path + "</a>" );
+				}
+				out.println("</ul>");
+				out.println( "Code list: <ul>");
+				for ( RemusPipeline pipeline : app.codeManager.pipelines ) {
+					if ( pipeline.dynamic )
+						out.println( "<li> Dynamic " + pipeline + "</li>" );
+					else
+						out.println( "<li> Static " + pipeline + "</li>" );
+					for ( RemusApplet applet : pipeline.getMembers() ) {
+						out.println( "----- " + applet.getPath() + "<br/>" );
+					}
+				}
+				out.println("</ul>");
+			} else {
+				PrintWriter out = resp.getWriter();
+				for ( RemusWork work : app.codeManager.getWorkQueue( 10 ) ) {
+					out.println( work );
 				}
 			}
-			out.println("</ul>");
 		} else if (reqInfo.srcFile.exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
 			ServletOutputStream os = resp.getOutputStream();
@@ -172,8 +158,7 @@ public class MasterServlet extends HttpServlet {
 
 		if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api != null ) {
-				if ( reqInfo.apiMap.containsKey("key") ) {
-
+				if ( req.getParameterMap().containsKey("key") ) {
 					ServletInputStream is = req.getInputStream();
 					ByteArrayOutputStream buff = new ByteArrayOutputStream();
 					byte [] read = new byte[1024];
@@ -181,7 +166,7 @@ public class MasterServlet extends HttpServlet {
 					while ( (len=is.read(read)) > 0 ) {
 						buff.write(read, 0, len);
 					}
-					app.workStore.add(reqInfo.file, reqInfo.apiMap.get("key"), buff.toString() );
+					app.workStore.add(reqInfo.file, req.getParameter("key"), buff.toString() );
 					resp.getWriter().println("Done");
 					return;
 				}
