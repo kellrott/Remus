@@ -8,14 +8,10 @@ import java.util.Set;
 
 
 public class CodeManager {
-
 	RemusApp  parent;
-	//PluginManager plugMan;
-
 	public CodeManager( RemusApp parent ) {
 		this.parent = parent;
 		codeMap = new HashMap<String, RemusApplet>();
-		//plugMan = new PluginManager( parent );	
 	}
 
 	private Map<String,RemusApplet> codeMap;
@@ -31,9 +27,9 @@ public class CodeManager {
 	public Set<String> keySet() {
 		return codeMap.keySet();
 	}
-	
+
 	public List<RemusPipeline> pipelines;
-	
+
 	void mapPipelines() {
 		HashMap<String,Integer> colorMap = new HashMap<String,Integer>();
 		int i = 0;
@@ -41,7 +37,7 @@ public class CodeManager {
 			colorMap.put(path, i);
 			i++;
 		}
-		
+
 		boolean change;
 		do {
 			change = false;
@@ -73,6 +69,24 @@ public class CodeManager {
 		}	
 		pipelines = new LinkedList<RemusPipeline>( out.values() );
 	}
-	
-	
+
+
+	public List<RemusWork> getWorkQueue(int maxSize) {		
+		LinkedList<RemusWork> out = new LinkedList<RemusWork>();
+
+		for ( RemusPipeline pipeline : pipelines ) {
+			if ( !pipeline.dynamic ) {
+				if ( pipeline.jobs.size() == 0) {
+					RemusInstance instance = new RemusInstance( RemusInstance.STATIC_INSTANCE );
+					pipeline.addInstance( instance );
+				}
+			}
+			if ( out.size() < maxSize ) {
+				out.addAll( pipeline.getWorkQueue( maxSize - out.size() ) );
+			}
+		}
+		return out;		
+	}
+
+
 }

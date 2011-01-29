@@ -3,23 +3,17 @@ package org.remus;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.util.concurrent.Semaphore;
-
 
 public class InputReference {
-	boolean isLocal;
-	String inputHREF;
-	String srcPage;
 	String finalURL;
-	File localFile;
-	Boolean dynamicInput = false;
+	File localFile = null;
 	String localID = null;
+	Boolean dynamicInput = false;
+
 	RemusApp parent;
 	public InputReference(RemusApp parent, String url, String reqPath) throws FileNotFoundException {
 		this.parent = parent;
-		inputHREF = url;
 		if ( url.startsWith("http://") || url.startsWith("https://") ) {
-			isLocal = false;
 			finalURL = url;			
 		} else {
 			String fileTest = url;
@@ -59,6 +53,13 @@ public class InputReference {
 		}
 	}
 	
+	
+	public Boolean isLocal() {
+		if ( localFile == null )
+			return false;
+		return true;
+	}
+
 	public File getLocalFile() {
 		return localFile;
 	}
