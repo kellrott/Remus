@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.remus.applet.RemusApplet;
+
 
 public class CodeManager {
 	RemusApp  parent;
@@ -86,6 +88,10 @@ public class CodeManager {
 			}
 		}
 		return out;		
+	}
+	
+	public RemusApp getApp() {
+		return parent;		
 	}
 
 

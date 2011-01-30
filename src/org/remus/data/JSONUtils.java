@@ -1,4 +1,4 @@
-package org.remus.langs;
+package org.remus.data;
 
 /**
  * Copyright (C) 2005-2009 Alfresco Software Limited.

@@ -20,22 +20,22 @@ public class SQLStore implements MPStore {
 		try {
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
-			
+
 			Class.forName("com.mysql.jdbc.Driver");
 			connect = DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott" );
-			
+
 			Statement st = connect.createStatement();
 			try {
 				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), valkey VARCHAR(1024), value BLOB  )" );
 				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );				
-				
+
 			} catch (SQLException e) {
 				e.printStackTrace();
 				//if these fail, it's because the tables where already setup
 				//derby doesn't have 'IF NOT EXISTS'
 			}
 			st.close();
-	
+
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -46,12 +46,13 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public void add(File file, Comparable key, Serializable data) {
+	public void add(File file, String instance, Comparable key, Serializable data) {
 		try {
-			PreparedStatement st = connect.prepareStatement("INSERT INTO mpdata(path, valkey, value) values(?,?,?)");
+			PreparedStatement st = connect.prepareStatement("INSERT INTO mpdata(path, instance, valkey, value) values(?,?,?,?)");
 			st.setString( 1, file.getAbsolutePath() );
-			st.setString( 2,  key.toString() );
-			st.setString( 3,  data.toString() );		
+			st.setString( 2, instance);
+			st.setString( 3,  key.toString() );
+			st.setString( 4,  data.toString() );		
 			st.execute();
 			st.close();
 		} catch (SQLException e) {
@@ -61,11 +62,12 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public boolean containsKey(File reqFile, String key) {
+	public boolean containsKey(File reqFile, String instance, String key) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT COUNT(*) FROM mpdata where path = ? AND valkey = ? " );
+			PreparedStatement st = connect.prepareStatement( "SELECT COUNT(*) FROM mpdata where path = ? AND valkey = ? AND instance = ?" );
 			st.setString(1, reqFile.getAbsolutePath() );
 			st.setString(2, key.toString() );		
+			st.setString(3, instance);
 			ResultSet rs = st.executeQuery();
 			rs.next();
 			int count = rs.getInt(1);
@@ -81,11 +83,12 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<Serializable> get(File reqFile, Comparable key) {
+	public Iterable<Serializable> get(File reqFile, String instance, Comparable key) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT value FROM mpdata where path = ? AND valkey = ? " );
+			PreparedStatement st = connect.prepareStatement( "SELECT value FROM mpdata where path = ? AND valkey = ? AND instance = ?" );
 			st.setString(1, reqFile.getAbsolutePath() );
 			st.setString(2, key.toString() );		
+			st.setString(3, instance);
 			ResultSet rs = st.executeQuery();
 			List<Serializable> out = new LinkedList<Serializable>();
 			while ( rs.next() ) {
@@ -102,10 +105,11 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<Comparable> listKeys(File reqFile) {
+	public Iterable<Comparable> listKeys(File reqFile, String instance) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM mpdata where path = ? " );
+			PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM mpdata where path = ? and instance = ?" );
 			st.setString(1, reqFile.getAbsolutePath() );
+			st.setString(2, instance);
 			ResultSet rs = st.executeQuery();
 			List<Comparable> out = new LinkedList<Comparable>();
 			while ( rs.next() ) {

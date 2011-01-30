@@ -1,5 +1,4 @@
 
-import json
 import sys
 import inspect
 import imp
@@ -7,27 +6,21 @@ import imp
 global remus_functions
 
 def mapper(f):
-	global remus_functions
-	remus_functions[ f.__module__ ] = f
-	return f
+	return addFunction(f)
 
 def reducer(f):
-	global remus_functions
-	remus_functions[ f.__module__ ] = f
-	return f
+	return addFunction(f)
 
 def output(f):
-	global remus_functions
-	remus_functions[ f.__module__ ] = f
-	return f
-
+	return addFunction(f)
 
 def merger(f):
-	global remus_functions
-	remus_functions[ f.__module__ ] = f
-	return f
+	return addFunction(f)
 
 def splitter(f):
+	return addFunction(f)
+
+def addFunction(f):
 	global remus_functions
 	remus_functions[ f.__module__ ] = f
 	return f
@@ -36,7 +29,7 @@ global out_handle_map
 
 def emit(key, val, output=None):
 	global out_handle_map
-	out_handle_map[ output ].write( "{\"%s\" : %s}\n" % (key, json.dumps(val)) )
+	out_handle_map[ output ].emit( key, val )
 
 def setoutput( outmap ):
 	global out_handle_map

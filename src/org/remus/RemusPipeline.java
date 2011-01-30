@@ -1,33 +1,27 @@
 package org.remus;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.remus.applet.InstanceStatus;
+import org.remus.applet.RemusApplet;
+
 public class RemusPipeline {
 
 	boolean dynamic = false;
-	Map<RemusApplet,NodeStatus> members;
+	Set<RemusApplet> members;
 	Map<InputReference, RemusApplet> inputs;
 	CodeManager parent;
 	
 	List<RemusInstance> jobs;
-	class NodeInstanceStatus {
-		LinkedList<Integer> jobsRemaining;
-	}
-	
-	class NodeStatus {
-		Map<RemusInstance, NodeInstanceStatus> instance;
-		NodeStatus() {
-			instance = new HashMap<RemusInstance, NodeInstanceStatus>();
-		}
-	}
-	
+
 	public RemusPipeline(CodeManager parent) {
 		this.parent = parent;
-		members = new HashMap<RemusApplet,NodeStatus>();
+		members = new HashSet<RemusApplet>();
 		jobs = new LinkedList<RemusInstance>();
 		inputs = new HashMap<InputReference, RemusApplet >();
 	}
@@ -38,36 +32,26 @@ public class RemusPipeline {
 				dynamic = true;
 			}
 		}
+		applet.setPipeline( this );
 		inputs = null; //invalidate input list
-		members.put(applet, new NodeStatus() );
+		members.add(applet);
 	}
 
 	public List<RemusWork> getWorkQueue( RemusInstance job, int maxCount ) {
 		List<RemusWork> out = new LinkedList<RemusWork>();
-		for ( RemusApplet applet : members.keySet() ) {
-			NodeStatus status = members.get(applet);
+		for ( RemusApplet applet : members ) {
+			InstanceStatus status = applet.status;
 			if ( status.instance.containsKey(job) ) {
 				for ( Integer jobID : status.instance.get(job).jobsRemaining ) {
 					if ( out.size() < maxCount ) {
-						out.add( new RemusWork(this, applet, jobID) );
+						out.add( new RemusWork(this, applet, job, jobID) );
 					}
 				}
 			}
 		}
 		return out;
 	}
-	
-	private void setInputs() {
-		inputs = new HashMap<InputReference, RemusApplet>();
-		for ( RemusApplet applet : members.keySet() ) {
-			for ( InputReference iref : applet.getInputs() ) {
-				if ( iref.dynamicInput || !iref.isLocal() || !parent.containsKey( iref.getPath() )) {
-					inputs.put(iref, applet);
-				}
-			}
-		}
-	}
-	
+		
 	public List<RemusWork> getWorkQueue(int maxCount) {
 		if ( inputs == null ) {
 			setInputs();
@@ -87,8 +71,20 @@ public class RemusPipeline {
 		return out;
 	}
 
+	
+	private void setInputs() {
+		inputs = new HashMap<InputReference, RemusApplet>();
+		for ( RemusApplet applet : members ) {
+			for ( InputReference iref : applet.getInputs() ) {
+				if ( iref.dynamicInput || !iref.isLocal() || !parent.containsKey( iref.getPath() )) {
+					inputs.put(iref, applet);
+				}
+			}
+		}
+	}
+	
 	public Set<RemusApplet> getMembers() {
-		return members.keySet();
+		return members;
 	}
 
 	public Set<InputReference> getInputs() {
@@ -104,12 +100,13 @@ public class RemusPipeline {
 			setInputs();
 		}		
 		for ( InputReference iref : inputs.keySet() ) {
-			NodeInstanceStatus status = new NodeInstanceStatus();
-			status.jobsRemaining = new LinkedList<Integer>();
-			status.jobsRemaining.add(0);
-			members.get( inputs.get(iref) ).instance.put(instance, status);
+			inputs.get(iref).status.addInstance( instance );
 		}
 		jobs.add(instance);
+	}
+
+	public CodeManager getCodeManager() {
+		return parent;		
 	}
 
 }
