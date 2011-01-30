@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import org.mpstore.MPStore;
+import org.remus.applet.RemusApplet;
 
 public class RemusApp {
 	public static final String configStore = "org.remus.mpstore";
@@ -15,12 +16,18 @@ public class RemusApp {
 	File srcbase;
 	MPStore workStore;
 	CodeManager codeManager;
+	public String baseURL = "";
+	
 	public RemusApp( File srcdir, MPStore workStore ) {
 		this.srcbase = srcdir;
 		this.workStore = workStore;
 		codeManager = new CodeManager(this);
 		scanSource(srcbase);
 		codeManager.mapPipelines();
+	}
+	
+	public void setBaseURL(String baseURL) {
+		this.baseURL = baseURL;
 	}
 	
 	void scanSource(File curFile) {

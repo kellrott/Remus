@@ -16,6 +16,7 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
 import org.remus.PluginConfig;
+import org.remus.data.JSONUtils;
 import org.remus.mapred.MapCallback;
 import org.remus.mapred.MapperInterface;
 import org.remus.mapred.ReducerInterface;

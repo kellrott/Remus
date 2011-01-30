@@ -3,6 +3,8 @@ package org.remus;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class InputReference {
 	String finalURL;
@@ -74,6 +76,9 @@ public class InputReference {
 		return "pageContents";
 	}
 
+	public String getURL() {
+		return parent.baseURL + finalURL;
+	}
 	public String getPath() {
 		if ( dynamicInput )
 			return "?";

@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.remus.applet.RemusApplet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
@@ -41,28 +42,28 @@ public class RemusParser {
 			XPath xpath = xpf.newXPath();
 
 			HashMap<Integer, XPathExpression> codeTypes = new HashMap<Integer, XPathExpression>();
-			codeTypes.put( CodeFragment.MAPPER,  xpath.compile("//*/remus_mapper") );
-			codeTypes.put( CodeFragment.SPLITTER,xpath.compile("//*/remus_splitter"));
-			codeTypes.put( CodeFragment.REDUCER, xpath.compile("//*/remus_reducer"));
-			codeTypes.put( CodeFragment.MERGER,  xpath.compile("//*/remus_merger"));
-			codeTypes.put( CodeFragment.PIPE,    xpath.compile("//*/remus_pipe"));
+			codeTypes.put( RemusApplet.MAPPER,  xpath.compile("//*/remus_mapper") );
+			codeTypes.put( RemusApplet.SPLITTER,xpath.compile("//*/remus_splitter"));
+			codeTypes.put( RemusApplet.REDUCER, xpath.compile("//*/remus_reducer"));
+			codeTypes.put( RemusApplet.MERGER,  xpath.compile("//*/remus_merger"));
+			codeTypes.put( RemusApplet.PIPE,    xpath.compile("//*/remus_pipe"));
 			List<RemusApplet> outList = new LinkedList<RemusApplet>();			
-			for ( Integer codeType : codeTypes.keySet() ) {
-				NodeList nodes = (NodeList) codeTypes.get( codeType ).evaluate( doc, XPathConstants.NODESET );
+			for ( Integer appletType : codeTypes.keySet() ) {
+				NodeList nodes = (NodeList) codeTypes.get( appletType ).evaluate( doc, XPathConstants.NODESET );
 				for ( int i = 0; i < nodes.getLength(); i++ ) {
 					NamedNodeMap attr = nodes.item(i).getAttributes();
 					String id = pagePath + ":" + attr.getNamedItem("id").getTextContent();
 					System.out.println(id);
 
-					CodeFragment cf =  new CodeFragment("python", nodes.item(i).getTextContent(), codeType);
-					RemusApplet applet = new RemusApplet(id, cf);
+					CodeFragment cf =  new CodeFragment("python", nodes.item(i).getTextContent());
+					RemusApplet applet = RemusApplet.newApplet(id, cf, appletType);
 					
 					if ( attr.getNamedItem("input") != null ) {
 						String inputStr = attr.getNamedItem("input").getTextContent();
 						InputReference iRef = new InputReference(parent, inputStr, pagePath );
 						applet.addInput(iRef);
 					}
-					if ( codeType == CodeFragment.MERGER ) {
+					if ( appletType == RemusApplet.MERGER ) {
 						String lInputStr = attr.getNamedItem("left").getTextContent();
 						InputReference lIRef = new InputReference(parent, lInputStr, pagePath );
 						applet.addLeftInput(lIRef);						

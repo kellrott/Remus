@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class BTreeStore implements MPStore {
 
@@ -261,7 +260,7 @@ public class BTreeStore implements MPStore {
 	}
 
 	@Override
-	public void add(File file, Comparable key, Serializable data) {
+	public void add(File file, String instance, Comparable key, Serializable data) {
 		BTNode r = root;
 		if ( r.n == 2 * order -1 ) {
 			BTNode s = allocateNode();
@@ -281,7 +280,7 @@ public class BTreeStore implements MPStore {
 	}
 	
 	@Override
-	public Iterable<Serializable> get(File file, Comparable key) {
+	public Iterable<Serializable> get(File file, String instance, Comparable key) {
 		LinkedList<Serializable>  outList = new LinkedList<Serializable>();
 		root.treeCollect(key, outList );
 		return outList;
@@ -402,7 +401,7 @@ public class BTreeStore implements MPStore {
 	}
 	
 	@Override
-	public Iterable<Comparable> listKeys(File file) {
+	public Iterable<Comparable> listKeys(File file, String instance) {
 		//return new KeyIterator();
 		return null;
 	}	
@@ -484,7 +483,7 @@ public class BTreeStore implements MPStore {
 	//}
 
 	@Override
-	public boolean containsKey(File reqFile, String string) {
+	public boolean containsKey(File reqFile, String instance, String string) {
 		// TODO Auto-generated method stub
 		return false;
 	}
