@@ -126,11 +126,13 @@ public abstract class RemusApplet {
 		return this.pipeline;
 	}
 
-	public void finishWork(RemusInstance remusInstance, int jobID) {
+	public void finishWork(RemusInstance remusInstance, long jobID) {
 		NodeInstanceStatus is = status.instance.get(remusInstance);
-		is.jobsRemaining.remove( jobID );
-		MPStore ds = pipeline.getCodeManager().getApp().getDataStore();
-		ds.add(new File("/@work"), remusInstance.toString(), getPath(), jobID );
+		if ( is != null ) {
+			is.jobsRemaining.remove( jobID );
+			MPStore ds = pipeline.getCodeManager().getApp().getDataStore();
+			ds.add(new File("/@work"), remusInstance.toString(), jobID, getPath(), jobID );
+		}
 	}
 
 }

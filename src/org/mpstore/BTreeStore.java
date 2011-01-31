@@ -260,7 +260,7 @@ public class BTreeStore implements MPStore {
 	}
 
 	@Override
-	public void add(File file, String instance, Comparable key, Serializable data) {
+	public void add(File file, String instance, long jobid, Comparable key, Serializable data) {
 		BTNode r = root;
 		if ( r.n == 2 * order -1 ) {
 			BTNode s = allocateNode();

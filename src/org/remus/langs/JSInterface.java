@@ -16,7 +16,6 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
 import org.remus.PluginConfig;
-import org.remus.data.JSONUtils;
 import org.remus.mapred.MapCallback;
 import org.remus.mapred.MapperInterface;
 import org.remus.mapred.ReducerInterface;
@@ -53,6 +52,7 @@ public class JSInterface implements MapperInterface, ReducerInterface, SpliterIn
 		//ScriptableObject.putProperty(scope, name, wrappedOut);				
 	}
 
+	/*
 	public void eval(String source, String fileName) {
 		try {
 			Scriptable scope = cx.initStandardObjects();
@@ -64,7 +64,7 @@ public class JSInterface implements MapperInterface, ReducerInterface, SpliterIn
 			//System.out.println( out );
 			//System.out.println( out );
 			if ( out instanceof ScriptableObject ) {
-				curOUT.write(  JSONUtils.toJSONString(out).getBytes() );
+				//curOUT.write(  JSONUtils.toJSONString(out).getBytes() );
 			}
 		} catch (EcmaError e) {
 			e.printStackTrace();
@@ -76,7 +76,7 @@ public class JSInterface implements MapperInterface, ReducerInterface, SpliterIn
 			e.printStackTrace();
 		} 
 	}
-
+	 */
 
 	class JSFunction  {
 

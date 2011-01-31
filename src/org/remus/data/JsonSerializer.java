@@ -1,11 +1,11 @@
 package org.remus.data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
-import org.json.JSONException;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class JsonSerializer implements Serializer {
 
@@ -48,15 +48,20 @@ public class JsonSerializer implements Serializer {
 		return null;
 	}
 
+	
+	
 	@Override
 	public Object loads(String s) {
 		try {
-			return JSONUtils.toObject(s);
-		} catch (JSONException e) {
+			JSONParser parser=new JSONParser();
+			return parser.parse(s);
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}		
 		return null;
 	}
 
+	
+	
 }
