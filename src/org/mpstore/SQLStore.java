@@ -26,7 +26,7 @@ public class SQLStore implements MPStore {
 
 			Statement st = connect.createStatement();
 			try {
-				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), valkey VARCHAR(1024), value BLOB  )" );
+				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobid LONG, valkey VARCHAR(1024), value BLOB  )" );
 				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );				
 
 			} catch (SQLException e) {
@@ -46,13 +46,14 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public void add(File file, String instance, Comparable key, Serializable data) {
+	public void add(File file, String instance, long jobid, Comparable key, Serializable data) {
 		try {
-			PreparedStatement st = connect.prepareStatement("INSERT INTO mpdata(path, instance, valkey, value) values(?,?,?,?)");
+			PreparedStatement st = connect.prepareStatement("INSERT INTO mpdata(path, instance, jobid, valkey, value) values(?,?,?,?,?)");
 			st.setString( 1, file.getAbsolutePath() );
 			st.setString( 2, instance);
-			st.setString( 3,  key.toString() );
-			st.setString( 4,  data.toString() );		
+			st.setLong  ( 3, jobid );
+			st.setString( 4,  key.toString() );
+			st.setString( 5,  data.toString() );		
 			st.execute();
 			st.close();
 		} catch (SQLException e) {

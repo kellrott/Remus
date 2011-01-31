@@ -8,7 +8,7 @@ public interface MPStore {
 	public void init(String basePath);
 	
 	@SuppressWarnings("unchecked")
-	public void add(File file, String instance, Comparable key, Serializable data);
+	public void add(File file, String instance, long jobid, Comparable key, Serializable data);
 
 	@SuppressWarnings("unchecked")
 	public Iterable<Serializable> get(File file, String instance, Comparable key);

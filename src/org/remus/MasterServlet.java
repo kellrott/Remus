@@ -182,18 +182,38 @@ public class MasterServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
-
+		System.out.println( reqInfo.path );
+		System.out.println( reqInfo.api );
 		if ( reqInfo.path.compareTo("/") == 0 ) {
-			if ( reqInfo.api.compareTo("work") == 0 ) { 
-				String instStr = req.getParameter("instance");
-				String idStr = req.getParameter("id");
-				RemusApplet applet = app.codeManager.get( reqInfo.path );
-				applet.finishWork( new RemusInstance(instStr), Integer.parseInt(idStr) );
+			if ( reqInfo.api.compareTo("work") == 0 ) {
+				ServletInputStream is = req.getInputStream();
+				ByteArrayOutputStream buff = new ByteArrayOutputStream();
+				byte [] read = new byte[1024];
+				int len;
+				while ( (len=is.read(read)) > 0 ) {
+					buff.write(read, 0, len);
+				}
+				Map m = (Map)serializer.loads( buff.toString() );
+				for ( Object key : m.keySet() ) {
+					String instStr = (String)key;
+					RemusInstance inst=new RemusInstance(instStr);
+					Map applets = (Map)m.get(key);
+					for ( Object key2 : applets.keySet() ) {
+						String appletPath = (String)key2;
+						RemusApplet applet = app.codeManager.get( appletPath );
+						List jobs = (List)applets.get(appletPath);
+						for ( Object val : jobs ) {
+							Long jobID = (Long)val;
+							applet.finishWork(inst,jobID.intValue() );
+						}
+					}
+				}
+				resp.getWriter().print("\"OK\"");
 			}
 		} else if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api != null ) {
 				if ( reqInfo.api.compareTo("work") == 0 ) {
-					if ( req.getParameterMap().containsKey("key") && req.getParameterMap().containsKey("instance") ) {
+					if ( req.getParameterMap().containsKey("key") && req.getParameterMap().containsKey("instance") && req.getParameterMap().containsKey("id")) {
 						/*
 						ServletInputStream is = req.getInputStream();
 						ByteArrayOutputStream buff = new ByteArrayOutputStream();
@@ -202,14 +222,13 @@ public class MasterServlet extends HttpServlet {
 						while ( (len=is.read(read)) > 0 ) {
 							buff.write(read, 0, len);
 						}
-						*/
-						app.workStore.add(reqInfo.file, req.getParameter("instance"), req.getParameter("key"), req.getParameter("value") );
-						resp.getWriter().println("Done");
-						return;
+						 */
+						app.workStore.add(reqInfo.file, req.getParameter("instance"), Long.parseLong(req.getParameter("id")), 
+								req.getParameter("key"), req.getParameter("value") );
+						resp.getWriter().print("\"OK\"");
 					}
 				}
 			}
-
 		}
 
 	}

@@ -39,6 +39,14 @@ def httpGetJson( url ):
 	handle.close()
 	return o
 
+
+def httpPostJson( url, data ):
+	handle = urlopen( url, json.dumps(data) )
+	o = json.loads( handle.read() )
+	handle.close()
+	return o
+
+
 workerList = {}
 
 
@@ -78,8 +86,10 @@ class SplitWorker(WorkerBase):
 		iHandle = httpStreamer( [inputURL] )
 		outURL =  self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
 		remus.setoutput( { None: http_write( outURL ) } )
-		func( iHandle )		
-		doneURL = self.host + self.applet + "@work?instance=%s&id=%s" % (instance, jobID)
+		func( iHandle )
+	
+		print httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+		
 		
 def doWork( host, applet, instance, jobID ): 
 	worker = getWorker( host, applet )
