@@ -10,7 +10,7 @@ import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 
-public class ReducerGenerator implements WorkGenerator {
+public class ReduceGenerator implements WorkGenerator {
 
 	List<WorkDescription> outList;
 	int curPos;

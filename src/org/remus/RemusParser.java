@@ -66,7 +66,7 @@ public class RemusParser {
 						applet.addLeftInput(lIRef);						
 						String rInputStr = attr.getNamedItem("right").getTextContent();
 						InputReference rIRef = new InputReference(parent, rInputStr, pagePath );
-						applet.addLeftInput(rIRef);						
+						applet.addRightInput(rIRef);						
 					}
 					
 					outList.add( applet ); 

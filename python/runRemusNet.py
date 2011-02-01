@@ -93,6 +93,8 @@ def getWorker( host, applet ):
 		worker = ReduceWorker( host, applet )
 	if appletDesc['mode'] == 'pipe':
 		worker = PipeWorker( host, applet )
+	if appletDesc['mode'] == 'merge':
+		worker = MergeWorker( host, applet )
 	worker.getCode()
 	if worker is not None:
 		workerList[ applet ] = worker
@@ -115,7 +117,8 @@ class SplitWorker(WorkerBase):
 		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
 		jobSet = httpGetJson( url )
 		func = remus.getFunction( self.applet )
-		remus.setoutput( { None: http_write( url ) } )
+		outUrl = self.host + self.applet + "@data?instance=%s&id=%s" % ( instance, jobID )
+		remus.setoutput( { None: http_write( outUrl ) } )
 		for jobDesc in jobSet:
 			if ( jobDesc[ 'input' ] is not None ):
 				inputURL = self.host + jobDesc[ 'input' ] 
@@ -123,32 +126,32 @@ class SplitWorker(WorkerBase):
 			else:
 				iHandle = None
 			func( iHandle )	
-			httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 		
 
 class MapWorker(WorkerBase):	
 	def doWork(self, instance, jobID):
 		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
 		func = remus.getFunction( self.applet )
-		remus.setoutput( { None: http_write( url ) } )
+		outUrl = self.host + self.applet + "@data?instance=%s&id=%s" % ( instance, jobID )
+		remus.setoutput( { None: http_write( outUrl ) } )
 		jobSet = httpGetJson( url )
 		for jobDesc in jobSet:
 			func( jobDesc['key'], jobDesc['value'] )
-			httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 class ReduceWorker(WorkerBase):	
 	def doWork(self, instance, jobID):
 		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
 		jobSet = httpGetJson( url )
 		func = remus.getFunction( self.applet )
-		remus.setoutput( { None: http_write( url ) } )
+		outUrl = self.host + self.applet + "@data?instance=%s&id=%s" % ( instance, jobID )
+		remus.setoutput( { None: http_write( outUrl ) } )
 		for jobDesc in jobSet:
 			kpURL = self.host + jobDesc['input'] + "@data?instance=%s&key=%s" % ( instance, quote(json.dumps(jobDesc['key'])) )		
 			kpData = httpGetJson( kpURL )
 			func( jobDesc['key'], kpData )
-
-		#print "jobid", jobID
-		httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 
 class PipeWorker(WorkerBase):	
@@ -156,19 +159,35 @@ class PipeWorker(WorkerBase):
 		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
 		jobDesc = httpGetJson( url ).read()
 		func = remus.getFunction( self.applet )
-		#remus.setoutput( { None: http_write( url ) } )
-		remus.setoutput( { None: stdout_write( ) } )
+		outUrl = self.host + self.applet + "@data?instance=%s&id=%s" % ( instance, jobID )
+		remus.setoutput( { None: http_write( outUrl ) } )
 
 		#TODO: this is wrong
 		for inFile in jobDesc['input']:
 			kpURL = self.host + inFile + "@data?instance=%s" % ( instance )		
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			func( iHandle )
+		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
-		#print "jobid", jobID
-		httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
 
-		
+class MergeWorker(WorkerBase):	
+	def doWork(self, instance, jobID):
+		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
+		jobSet = httpGetJson( url )
+		func = remus.getFunction( self.applet )
+		remus.setoutput( { None: stdout_write( ) } )
+		for jobDesc in jobSet:
+			leftKey = jobDesc['left_key']
+			leftValURL = self.host + jobDesc['left_input'] + "@data?instance=%s&key=%s" % ( instance, quote(json.dumps(jobDesc['left_key'])) )
+			leftVals = list( httpGetJson( leftValURL ) )
+			rightKeyURL = self.host + jobDesc['right_input'] + "@keys?instance=%s" % ( instance )
+			for rightKey in httpGetJson( rightKeyURL ):
+				rightValURL = self.host + jobDesc['right_input'] + "@data?instance=%s&key=%s" % ( instance, quote(json.dumps(jobDesc['left_key'])) )
+				rightVals = httpGetJson( rightValURL )
+				func( leftKey, leftVals, rightKey, rightVals )
+
+		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
+
 
 def doWork( host, applet, instance, jobID ): 
 	worker = getWorker( host, applet )
@@ -187,3 +206,4 @@ if __name__=="__main__":
 				for jobID in workList[instance][node]:
 					doWork( host, node, instance, jobID )
 	
+		break

@@ -114,7 +114,7 @@ public class MasterServlet extends HttpServlet {
 						String instStr = ((String[])pm.get("instance"))[0];
 						String jobIDStr= ((String[])pm.get("jobID"))[0];
 						String emitIDStr= ((String[])pm.get("emitID"))[0];
-						
+
 						KeyValuePair kp = ds.get( reqInfo.file, 
 								instStr, 
 								Long.parseLong( jobIDStr ), 
@@ -213,49 +213,36 @@ public class MasterServlet extends HttpServlet {
 		System.out.println( reqInfo.path );
 		System.out.println( reqInfo.api );
 		if ( reqInfo.path.compareTo("/") == 0 ) {
-			if ( reqInfo.api.compareTo("work") == 0 ) {
-				ServletInputStream is = req.getInputStream();
-				ByteArrayOutputStream buff = new ByteArrayOutputStream();
-				byte [] read = new byte[1024];
-				int len;
-				while ( (len=is.read(read)) > 0 ) {
-					buff.write(read, 0, len);
-				}
-				Map m = (Map)serializer.loads( buff.toString() );
-				for ( Object key : m.keySet() ) {
-					String instStr = (String)key;
-					RemusInstance inst=new RemusInstance(instStr);
-					Map applets = (Map)m.get(key);
-					for ( Object key2 : applets.keySet() ) {
-						String appletPath = (String)key2;
-						RemusApplet applet = app.codeManager.get( appletPath );
-						List jobs = (List)applets.get(appletPath);
-						for ( Object val : jobs ) {
-							Long jobID = (Long)val;
-							applet.finishWork(inst,jobID.intValue() );
-						}
-					}
-				}
-				resp.getWriter().print("\"OK\"");
-			} else if ( reqInfo.api.compareTo("restart") == 0 ) {
+			if ( reqInfo.api.compareTo("restart") == 0 ) {
 				app = new RemusApp(new File(srcDir), app.workStore );
 			}
 		} else if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api != null ) {
 				if ( reqInfo.api.compareTo("work") == 0 ) {
+					ServletInputStream is = req.getInputStream();
+					ByteArrayOutputStream buff = new ByteArrayOutputStream();
+					byte [] read = new byte[1024];
+					int len;
+					while ( (len=is.read(read)) > 0 ) {
+						buff.write(read, 0, len);
+					}
+					Map m = (Map)serializer.loads( buff.toString() );
+					for ( Object key : m.keySet() ) {
+						String instStr = (String)key;
+						RemusInstance inst=new RemusInstance(instStr);
+						List jobList = (List)m.get(key);
+						RemusApplet applet = app.codeManager.get( reqInfo.path );
+						for ( Object key2 : jobList ) {
+							Long jobID = (Long)key2;
+							applet.finishWork(inst,jobID.intValue() );
+						}						
+					}
+					resp.getWriter().print("\"OK\"");
+				} else if ( reqInfo.api.compareTo("data") == 0 ) {
 					if ( req.getParameterMap().containsKey("key") 
 							&& req.getParameterMap().containsKey("instance") 
 							&& req.getParameterMap().containsKey("id") 
-							&& req.getParameterMap().containsKey("order")) {
-						/*
-						ServletInputStream is = req.getInputStream();
-						ByteArrayOutputStream buff = new ByteArrayOutputStream();
-						byte [] read = new byte[1024];
-						int len;
-						while ( (len=is.read(read)) > 0 ) {
-							buff.write(read, 0, len);
-						}
-						 */
+							&& req.getParameterMap().containsKey("order")) {						
 						app.workStore.add(reqInfo.file, 
 								req.getParameter("instance"), 
 								Long.parseLong(req.getParameter("id")), 

@@ -1,5 +1,5 @@
 <html>
-<remus_splitter id="genomic_list" input="genomic.list" type="python">
+<!-- remus_splitter id="genomic_list" input="genomic.list" type="python">
 <![CDATA[
 import remus
 @remus.splitter
@@ -7,17 +7,67 @@ def genomic_list( handle ):
 	for line in handle:
 		remus.emit( line.rstrip(), None )
 ]]>
+</remus_splitter -->
+
+<remus_splitter id="file_list" type="python">
+<![CDATA[
+import remus
+import json
+from urllib import urlopen
+@remus.splitter
+def genomic_list( handle ):
+	baseURL = "http://localhost:8080/WebCache"
+	fileMap = json.loads( (urlopen(baseURL).read()) )
+	for url in fileMap["files"]:
+		uuid = fileMap["files"][ url ][ "uuid" ]		
+		versions = json.loads( (urlopen("%s/%s" % (baseURL, uuid) ).read()) )
+		if ( versions.has_key( "latest" ) ):
+			digest = versions[ "latest" ]	
+			remus.emit( url, "%s/%s/%s" % (baseURL, uuid, digest) )
+]]>
 </remus_splitter>
 
+<remus_mapper id="file_base" input=":file_list" type="python">
+<![CDATA[
+import remus
+import re
+reTumor = re.compile( r'tumor\/(\w+)' )
+@remus.mapper
+def mapper_test( key, value ):
+	res = reTumor.search( key )
+	if res:
+		remus.emit( res.group(1), value )
+]]>
+</remus_mapper>
 
-<remus_splitter id="dynamic_test" input="?" type="python">
+
+<remus_reducer id="tumor_group" input=":file_base" type="python">
 <![CDATA[
 import remus
 @remus.splitter
-def genomic_list( handle ):
-	for line in handle:
-		remus.emit( line.rstrip(), None )
+def tumor_group( key, values ):
+	remus.emit( key, list(values) )
 ]]>
-</remus_splitter>
+</remus_reducer>
+
+<remus_pipe id="print_list" input=":file_base" type="python">
+<![CDATA[
+import remus
+@remus.splitter
+def print_list( handle ):
+	for key, value in handle:
+		print key, value
+]]>
+</remus_pipe>
+
+<remus_merger id="test_merge" left=":file_list" right=":file_list">
+<![CDATA[
+import remus
+@remus.merger
+def test_merge( left_key, left_vals, right_key, right_vals ):
+	if left_key == right_key:
+		print left_key
+]]>
+</remus_merger>
 
 </html>
