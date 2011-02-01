@@ -28,7 +28,7 @@ public class RemusApplet {
 			break;
 		}
 		case REDUCER: {
-			out.workGenerator = ReducerGenerator.class;	
+			out.workGenerator = ReduceGenerator.class;	
 			break;
 		}
 		case SPLITTER: {
@@ -219,6 +219,11 @@ public class RemusApplet {
 		if(type==PIPE) {
 			Map out = new HashMap();
 			out.put("mode", "pipe");
+			return out;
+		}
+		if(type==MERGER) {
+			Map out = new HashMap();
+			out.put("mode", "merge");
 			return out;
 		}
 		return null;
