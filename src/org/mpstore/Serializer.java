@@ -1,4 +1,4 @@
-package org.remus.data;
+package org.mpstore;
 
 public interface Serializer {
 	Object loads(String s);

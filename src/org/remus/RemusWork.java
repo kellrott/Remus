@@ -6,9 +6,9 @@ public class RemusWork {
 	RemusPipeline parent;
 	RemusApplet applet;
 	RemusInstance instance;
-	int jobID;
+	long jobID;
 
-	RemusWork(RemusPipeline parent, RemusApplet applet, RemusInstance instance, int jobID) {
+	RemusWork(RemusPipeline parent, RemusApplet applet, RemusInstance instance, long jobID) {
 		this.parent = parent;
 		this.jobID = jobID;
 		this.applet = applet;

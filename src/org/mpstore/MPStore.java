@@ -1,21 +1,24 @@
 package org.mpstore;
 
 import java.io.File;
-import java.io.Serializable;
 
 public interface MPStore {
-
-	public void init(String basePath);
 	
-	@SuppressWarnings("unchecked")
-	public void add(File file, String instance, long jobid, Comparable key, Serializable data);
-
-	@SuppressWarnings("unchecked")
-	public Iterable<Serializable> get(File file, String instance, Comparable key);
+	abstract public void init(Serializer serializer, String basePath);
 	
-	@SuppressWarnings("unchecked")
-	public Iterable<Comparable> listKeys(File file, String instance);
+	abstract public void add(File file, String instance, long jobid, long order, Object key, Object data);
 
-	public boolean containsKey(File reqFile, String instance, String string);
+	abstract public Iterable<Object> get(File file, String instance, Object key);
+	
+	abstract public Iterable<Object> listKeys(File file, String instance);
+	
+	abstract public Iterable<KeyValuePair> listKeyPairs(File file, String instance);
+
+	abstract public boolean containsKey(File reqFile, String instance, Object string);
+
+	abstract public KeyValuePair get(File reqFile, String instance, long jobID, long emitID );
+
+	abstract public Object getKey(String path, String instance, long jobID, long emitID);
+	abstract public Object getValue(String path, String instance, long jobID, long emitID);
 	
 }

@@ -14,7 +14,7 @@ public class MergerApplet extends RemusApplet {
 	}
 
 	@Override
-	public Collection<Integer> getWorkSet(RemusInstance remusInstance) {
+	public Collection<Long> getWorkSet(RemusInstance remusInstance) {
 		// TODO Auto-generated method stub
 		return null;
 	}

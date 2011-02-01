@@ -23,25 +23,28 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.mpstore.JsonSerializer;
+import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
+import org.mpstore.Serializer;
 import org.remus.applet.RemusApplet;
-import org.remus.data.JsonSerializer;
-import org.remus.data.Serializer;
 
 public class MasterServlet extends HttpServlet {
 	RemusApp app;
 	Serializer serializer;
+	String workDir;
+	String srcDir;
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		try {
 			String mpStore = config.getInitParameter(RemusApp.configStore);
-			String workDir = config.getInitParameter(RemusApp.configWork);
-			String srcDir = config.getInitParameter(RemusApp.configSource);
+			workDir = config.getInitParameter(RemusApp.configWork);
+			srcDir = config.getInitParameter(RemusApp.configSource);
 			serializer = new JsonSerializer();
 			Class<?> mpClass = Class.forName(mpStore);			
 			MPStore store = (MPStore) mpClass.newInstance();
-			store.init(workDir);			
+			store.init(serializer, workDir);			
 			app = new RemusApp(new File(srcDir), store);
 
 		} catch (ClassNotFoundException e) {
@@ -93,19 +96,35 @@ public class MasterServlet extends HttpServlet {
 				out.print( serializer.dumps(outMap) );
 			} else {
 				PrintWriter out = resp.getWriter();
-				if ( reqInfo.api.compareTo("data") == 0 && req.getParameterMap().containsKey("key") && req.getParameterMap().containsKey("instance") ) {
+				if ( reqInfo.api.compareTo("data") == 0 ) {
 					MPStore ds = app.getDataStore();
-					if ( ds.containsKey( reqInfo.file, (String)req.getParameterMap().get("instance"), (String)req.getParameterMap().get("key")  ) ) {
-						for ( Serializable value : ds.get( reqInfo.file, (String)req.getParameterMap().get("instance"), (String)req.getParameterMap().get("key") ) ) {
-							out.println( value );
+					Map pm = req.getParameterMap();
+					if ( pm.containsKey("key") && pm.containsKey("instance") ) {
+						if ( ds.containsKey( reqInfo.file, (String)pm.get("instance"), (String)pm.get("key")  ) ) {
+							for ( Object value : ds.get( reqInfo.file, ((String [])pm.get("instance"))[0], (String)pm.get("key") ) ) {
+								out.println( serializer.dumps( value ) );
+							}
+						} else {
+							resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 						}
-					} else {
-						resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+					} else if ( pm.containsKey("instance") && pm.containsKey("jobID") && pm.containsKey("emitID" ) ) {
+						String instStr = ((String[])pm.get("instance"))[0];
+						String jobIDStr= ((String[])pm.get("jobID"))[0];
+						String emitIDStr= ((String[])pm.get("emitID"))[0];
+						
+						KeyValuePair kp = ds.get( reqInfo.file, 
+								instStr, 
+								Long.parseLong( jobIDStr ), 
+								Long.parseLong( emitIDStr ) );
+						Map outmap = new HashMap();
+						outmap.put( kp.getKey(), kp.getValue() );
+						out.println( serializer.dumps(outmap) );
+
 					}
 				} else if ( reqInfo.api.compareTo("keys") == 0 && req.getParameterMap().containsKey("instance") ) {
 					MPStore ds = app.getDataStore();
-					for ( Comparable key : ds.listKeys( reqInfo.file, req.getParameter("instance") ) ) {
-						out.println( key );
+					for ( Object key : ds.listKeys( reqInfo.file, req.getParameter("instance") ) ) {
+						out.println( serializer.dumps(key) );
 					}
 				} else if ( reqInfo.api.compareTo("code") == 0  ) {
 					out.write( app.codeManager.get(reqInfo.path).getSource() );
@@ -144,7 +163,7 @@ public class MasterServlet extends HttpServlet {
 					}
 				}
 				out.println("</ul>");
-			} else {
+			} else if ( reqInfo.api.compareTo("work") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				int count = 10;
 				if ( req.getParameter("max") != null ) {
@@ -209,11 +228,16 @@ public class MasterServlet extends HttpServlet {
 					}
 				}
 				resp.getWriter().print("\"OK\"");
+			} else if ( reqInfo.api.compareTo("restart") == 0 ) {
+				app = new RemusApp(new File(srcDir), app.workStore );
 			}
 		} else if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api != null ) {
 				if ( reqInfo.api.compareTo("work") == 0 ) {
-					if ( req.getParameterMap().containsKey("key") && req.getParameterMap().containsKey("instance") && req.getParameterMap().containsKey("id")) {
+					if ( req.getParameterMap().containsKey("key") 
+							&& req.getParameterMap().containsKey("instance") 
+							&& req.getParameterMap().containsKey("id") 
+							&& req.getParameterMap().containsKey("order")) {
 						/*
 						ServletInputStream is = req.getInputStream();
 						ByteArrayOutputStream buff = new ByteArrayOutputStream();
@@ -223,11 +247,15 @@ public class MasterServlet extends HttpServlet {
 							buff.write(read, 0, len);
 						}
 						 */
-						app.workStore.add(reqInfo.file, req.getParameter("instance"), Long.parseLong(req.getParameter("id")), 
-								req.getParameter("key"), req.getParameter("value") );
+						app.workStore.add(reqInfo.file, 
+								req.getParameter("instance"), 
+								Long.parseLong(req.getParameter("id")), 
+								Long.parseLong(req.getParameter("order")), 
+								serializer.loads( req.getParameter("key") ), 
+								serializer.loads( req.getParameter("value") ) );
 						resp.getWriter().print("\"OK\"");
 					}
-				}
+				} 
 			}
 		}
 

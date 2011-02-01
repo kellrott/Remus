@@ -1,6 +1,7 @@
 package org.remus.applet;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +20,6 @@ public abstract class RemusApplet {
 
 	public static RemusApplet newApplet( String path, CodeFragment code, int type ) {
 		RemusApplet out = null;
-
 		switch (type) {
 		case MAPPER: {
 			out = new MapperApplet();	
@@ -46,7 +46,7 @@ public abstract class RemusApplet {
 			out.code = code;
 			out.path = path;
 			out.type = type;
-			out.inputs = new LinkedList<InputReference>();
+			out.inputs = null;
 			out.status = new InstanceStatus(out);
 		}
 		return out;
@@ -64,11 +64,14 @@ public abstract class RemusApplet {
 	List<InputReference> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
 	CodeFragment code;
+	MPStore datastore;
 	int type;
 	protected RemusPipeline pipeline = null;
 	public InstanceStatus status;
 
 	public void addInput( InputReference in ) {
+		if ( inputs == null )
+			inputs = new ArrayList<InputReference>();
 		inputs.add(in);
 	}	
 
@@ -96,8 +99,8 @@ public abstract class RemusApplet {
 		return code;
 	}
 
-	public InputReference [] getInputs() {
-		return inputs.toArray( new InputReference[0] );
+	public List<InputReference> getInputs() {
+		return inputs;
 	}
 
 	public String [] getOutputs() {
@@ -115,24 +118,60 @@ public abstract class RemusApplet {
 	}
 
 	abstract public Map getDescMap();
-	abstract public Collection<Integer> getWorkSet(RemusInstance remusInstance) ;
+	abstract public Collection<Long> getWorkSet(RemusInstance remusInstance) ;
 	abstract public WorkDescription getWork(RemusInstance inst, int jobID);
 
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
+		this.datastore = remusPipeline.getCodeManager().getApp().getDataStore();
 	}
-	
+
 	public RemusPipeline getPipeline() {
 		return this.pipeline;
 	}
 
+	public boolean isComplete( RemusInstance remusInstance ) {
+		if ( datastore.containsKey(new File("/@done"), remusInstance.toString(), getPath() ) ) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isReady( RemusInstance remusInstance ) {
+		if ( hasInputs() ) {
+			boolean allReady = true;
+			for ( InputReference iRef : inputs ) {
+				RemusApplet iApplet = getPipeline().getApplet(iRef.getPath());
+				if ( iApplet != null ) {
+					if ( !iApplet.isComplete(remusInstance) ) {
+						allReady = false;
+					}
+				}		
+			}			
+			return allReady;
+		}		
+		return true;
+	}
+
+	public void setDone(RemusInstance remusInstance) {
+		datastore.add(new File("/@done"), remusInstance.toString(), 0, 0, getPath(), null);
+	}
+	
 	public void finishWork(RemusInstance remusInstance, long jobID) {
 		NodeInstanceStatus is = status.instance.get(remusInstance);
 		if ( is != null ) {
 			is.jobsRemaining.remove( jobID );
-			MPStore ds = pipeline.getCodeManager().getApp().getDataStore();
-			ds.add(new File("/@work"), remusInstance.toString(), jobID, getPath(), jobID );
+			datastore.add(new File("/@work"), remusInstance.toString(), jobID, 0, getPath(), jobID );
+			if ( is.jobsRemaining.size() == 0 ) {
+				setDone( remusInstance );
+			}
 		}
+	}
+
+	public boolean hasInputs() {
+		if ( inputs == null )
+			return false;
+		return true;
 	}
 
 }

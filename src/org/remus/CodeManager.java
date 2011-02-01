@@ -6,13 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mpstore.MPStore;
 import org.remus.applet.RemusApplet;
 
 
 public class CodeManager {
 	RemusApp  parent;
+	MPStore datastore;
 	public CodeManager( RemusApp parent ) {
 		this.parent = parent;
+		datastore = parent.getDataStore();
 		codeMap = new HashMap<String, RemusApplet>();
 	}
 
@@ -44,14 +47,16 @@ public class CodeManager {
 		do {
 			change = false;
 			for ( String path : codeMap.keySet() ) {
-				for ( InputReference inRef : codeMap.get(path).getInputs() ) {
-					if ( colorMap.containsKey( inRef.getPath() ) ) {
-						int val1 = colorMap.get(path);
-						int val2 = colorMap.get(inRef.getPath());
-						if ( val1 != val2 )  {
-							colorMap.put(path, Math.min(val1, val2));
-							colorMap.put(inRef.getPath(), Math.min(val1, val2));
-							change = true;
+				if ( codeMap.get(path).hasInputs() ) {
+					for ( InputReference inRef : codeMap.get(path).getInputs() ) {
+						if ( colorMap.containsKey( inRef.getPath() ) ) {
+							int val1 = colorMap.get(path);
+							int val2 = colorMap.get(inRef.getPath());
+							if ( val1 != val2 )  {
+								colorMap.put(path, Math.min(val1, val2));
+								colorMap.put(inRef.getPath(), Math.min(val1, val2));
+								change = true;
+							}
 						}
 					}
 				}
@@ -73,23 +78,28 @@ public class CodeManager {
 	}
 
 
-	public List<RemusWork> getWorkQueue(int maxSize) {		
-		LinkedList<RemusWork> out = new LinkedList<RemusWork>();
-
-		for ( RemusPipeline pipeline : pipelines ) {
+	public void startWorkQueue() {
+		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( !pipeline.dynamic ) {
 				if ( pipeline.jobs.size() == 0) {
 					RemusInstance instance = new RemusInstance( RemusInstance.STATIC_INSTANCE );
 					pipeline.addInstance( instance );
 				}
 			}
+		}
+	}
+
+	public List<RemusWork> getWorkQueue(int maxSize) {		
+		LinkedList<RemusWork> out = new LinkedList<RemusWork>();
+
+		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( out.size() < maxSize ) {
 				out.addAll( pipeline.getWorkQueue( maxSize - out.size() ) );
 			}
 		}
 		return out;		
 	}
-	
+
 	public RemusApp getApp() {
 		return parent;		
 	}

@@ -1,6 +1,5 @@
-package org.remus.data;
+package org.mpstore;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +43,8 @@ public class JsonSerializer implements Serializer {
 				return Float.toString((Float)o);
 			} else if ( o instanceof Integer ) {
 				return Integer.toString(((Integer)o));
+			} else if ( o instanceof Long ) {
+				return Long.toString((Long)o);
 			}
 		return null;
 	}
