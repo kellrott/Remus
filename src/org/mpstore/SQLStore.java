@@ -26,9 +26,8 @@ public class SQLStore implements MPStore {
 
 			Statement st = connect.createStatement();
 			try {
-				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobID LONG, emitID LONG, valkey VARCHAR(1024), value BLOB  )" );
-				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );				
-
+				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobID LONG, emitID LONG, valkey VARCHAR(1024), value VARCHAR(1024)  )" );
+				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );
 			} catch (SQLException e) {
 				e.printStackTrace();
 				//if these fail, it's because the tables where already setup
@@ -168,7 +167,10 @@ public class SQLStore implements MPStore {
 			ResultSet rs = st.executeQuery();
 			Object out = null;
 			while ( rs.next() && out == null ) {
-				out = serializer.loads( rs.getString(1) );
+				String serialString = rs.getString(1);
+				if ( serialString != null ) {
+					out = serializer.loads( serialString );
+				}
 			}
 			rs.close();
 			st.close();

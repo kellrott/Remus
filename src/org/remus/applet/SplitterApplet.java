@@ -1,59 +1,15 @@
 package org.remus.applet;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 
-import org.remus.InputReference;
+import org.mpstore.KeyValuePair;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
-import org.remus.applet.InstanceStatus.NodeInstanceStatus;
 
-public class SplitterApplet extends RemusApplet {
-
-	@Override
-	public WorkDescription getWork(RemusInstance inst, int jobID) {
-		WorkDescription out = new WorkDescription();
-		Map map = new HashMap();
-		if ( hasInputs() )
-			map.put("input", inputs.get(jobID).getPath() );
-		else
-			map.put("input", null );
-
-		out.desc = map;
-		return out;
-	}
-
-	@Override
-	public Collection<Long> getWorkSet(RemusInstance remusInstance) {
-		Set<Long> out = new HashSet<Long>();
-		if ( !isComplete(remusInstance) ) {
-			if ( isReady(remusInstance) ) {
-				if ( hasInputs() ) {
-					for ( long i = 0; i < inputs.size(); i++ ) {
-						out.add(i);
-					}
-				} else {
-					out.add(0L);
-				}	
-			}
-			Iterable<Object> completeJobs = datastore.get(new File("/@work"), remusInstance.toString(), getPath() );
-			for ( Object job : completeJobs ) {
-				out.remove(((Long)job).intValue());
-			}
-			if ( out.size() == 0 ) {
-				setDone( remusInstance );				
-			}			
-		}
-		return out;
-	}
-
+public class SplitterApplet implements WorkGenerator {
 
 
 	@Override
@@ -61,6 +17,46 @@ public class SplitterApplet extends RemusApplet {
 		Map out = new HashMap();
 		out.put("mode", "split");
 		return out;
+	}
+
+	ArrayList<WorkDescription> outList;
+	int curPos;
+	RemusApplet applet;
+	@Override
+	public void init(RemusApplet applet) {
+		this.applet = applet;	
+	}
+
+	
+	@Override
+	public void startWork(RemusInstance instance) {
+		outList = new ArrayList<WorkDescription>();
+		if ( !applet.isComplete(instance) ) {
+			if ( applet.isReady(instance) ) {
+				if ( applet.hasInputs() ) {
+					for ( int i = 0; i < applet.inputs.size(); i++ ) {
+						KeyValuePair d = applet.datastore.get(new File("/@work"), instance.toString(),i, 0 );
+						if ( d == null ) {
+							Map out = new HashMap();
+							out.put( "input", applet.inputs.get(i).getPath() );
+							outList.add( new WorkDescription(applet, instance, i, out) );
+						}
+					}
+				} else {
+					//out.add(0L);
+				}	
+			}
+		}		
+		curPos = 0;
+	}
+
+	@Override
+	public WorkDescription nextWork() {
+		if ( curPos < outList.size() ) {
+			curPos++;
+			return outList.get(curPos-1);
+		}
+		return null;
 	}
 
 }

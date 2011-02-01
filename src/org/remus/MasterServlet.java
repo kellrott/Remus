@@ -92,7 +92,7 @@ public class MasterServlet extends HttpServlet {
 				//applet request, no api mode
 				PrintWriter out = resp.getWriter();
 				RemusApplet applet = app.codeManager.get( reqInfo.path );
-				Map outMap = applet.getDescMap();
+				Map outMap = applet.getInfo();
 				out.print( serializer.dumps(outMap) );
 			} else {
 				PrintWriter out = resp.getWriter();
@@ -100,8 +100,11 @@ public class MasterServlet extends HttpServlet {
 					MPStore ds = app.getDataStore();
 					Map pm = req.getParameterMap();
 					if ( pm.containsKey("key") && pm.containsKey("instance") ) {
-						if ( ds.containsKey( reqInfo.file, (String)pm.get("instance"), (String)pm.get("key")  ) ) {
-							for ( Object value : ds.get( reqInfo.file, ((String [])pm.get("instance"))[0], (String)pm.get("key") ) ) {
+						String instStr = ((String[])pm.get("instance"))[0];
+						String keyStr = ((String[])pm.get("key"))[0];		
+						Object keyObj = serializer.loads(keyStr);
+						if ( ds.containsKey( reqInfo.file, instStr, keyObj ) ) {
+							for ( Object value : ds.get( reqInfo.file, instStr, keyObj ) ) {
 								out.println( serializer.dumps( value ) );
 							}
 						} else {
@@ -170,13 +173,13 @@ public class MasterServlet extends HttpServlet {
 					count = Integer.parseInt(req.getParameter("max"));
 				}
 				Map<String,Map<?,?>> outMap = new HashMap<String,Map<?,?>>();
-				for ( RemusWork work : app.codeManager.getWorkQueue( count ) ) {
-					if ( !outMap.containsKey(work.instance.toString()) )
-						outMap.put( work.instance.toString(), new HashMap() );
-					Map iMap = outMap.get(work.instance.toString());
-					if ( !iMap.containsKey( work.applet.getPath() ) )
-						iMap.put( work.applet.getPath(), new ArrayList() );
-					List aList = (List)iMap.get( work.applet.getPath() );
+				for ( WorkDescription work : app.codeManager.getWorkQueue( count ) ) {
+					if ( !outMap.containsKey(work.getInstance().toString()) )
+						outMap.put( work.getInstance().toString(), new HashMap() );
+					Map iMap = outMap.get(work.getInstance().toString());
+					if ( !iMap.containsKey( work.getApplet().getPath() ) )
+						iMap.put( work.getApplet().getPath(), new ArrayList() );
+					List aList = (List)iMap.get( work.getApplet().getPath() );
 					aList.add(work.jobID);
 				}
 				out.print( serializer.dumps(outMap) );

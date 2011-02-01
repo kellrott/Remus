@@ -16,29 +16,30 @@ import org.remus.WorkDescription;
 import org.remus.applet.InstanceStatus.NodeInstanceStatus;
 
 
-public abstract class RemusApplet {
+public class RemusApplet {
 
 	public static RemusApplet newApplet( String path, CodeFragment code, int type ) {
-		RemusApplet out = null;
+		RemusApplet out = new RemusApplet();
+
 		switch (type) {
 		case MAPPER: {
-			out = new MapperApplet();	
+			out.workGenerator = MapperApplet.class; //new MapperApplet();	
 			break;
 		}
 		case REDUCER: {
-			out = new ReducerApplet();	
+			out.workGenerator = ReducerApplet.class;	
 			break;
 		}
 		case SPLITTER: {
-			out = new SplitterApplet();	
+			out.workGenerator = SplitterApplet.class;	
 			break;
 		}
 		case MERGER: {
-			out = new MergerApplet();	
+			out.workGenerator = MergerApplet.class;	
 			break;
 		}
 		case PIPE: {
-			out = new PipeApplet();	
+			out.workGenerator = PipeApplet.class;	
 			break;
 		}
 		}
@@ -47,7 +48,15 @@ public abstract class RemusApplet {
 			out.path = path;
 			out.type = type;
 			out.inputs = null;
-			out.status = new InstanceStatus(out);
+			try {
+				out.status = new InstanceStatus( out, (WorkGenerator) out.workGenerator.newInstance() );
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return out;
 	}
@@ -60,6 +69,7 @@ public abstract class RemusApplet {
 	public static final int REDUCER = 4;
 	public static final int PIPE = 5;
 
+	Class workGenerator;
 	String path;
 	List<InputReference> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
@@ -67,7 +77,7 @@ public abstract class RemusApplet {
 	MPStore datastore;
 	int type;
 	protected RemusPipeline pipeline = null;
-	public InstanceStatus status;
+	private InstanceStatus status;
 
 	public void addInput( InputReference in ) {
 		if ( inputs == null )
@@ -117,9 +127,7 @@ public abstract class RemusApplet {
 		return code.getSource();
 	}
 
-	abstract public Map getDescMap();
-	abstract public Collection<Long> getWorkSet(RemusInstance remusInstance) ;
-	abstract public WorkDescription getWork(RemusInstance inst, int jobID);
+
 
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
@@ -136,7 +144,7 @@ public abstract class RemusApplet {
 		}
 		return false;
 	}
-	
+
 	public boolean isReady( RemusInstance remusInstance ) {
 		if ( hasInputs() ) {
 			boolean allReady = true;
@@ -156,13 +164,12 @@ public abstract class RemusApplet {
 	public void setDone(RemusInstance remusInstance) {
 		datastore.add(new File("/@done"), remusInstance.toString(), 0, 0, getPath(), null);
 	}
-	
+
 	public void finishWork(RemusInstance remusInstance, long jobID) {
-		NodeInstanceStatus is = status.instance.get(remusInstance);
-		if ( is != null ) {
-			is.jobsRemaining.remove( jobID );
+		if ( status.hasInstance(remusInstance) ) {
+			status.removeWork( remusInstance, jobID );
 			datastore.add(new File("/@work"), remusInstance.toString(), jobID, 0, getPath(), jobID );
-			if ( is.jobsRemaining.size() == 0 ) {
+			if ( status.jobCount( remusInstance ) == 0 ) {
 				setDone( remusInstance );
 			}
 		}
@@ -172,6 +179,33 @@ public abstract class RemusApplet {
 		if ( inputs == null )
 			return false;
 		return true;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+
+	public WorkDescription getWork(RemusInstance inst, int jobID) {
+		return status.getWork(inst, jobID);
+	}
+
+	public Collection<WorkDescription> getWorkList(RemusInstance job) {
+		Collection<WorkDescription> workSet = status.getWorkList(job);
+		return workSet;
+	}
+
+	public Map getInfo() {
+		//return workGenerator.getDescMap();
+		return null;
+	}
+
+	public void addInstance(RemusInstance instance) {
+		status.addInstance(instance);
+	}
+
+	public Collection<RemusInstance> getInstanceList() {
+		return status.getInstanceList();
 	}
 
 }
