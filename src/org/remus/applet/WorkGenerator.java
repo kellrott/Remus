@@ -9,5 +9,4 @@ public interface WorkGenerator {
 	public void init(RemusApplet applet);
 	public void startWork(RemusInstance instance);
 	public WorkDescription nextWork();	
-	public Map getDescMap();
 }

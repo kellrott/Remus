@@ -16,12 +16,9 @@ public class RemusPipeline {
 	Map<InputReference, RemusApplet> inputs;
 	CodeManager parent;
 
-//	List<RemusInstance> jobs;
-
 	public RemusPipeline(CodeManager parent) {
 		this.parent = parent;
 		members = new HashMap<String,RemusApplet>();
-//		jobs = new LinkedList<RemusInstance>();
 		inputs = new HashMap<InputReference, RemusApplet >();
 	}
 
@@ -37,20 +34,6 @@ public class RemusPipeline {
 		inputs = null; //invalidate input list
 		members.put(applet.getPath(), applet);
 	}
-
-	/*
-	public List<WorkDescription> getWorkQueue( RemusInstance job, int maxCount ) {
-		List<WorkDescription> out = new LinkedList<WorkDescription>();
-		for ( RemusApplet applet : members.values() ) {
-			for ( WorkDescription work : applet.getWorkList( job ) ) {
-				if ( out.size() < maxCount ) {
-					out.add( work );					
-				}
-			}
-		}
-		return out;
-	}
-	 */
 
 	public List<WorkDescription> getWorkQueue(int maxCount) {
 		if ( inputs == null ) {
@@ -104,15 +87,21 @@ public class RemusPipeline {
 			setupInputs();
 		}		
 		for ( RemusApplet applet : members.values() ) {
-			if ( !applet.hasInputs() && applet.getType() == RemusApplet.SPLITTER ) {
-				applet.addInstance(instance);
-			}
+			applet.addInstance(instance);
 		}
-		//jobs.add(instance);
 	}
 
 	public CodeManager getCodeManager() {
 		return parent;		
+	}
+
+	public boolean isComplete(RemusInstance statisInstance) {
+		boolean done = true;
+		for ( RemusApplet applet : members.values() ) {
+			if ( !applet.isComplete(statisInstance) )
+				done = false;
+		}
+		return done;
 	}
 
 }

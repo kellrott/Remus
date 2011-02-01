@@ -6,13 +6,8 @@ import java.util.Map;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 
-public class PipeApplet implements WorkGenerator {
+public class MergeGenerator implements WorkGenerator {
 
-	@Override
-	public Map getDescMap() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public void init(RemusApplet applet) {
@@ -25,12 +20,12 @@ public class PipeApplet implements WorkGenerator {
 		// TODO Auto-generated method stub
 		
 	}
+	
 	@Override
 	public WorkDescription nextWork() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
 
 }

@@ -81,10 +81,9 @@ public class CodeManager {
 	public void startWorkQueue() {
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( !pipeline.dynamic ) {
-				//if ( pipeline.jobs.size() == 0) {
-				//	RemusInstance instance = new RemusInstance( RemusInstance.STATIC_INSTANCE );
-				//	pipeline.addInstance( instance );
-				//}
+				if ( !pipeline.isComplete( RemusInstance.STATIS_INSTANCE ) ) {
+					pipeline.addInstance( RemusInstance.STATIS_INSTANCE );				
+				}
 			}
 		}
 	}

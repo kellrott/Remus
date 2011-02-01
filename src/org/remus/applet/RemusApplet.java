@@ -3,6 +3,7 @@ package org.remus.applet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,23 +24,23 @@ public class RemusApplet {
 
 		switch (type) {
 		case MAPPER: {
-			out.workGenerator = MapperApplet.class; //new MapperApplet();	
+			out.workGenerator = MapGenerator.class; //new MapperApplet();	
 			break;
 		}
 		case REDUCER: {
-			out.workGenerator = ReducerApplet.class;	
+			out.workGenerator = ReducerGenerator.class;	
 			break;
 		}
 		case SPLITTER: {
-			out.workGenerator = SplitterApplet.class;	
+			out.workGenerator = SplitGenerator.class;	
 			break;
 		}
 		case MERGER: {
-			out.workGenerator = MergerApplet.class;	
+			out.workGenerator = MergeGenerator.class;	
 			break;
 		}
 		case PIPE: {
-			out.workGenerator = PipeApplet.class;	
+			out.workGenerator = PipeGenerator.class;	
 			break;
 		}
 		}
@@ -49,7 +50,9 @@ public class RemusApplet {
 			out.type = type;
 			out.inputs = null;
 			try {
-				out.status = new InstanceStatus( out, (WorkGenerator) out.workGenerator.newInstance() );
+				WorkGenerator gen = (WorkGenerator) out.workGenerator.newInstance();
+				gen.init(out);
+				out.status = new InstanceStatus( out, gen );
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -138,13 +141,7 @@ public class RemusApplet {
 		return this.pipeline;
 	}
 
-	public boolean isComplete( RemusInstance remusInstance ) {
-		if ( datastore.containsKey(new File("/@done"), remusInstance.toString(), getPath() ) ) {
-			return true;
-		}
-		return false;
-	}
-
+	
 	public boolean isReady( RemusInstance remusInstance ) {
 		if ( hasInputs() ) {
 			boolean allReady = true;
@@ -161,16 +158,24 @@ public class RemusApplet {
 		return true;
 	}
 
-	public void setDone(RemusInstance remusInstance) {
+	
+	public boolean isComplete( RemusInstance remusInstance ) {
+		if ( datastore.containsKey(new File("/@done"), remusInstance.toString(), getPath() ) ) {
+			return true;
+		}
+		return false;
+	}
+
+	public void setComplete(RemusInstance remusInstance) {
 		datastore.add(new File("/@done"), remusInstance.toString(), 0, 0, getPath(), null);
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID) {
 		if ( status.hasInstance(remusInstance) ) {
 			status.removeWork( remusInstance, jobID );
-			datastore.add(new File("/@work"), remusInstance.toString(), jobID, 0, getPath(), jobID );
+			datastore.add(new File( getPath() + "@work"), remusInstance.toString(), jobID, 0, getPath(), jobID );
 			if ( status.jobCount( remusInstance ) == 0 ) {
-				setDone( remusInstance );
+				setComplete( remusInstance );
 			}
 		}
 	}
@@ -196,7 +201,26 @@ public class RemusApplet {
 	}
 
 	public Map getInfo() {
-		//return workGenerator.getDescMap();
+		if ( type==MAPPER ) {
+			Map out = new HashMap();
+			out.put("mode", "map");
+			return out;
+		}
+		if ( type==REDUCER ) {
+			Map out = new HashMap();
+			out.put("mode", "reduce");
+			return out;
+		}
+		if(type==SPLITTER) {
+			Map out = new HashMap();
+			out.put("mode", "split");
+			return out;
+		}
+		if(type==PIPE) {
+			Map out = new HashMap();
+			out.put("mode", "pipe");
+			return out;
+		}
 		return null;
 	}
 
