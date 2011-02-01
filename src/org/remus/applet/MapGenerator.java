@@ -2,25 +2,15 @@ package org.remus.applet;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.mpstore.KeyValuePair;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 
-public class MapperApplet implements WorkGenerator {
-
-	@Override
-	public Map getDescMap() {
-		Map out = new HashMap();
-		out.put("mode", "map");
-		return out;
-	}
+public class MapGenerator implements WorkGenerator {
 
 	ArrayList<WorkDescription> outList;
 	int curPos;
@@ -42,8 +32,8 @@ public class MapperApplet implements WorkGenerator {
 						for ( KeyValuePair pair : applet.datastore.listKeyPairs( new File(iApplet.getPath()), instance.toString() ) ) {
 							Map map = new HashMap();							
 							map.put("input", iRef.getPath() );
-							map.put("jobID", pair.getJobID() );
-							map.put("emitID", pair.getEmitID() );
+							map.put("key", pair.getKey() );
+							map.put("value", pair.getValue() );
 							outList.add( new WorkDescription(applet, instance, jobID, map) );
 							jobID++;							
 						}

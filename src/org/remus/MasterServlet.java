@@ -122,7 +122,13 @@ public class MasterServlet extends HttpServlet {
 						Map outmap = new HashMap();
 						outmap.put( kp.getKey(), kp.getValue() );
 						out.println( serializer.dumps(outmap) );
-
+					} else if (  pm.containsKey("instance") ) {
+						String instStr = ((String[])pm.get("instance"))[0];
+						for ( KeyValuePair kp : ds.listKeyPairs( reqInfo.file , instStr ) ) {
+							Map outMap = new HashMap();
+							outMap.put(kp.getKey(), kp.getValue() );
+							out.println( serializer.dumps( outMap ) );
+						}						
 					}
 				} else if ( reqInfo.api.compareTo("keys") == 0 && req.getParameterMap().containsKey("instance") ) {
 					MPStore ds = app.getDataStore();

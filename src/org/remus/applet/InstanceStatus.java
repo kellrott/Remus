@@ -52,6 +52,7 @@ public class InstanceStatus {
 					while ( (curWork=workGen.nextWork()) != null) {
 						workMap.put((long)curWork.jobID, curWork);
 					}
+					instance.get(remusInstance).jobsRemaining = workMap;
 				}
 			}
 		}
@@ -67,8 +68,11 @@ public class InstanceStatus {
 	
 	public Collection<WorkDescription> getWorkList(RemusInstance job) {
 		checkInstance(job);
-		if ( instance.containsKey(job) )
-			return instance.get(job).jobsRemaining.values();		
+		if ( instance.containsKey(job) ) {
+			NodeInstanceStatus stat = instance.get(job);
+			if ( stat.jobsRemaining != null )
+				return stat.jobsRemaining.values();		
+		}
 		return Arrays.asList();
 	}
 
