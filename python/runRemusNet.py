@@ -69,6 +69,8 @@ def getWorker( host, applet ):
 		worker = SplitWorker( host, applet )
 	if appletDesc['mode'] == 'map':
 		worker = MapWorker( host, applet )
+	if appletDesc['mode'] == 'reduce':
+		worker = ReduceWorker( host, applet )
 	worker.getCode()
 	if worker is not None:
 		workerList[ applet ] = worker
@@ -119,7 +121,24 @@ class MapWorker(WorkerBase):
 			func( key, kpData[ key ] )
 		print "jobid", jobID
 		print httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+
+class ReduceWorker(WorkerBase):	
+	def doWork(self, instance, jobID):
+		url = self.host + self.applet + "@work?instance=%s&id=%s" % ( instance, jobID )
+		jobDesc = httpGetJson( url )
 		
+		func = remus.getFunction( self.applet )
+		#remus.setoutput( { None: http_write( outURL ) } )
+		remus.setoutput( {None: stdout_write() } )
+		for key in jobDesc:
+			kpURL = self.host + jobDesc['input'] + "@data?instance=%s&key=%s" % ( instance, quote(key) )		
+			kpData = httpGetJson( kpURL )
+			func( key, kpData )
+
+		#print "jobid", jobID
+		#print httpPostJson( self.host + "/@work", { instance : { self.applet : [ jobID ] } } )
+		
+
 def doWork( host, applet, instance, jobID ): 
 	worker = getWorker( host, applet )
 	if worker is not None:

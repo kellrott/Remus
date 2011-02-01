@@ -81,17 +81,16 @@ public class CodeManager {
 	public void startWorkQueue() {
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( !pipeline.dynamic ) {
-				if ( pipeline.jobs.size() == 0) {
-					RemusInstance instance = new RemusInstance( RemusInstance.STATIC_INSTANCE );
-					pipeline.addInstance( instance );
-				}
+				//if ( pipeline.jobs.size() == 0) {
+				//	RemusInstance instance = new RemusInstance( RemusInstance.STATIC_INSTANCE );
+				//	pipeline.addInstance( instance );
+				//}
 			}
 		}
 	}
 
-	public List<RemusWork> getWorkQueue(int maxSize) {		
-		LinkedList<RemusWork> out = new LinkedList<RemusWork>();
-
+	public List<WorkDescription> getWorkQueue(int maxSize) {		
+		LinkedList<WorkDescription> out = new LinkedList<WorkDescription>();
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( out.size() < maxSize ) {
 				out.addAll( pipeline.getWorkQueue( maxSize - out.size() ) );
