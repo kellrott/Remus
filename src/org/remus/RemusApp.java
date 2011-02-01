@@ -24,6 +24,7 @@ public class RemusApp {
 		codeManager = new CodeManager(this);
 		scanSource(srcbase);
 		codeManager.mapPipelines();
+		codeManager.startWorkQueue();
 	}
 	
 	public void setBaseURL(String baseURL) {

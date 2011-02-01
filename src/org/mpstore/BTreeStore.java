@@ -3,27 +3,29 @@ package org.mpstore;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class BTreeStore implements MPStore {
 
+	
 	@Override
-	public void init(String path) {
+	public void init(Serializer serializer, String basePath) {
 		// TODO Auto-generated method stub
+		
 	}
+	
 
 
 	private int order = 5;
 
 	class BTData {
-		BTData(Serializable data) {
+		BTData(Object data) {
 			this.data = data;
 			stored = false;
 		}
-		Serializable data;
+		Object data;
 		long fileLoc;
 		boolean stored;
 	}
@@ -100,7 +102,7 @@ public class BTreeStore implements MPStore {
 			}			
 		}
 
-		public void insertNode(BTKey newKey, Serializable value) {
+		public void insertNode(BTKey newKey, Object value) {
 			int i = n - 1;
 			if ( leaf ) {
 				while ( i >= 0 && newKey.compareTo(keys[i]) < 0 ) {
@@ -147,7 +149,7 @@ public class BTreeStore implements MPStore {
 			}		
 		}
 
-		public Serializable getFirst(Comparable searchKey) {
+		public Object getFirst(Comparable searchKey) {
 			int i = 0; 
 			while ( i < n && searchKey.compareTo(keys[i].key) > 0 ) {
 				i++;
@@ -260,7 +262,7 @@ public class BTreeStore implements MPStore {
 	}
 
 	@Override
-	public void add(File file, String instance, long jobid, Comparable key, Serializable data) {
+	public void add(File file, String instance, long jobid, Object key, Object data) {
 		BTNode r = root;
 		if ( r.n == 2 * order -1 ) {
 			BTNode s = allocateNode();
@@ -280,8 +282,8 @@ public class BTreeStore implements MPStore {
 	}
 	
 	@Override
-	public Iterable<Serializable> get(File file, String instance, Comparable key) {
-		LinkedList<Serializable>  outList = new LinkedList<Serializable>();
+	public Iterable<Object> get(File file, String instance, Comparable key) {
+		LinkedList<Object>  outList = new LinkedList<Object>();
 		root.treeCollect(key, outList );
 		return outList;
 	}

@@ -6,11 +6,12 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import org.mpstore.MPStore;
 import org.remus.RemusInstance;
 
 public class InstanceStatus {
 	public class NodeInstanceStatus {
-		public Set<Integer> jobsRemaining;
+		public Set<Long> jobsRemaining;
 	}
 
 	public Map<RemusInstance, NodeInstanceStatus> instance;
@@ -22,7 +23,7 @@ public class InstanceStatus {
 
 	public void addInstance(RemusInstance remusInstance) {
 		NodeInstanceStatus status = new NodeInstanceStatus();
-		status.jobsRemaining = new HashSet<Integer>();
+		status.jobsRemaining = new HashSet<Long>();
 		status.jobsRemaining.addAll(parent.getWorkSet(remusInstance));
 		instance.put(remusInstance, status);
 	}

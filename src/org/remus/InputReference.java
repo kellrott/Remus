@@ -10,6 +10,7 @@ public class InputReference {
 	String finalURL;
 	File localFile = null;
 	String localID = null;
+	Boolean appletInput = false;
 	Boolean dynamicInput = false;
 
 	RemusApp parent;
@@ -36,6 +37,7 @@ public class InputReference {
 				localFile = new File( parent.getSrcBase(), reqPath );
 				localID = idTest;
 				finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" ) + ":" + localID;
+				appletInput = true;
 			} else if ( url.compareTo("?") == 0) {
 				localFile = null;
 				localID = null;
@@ -47,10 +49,12 @@ public class InputReference {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
 				localID = idTest;
-				if ( localID == null ) 
+				if ( localID == null ) {
 					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "");
-				else
+				} else {
 					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "") + ":" + localID;
+					appletInput = true;
+				}
 			}
 		}
 	}
@@ -60,6 +64,10 @@ public class InputReference {
 		if ( localFile == null )
 			return false;
 		return true;
+	}
+	
+	public Boolean isApplet() {
+		return appletInput;
 	}
 
 	public File getLocalFile() {
