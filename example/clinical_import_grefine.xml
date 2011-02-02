@@ -71,7 +71,7 @@ def barcode_remap( key, vals ):
 ]]>
 </remus_reducer>
 
-<remus_reducer id="sample_condence" input=":mapper_csv" type="python">
+<remus_reducer id="sample_condence" input=":sample_remap" type="python">
 <![CDATA[
 import remus
 import re
@@ -79,11 +79,15 @@ reSample = re.compile(r'^(....\-..\-....)\-(...)')
 @remus.reducer
 def sample_reduce( key, vals ):
 	outmap = {}
-	for sampleMap in vals:
-		for valKey in sampleMap:
-			if not outmap.has_key( valKey ):
-				outmap[ valKey ] = []
-			outmap[ valKey ].append( sampleMap[ valKey ] )
+	for sampleSet in vals:
+		for sampleName in sampleSet:
+			if not outmap.has_key( sampleName ):
+				outmap[ sampleName ] = {}
+			for valSet in sampleSet[ sampleName ]:
+				for valKey in valSet:
+					if not outmap[sampleName].has_key( valKey ):
+						outmap[sampleName][ valKey ] = []
+					outmap[sampleName][ valKey ].append( valSet[ valKey ] )
 	remus.emit( key, outmap )
 ]]>
 </remus_reducer>
@@ -92,24 +96,61 @@ def sample_reduce( key, vals ):
 <![CDATA[
 import remus
 @remus.mapper
-def col_map( key, vals ):
-	for sampleKey in vals: 
-		for sampleVal in vals[ sampleKey ]:
-			remus.emit( sampleKey, sampleVal )
+def col_map( key, val ):
+	for sampleSet in val: 
+		for sampleKey in val[sampleSet]:
+			for sampleVal in val[sampleSet][ sampleKey ]:
+				remus.emit( sampleKey, sampleVal )
 ]]>
 </remus_mapper>
 
-<remus_reducer id="column_enumerate" input=":column_map" type="python">
+<remus_reducer id="column_enumerate" input=":column_map" type="python" output="enumMap,enumCols,floatCols">
 <![CDATA[
 import remus
 @remus.reducer
 def col_map( key, vals ):
 	out = {}
+	allFloat = True
+	first = True
+	minVal = None
+	maxVal = None	
 	for val in vals:
+		try:
+			if ( val != "null" ):
+				i = float(val.replace(",", ""))
+				if first:
+					minVal = i
+					maxVal = i
+					first = False
+				minVal = min(minVal,i)
+				maxVal = max(maxVal,i)
+				print minVal, maxVal
+		except ValueError:
+			allFloat = False
+				
 		if not out.has_key( val ):
 			out[ val ] = len(out)
-	remus.emit( key, out )
+	
+	if key.count("barcode") == 0 and len(out) > 1:
+		if ( allFloat ):
+			print minVal, maxVal
+			remus.emit( key, [minVal,maxVal], "floatCols" )
+		else:
+			remus.emit( key, out, "enumCols" )		
 ]]>
 </remus_reducer>
+
+<!-- remus_mapper id="sample_sequence_split" input=":sample_condence" output="point,sequence" type="python">
+<![CDATA[
+import remus
+@remus.mapper
+def col_map( key, val ):
+	for valKey in val:
+		if ( len( val[valKey] ) == 1 ):
+			remus.emit( key, { valKey : val[valKey][0] }, "point" )
+		else:
+			remus.emit( key, { valKey : val[valKey] }, "sequence" )
+]]>
+</remus_mapper-->
 
 </html>

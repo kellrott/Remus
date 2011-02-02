@@ -60,6 +60,12 @@ public class RemusParser {
 						InputReference iRef = new InputReference(parent, inputStr, pagePath );
 						applet.addInput(iRef);
 					}
+					if ( attr.getNamedItem("output") != null ) {
+						String outputStr = attr.getNamedItem("output").getTextContent();
+						for ( String outName : outputStr.split(",") ) {
+							applet.addOutput(outName);
+						}
+					}
 					if ( appletType == RemusApplet.MERGER ) {
 						String lInputStr = attr.getNamedItem("left").getTextContent();
 						InputReference lIRef = new InputReference(parent, lInputStr, pagePath );

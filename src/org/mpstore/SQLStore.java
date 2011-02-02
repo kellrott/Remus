@@ -28,6 +28,8 @@ public class SQLStore implements MPStore {
 			try {
 				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobID LONG, emitID LONG, valkey VARCHAR(1024), value BLOB  )" );
 				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );
+				st.executeUpdate( "CREATE INDEX mpdata_path on mpdata(path)" );
+				st.executeUpdate( "CREATE INDEX mpdata_instance on mpdata(instance)" );
 			} catch (SQLException e) {
 				e.printStackTrace();
 				//if these fail, it's because the tables where already setup

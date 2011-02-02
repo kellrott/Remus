@@ -8,6 +8,8 @@ public class MasterServer {
 
 	public static void main(String args[]) {
 		try {
+            System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "0");
+
 			Server server = new Server(16016);
 			Context root = new Context(server,"/",Context.SESSIONS);
 			ServletHolder sh = new ServletHolder(new MasterServlet());

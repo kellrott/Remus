@@ -29,11 +29,10 @@ public class MapGenerator implements WorkGenerator {
 					int jobID = 0;
 					for ( InputReference iRef : applet.inputs ) {
 						RemusApplet iApplet = applet.getPipeline().getApplet(iRef.getPath());
-						for ( KeyValuePair pair : applet.datastore.listKeyPairs( new File(iApplet.getPath()), instance.toString() ) ) {
+						for ( Object key : applet.datastore.listKeys( new File(iApplet.getPath()), instance.toString() ) ) {
 							Map map = new HashMap();							
 							map.put("input", iRef.getPath() );
-							map.put("key",   pair.getKey() );
-							map.put("value", pair.getValue() );
+							map.put("key",   key );
 							outList.add( new WorkDescription(applet, instance, jobID, map) );
 							jobID++;							
 						}

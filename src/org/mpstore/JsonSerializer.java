@@ -41,6 +41,8 @@ public class JsonSerializer implements Serializer {
 				return "\"" + ((String)o) + "\"";
 			} else if ( o instanceof Float ) {
 				return Float.toString((Float)o);
+			} else if ( o instanceof Double ) {
+				return Double.toString((Double)o);
 			} else if ( o instanceof Integer ) {
 				return Integer.toString(((Integer)o));
 			} else if ( o instanceof Long ) {
