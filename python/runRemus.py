@@ -6,6 +6,16 @@ import os
 import json
 
 from remusLib import *
+
+class file_output:
+	def __init__(self, path):
+		self.handle = open( path, "w" )
+	
+	def emit(self, key, value):
+		self.handle.write( json.dumps( {key : value} ) + "\n" )
+	
+	def close(self):
+		self.handle.close()
 				
 class remusGraph(remusNode):
 	def __init__(self, id):
@@ -29,28 +39,28 @@ class remusGraph(remusNode):
 						leftPath = "%s/%s.output" % ( self.id, lRef[1:] )
 						rightPath = "%s/%s.output" % ( self.id, rRef[1:] )
 						if os.path.exists( leftPath ) and os.path.exists( rightPath ):
-							out = { None : open( outPath, "w" ) }
+							out = { None : file_output( outPath ) }
 							if self.nodes[ key ].output is not None:
 								for oName in self.nodes[ key ].output.split(","):
-									out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
+									out[ oName ] = file_output( "%s/%s.%s.output" % (self.id, key, oName) )
 							self.callMerge( self.nodes[ key ], leftPath, rightPath, out )
 							for oKey in out:
 								out[ oKey ].close()
 							running = True
 				elif ( self.nodes[ key ].input == "?" ):
-					out = { None : open( outPath, "w" ) }
+					out = { None : file_output( outPath ) }
 					if self.nodes[ key ].output is not None:
 						for oName in self.nodes[ key ].output.split(","):
-							out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
+							out[ oName ] = file_output( "%s/%s.%s.output" % (self.id, key, oName) )
 					self.callNode( self.nodes[ key ], sys.stdin, out )
 					for oKey in out:
 						out[ oKey ].close()
 					running = True
 				elif ( self.nodes[ key ].input is None or len( self.nodes[ key ].input ) == 0 ):
-					out = { None : open( outPath, "w" ) }
+					out = { None : file_output( outPath ) }
 					if self.nodes[ key ].output is not None:
 						for oName in self.nodes[ key ].output.split(","):
-							out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
+							out[ oName ] = file_output( "%s/%s.%s.output" % (self.id, key, oName) )
 					self.callNode( self.nodes[ key ], None, out )
 					for oKey in out:
 						out[ oKey ].close()
@@ -72,10 +82,10 @@ class remusGraph(remusNode):
 								ready = False
 					
 					if ready:
-						out = { None : open( outPath, "w" ) }
+						out = { None : file_output( outPath ) }
 						if self.nodes[ key ].output is not None:
 							for oName in self.nodes[ key ].output.split(","):
-								out[ oName ] = open( "%s/%s.%s.output" % (self.id, key, oName), "w" )
+								out[ oName ] = file_output( "%s/%s.%s.output" % (self.id, key, oName) )
 						iHandle = fileStreamer( fileList )
 						self.callNode( self.nodes[ key ], iHandle, out )
 						for oKey in out:

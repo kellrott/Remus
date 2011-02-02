@@ -26,7 +26,7 @@ public class SQLStore implements MPStore {
 
 			Statement st = connect.createStatement();
 			try {
-				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobID LONG, emitID LONG, valkey VARCHAR(1024), value VARCHAR(1024)  )" );
+				st.executeUpdate( "CREATE TABLE mpdata ( path VARCHAR(1024), instance CHAR(36), jobID LONG, emitID LONG, valkey VARCHAR(1024), value BLOB  )" );
 				st.executeUpdate( "CREATE INDEX mpdata_key on mpdata(valkey)" );
 			} catch (SQLException e) {
 				e.printStackTrace();
@@ -93,7 +93,11 @@ public class SQLStore implements MPStore {
 			ResultSet rs = st.executeQuery();
 			List<Object> out = new LinkedList<Object>();
 			while ( rs.next() ) {
-				out.add( serializer.loads( rs.getString(1) ) );
+				String a = rs.getString(1);
+				if ( a != null )
+					out.add( serializer.loads( a ) );
+				else
+					out.add( null );
 			}
 			rs.close();
 			st.close();
@@ -207,13 +211,21 @@ public class SQLStore implements MPStore {
 	@Override
 	public Iterable<KeyValuePair> listKeyPairs(File reqFile, String instance) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID FROM mpdata where path = ? and instance = ?" );
+			PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID, valkey, value FROM mpdata where path = ? and instance = ?" );
 			st.setString(1, reqFile.getAbsolutePath() );
 			st.setString(2, instance);
 			ResultSet rs = st.executeQuery();
 			List<KeyValuePair> out = new LinkedList<KeyValuePair>();
 			while ( rs.next() ) {
-				out.add( new KeyValuePair(this, reqFile.getAbsolutePath(), instance, rs.getLong(1), rs.getLong(2) ));
+				String keyStr = rs.getString(3);
+				String valStr = rs.getString(4);
+				Object key = null;
+				Object val = null;
+				if ( keyStr != null )
+					key = serializer.loads(keyStr);
+				if ( valStr != null )
+					val = serializer.loads(valStr);
+				out.add( new KeyValuePair(this, reqFile.getAbsolutePath(), instance, rs.getLong(1), rs.getLong(2), key, val ));
 			}
 			rs.close();
 			st.close();
