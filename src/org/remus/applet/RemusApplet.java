@@ -141,7 +141,7 @@ public class RemusApplet {
 		return this.pipeline;
 	}
 
-	
+
 	public boolean isReady( RemusInstance remusInstance ) {
 		if ( hasInputs() ) {
 			boolean allReady = true;
@@ -158,7 +158,7 @@ public class RemusApplet {
 		return true;
 	}
 
-	
+
 	public boolean isComplete( RemusInstance remusInstance ) {
 		if ( datastore.containsKey(new File("/@done"), remusInstance.toString(), getPath() ) ) {
 			return true;
@@ -201,32 +201,26 @@ public class RemusApplet {
 	}
 
 	public Map getInfo() {
+		Map out = new HashMap();
 		if ( type==MAPPER ) {
-			Map out = new HashMap();
 			out.put("mode", "map");
-			return out;
 		}
 		if ( type==REDUCER ) {
-			Map out = new HashMap();
 			out.put("mode", "reduce");
-			return out;
 		}
 		if(type==SPLITTER) {
-			Map out = new HashMap();
 			out.put("mode", "split");
-			return out;
 		}
 		if(type==PIPE) {
-			Map out = new HashMap();
 			out.put("mode", "pipe");
-			return out;
 		}
 		if(type==MERGER) {
-			Map out = new HashMap();
 			out.put("mode", "merge");
-			return out;
 		}
-		return null;
+		if ( outputs != null && outputs.size() > 0 ) {
+			out.put("output", outputs);
+		}
+		return out;
 	}
 
 	public void addInstance(RemusInstance instance) {
