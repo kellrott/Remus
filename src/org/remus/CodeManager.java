@@ -33,7 +33,7 @@ public class CodeManager {
 		return codeMap.keySet();
 	}
 
-	public List<RemusPipeline> pipelines;
+	private List<RemusPipeline> pipelines;
 
 	void mapPipelines() {
 		HashMap<String,Integer> colorMap = new HashMap<String,Integer>();
@@ -100,6 +100,12 @@ public class CodeManager {
 
 	public RemusApp getApp() {
 		return parent;		
+	}
+	public int getPipelineCount() {
+		return pipelines.size();
+	}
+	public RemusPipeline getPipeline(int i) {
+		return pipelines.get(i);		
 	}
 
 

@@ -32,7 +32,7 @@ public class MapGenerator implements WorkGenerator {
 						for ( KeyValuePair pair : applet.datastore.listKeyPairs( new File(iApplet.getPath()), instance.toString() ) ) {
 							Map map = new HashMap();							
 							map.put("input", iRef.getPath() );
-							map.put("key", pair.getKey() );
+							map.put("key",   pair.getKey() );
 							map.put("value", pair.getValue() );
 							outList.add( new WorkDescription(applet, instance, jobID, map) );
 							jobID++;							

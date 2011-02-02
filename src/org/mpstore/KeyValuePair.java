@@ -16,6 +16,17 @@ public class KeyValuePair {
 		this.jobID = jobID;
 		this.emitID = emitID;
 	}
+	
+	KeyValuePair( MPStore datastore, String path, String instance, long jobID, long emitID, Object key, Object value ) {
+		this.datastore = datastore;
+		this.path = path;
+		this.instance = instance;
+		this.jobID = jobID;
+		this.emitID = emitID;
+		this.key = key;
+		this.value = value;
+	}
+
 
 	public long getJobID() {		
 		return jobID;

@@ -5,13 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -86,14 +81,35 @@ public class MasterServlet extends HttpServlet {
 	throws ServletException, IOException {		
 
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
-
 		if ( app.codeManager.containsKey( reqInfo.path ) ) {
 			if ( reqInfo.api == null ) {
-				//applet request, no api mode
-				PrintWriter out = resp.getWriter();
-				RemusApplet applet = app.codeManager.get( reqInfo.path );
-				Map outMap = applet.getInfo();
-				out.print( serializer.dumps(outMap) );
+				PrintWriter out = resp.getWriter();				
+				resp.setContentType( "text/html" );
+				out.println( "<p><a href='" + reqInfo.path + "@code'>CODE</a></p>" );
+
+				RemusApplet applet = app.codeManager.get(reqInfo.path);
+				String instStr = req.getParameter("instance");
+				if ( instStr != null ) {
+					RemusInstance curInst = new RemusInstance(instStr);
+					if ( applet.isComplete(curInst ) ) {
+						out.println("<p>Work Complete</p>");
+					} else { 
+						if ( applet.isReady(curInst) ) {
+							out.println("<p>Work Ready</p>" );
+						} else {
+							out.println("<p>Work Not Ready</p>" );							
+						}
+					}
+					out.println("<ul>");
+					out.println( "<li><a href='" + reqInfo.path + "@keys?instance="   + instStr + "'>KEYS</a></li>" );
+					out.println( "<li><a href='" + reqInfo.path + "@data?instance="   + instStr + "'>DATA</a></li>" );					
+					out.println( "<li><a href='" + reqInfo.path + "@reduce?instance=" + instStr + "'>REDUCE</a></li>" );					
+					out.println("</ul>");
+				} else {
+					for ( RemusInstance inst : applet.getInstanceList() ) {
+						out.println( "<a href='" + reqInfo.path + "?instance=" + inst.toString() + "'>" + inst.toString() + "</a>" );
+					}
+				}
 			} else {
 				PrintWriter out = resp.getWriter();
 				if ( reqInfo.api.compareTo("data") == 0 ) {
@@ -150,26 +166,42 @@ public class MasterServlet extends HttpServlet {
 								out.println( serializer.dumps( w.getDesc() ) );
 						}
 					}
+				} else if ( reqInfo.api.compareTo("info") == 0 ) {
+					RemusApplet applet = app.codeManager.get( reqInfo.path );
+					Map outMap = applet.getInfo();
+					out.print( serializer.dumps(outMap) );
+				} else if ( reqInfo.api.compareTo("reduce") == 0 ) {
+					MPStore ds = app.getDataStore();
+					String instStr = req.getParameter("instance");
+					for ( Object key : ds.listKeys( reqInfo.file, instStr ) ) {
+						Map outMap = new HashMap();
+						List outList = new ArrayList();
+						for ( Object val : ds.get(reqInfo.file, instStr, key) ) {
+							outList.add(val);							
+						}
+						outMap.put(key, outList);
+						out.println( serializer.dumps( outMap ) );
+					}
 				}
 			}
 		} else if ( reqInfo.path.compareTo("/") == 0 ) {
 			if ( reqInfo.api == null ) {
 				PrintWriter out = resp.getWriter();
 				resp.setContentType( "text/html" );
-				out.println( "Code list: <ul>");
-				for ( String path : app.codeManager.keySet() ) {
-					out.println( "<li><a href='" + path + "'>" + path + "</a>" );
-				}
-				out.println("</ul>");
-				out.println( "Code list: <ul>");
-				for ( RemusPipeline pipeline : app.codeManager.pipelines ) {
+				out.println( "Pipelines: <ul>");
+				for ( int i =0; i < app.codeManager.getPipelineCount(); i++ ) {
+					RemusPipeline pipeline = app.codeManager.getPipeline(i);
 					if ( pipeline.dynamic )
-						out.println( "<li> Dynamic " + pipeline + "</li>" );
+						out.println( "<li><a href='/@pipeline?id=" + i + "'>Dynamic Pipeline " + i + "</a></li>" );
 					else
-						out.println( "<li> Static " + pipeline + "</li>" );
+						out.println( "<li><a href='/@pipeline?id=" + i + "'>Dynamic Pipeline " + i + "</a></li>" );
+					out.println("<h3>CodeList</h3><ul>");
 					for ( RemusApplet applet : pipeline.getMembers() ) {
-						out.println( "----- " + applet.getPath() + "<br/>" );
+						out.println( "<li><a href='" + applet.getPath() + "'>" + applet.getPath() + "</a></li>" );
 					}
+					out.println("</ul>");
+					
+					
 				}
 				out.println("</ul>");
 			} else if ( reqInfo.api.compareTo("work") == 0 ) {
@@ -209,9 +241,7 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
-		System.out.println( reqInfo.path );
-		System.out.println( reqInfo.api );
+		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );		
 		if ( reqInfo.path.compareTo("/") == 0 ) {
 			if ( reqInfo.api.compareTo("restart") == 0 ) {
 				app = new RemusApp(new File(srcDir), app.workStore );

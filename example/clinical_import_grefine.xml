@@ -10,9 +10,8 @@ def testfunc( handle ):
 	projects = ref.projectList()
 	for projID in projects:
 		tmp = re.split( "_", projects[projID]["name"] )
-		if ( tmp[-1] == "COAD" ):
-			name = tmp[1]
-			remus.emit( projID, name )
+		name = tmp[1]
+		remus.emit( projID, name )
 ]]>
 
 </remus_splitter>
@@ -45,387 +44,72 @@ def testfunc( key, val ):
 			for i in range(1, len(tmp)):
 				if ( tmp[i] != "null" ):
 					out[ header[i] ] = tmp[i]
-			remus.emit( tmp[0], out )
+			if ( len(out) ):
+				remus.emit( tmp[0], out )
 	handle.close()
 ]]>
 </remus_mapper>
-<!--
-combine records from the CSV files into connected arrays
--->
-<remus_reducer id="reducer_sequence" input=":mapper_csv" type="python">
+
+<remus_reducer id="sample_remap" input=":mapper_csv" type="python">
 <![CDATA[
 import remus
+import re
+reSample = re.compile(r'^(....\-..\-....)\-(...)')
 @remus.reducer
-def listReduce( key, vals ):
-	remus.emit( key, vals )
+def barcode_remap( key, vals ):
+	res = reSample.search( key )
+	if res:
+		out = { key : [] }
+		for val in vals:
+			out[key].append( val )
+		remus.emit( res.group(1), out )
+	else:
+		out = { key : [] }
+		for val in vals:
+			out[key].append( val )
+		remus.emit( key, out )
 ]]>
 </remus_reducer>
-<!--
-Merge existing sample entries so that IDs that are shorter fragments of longer
-IDs are replicated into the rows. This is done because the PatientID is a subsequence
-of the SampleID, there are multiple Samples per Patient, so the primary key is the Sample,
-with the Patient info replicated across the child sample entries.
--->
-<remus_merger id="sample_merge" left=":reducer_sequence" right=":reducer_sequence" type="python">
+
+<remus_reducer id="sample_condence" input=":mapper_csv" type="python">
 <![CDATA[
 import remus
-@remus.merger
-def sample_merge( left_key, left_vals, right_key, right_vals ):
-	if ( left_key.startswith( right_key ) and left_key != right_key):
-		out = []
-		for samples in left_vals:
-			for sample in samples:
-				out.append( sample )
-		for samples in right_vals:
-			for sample in samples:
-				out.append( sample )
-		remus.emit( left_key, out )
+import re
+reSample = re.compile(r'^(....\-..\-....)\-(...)')
+@remus.reducer
+def sample_reduce( key, vals ):
+	outmap = {}
+	for sampleMap in vals:
+		for valKey in sampleMap:
+			if not outmap.has_key( valKey ):
+				outmap[ valKey ] = []
+			outmap[ valKey ].append( sampleMap[ valKey ] )
+	remus.emit( key, outmap )
 ]]>
-</remus_merger>
-<!--
-This takes that csv output and transposes it, so that the keys are 
-now the column names, the sampleIDs aren't passed along because we will only
-be using the set of values you create an enumerated set of all possible values.
--->
-<remus_mapper id="col_map" input=":mapper_csv" type="python">
+</remus_reducer>
+
+<remus_mapper id="column_map" input=":sample_condence" type="python">
 <![CDATA[
 import remus
 @remus.mapper
 def col_map( key, vals ):
-	for key2 in vals: 
-		remus.emit( key2, vals[ key2 ] )
+	for sampleKey in vals: 
+		for sampleVal in vals[ sampleKey ]:
+			remus.emit( sampleKey, sampleVal )
 ]]>
 </remus_mapper>
-<!--
-Before enumeration the set of all possible values, remove duplicates
--->
-<remus_reducer id="col_reduce" input=":col_map" type="python">
+
+<remus_reducer id="column_enumerate" input=":column_map" type="python">
 <![CDATA[
 import remus
 @remus.reducer
-def colcount( key, vals ):
-	a = {}
+def col_map( key, vals ):
+	out = {}
 	for val in vals:
-		a[ val ] = 1
-	remus.emit( key, a.keys() )
+		if not out.has_key( val ):
+			out[ val ] = len(out)
+	remus.emit( key, out )
 ]]>
 </remus_reducer>
-<!-- 
-Filter out columns that add no data and enumerate colums that do
--->
-<remus_reducer id="col_filter" input=":col_reduce" type="python">
-<![CDATA[
-
-skipCol = { "bcr_analyte_barcode" : True, "bcr_aliquot_barcode" : True,
-"bcr_examination_barcode" : True, "bcr_radiation_barcode" : True,
-"bcr_slide_barcode" : True, "bcr_drug_barcode" : True }
-
-import remus
-@remus.reducer
-def colfilter( key, vals ):
-	colType = None
-	if (not (len(vals[0]) == 1 and vals[0][0] == "null")) and key.count("barcode") == 0 and not skipCol.has_key( key ):
-		allFloat = True
-		for val in vals[0]:
-			try:
-				if ( val != "null" ):
-					float(val.replace(",", ""))
-			except ValueError:
-				allFloat = False
-		enumMap = {}
-		if allFloat:
-			remus.emit( key, { "::coltype" : "float" } )
-			return
-		
-		allFloat = True
-		unitScale = None
-		for val in vals[0]:
-			try:
-				if val != "null":
-					tmp = val.split(' ')
-					if len(tmp) == 2:
-						float(tmp[0].replace(",", ""))
-						if ( unitScale is None ):
-							unitScale = tmp[1]
-						else:
-							if unitScale != tmp[1]:
-								allFloat = False
-					else:
-						allFloat = False
-			except ValueError:
-				allFloat = False
-		if allFloat:
-			if ( unitScale is not None ):
-				remus.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float", "::unitscale" : unitScale } )
-			else:
-				remus.emit( key, { "::new_name" : "%s_%s" % (key, unitScale), "::coltype" : "float" } )
-			return
-
-		
-		for val in vals[0]:			
-			if not enumMap.has_key( val ) and val != "null":
-				enumMap[ val ] = len( enumMap )	
-		#don't emit enumerations with only value
-		if ( len( enumMap ) > 1 ):
-			remus.emit( key, { "::coltype" : "enum", "::enum" : enumMap } )
-
-]]>
-</remus_reducer>
-
-
-<!--
-Flip the CSV values so that are reference by column name,
-this way elemnts can removed based on columns that are being removed
-This is just like the col_map step, except is preserves the sampleID information,
-so that the rows can be rebuilt later
--->
-<remus_reducer id="csv_flipper" input=":sample_merge" type="python">
-<![CDATA[
-import remus
-@remus.reducer
-def csv_flipper(key, vals):
-	for a in vals:
-		for b in a:
-			for c in b:
-				remus.emit( c, { key : b[c] } )
-]]>
-</remus_reducer>
-<!--
-Print out the values in columns that haven't been filtered out
-When producing the values, use the enumeration maps is needed
--->
-<remus_merger id="sample_flipper" left=":csv_flipper" right=":col_filter" type="python">
-<![CDATA[
-import remus
-@remus.merger
-def sample_combine( left_key, left_vals, right_key, right_vals ):
-	if ( left_key == right_key ):
-		outType = None
-		enumMap = None
-		unitScale = None
-		out = []
-		for a in right_vals:
-			if a.has_key("::coltype"):
-				outType = a["::coltype"]
-			if a.has_key( "::enum" ):
-				enumMap = a[ "::enum" ]
-			if a.has_key("::unitscale" ):
-				unitScale = a[ "::unitscale" ]
-				
-		for a in left_vals:
-			for b in a:
-				out.append( ( b, { left_key : a[b] }) )			
-
-		if outType is not None:
-			if enumMap is not None:
-				for a in out:
-					if enumMap[ a[1][ left_key ] ] != "null":
-						remus.emit( a[0], { left_key: enumMap[ a[1][ left_key ] ] } )
-					#else:
-					#	remus.emit( a[0], { left_key: "null" } )
-
-			else:
-				for a in out:
-					if a[1][ left_key ] != "null":
-						val = a[1][left_key].replace(",", "")
-						if unitScale is not None:
-							remus.emit( a[0], {left_key: float(val.replace(unitScale,"") )} )
-						else:
-							remus.emit( a[0], {left_key: float(val) } )
-					#else:
-					#	remus.emit( a[0], {key: "null"} )
-				
-]]>
-</remus_merger>
-
-<remus_reducer id="sample_combiner" input=":sample_flipper" type="python">
-<![CDATA[
-import remus
-@remus.reducer
-def sample_write( key, vals ):
-	outmap = {}
-	for a in vals:
-		for b in a:
-			outmap[b] = a[b]
-	remus.emit( key, outmap )
-
-]]>
-</remus_reducer>
-
-<remus_output id="col_list" input=":col_filter">
-<![CDATA[
-import remus
-@remus.output
-def col_list( handle ):
-	outset = {}
-	i = 0
-	oHandle = open("codes.tab", "w")
-	for key, val in handle:
-		if ( val[ "::coltype" ] == "enum" ):
-			for a in val[ "::enum" ]:
-				oHandle.write("%s\t%s\t%s\t%s\n" % ( "clinical", key, val[ "::enum" ][ a ], a) )
-		outset[ key ] = { i : val[ "::coltype" ] } 
-		i += 1
-	remus.emit( None, outset )
-]]>
-</remus_output>
-
-<remus_merger id="col_infomerge" left=":col_filter" right=":col_list">
-<![CDATA[
-import remus
-@remus.merger
-def col_infomerge( left_key, left_vals, right_key, right_vals ):
-	for vals in left_vals:
-		out = {}
-		for key in vals:
-			out[key] = vals[key]
-		out["::colnum"] = right_vals[0][ left_key ].keys()[0]
-		remus.emit( left_key, out )
-]]>
-</remus_merger>
-
-
-
-<remus_output id="col_2_ra" input=":col_infomerge" type="python">
-<![CDATA[
-import remus
-@remus.output
-def col_2_ra( handle ):
-	prior = 1
-	oHandle = open( "columnDb_clinical.ra", "w" )
-	sHandle = open("codes.sql", "w")
-	sHandle.write("""
-drop table if exists codes ;
-CREATE TABLE codes	(
-	tableName varchar(255) default NULL,
-	colName varchar(255) default NULL,
-	code int(11) default NULL,
-	val varchar(255) default NULL
-) TYPE=MyISAM;
-""")
-	showList = None
-	try:
-		liHandle = open( "importantColumns.list" )
-		showList = {}
-		for line in liHandle:
-			showList[ line.rstrip() ] = True
-		liHandle.close()
-	except IOError:
-		pass
-	for key, val in handle:
-		name = key
-		idNum = val[ "::colnum" ]
-		colName = "clinicalData_%d" % ( int(idNum) )
-		oHandle.write("name %s\n" % (colName) )
-		oHandle.write("shortLabel %s\n" % (name) )
-		oHandle.write("longLabel %s\n" % (name) )
-		oHandle.write("priority %d\n" % (prior) )
-		prior += 1
-		if ( showList is None or showList.has_key( name ) ):
-			oHandle.write("visibility on\n")
-		else:
-			oHandle.write("visibility off\n")
-		
-		oHandle.write("type lookup clinicalFeatures patientId %s\n" % (colName) )
-		if ( val[ "::coltype" ] == "enum" ):
-			oHandle.write("filterType coded\n\n")
-			for enum in val[ "::enum" ]:
-				sHandle.write( "INSERT INTO codes VALUES( '%s','%s',%d,'%s' );\n" % 
-					( "clinicalFeatures", colName,  val[ "::enum" ][enum], enum  ) )
-		else:
-			oHandle.write("filterType minMax\n\n")
-	sHandle.close()
-	oHandle.close()	
-		
-]]>
-</remus_output>
-
-
-<remus_merger id="tsv_merge" left=":sample_merge" right=":col_list">
-<![CDATA[
-import remus
-@remus.merger
-def tsv_merger( key_left, vals_left, key_right, vals_right ):
-	colmap = {}
-	for colName in vals_right[0]:
-		colmap[ colName ] = int( vals_right[0][colName].keys()[0] )		
-	colVals = ["null"] * len(colmap)
-
-	for curSet in vals_left[0]:
-		for curCol in curSet:
-			if colmap.has_key( curCol ):
-				colVals[ colmap[ curCol ] ] = curSet[ curCol ]
-	remus.emit( key_left, colVals )
-]]>
-</remus_merger>
-
-<remus_output id="tsv_print" input=":col_list,:tsv_merge">
-<![CDATA[
-import remus
-@remus.output
-def col_print( handle ):
-	oHandle = open( "clinicalFeatures.tsv", "w" )
-	header = None
-	for key, val in handle:
-		if header is None:
-			header = True
-			col_order = [ b for b in sorted(  val.keys(), lambda x,y : int(val[ x ].keys()[0]) - int(val[ y ].keys()[0]) ) ]
-			oHandle.write( "sampleID\t%s\n" % ( "\t".join( col_order ) ) )
-		else:
-			oHandle.write( "%s\t%s\n" % (key, "\t".join(val)) )
-	oHandle.close()
-]]>
-</remus_output>
-
-
-<remus_merger id="col_number" left=":sample_combiner" right=":col_list" type="python">
-<![CDATA[
-import remus
-@remus.merger
-def col_number( key_left, vals_left, key_right, vals_right ):
-	rVal = vals_right[0]
-	col_order = [ b for b in sorted(  rVal.keys(), lambda x,y : int(rVal[ x ].keys()[0]) -   int(rVal[ y ].keys()[0]) ) ]
-	vals = vals_left[0]
-	out = []
-	for col in col_order:
-		if vals.has_key( col ):
-			out.append( vals[ col ] )
-		else:
-			out.append( None )
-	remus.emit( key_left, out )
-]]>
-</remus_merger>
-
-<remus_output id="col_print" input=":col_list,:col_number">
-<![CDATA[
-import remus
-@remus.output
-def col_print( handle ):
-	oHandle = open( "clinicalFeatures.sql", "w" )
-	header = None
-	for key, val in handle:
-		if header is None:
-			header = True
-			oHandle.write( """
-drop table if exists clinicalFeatures;
-CREATE TABLE clinicalFeatures (\n\tpatientID varchar(255) default NULL,\n""" )
-			col_order = [ b for b in sorted(  val.keys(), lambda x,y : int(val[ x ].keys()[0]) - int(val[ y ].keys()[0]) ) ]
-			for a in col_order:
-				colNum = val[a].keys()[0]
-				if val[a][colNum] == "enum":
-					oHandle.write( "\tclinicalData_%d int(11) default NULL,\n" % (int(colNum)) )
-				else:
-					oHandle.write( "\tclinicalData_%d float(11) default NULL,\n" % (int(colNum)) )
-			oHandle.write("\tKEY patientID (patientID)\n);\n\n")
-		else:
-			a = []
-			for b in val:
-				if b is None or b == "null":
-					a.append( "\N" )
-				else:
-					a.append( "'%s'" % (str(b)) )
-			oHandle.write( "INSERT INTO clinicalFeatures VALUES( '%s', %s );\n" % (key, ",".join( a ) ) )
-]]>
-</remus_output>
 
 </html>
