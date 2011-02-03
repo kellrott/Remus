@@ -58,7 +58,7 @@ public class RemusPipeline {
 		for ( RemusApplet applet : members.values() ) {
 			if ( applet.hasInputs() ) {
 				for ( InputReference iref : applet.getInputs() ) {
-					if ( iref.dynamicInput || !iref.isLocal() || !parent.containsKey( iref.getPath() )) {
+					if ( iref.dynamicInput || iref.isApplet() || !parent.containsKey( iref.getPortPath() )) {
 						inputs.put(iref, applet);
 					}
 				}
@@ -102,6 +102,10 @@ public class RemusPipeline {
 				done = false;
 		}
 		return done;
+	}
+
+	public int appletCount() {
+		return members.size();
 	}
 
 }

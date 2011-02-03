@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.WorkDescription;
-import org.remus.applet.InstanceStatus.NodeInstanceStatus;
 
 
 public class RemusApplet {
@@ -146,12 +146,14 @@ public class RemusApplet {
 		if ( hasInputs() ) {
 			boolean allReady = true;
 			for ( InputReference iRef : inputs ) {
-				RemusApplet iApplet = getPipeline().getApplet(iRef.getPath());
+				RemusApplet iApplet = getPipeline().getApplet( iRef.getAppletPath() );
 				if ( iApplet != null ) {
 					if ( !iApplet.isComplete(remusInstance) ) {
 						allReady = false;
 					}
-				}		
+				} else {
+					allReady = false;
+				}
 			}			
 			return allReady;
 		}		
@@ -167,7 +169,7 @@ public class RemusApplet {
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
-		datastore.add(new File("/@done"), remusInstance.toString(), 0, 0, getPath(), null);
+		datastore.add(new File("/@done"), RemusInstance.STATIC_INSTANCE_STR, 0, 0, getPath(), remusInstance.toString() );
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID) {
@@ -228,7 +230,12 @@ public class RemusApplet {
 	}
 
 	public Collection<RemusInstance> getInstanceList() {
-		return status.getInstanceList();
+		Collection<RemusInstance> out = new HashSet( status.getInstanceList() );
+		for ( Object instStr : datastore.get( new File("/@done"), RemusInstance.STATIC_INSTANCE_STR, getPath() ) ) {
+			out.add( new RemusInstance( (String)instStr ) );
+		}
+		return out;
 	}
+
 
 }

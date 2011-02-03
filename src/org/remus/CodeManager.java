@@ -41,22 +41,37 @@ public class CodeManager {
 		for ( String path : codeMap.keySet() ) {
 			colorMap.put(path, i);
 			i++;
+			for ( String outname : codeMap.get(path).getOutputs() ) {
+				colorMap.put(path + "." + outname, i);
+				i++;
+			}
 		}
 
-		boolean change;
+		boolean change = false;
 		do {
 			change = false;
 			for ( String path : codeMap.keySet() ) {
 				if ( codeMap.get(path).hasInputs() ) {
 					for ( InputReference inRef : codeMap.get(path).getInputs() ) {
-						if ( colorMap.containsKey( inRef.getPath() ) ) {
+						if ( colorMap.containsKey( inRef.getPortPath() ) ) {
 							int val1 = colorMap.get(path);
-							int val2 = colorMap.get(inRef.getPath());
+							int val2 = colorMap.get(inRef.getPortPath());
 							if ( val1 != val2 )  {
 								colorMap.put(path, Math.min(val1, val2));
-								colorMap.put(inRef.getPath(), Math.min(val1, val2));
+								colorMap.put(inRef.getPortPath(), Math.min(val1, val2));
 								change = true;
 							}
+						}
+					}
+				}
+				for ( String outname : codeMap.get(path).getOutputs() ) {
+					if ( colorMap.containsKey( path + "." + outname ) ) {
+						int val1 = colorMap.get(path);
+						int val2 = colorMap.get(path + "." + outname);
+						if ( val1 != val2 )  {
+							colorMap.put(path, Math.min(val1, val2));
+							colorMap.put(path + "." + outname, Math.min(val1, val2));
+							change = true;
 						}
 					}
 				}
@@ -71,7 +86,8 @@ public class CodeManager {
 						pipeline.addApplet( codeMap.get(path) );
 					}
 				}
-				out.put(color, pipeline);
+				if ( pipeline.appletCount() > 0 )
+					out.put(color, pipeline);
 			}
 		}	
 		pipelines = new LinkedList<RemusPipeline>( out.values() );

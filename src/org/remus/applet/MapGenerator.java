@@ -28,10 +28,9 @@ public class MapGenerator implements WorkGenerator {
 				if ( applet.isReady(instance) ) {
 					int jobID = 0;
 					for ( InputReference iRef : applet.inputs ) {
-						RemusApplet iApplet = applet.getPipeline().getApplet(iRef.getPath());
-						for ( Object key : applet.datastore.listKeys( new File(iApplet.getPath()), instance.toString() ) ) {
+						for ( Object key : applet.datastore.listKeys( new File(iRef.getPortPath() ), instance.toString() ) ) {
 							Map map = new HashMap();							
-							map.put("input", iRef.getPath() );
+							map.put("input", iRef.getPortPath() );
 							map.put("key",   key );
 							outList.add( new WorkDescription(applet, instance, jobID, map) );
 							jobID++;							

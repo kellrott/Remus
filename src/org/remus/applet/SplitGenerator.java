@@ -30,7 +30,7 @@ public class SplitGenerator implements WorkGenerator {
 						KeyValuePair d = applet.datastore.get(new File("/@work"), instance.toString(),i, 0 );
 						if ( d == null ) {
 							Map out = new HashMap();
-							out.put( "input", applet.inputs.get(i).getPath() );
+							out.put( "input", applet.inputs.get(i).getPortPath() );
 							outList.add( new WorkDescription(applet, instance, i, out) );
 						}
 					}

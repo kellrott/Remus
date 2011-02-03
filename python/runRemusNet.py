@@ -213,11 +213,13 @@ class PipeWorker(WorkerBase):
 		jobDesc = httpGetJson( url ).read()
 		func = remus.getFunction( self.applet )
 		self.setupOutput(instance, jobID)
-		#TODO: this is wrong
+		inList = []
 		for inFile in jobDesc['input']:
-			kpURL = self.host + inFile + "@data?instance=%s" % ( instance )		
+			kpURL = self.host + inFile + "@data?instance=%s" % ( instance )
+			print kpURL
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
-			func( iHandle )
+			inList.append( iHandle )
+		func( inList )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
