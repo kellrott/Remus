@@ -120,9 +120,9 @@ public class MasterServlet extends HttpServlet {
 				out.println("INPUTS<ul>");
 				for ( InputReference iRef : applet.getInputs() ) {
 					if ( instStr != null )
-						out.println( "<li><a href='" + iRef.getPath() + "?instance=" + instStr + "'>" + iRef.getPath() + "</a></li>" );
+						out.println( "<li><a href='" + iRef.getPortPath() + "?instance=" + instStr + "'>" + iRef.getPortPath() + "</a></li>" );
 					else
-						out.println( "<li><a href='" + iRef.getPath() + "'>" + iRef.getPath() + "</a></li>" );
+						out.println( "<li><a href='" + iRef.getPortPath() + "'>" + iRef.getPortPath() + "</a></li>" );
 				}
 				out.println("</ul>");
 

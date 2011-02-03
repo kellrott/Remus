@@ -140,17 +140,68 @@ def col_map( key, vals ):
 ]]>
 </remus_reducer>
 
-<!-- remus_mapper id="sample_sequence_split" input=":sample_condence" output="point,sequence" type="python">
+<remus_mapper id="sample_split" input=":sample_condence" type="python">
+<![CDATA[
+import remus
+import re
+reSample = re.compile(r'^(....\-..\-....)\-(...)')
+@remus.mapper
+def sample_split(key,val):
+	for valKey in val:
+		res = reSample.search( valKey )
+		if res:
+			patient = res.group(1)
+			out = val[ valKey ]
+			if val.has_key( patient ):
+				for a in val[ patient ]:
+					out[a] = val[patient][a]
+			remus.emit( valKey, out )
+]]>
+</remus_mapper>
+
+<remus_mapper id="sample_vector_split" input=":sample_split" output="point,vector" type="python">
 <![CDATA[
 import remus
 @remus.mapper
-def col_map( key, val ):
+def sample_vector_split(key,val):
+	vOut = {}
+	pOut = {}
 	for valKey in val:
-		if ( len( val[valKey] ) == 1 ):
-			remus.emit( key, { valKey : val[valKey][0] }, "point" )
+		if ( len(val[valKey]) == 1 ):
+			pOut[ valKey ] = val[valKey][0]
 		else:
-			remus.emit( key, { valKey : val[valKey] }, "sequence" )
+			vOut[ valKey ] = val[valKey]
+	remus.emit( key, pOut, "point" )
+	remus.emit( key, vOut, "vector" )
+
 ]]>
-</remus_mapper-->
+</remus_mapper>
+
+<remus_pipe id="enumerated_output" input=":sample_vector_split.point,:column_enumerate.enumCols" type="python">
+<![CDATA[
+import remus
+@remus.pipe
+def enumerate_output( inputs ):
+	sHandle = inputs[0]
+	eHandle = inputs[1]
+	enumMap = {}
+	for key, value in eHandle:
+		enumMap[ key ] = {}
+		for valueKey in value:
+			enumMap[ key ][ valueKey ] = value[ valueKey ]
+
+	for key, value in sHandle:
+		print key, value
+		out = {}
+		for valueKey in value:
+			if ( enumMap.has_key( valueKey ) ):
+				out[ valueKey ] = enumMap[valueKey][ value[ valueKey ] ]
+			else:
+				out[ valueKey ] = value[ valueKey ]
+		print key, out	
+		remus.emit( key, out )
+
+]]>
+</remus_pipe>
 
 </html>

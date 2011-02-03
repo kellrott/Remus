@@ -57,8 +57,10 @@ public class RemusParser {
 					
 					if ( attr.getNamedItem("input") != null ) {
 						String inputStr = attr.getNamedItem("input").getTextContent();
-						InputReference iRef = new InputReference(parent, inputStr, pagePath );
-						applet.addInput(iRef);
+						for ( String inName : inputStr.split(",") ) {
+							InputReference iRef = new InputReference(parent, inName, pagePath );
+							applet.addInput(iRef);
+						}
 					}
 					if ( attr.getNamedItem("output") != null ) {
 						String outputStr = attr.getNamedItem("output").getTextContent();

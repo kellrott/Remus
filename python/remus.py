@@ -11,7 +11,7 @@ def mapper(f):
 def reducer(f):
 	return addFunction(f)
 
-def output(f):
+def pipe(f):
 	return addFunction(f)
 
 def merger(f):

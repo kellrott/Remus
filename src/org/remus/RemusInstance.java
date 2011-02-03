@@ -5,8 +5,8 @@ import java.util.UUID;
 public class RemusInstance implements Comparable<RemusInstance>{
 
 	UUID id;
-	static final String STATIC_INSTANCE_STR = "00000000-0000-0000-0000-000000000000";
-	static final RemusInstance STATIS_INSTANCE = new RemusInstance(STATIC_INSTANCE_STR);
+	public static final String STATIC_INSTANCE_STR = "00000000-0000-0000-0000-000000000000";
+	public static final RemusInstance STATIS_INSTANCE = new RemusInstance(STATIC_INSTANCE_STR);
 	public RemusInstance() {
 		id = UUID.randomUUID();
 	}

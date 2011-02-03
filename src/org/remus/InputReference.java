@@ -3,94 +3,99 @@ package org.remus;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class InputReference {
-	String finalURL;
-	File localFile = null;
-	String localID = null;
+	private String printURL = null;
+	
+	private String appletName = null;
+	private String appletPortName = null;
+	private String fileName = null;
+	
 	Boolean appletInput = false;
 	Boolean dynamicInput = false;
+
+	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 
 	RemusApp parent;
 	public InputReference(RemusApp parent, String url, String reqPath) throws FileNotFoundException {
 		this.parent = parent;
 		if ( url.startsWith("http://") || url.startsWith("https://") ) {
-			finalURL = url;			
+			printURL = url;
 		} else {
-			String fileTest = url;
-			String idTest = null;
-			if ( url.contains(":" ) ) {
-				String [] tmp = url.split(":");
-				fileTest = tmp[0];
-				idTest = tmp[1];
-			}
-			if ( fileTest.startsWith("/") ) {				
-				localFile = new File( parent.srcbase, fileTest );
-				if ( !localFile.exists() ) {
-					throw new FileNotFoundException(localFile.getAbsolutePath());
-				}
-				localID = idTest;
-				finalURL = url;
-			} else if ( url.startsWith(":") ) {
-				localFile = new File( parent.getSrcBase(), reqPath );
-				localID = idTest;
-				finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" ) + ":" + localID;
-				appletInput = true;
-			} else if ( url.compareTo("?") == 0) {
-				localFile = null;
-				localID = null;
-				finalURL = null;
-				dynamicInput = true;
-			} else {
-				localFile = new File( (new File( parent.getSrcBase(), reqPath )).getParentFile(), fileTest);
-				if ( !localFile.exists() ) {
-					throw new FileNotFoundException(localFile.getAbsolutePath());
-				}
-				localID = idTest;
-				if ( localID == null ) {
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "");
+
+			if ( !url.startsWith("/") ) {
+				if ( url.startsWith(":") ) {
+					String localFile = new File( parent.getSrcBase(), reqPath ).getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
+					url = localFile + url;
 				} else {
-					finalURL = localFile.getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "") + ":" + localID;
-					appletInput = true;
+					//TODO:do something here
 				}
 			}
+				
+			if ( url.contains(":") ) {
+				Matcher m = appletSub.matcher( url );
+				if ( m.find() ) {
+					appletName = m.replaceFirst( m.group(1) );
+					appletPortName = m.group(2);
+					fileName =  m.replaceFirst("") + ".xml";
+				} else {
+					String [] tmp = url.split(":");
+					fileName = tmp[0] + ".xml";
+					appletName = url;
+				}
+				File localFile = new File( parent.getSrcBase(), fileName );
+				if ( !localFile.exists() ) {
+					throw new FileNotFoundException(localFile.getAbsolutePath());
+				}
+				printURL = url;
+			} else if ( url.compareTo("?") == 0) {
+				appletName = null;
+				printURL = url;
+				dynamicInput = true;
+			} 
+			
 		}
 	}
 	
 	
-	public Boolean isLocal() {
-		if ( localFile == null )
-			return false;
-		return true;
-	}
-	
+
 	public Boolean isApplet() {
 		return appletInput;
 	}
 
-	public File getLocalFile() {
-		return localFile;
-	}
-	
+	/*
 	public String getElementID() {
-		return localID;
+		return appletName;
 	}
-	
+	*/
+	/*
 	public Serializable getContent() {
 		//PageRequest page = parent.openPage( localFile.getAbsolutePath() );
 		//return page.open();
 		return "pageContents";
 	}
-
+	 */
+	/*
 	public String getURL() {
-		return parent.baseURL + finalURL;
+		return parent.baseURL + printURL;
 	}
-	public String getPath() {
-		if ( dynamicInput )
-			return "?";
-		return finalURL.toString();
+	*/
+	
+	public String getPortPath() {
+		if ( appletPortName != null )
+			return appletName + "." + appletPortName;
+		return appletName;
+	}
+	
+	public String getURL() {
+		return printURL;
+	}
+
+
+	public String getAppletPath() {
+		return appletName;
 	}
 
 }
