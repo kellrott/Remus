@@ -7,10 +7,8 @@ public class KeyValuePair {
 	private long emitID;
 	private Object key = null;
 	private Object value = null;
-	private MPStore datastore;
 	
-	KeyValuePair( MPStore datastore, String path, String instance, long jobID, long emitID, Object key, Object value ) {
-		this.datastore = datastore;
+	KeyValuePair( String path, String instance, long jobID, long emitID, Object key, Object value ) {
 		this.path = path;
 		this.instance = instance;
 		this.jobID = jobID;

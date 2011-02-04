@@ -13,9 +13,6 @@ public interface MPStore {
 	abstract public Iterable<KeyValuePair> listKeyPairs(String file, String instance);
 
 	abstract public boolean containsKey(String reqFile, String instance, Object key);
-
-	//abstract public KeyValuePair get(File reqFile, String instance, long jobID, long emitID );
-	//abstract public Object getKey(String path, String instance, long jobID, long emitID);
-	//abstract public Object getValue(String path, String instance, long jobID, long emitID);
+	
 	
 }
