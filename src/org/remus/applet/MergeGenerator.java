@@ -25,12 +25,13 @@ public class MergeGenerator implements WorkGenerator {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();
 		for ( InputReference lRef : applet.lInputs ) {
-			for ( Object key : applet.datastore.listKeys( new File(lRef.getPortPath()), instance.toString() ) ) {
+			String lStr = lRef.getPortPath() + "@data";
+			for ( Object key : applet.datastore.listKeys( lStr, instance.toString() ) ) {
 				for ( InputReference rRef : applet.rInputs ) {
 					Map map = new HashMap();
 					map.put("left_key", key);
-					map.put("left_input", lRef.getPortPath() );
-					map.put("right_input", rRef.getPortPath() );
+					map.put("left_input", lStr );
+					map.put("right_input", rRef.getPortPath() + "@reduce" );
 					outList.add( new WorkDescription(applet, instance, jobID, map) );
 					jobID++;
 				}

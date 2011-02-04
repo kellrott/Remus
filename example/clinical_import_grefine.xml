@@ -124,7 +124,6 @@ def col_map( key, vals ):
 					first = False
 				minVal = min(minVal,i)
 				maxVal = max(maxVal,i)
-				print minVal, maxVal
 		except ValueError:
 			allFloat = False
 				
@@ -133,7 +132,6 @@ def col_map( key, vals ):
 	
 	if key.count("barcode") == 0 and len(out) > 1:
 		if ( allFloat ):
-			print minVal, maxVal
 			remus.emit( key, [minVal,maxVal], "floatCols" )
 		else:
 			remus.emit( key, out, "enumCols" )		
@@ -177,29 +175,44 @@ def sample_vector_split(key,val):
 ]]>
 </remus_mapper>
 
-<remus_pipe id="enumerated_output" input=":sample_vector_split.point,:column_enumerate.enumCols" type="python">
+<remus_pipe id="enumerated_output" input=":sample_vector_split.point,:column_enumerate.enumCols,:column_enumerate.floatCols" output="col_map,col_order,col_title" type="python">
 <![CDATA[
 import remus
 @remus.pipe
 def enumerate_output( inputs ):
 	sHandle = inputs[0]
 	eHandle = inputs[1]
+	fHandle = inputs[2]
 	enumMap = {}
+	floatMap = {}
+	orderMap = {}
 	for key, value in eHandle:
 		enumMap[ key ] = {}
 		for valueKey in value:
 			enumMap[ key ][ valueKey ] = value[ valueKey ]
+			orderMap[ key ] = len(orderMap)
+
+	floatMap = {}
+	for key, value in fHandle:
+		floatMap[ key ] = value
+		orderMap[ key ] = len(orderMap)
+
+	remus.emit( "titles", sorted( orderMap.keys(), lambda x,y: orderMap[x] - orderMap[y] ), "col_title" )
 
 	for key, value in sHandle:
-		print key, value
 		out = {}
+		col = [None] * len( orderMap )
 		for valueKey in value:
 			if ( enumMap.has_key( valueKey ) ):
-				out[ valueKey ] = enumMap[valueKey][ value[ valueKey ] ]
-			else:
-				out[ valueKey ] = value[ valueKey ]
-		print key, out	
-		remus.emit( key, out )
+				nVal =  enumMap[valueKey][ value[ valueKey ] ]
+				out[ valueKey ] = nVal
+				col[ orderMap[ valueKey ] ] = nVal
+			elif ( floatMap.has_key( valueKey ) ) :
+				nVal = float( value[ valueKey ].replace(",", "") )
+				out[ valueKey ] = nVal
+				col[ orderMap[ valueKey ] ] = nVal
+		remus.emit( key, col, "col_order" )
+		remus.emit( key, out, "col_map"   )
 
 ]]>
 </remus_pipe>

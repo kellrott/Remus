@@ -1,6 +1,8 @@
 package org.remus;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -94,11 +96,30 @@ public class CodeManager {
 	}
 
 
-	public void startWorkQueue() {
+	public void startWorkQueue() throws RemusDatabaseException {
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( !pipeline.dynamic ) {
-				if ( !pipeline.isComplete( RemusInstance.STATIS_INSTANCE ) ) {
-					pipeline.addInstance( RemusInstance.STATIS_INSTANCE );				
+				RemusInstance pipelineInstance = null;
+				for ( RemusApplet applet : pipeline.members.values() ) {
+					for ( RemusInstance inst : applet.getInstanceList() ) {
+						if ( pipelineInstance == null ) 
+							pipelineInstance = inst;
+						if ( !pipelineInstance.equals(inst) )
+							throw new RemusDatabaseException( "Multiple Instances in Static pipeline" );
+					}
+				}
+				if ( pipelineInstance == null ) {
+					pipelineInstance = new RemusInstance();
+				}
+				if ( !pipeline.isComplete( pipelineInstance) ) {
+					pipeline.addInstance( pipelineInstance );				
+				}
+			} else {
+				for (Object key : datastore.listKeys( "/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
+					RemusInstance pipelineInstance = new RemusInstance( (String)key );
+					if ( !pipeline.isComplete( pipelineInstance ) ) {
+						pipeline.addInstance( pipelineInstance );
+					}
 				}
 			}
 		}

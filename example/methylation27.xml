@@ -1,0 +1,217 @@
+<remus>
+
+<remus_mapper id="pipelineStart" input="?" type="python" output="probes,probeinfo,targets">
+<![CDATA[
+import remus
+from urlparse import urlparse
+from urllib import urlopen
+import os
+import re
+import tarfile
+reSpace = re.compile(r'\s+')
+@remus.mapper
+def methylationPipelineStart( key, value ):
+
+	print key, value
+	
+	srcURL = urlparse( key )
+	basename = os.path.basename( srcURL.path ) 
+
+	downloadURL = value['cacheURL']
+	tmpPath = "/tmp/%s" % (basename)
+	handle = open( tmpPath , "w" )
+	handle.write( urlopen( downloadURL ).read() )
+	handle.close()		
+	tar = tarfile.open( tmpPath )
+	for tinfo in tar.getmembers():
+		if tinfo.isfile() and not ( os.path.basename(tinfo.name) in ["MANIFEST.txt","README_DCC.txt","DESCRIPTION.txt"]):
+			print tinfo.name
+			handle = tar.extractfile( tinfo )
+			sampleName = None
+			colName = None
+			colType = None
+			outMap = {}
+			for line in handle:
+				if colName is None:
+					colName = line
+					sampleName = reSpace.split( colName )[2]
+				elif colType is None:
+					colType = line
+				else:
+					tmp = line.split("\t")
+					if tmp[1] != "NA":
+						remus.emit( tmp[0], { sampleName : float(tmp[1]) }, "probes" )
+						remus.emit( tmp[0], { "gene" : tmp[2], "chrome" : tmp[3], "location" : int(tmp[4]) }, "probeinfo" )
+						outMap[ tmp[0] ] = tmp[1]
+			handle.close()
+			remus.emit( sampleName, outMap, "targets" )
+	tar.close()
+	remus.emit( key, value )
+]]>
+</remus_mapper>
+
+<!-- remus_merger id="archive_tarball_fetcher" left=":genomic_archive_platform" right=":file_list" type="python">
+<![CDATA[
+import remus
+from urlparse import urlparse
+from urllib import urlopen
+import os
+import tarfile
+@remus.merger
+def genomic_mapper( key_left, vals_left, key_right, vals_right ):
+	if ( key_left == key_right ):
+		url = urlparse( key_left )
+		basename = os.path.basename( url.path ) 
+		tmpPath = "tmp/%s" % (basename)
+		if not os.path.exists( tmpPath ):
+			handle = open( tmpPath , "w" )
+			handle.write( urlopen( vals_right[0] ).read() )
+			handle.close()
+		print vals_left[0]['platformName']
+		vals_left[0][ 'tarball' ] = tmpPath
+		remus.emit( key_left, vals_left[0] )
+]]>
+</remus_merger -->
+
+
+<!-- remus_mapper id="HumanMethylation27" input=":archive_tarball_fetcher" output="probes,targets,probeinfo" type="python">
+<![CDATA[
+import remus
+import re
+import os
+import tarfile
+
+reSpace = re.compile(r'\s+')
+
+@remus.mapper
+def HM27_filter( key, val ):
+	if ( val[ 'platformName' ] == "HumanMethylation27" ):
+		if os.path.exists( val['tarball'] ):
+			tar = tarfile.open( val['tarball'] )
+			fileCount = 0
+			for tinfo in tar.getmembers():
+				if tinfo.isfile() and not ( os.path.basename(tinfo.name) in ["MANIFEST.txt","README_DCC.txt","DESCRIPTION.txt"]):
+					fileCount += 1
+					print tinfo.name
+					handle = tar.extractfile( tinfo )
+					sampleName = None
+					colName = None
+					colType = None
+					outMap = {}
+					for line in handle:
+						if colName is None:
+							colName = line
+							sampleName = reSpace.split( colName )[2]
+						elif colType is None:
+							colType = line
+						else:
+							tmp = line.split("\t")
+							if tmp[1] != "NA":
+								remus.emit( tmp[0], { sampleName : float(tmp[1]) }, "probes" )
+								remus.emit( tmp[0], { "gene" : tmp[2], "chrome" : tmp[3], "location" : int(tmp[4]) }, "probeinfo" )
+								outMap[ tmp[0] ] = tmp[1]
+					handle.close()
+					remus.emit( sampleName, outMap, "targets" )
+			tar.close()				
+]]>
+</remus_mapper -->
+
+<!-- remus_reducer id="HumanMethylation27_reduce" input=":HumanMethylation27" type="python">
+<![CDATA[
+import remus
+@remus.reducer
+def probe_reducer( key, vals ):
+	valSet = []
+	for val in vals:
+		for a in val:
+			if val[a] != "NA":
+				valSet.append( float(val[a]) )	
+	mean = sum(valSet) / float(len(valSet))
+	remus.emit( key, { "min" : min(valSet), "max" : max(valSet), "mean" : mean } )
+]]>
+</remus_reducer -->
+
+<!-- remus_reducer id="HumanMethylation27_combine" input=":HumanMethylation27.probes" type="python">
+<![CDATA[
+import remus
+@remus.reducer
+def probe_reducer( key, vals ):
+	out = {}
+	for val in vals:
+		for a in val:
+			out[a] = val[a]
+	remus.emit( key, out )
+]]>
+</remus_reducer>
+
+<remus_reducer id="HumanMethylation27_probe_combine" input=":HumanMethylation27.probeinfo" type="python">
+<![CDATA[
+import remus
+@remus.reducer
+def probe_reducer( key, vals ):
+	out = {}
+	for val in vals:
+		for a in val:
+			out[a] = val[a]
+	remus.emit( key, out )
+]]>
+</remus_reducer>
+
+
+<remus_output id="HumanMethylation27_col" input=":HumanMethylation27.targets" type="python">
+<![CDATA[
+import remus
+@remus.output
+def probe_reducer( handle ):
+	keymap = {}
+	keylist = []
+	for key, val in handle:
+		if not keymap.has_key( key ):
+			keylist.append( key )
+	remus.emit( "keys", keylist )
+]]>
+</remus_output>
+
+<remus_merger id="HumanMethylation27_reorder" left=":HumanMethylation27_combine" right=":HumanMethylation27_col">
+<![CDATA[
+import remus
+@remus.merger
+def col_reorder( left_key, left_vals, right_key, right_vals ):
+	outList = []
+	for target in right_vals[0]:
+		if left_vals[0].has_key( target ):
+			outList.append("%s" % (left_vals[0][target]) )
+		else:
+			outList.append("NA")
+	remus.emit( left_key, outList )
+]]>
+</remus_merger>
+
+
+<remus_merger id="HumanMethylation27_bed_combine" left=":HumanMethylation27_reorder" right=":HumanMethylation27_probe_combine">
+<![CDATA[
+import remus
+@remus.merger
+def bed_combine( left_key, left_vals, right_key, right_vals ):
+	if left_key == right_key:
+		probeInfo = right_vals[0]
+		probeVals = left_vals[0]
+		bedline = "\t".join( ["chr%s" % (probeInfo['chrome']), "%d" %(probeInfo['location']), "%d" % (probeInfo['location']+1), left_key, "0", "+",
+			"0", "0", "0", "1", "0", "0", "%d" % (len(probeVals)), ",".join( str(x) for x in range(len(probeVals)) ), ",".join( str(x) for x in probeVals ) ] )
+		remus.emit( left_key, bedline )
+]]>
+</remus_merger>
+
+<remus_output id="HumanMethylation27_bed" input=":HumanMethylation27_bed_combine">
+<![CDATA[
+import remus
+@remus.merger
+def bed_print(handle):
+	oHandle = open( "test.bed", "w" )
+	for key, value in handle:
+		oHandle.write( value + "\n" )
+	oHandle.close()		
+]]>
+</remus_output -->
+
+</remus>

@@ -18,7 +18,7 @@ public class RemusApp {
 	CodeManager codeManager;
 	public String baseURL = "";
 	
-	public RemusApp( File srcdir, MPStore workStore ) {
+	public RemusApp( File srcdir, MPStore workStore ) throws RemusDatabaseException {
 		this.srcbase = srcdir;
 		this.workStore = workStore;
 		codeManager = new CodeManager(this);

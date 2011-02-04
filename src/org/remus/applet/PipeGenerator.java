@@ -30,7 +30,7 @@ public class PipeGenerator implements WorkGenerator {
 					Map out = new HashMap();
 					List a = new LinkedList();
 					for ( int i = 0; i < applet.inputs.size(); i++ ) {
-						a.add( applet.inputs.get(i).getPortPath() );
+						a.add( applet.inputs.get(i).getPortPath() + "@data" );
 					}
 					out.put( "input", a );
 					outList.add( new WorkDescription(applet, instance, 0, out) );

@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.remus.CodeFragment;
 import org.remus.InputReference;
@@ -113,7 +114,9 @@ public class RemusApplet {
 	}
 
 	public List<InputReference> getInputs() {
-		return inputs;
+		if ( inputs != null )
+			return inputs;
+		return new ArrayList<InputReference>();
 	}
 
 	public String [] getOutputs() {
@@ -146,15 +149,23 @@ public class RemusApplet {
 		if ( hasInputs() ) {
 			boolean allReady = true;
 			for ( InputReference iRef : inputs ) {
-				RemusApplet iApplet = getPipeline().getApplet( iRef.getAppletPath() );
-				if ( iApplet != null ) {
-					if ( !iApplet.isComplete(remusInstance) ) {
+				if ( iRef.getInputType() == InputReference.AppletInput ) {
+					RemusApplet iApplet = getPipeline().getApplet( iRef.getAppletPath() );
+					if ( iApplet != null ) {
+						if ( !iApplet.isComplete(remusInstance) ) {
+							allReady = false;
+						}
+					} else {
+						allReady = false;
+					}
+				} else if ( iRef.getInputType() == InputReference.DynamicInput ) {
+					if ( datastore.get( "/@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
 				} else {
 					allReady = false;
 				}
-			}			
+			}
 			return allReady;
 		}		
 		return true;
@@ -162,20 +173,23 @@ public class RemusApplet {
 
 
 	public boolean isComplete( RemusInstance remusInstance ) {
-		if ( datastore.containsKey(new File("/@done"), remusInstance.toString(), getPath() ) ) {
-			return true;
+		String pathStr = getPath();
+		for ( Object instStr : datastore.get( "/@done", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			if ( pathStr.compareTo((String)instStr) == 0 ) {
+				return true;
+			}
 		}
 		return false;
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
-		datastore.add(new File("/@done"), RemusInstance.STATIC_INSTANCE_STR, 0, 0, getPath(), remusInstance.toString() );
+		datastore.add( "/@done", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), getPath());
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID) {
 		if ( status.hasInstance(remusInstance) ) {
 			status.removeWork( remusInstance, jobID );
-			datastore.add(new File( getPath() + "@work"), remusInstance.toString(), jobID, 0, getPath(), jobID );
+			datastore.add( getPath() + "@work", remusInstance.toString(), jobID, 0, getPath(), jobID );
 			if ( status.jobCount( remusInstance ) == 0 ) {
 				setComplete( remusInstance );
 			}
@@ -230,9 +244,11 @@ public class RemusApplet {
 	}
 
 	public Collection<RemusInstance> getInstanceList() {
-		Collection<RemusInstance> out = new HashSet( status.getInstanceList() );
-		for ( Object instStr : datastore.get( new File("/@done"), RemusInstance.STATIC_INSTANCE_STR, getPath() ) ) {
-			out.add( new RemusInstance( (String)instStr ) );
+		String pathStr = getPath();
+		Collection<RemusInstance> out = new HashSet<RemusInstance>( status.getInstanceList() );
+		for ( KeyValuePair kv : datastore.listKeyPairs( "/@done", RemusInstance.STATIC_INSTANCE_STR ) ) {
+			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
+				out.add( new RemusInstance( (String)kv.getKey() ) );
 		}
 		return out;
 	}
