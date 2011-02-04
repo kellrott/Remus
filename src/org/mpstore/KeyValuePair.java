@@ -9,14 +9,6 @@ public class KeyValuePair {
 	private Object value = null;
 	private MPStore datastore;
 	
-	KeyValuePair( MPStore datastore, String path, String instance, long jobID, long emitID ) {
-		this.datastore = datastore;
-		this.path = path;
-		this.instance = instance;
-		this.jobID = jobID;
-		this.emitID = emitID;
-	}
-	
 	KeyValuePair( MPStore datastore, String path, String instance, long jobID, long emitID, Object key, Object value ) {
 		this.datastore = datastore;
 		this.path = path;
@@ -36,15 +28,11 @@ public class KeyValuePair {
 		return emitID;
 	}
 
-	public Object getKey() {
-		if ( key == null )
-			key = datastore.getKey( path, instance, jobID, emitID );
+	public Object getKey() {		
 		return key;
 	}
 
 	public Object getValue() {
-		if ( value == null )
-			value = datastore.getValue( path, instance, jobID, emitID );
 		return value;
 	}
 	

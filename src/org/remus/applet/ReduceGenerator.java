@@ -19,9 +19,9 @@ public class ReduceGenerator implements WorkGenerator {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();
 		for ( InputReference iRef : applet.getInputs() ) {
-			for ( Object key : applet.datastore.listKeys( new File(iRef.getPortPath()), instance.toString() ) ) {
+			for ( Object key : applet.datastore.listKeys( iRef.getPortPath() + "@data", instance.toString() ) ) {
 				Map map = new HashMap();
-				map.put("input", iRef.getPortPath() );
+				map.put("input", iRef.getPortPath() + "@data" );
 				map.put("key", key );
 				outList.add( new WorkDescription(applet, instance, jobID, map) );
 				jobID++;

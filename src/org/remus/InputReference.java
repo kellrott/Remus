@@ -13,8 +13,10 @@ public class InputReference {
 	private String appletPortName = null;
 	private String fileName = null;
 	
-	Boolean appletInput = false;
-	Boolean dynamicInput = false;
+	int input_type;
+	public static final int AppletInput = 0;
+	public static final int DynamicInput = 1;
+	public static final int StaticInput = 2;
 
 	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 
@@ -25,15 +27,15 @@ public class InputReference {
 			printURL = url;
 		} else {
 
-			if ( !url.startsWith("/") ) {
+			if ( !url.startsWith("/") && url.compareTo("?")!=0) {
 				if ( url.startsWith(":") ) {
 					String localFile = new File( parent.getSrcBase(), reqPath ).getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
 					url = localFile + url;
 				} else {
-					//TODO:do something here
+					String localFile = new File( parent.getSrcBase(), reqPath ).getParentFile().getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
+					url = localFile + "/" + url;
 				}
-			}
-				
+			}				
 			if ( url.contains(":") ) {
 				Matcher m = appletSub.matcher( url );
 				if ( m.find() ) {
@@ -50,19 +52,27 @@ public class InputReference {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
 				printURL = url;
+				input_type=AppletInput;
 			} else if ( url.compareTo("?") == 0) {
 				appletName = null;
 				printURL = url;
-				dynamicInput = true;
-			} 
+				input_type=DynamicInput;
+			} else {
+				File localFile = new File( parent.getSrcBase(), url );
+				if ( !localFile.exists() ) {
+					throw new FileNotFoundException(localFile.getAbsolutePath());
+				}
+				printURL = url;
+				input_type=StaticInput;
+			}
 			
 		}
 	}
 	
 	
 
-	public Boolean isApplet() {
-		return appletInput;
+	public int getInputType() {
+		return input_type;
 	}
 
 	/*

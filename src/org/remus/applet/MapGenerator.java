@@ -28,9 +28,14 @@ public class MapGenerator implements WorkGenerator {
 				if ( applet.isReady(instance) ) {
 					int jobID = 0;
 					for ( InputReference iRef : applet.inputs ) {
-						for ( Object key : applet.datastore.listKeys( new File(iRef.getPortPath() ), instance.toString() ) ) {
-							Map map = new HashMap();							
-							map.put("input", iRef.getPortPath() );
+						String portPath = null;
+						if ( iRef.getInputType() == InputReference.DynamicInput )
+							portPath = applet.getPath() + "@submit";
+						else
+							portPath =  iRef.getPortPath() +"@data";
+						for ( Object key : applet.datastore.listKeys( portPath, instance.toString() ) ) {
+							Map map = new HashMap();
+							map.put("input", portPath );
 							map.put("key",   key );
 							outList.add( new WorkDescription(applet, instance, jobID, map) );
 							jobID++;							

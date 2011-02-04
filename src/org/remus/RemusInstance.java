@@ -2,7 +2,7 @@ package org.remus;
 
 import java.util.UUID;
 
-public class RemusInstance implements Comparable<RemusInstance>{
+public class RemusInstance implements Comparable<RemusInstance> {
 
 	UUID id;
 	public static final String STATIC_INSTANCE_STR = "00000000-0000-0000-0000-000000000000";

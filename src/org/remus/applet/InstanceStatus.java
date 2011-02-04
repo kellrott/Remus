@@ -43,7 +43,8 @@ public class InstanceStatus {
 	}
 
 	private void checkInstance(RemusInstance remusInstance) {
-		if ( instance.get(remusInstance).jobsRemaining == null ) {		
+		if ( instance.containsKey(remusInstance) &&
+				instance.get(remusInstance).jobsRemaining == null ) {		
 			if ( !applet.isComplete(remusInstance) ) {
 				if ( applet.isReady(remusInstance)) {
 					workGen.startWork(remusInstance);
@@ -65,7 +66,7 @@ public class InstanceStatus {
 	public Collection<RemusInstance> getInstanceList() {
 		return instance.keySet();
 	}
-	
+
 	public Collection<WorkDescription> getWorkList(RemusInstance job) {
 		checkInstance(job);
 		if ( instance.containsKey(job) ) {

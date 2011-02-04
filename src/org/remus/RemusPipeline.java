@@ -25,7 +25,7 @@ public class RemusPipeline {
 	public void addApplet(RemusApplet applet) {
 		if ( applet.hasInputs() ) {
 			for ( InputReference iref : applet.getInputs() ) {
-				if ( iref.dynamicInput ) {
+				if ( iref.getInputType() == InputReference.DynamicInput ) {
 					dynamic = true;
 				}
 			}
@@ -58,7 +58,9 @@ public class RemusPipeline {
 		for ( RemusApplet applet : members.values() ) {
 			if ( applet.hasInputs() ) {
 				for ( InputReference iref : applet.getInputs() ) {
-					if ( iref.dynamicInput || iref.isApplet() || !parent.containsKey( iref.getPortPath() )) {
+					if ( iref.getInputType() == InputReference.DynamicInput 
+							|| iref.getInputType() == InputReference.AppletInput 
+							|| !parent.containsKey( iref.getPortPath() )) {
 						inputs.put(iref, applet);
 					}
 				}
