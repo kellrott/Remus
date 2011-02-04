@@ -183,8 +183,8 @@ public class MasterServlet extends HttpServlet {
 						String instStr = reqInfo.instance;
 						String keyStr = ((String[])pm.get("key"))[0];		
 						Object keyObj = serializer.loads(keyStr);
-						if ( ds.containsKey( reqInfo.appletPath + "@" + reqInfo.api, instStr, keyObj ) ) {
-							for ( Object value : ds.get( reqInfo.appletPath + "@" + reqInfo.api, instStr, keyObj ) ) {
+						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
+							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
 								out.println( serializer.dumps( value ) );
 							}
 						} else {
@@ -199,7 +199,7 @@ public class MasterServlet extends HttpServlet {
 					}
 				} else if ( reqInfo.api.compareTo("keys") == 0 && reqInfo.instance != null ) {
 					MPStore ds = app.getDataStore();
-					for ( Object key : ds.listKeys( reqInfo.appletPath + "@data", reqInfo.instance ) ) {
+					for ( Object key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
 						out.println( serializer.dumps(key) );
 					}
 				} else if ( reqInfo.api.compareTo("code") == 0  ) {
