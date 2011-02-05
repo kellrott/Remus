@@ -176,6 +176,7 @@ public class MasterServlet extends HttpServlet {
 				}
 			} else {
 				PrintWriter out = resp.getWriter();
+				resp.setBufferSize(2048);
 				if ( reqInfo.api.compareTo("data") == 0 || reqInfo.api.compareTo("submit") == 0 ) {
 					MPStore ds = app.getDataStore();
 					Map pm = req.getParameterMap();
@@ -186,6 +187,7 @@ public class MasterServlet extends HttpServlet {
 						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
 							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
 								out.println( serializer.dumps( value ) );
+								resp.flushBuffer();
 							}
 						} else {
 							resp.sendError( HttpServletResponse.SC_NOT_FOUND );
@@ -195,6 +197,8 @@ public class MasterServlet extends HttpServlet {
 							Map outMap = new HashMap();
 							outMap.put(kp.getKey(), kp.getValue() );
 							out.println( serializer.dumps( outMap ) );
+							out.flush();
+							resp.flushBuffer();
 						}						
 					}
 				} else if ( reqInfo.api.compareTo("keys") == 0 && reqInfo.instance != null ) {
