@@ -6,8 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
-import java.util.List;
 
 
 public class SQLStore implements MPStore {
@@ -101,7 +99,10 @@ public class SQLStore implements MPStore {
 	@Override
 	public Iterable<Object> get(String reqFile, String instance, Object key) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT value FROM mpdata where path = ? AND valkey = ?" );
+			PreparedStatement st = connect.prepareStatement( "SELECT value FROM mpdata where path = ? AND valkey = ?" ,
+					ResultSet.TYPE_FORWARD_ONLY,  
+                    ResultSet.CONCUR_READ_ONLY );
+			st.setFetchSize(Integer.MIN_VALUE);
 			st.setString(1, instance  + reqFile );
 			st.setString(2, serializer.dumps(key) );		
 
@@ -131,7 +132,10 @@ public class SQLStore implements MPStore {
 	@Override
 	public Iterable<Object> listKeys(String reqFile, String instance) {
 		try {
-			PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM mpdata where path = ? " );
+			PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM mpdata where path = ? ",
+					ResultSet.TYPE_FORWARD_ONLY,  
+                    ResultSet.CONCUR_READ_ONLY );
+			st.setFetchSize(Integer.MIN_VALUE);
 			st.setString(1, instance + reqFile );
 
 			ResultSet rs = st.executeQuery();
@@ -164,7 +168,10 @@ public class SQLStore implements MPStore {
 			st.setString(1, reqFile );
 			st.setString(2, instance);
 			 */
-			PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID, valkey, value FROM mpdata where path = ? " );
+			PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID, valkey, value FROM mpdata where path = ? ",
+					ResultSet.TYPE_FORWARD_ONLY,  
+                    ResultSet.CONCUR_READ_ONLY );
+			st.setFetchSize(Integer.MIN_VALUE);
 			st.setString(1, instance + reqFile );
 
 			ResultSet rs = st.executeQuery();
@@ -196,5 +203,10 @@ public class SQLStore implements MPStore {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	@Override
+	public void close() {
+	
 	}
 }
