@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -112,7 +113,6 @@ public class MasterServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
-		System.out.println( reqInfo.path );
 		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
 			if ( reqInfo.api == null ) {
 				PrintWriter out = resp.getWriter();				
@@ -226,7 +226,13 @@ public class MasterServlet extends HttpServlet {
 					out.print( serializer.dumps(outMap) );
 				} else if ( reqInfo.api.compareTo("reduce") == 0 ) {
 					MPStore ds = app.getDataStore();
+					//BUG FIX: SQLStore returns streaming iterator having a double loop of MPStore calls will
+					//crash the connection
+					List<Object> keyList = new LinkedList<Object>();
 					for ( Object key : ds.listKeys( reqInfo.appletPath + "@data", reqInfo.instance ) ) {
+						keyList.add( key );
+					}					
+					for ( Object key : keyList ) {
 						Map outMap = new HashMap();
 						List outList = new ArrayList();
 						for ( Object val : ds.get(reqInfo.appletPath + "@data", reqInfo.instance, key) ) {
@@ -241,7 +247,7 @@ public class MasterServlet extends HttpServlet {
 			if ( reqInfo.api == null ) {
 				PrintWriter out = resp.getWriter();
 				resp.setContentType( "text/html" );
-				out.println( "Pipelines: <ul>");
+				out.println( "<h1>Pipelines:</h1> <ul>");
 				for ( int i =0; i < app.codeManager.getPipelineCount(); i++ ) {
 					RemusPipeline pipeline = app.codeManager.getPipeline(i);
 					if ( pipeline.dynamic )
@@ -253,10 +259,16 @@ public class MasterServlet extends HttpServlet {
 						out.println( "<li><a href='" + applet.getPath() + "'>" + applet.getPath() + "</a></li>" );
 					}
 					out.println("</ul>");
-
-
 				}
 				out.println("</ul>");
+				
+				out.println( "<h1>Instances:</h1> <ul>");				
+				for ( Object key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
+					out.println( "<li>" + key + "</li>" );
+				}
+				out.println("</ul>");
+				
+				
 			} else if ( reqInfo.api.compareTo("work") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				int count = 10;
@@ -383,6 +395,14 @@ public class MasterServlet extends HttpServlet {
 				}
 			}
 		} 
+	}
+	
+	
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		super.doDelete(req, resp);
 	}
 }
 

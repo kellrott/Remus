@@ -1,6 +1,5 @@
 package org.remus.applet;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -174,16 +173,17 @@ public class RemusApplet {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		String pathStr = getPath();
-		for ( Object instStr : datastore.get( "/@done", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		boolean found = false;
+		for ( Object instStr : datastore.get( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			if ( pathStr.compareTo((String)instStr) == 0 ) {
-				return true;
+				found = true;
 			}
 		}
-		return false;
+		return found;
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
-		datastore.add( "/@done", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), getPath());
+		datastore.add( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), getPath());
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID) {
@@ -246,7 +246,7 @@ public class RemusApplet {
 	public Collection<RemusInstance> getInstanceList() {
 		String pathStr = getPath();
 		Collection<RemusInstance> out = new HashSet<RemusInstance>( status.getInstanceList() );
-		for ( KeyValuePair kv : datastore.listKeyPairs( "/@done", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
 				out.add( new RemusInstance( (String)kv.getKey() ) );
 		}

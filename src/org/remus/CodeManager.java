@@ -110,6 +110,7 @@ public class CodeManager {
 				}
 				if ( pipelineInstance == null ) {
 					pipelineInstance = new RemusInstance();
+					datastore.add( "/@submit", RemusInstance.STATIC_INSTANCE_STR, 0, 0, pipelineInstance.toString(), null );
 				}
 				if ( !pipeline.isComplete( pipelineInstance) ) {
 					pipeline.addInstance( pipelineInstance );				
