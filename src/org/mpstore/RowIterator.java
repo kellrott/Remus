@@ -14,7 +14,7 @@ public abstract class RowIterator<T> implements Iterable<T>, Iterator<T> {
 		this.rs = rs;
 		this.st = st;
 	}
-	
+
 	@Override
 	public Iterator<T> iterator() {		
 		return this;
@@ -50,9 +50,14 @@ public abstract class RowIterator<T> implements Iterable<T>, Iterator<T> {
 
 	@Override
 	public void remove() {
-		
+
 	}
 
-	
-	
+	@Override
+	protected void finalize() throws Throwable {
+		rs.close();
+		st.close();
+
+	}
+
 }
