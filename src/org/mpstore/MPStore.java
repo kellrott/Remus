@@ -1,5 +1,9 @@
 package org.mpstore;
 
+import java.io.File;
+
+import javax.servlet.ServletInputStream;
+
 public interface MPStore {
 	
 	public void init(Serializer serializer, String basePath);
@@ -14,5 +18,12 @@ public interface MPStore {
 
 	public boolean containsKey(String reqFile, String instance, Object key);
 	
-	public void close(); 
+	public void close();
+
+	public void delete(String file, String instance);
+
+	public void delete(String file, String instance, String key);
+
+	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream); 
+
 }

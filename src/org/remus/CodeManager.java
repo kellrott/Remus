@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.remus.applet.RemusApplet;
 
@@ -116,10 +117,13 @@ public class CodeManager {
 					pipeline.addInstance( pipelineInstance );				
 				}
 			} else {
-				for (Object key : datastore.listKeys( "/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
-					RemusInstance pipelineInstance = new RemusInstance( (String)key );
-					if ( !pipeline.isComplete( pipelineInstance ) ) {
-						pipeline.addInstance( pipelineInstance );
+				for (KeyValuePair kp : datastore.listKeyPairs("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
+					RemusInstance pipelineInstance = new RemusInstance( (String)kp.getKey() );
+					String path = (String)kp.getValue();
+					if ( pipeline.members.containsKey(path) ) {
+						if ( !pipeline.isComplete( pipelineInstance ) ) {
+							pipeline.addInstance( pipelineInstance );
+						}
 					}
 				}
 			}
