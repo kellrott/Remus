@@ -64,7 +64,8 @@ public class MasterServlet extends HttpServlet {
 
 	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 
-	//Pattern instanceStr = Pattern.compile("^([^\\/]*")
+	Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
+	Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
 	
 	class RequestInfo {
 		public String path;
@@ -83,18 +84,23 @@ public class MasterServlet extends HttpServlet {
 			appletSubName = null;
 			key = null;
 			if ( tmp.length > 1 ) {
-				String [] tmp2 = tmp[1].split("/");
-				if ( tmp2.length > 0 ) {
-					api = tmp2[0];
-					if (api.length() == 0)
-						api = null;
-					if ( tmp2.length > 1 )
-						instance = tmp2[1];				
-					if ( tmp2.length > 2) {
-						key = tmp2[2];
+				Matcher m1 = instancePat.matcher(tmp[1]);
+				if ( m1.find() ) {
+					api = m1.group(1);
+					instance = m1.group(2);
+				} else {
+					Matcher m2 = instanceKeyPat.matcher(tmp[1]); 
+					if ( m2.find() ) {
+						api = m2.group(1);
+						instance = m2.group(2);
+						key = m2.group(3);
+					} else {
+						api = tmp[1];
 					}
 				}
 			}
+			if ( api != null && api.length() == 0 )
+				api = null;
 			Matcher m = appletSub.matcher( tmp[0] );
 			if ( m.find() ) {
 				String appletName = m.group(1);
