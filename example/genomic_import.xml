@@ -72,7 +72,7 @@ def archive_cache( key, val ):
 </remus_mapper>
 
 
-<!-- remus_mapper id="HumanMethylation27_filter" input=":archive_fetch_info" type="python">
+<remus_mapper id="HumanMethylation27_filter" input=":archive_cache" type="python">
 <![CDATA[
 import remus
 from urlparse import urlparse
@@ -81,12 +81,12 @@ import os
 import tarfile
 @remus.mapper
 def HumanMethylation27_filter( key, val ):
-	if ( val[ 'platformName' ] == "HumanMethylation27" && val['archiveType'] == "Level_3" ):
+	if ( val[ 'platformName' ] == "HumanMethylation27" and val['archiveType'] == "Level_3" ):
 		#do dynamic submission here
-		instance = resmus.submit( "/methylation27:pipelineStart", key, val )
+		instance = remus.submit( "/methylation27:pipelineStart", key, val )
 		remus.emit( key, instance )
 ]]>
-</remus_mapper -->
+</remus_mapper>
 
 
 <!-- remus_mapper id="G4447A_filter" input=":genomic_archive_platform" type="python">

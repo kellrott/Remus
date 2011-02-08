@@ -1,10 +1,14 @@
 package org.mpstore;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.servlet.ServletInputStream;
 
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.hector.api.Cluster;
@@ -96,54 +100,77 @@ public class HectorStore implements MPStore {
 
 	abstract class HectorIterator<T> implements Iterable<T>, Iterator<T> {
 
+		LinkedList<T> outList;
 		@Override
 		public Iterator<T> iterator() {			
+			outList = new LinkedList<T>();
+			Collection<T> a = prepNextSlice();
+			if ( a != null )
+				outList.addAll( a );
 			return this;
 		}
 
 		T nextVal;
 		@Override
 		public boolean hasNext() {
-			nextVal = prepNext();
+			if ( outList.size() > 0 )
+				return true;
 			return false;
 		}
 
-		abstract public T prepNext();
+		abstract public Collection<T> prepNextSlice();
 
 		@Override
 		public T next() {
-			// TODO Auto-generated method stub
-			return null;
+			if ( outList.size() < 10 ) {
+				Collection<T> a = prepNextSlice();
+				if ( a != null )
+					outList.addAll( a );
+			}
+			return outList.pollFirst();
 		}
 
 		@Override
-		public void remove() {
-			// TODO Auto-generated method stub
-
-		}
+		public void remove() { }
 
 	}
 
 	@Override
 	public Iterable<KeyValuePair> listKeyPairs(String file, String instance) {
-		SuperSliceQuery<String, String, String, String> q = HFactory.createSuperSliceQuery(keyspaceOperator, strSer, strSer, strSer, strSer);
+		RangeSuperSlicesQuery<String, String, String, String> q = 
+			HFactory.createRangeSuperSlicesQuery(keyspaceOperator, strSer, strSer, strSer, strSer);
 
-		q.setColumnFamily(columnFamily).setKey( instance + file );
+		String colName =  instance + file ;
+		q.setColumnFamily(columnFamily).setKeys(colName, colName);
 		q.setRange("", "", false, 10);
 
-		QueryResult<SuperSlice<String, String, String>> res = q.execute();
-		final SuperSlice<String, String, String> slice = res.get();
-
-		/*
-		HectorIterator<KeyValuePair> out = new HectorIterator<KeyValuePair>() {			
-			SuperSlice<String, String, String> a = slice;			
+		QueryResult<OrderedSuperRows<String, String, String, String>> res = q.execute();
+		final OrderedSuperRows<String, String, String, String> slice = res.get();
+		final String oFile = file;
+		final String oInstance = instance;
+		HectorIterator<KeyValuePair> out = new HectorIterator<KeyValuePair>() {		
 			@Override
-			public KeyValuePair prepNext() {
-				
+			public Collection<KeyValuePair> prepNextSlice() {
+				List<KeyValuePair> out = new LinkedList<KeyValuePair>( );
+				for ( SuperRow<String, String, String, String> scol : slice ) {
+					Object key = serial.loads( scol.getKey() );
+					for ( HSuperColumn<String, String, String> col : scol.getSuperSlice().getSuperColumns() ) {
+						Object object = serial.loads( col.getName() );
+						long jobID = 0;
+						long emitID = 0;
+						String [] tmp = col.getName().split("_");
+						if ( tmp.length == 2) {
+							jobID = Long.parseLong( tmp[0] );
+							emitID = Long.parseLong( tmp[1] );
+						}
+						out.add(new KeyValuePair(oFile, oInstance, jobID, emitID, key, object));
+					}
+				}
+				return out;
 			}		
 		};
-		*/
-		
+
+		/*
 		List<KeyValuePair> out = new LinkedList<KeyValuePair>( );
 		List<HSuperColumn<String, String, String>> scols = slice.getSuperColumns();
 		for ( HSuperColumn<String, String, String> scol : scols ) {
@@ -160,12 +187,13 @@ public class HectorStore implements MPStore {
 				out.add(new KeyValuePair(file, instance, jobID, emitID, key, object));
 			}
 		}
+		 */
 		return out;
 	}
 
 	@Override
 	public Iterable<Object> listKeys(String file, String instance) {
-		
+
 		String keySet = instance + file;
 		RangeSuperSlicesQuery<String, String, String, String> q = 
 			HFactory.createRangeSuperSlicesQuery(keyspaceOperator, strSer,strSer,strSer,strSer);
@@ -175,8 +203,8 @@ public class HectorStore implements MPStore {
 		//q.setReturnKeysOnly();		
 		List<Object> out = new ArrayList<Object>();	
 		QueryResult<OrderedSuperRows<String, String, String, String>> res = q.execute();
-		
-		
+
+
 		Iterator<SuperRow<String, String, String, String>> i = res.get().iterator();		
 
 		while ( i.hasNext() ) {
@@ -187,7 +215,7 @@ public class HectorStore implements MPStore {
 			}
 		}
 		return out;
-		
+
 
 	}
 
@@ -195,5 +223,23 @@ public class HectorStore implements MPStore {
 	@Override
 	public void close() {
 		cluster.getConnectionManager().shutdown();  		
+	}
+
+	@Override
+	public void delete(String file, String instance) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void delete(String file, String instance, String key) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream) {
+		// TODO Auto-generated method stub
+		
 	}
 }

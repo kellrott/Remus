@@ -1,5 +1,9 @@
 package org.mpstore;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -11,14 +15,18 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
 
+import javax.servlet.ServletInputStream;
+
 
 public class SQLStore implements MPStore {
 	private Connection connect = null;
 	private Serializer serializer;
 	Boolean streaming = false;
+	String basePath;
 	@Override
 	public void init(Serializer serializer, String basePath) {
 		this.serializer = serializer;
+		this.basePath = basePath;
 		try {
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
@@ -259,6 +267,66 @@ public class SQLStore implements MPStore {
 	@Override
 	public void close() {
 
+	}
+
+	@Override
+	public void delete(String file, String instance) {
+		String tableName = getTableName( instance+file, false );
+		if ( tableName != null ) {	
+			try {
+				PreparedStatement st = connect.prepareStatement( "DROP TABLE " + tableName );
+				st.execute();
+				st.close();
+				st = connect.prepareStatement("DELETE FROM mpdata WHERE tableName = ? ");
+				st.setString(1, tableName);
+				st.execute();
+				st.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	@Override
+	public void delete(String file, String instance, String key) {
+		String tableName = getTableName( instance+file, false );
+		if ( tableName != null ) {	
+			try {
+				PreparedStatement st = connect.prepareStatement( "DELETE FROM " + tableName + " WHERE valkey = ?" );
+				st.setString(1, serializer.dumps(key));
+				st.execute();
+				st.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+	}
+
+	@Override
+	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream) {
+		File appletDir = new File( basePath, file );
+		File instanceDir = new File( appletDir, instance );
+		if ( !instanceDir.exists() ) {
+			instanceDir.mkdirs();
+		}
+		File outFile = new File(instanceDir, key);
+		try {
+			FileOutputStream fos = new FileOutputStream(outFile);
+			byte [] buffer = new byte[1024];
+			int len;
+			while ((len=inputStream.read(buffer))>0) {
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 
 

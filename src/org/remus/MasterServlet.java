@@ -64,12 +64,15 @@ public class MasterServlet extends HttpServlet {
 
 	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 
+	//Pattern instanceStr = Pattern.compile("^([^\\/]*")
+	
 	class RequestInfo {
 		public String path;
 		public String appletPath;
 		public String appletSubName;
 		public String api;
 		public String instance;
+		public String key;
 		File file, srcFile;
 
 		public RequestInfo( String pathinfo ) {
@@ -78,6 +81,7 @@ public class MasterServlet extends HttpServlet {
 			api = null;
 			instance = null;
 			appletSubName = null;
+			key = null;
 			if ( tmp.length > 1 ) {
 				String [] tmp2 = tmp[1].split("/");
 				if ( tmp2.length > 0 ) {
@@ -85,7 +89,10 @@ public class MasterServlet extends HttpServlet {
 					if (api.length() == 0)
 						api = null;
 					if ( tmp2.length > 1 )
-						instance = tmp2[1];
+						instance = tmp2[1];				
+					if ( tmp2.length > 2) {
+						key = tmp2[2];
+					}
 				}
 			}
 			Matcher m = appletSub.matcher( tmp[0] );
@@ -179,11 +186,9 @@ public class MasterServlet extends HttpServlet {
 				resp.setBufferSize(2048);
 				if ( reqInfo.api.compareTo("data") == 0 || reqInfo.api.compareTo("submit") == 0 ) {
 					MPStore ds = app.getDataStore();
-					Map pm = req.getParameterMap();
-					if ( reqInfo.instance != null && pm.containsKey("key") ) {
+					if ( reqInfo.instance != null && reqInfo.key != null ) {
 						String instStr = reqInfo.instance;
-						String keyStr = ((String[])pm.get("key"))[0];		
-						Object keyObj = serializer.loads(keyStr);
+						Object keyObj = serializer.loads(reqInfo.key);
 						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
 							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
 								out.println( serializer.dumps( value ) );
@@ -210,11 +215,10 @@ public class MasterServlet extends HttpServlet {
 					out.write( app.codeManager.get(reqInfo.appletPath).getSource() );
 				} else if ( reqInfo.api.compareTo("work") == 0 ) {
 					RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
-					String idStr = req.getParameter("id");
-					if ( reqInfo.instance != null && idStr != null ) {
+					if ( reqInfo.instance != null && reqInfo.key != null ) {
 						if ( applet.getPipeline() != null ) {
 							RemusInstance inst = new RemusInstance( reqInfo.instance );
-							int jobID = Integer.parseInt(idStr);
+							int jobID = Integer.parseInt(reqInfo.key);
 							WorkDescription w = applet.getWork(inst, jobID);
 							if ( w != null )
 								out.println( serializer.dumps( w.getDesc() ) );
@@ -229,13 +233,13 @@ public class MasterServlet extends HttpServlet {
 					//BUG FIX: SQLStore returns streaming iterator having a double loop of MPStore calls will
 					//crash the connection
 					List<Object> keyList = new LinkedList<Object>();
-					for ( Object key : ds.listKeys( reqInfo.appletPath + "@data", reqInfo.instance ) ) {
+					for ( Object key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
 						keyList.add( key );
 					}					
 					for ( Object key : keyList ) {
 						Map outMap = new HashMap();
 						List outList = new ArrayList();
-						for ( Object val : ds.get(reqInfo.appletPath + "@data", reqInfo.instance, key) ) {
+						for ( Object val : ds.get(reqInfo.file + "@data", reqInfo.instance, key) ) {
 							outList.add(val);							
 						}
 						outMap.put(key, outList);
@@ -261,14 +265,14 @@ public class MasterServlet extends HttpServlet {
 					out.println("</ul>");
 				}
 				out.println("</ul>");
-				
+
 				out.println( "<h1>Instances:</h1> <ul>");				
 				for ( Object key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					out.println( "<li>" + key + "</li>" );
 				}
 				out.println("</ul>");
-				
-				
+
+
 			} else if ( reqInfo.api.compareTo("work") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				int count = 10;
@@ -392,17 +396,38 @@ public class MasterServlet extends HttpServlet {
 					} else {
 						resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 					}
+				} else if ( reqInfo.api.compareTo("attach") == 0 ) {
+					if ( reqInfo.instance != null && reqInfo.key != null ) {
+						app.getDataStore().writeAttachment( reqInfo.file.toString(), reqInfo.instance, reqInfo.key, req.getInputStream() );
+					}
 				}
 			}
 		} 
 	}
-	
-	
+
+
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		super.doDelete(req, resp);
+	throws ServletException, IOException {
+
+		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );		
+		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
+			RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
+			if ( reqInfo.instance != null  ) {
+				app.getDataStore().delete( reqInfo.appletPath + "@work", reqInfo.instance );
+				app.getDataStore().delete( reqInfo.appletPath + "@data", reqInfo.instance );
+				for ( String subname : applet.getOutputs() ) {
+					app.getDataStore().delete( reqInfo.appletPath + "." + subname + "@data", reqInfo.instance );
+				}
+				app.getDataStore().delete( reqInfo.appletPath + "@done", RemusInstance.STATIC_INSTANCE_STR, reqInfo.instance );
+				try {
+					app = new RemusApp(new File(srcDir), app.workStore );
+				} catch (RemusDatabaseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}	
 	}
 }
 
