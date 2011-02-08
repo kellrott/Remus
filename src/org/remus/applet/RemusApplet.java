@@ -161,7 +161,9 @@ public class RemusApplet {
 					if ( datastore.get( "/@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
-				} else {
+				} else if (  iRef.getInputType() == InputReference.StaticInput ) {
+
+				} else {				
 					allReady = false;
 				}
 			}
