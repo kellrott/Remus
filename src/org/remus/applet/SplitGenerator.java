@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.KeyValuePair;
+import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 
@@ -30,7 +31,11 @@ public class SplitGenerator implements WorkGenerator {
 						//KeyValuePair d = applet.datastore.get(new File("/@work"), instance.toString(),i, 0 );
 						//if ( d == null ) {
 							Map out = new HashMap();
-							out.put( "input", applet.inputs.get(i).getPortPath() + "@data" );
+							if ( applet.inputs.get(i).getInputType() == InputReference.AppletInput )
+								out.put( "input", applet.inputs.get(i).getPortPath() + "@data" );
+							if ( applet.inputs.get(i).getInputType() == InputReference.StaticInput )
+								out.put( "input", applet.inputs.get(i).getURL() );
+							
 							outList.add( new WorkDescription(applet, instance, i, out) );
 						//}
 					}
