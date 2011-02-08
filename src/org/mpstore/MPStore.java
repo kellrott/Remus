@@ -1,8 +1,6 @@
 package org.mpstore;
 
-import java.io.File;
-
-import javax.servlet.ServletInputStream;
+import java.io.InputStream;
 
 public interface MPStore {
 	
@@ -24,6 +22,8 @@ public interface MPStore {
 
 	public void delete(String file, String instance, String key);
 
-	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream); 
+	public void writeAttachment(String file, String instance, String key, InputStream inputStream);
+
+	public InputStream readAttachement(String string, String instance, String key); 
 
 }

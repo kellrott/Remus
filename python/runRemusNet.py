@@ -222,6 +222,12 @@ class PipeWorker(WorkerBase):
 			inList.append( iHandle )
 		func( inList )
 		self.closeOutput()
+		
+		fileMap = remus.getoutput()
+		for path in fileMap:
+			postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
+			print postURL
+			urlopen( postURL, str(fileMap[path]) ).read()		
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 

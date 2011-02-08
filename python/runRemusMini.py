@@ -30,6 +30,16 @@ class jsonIter:
 	def read(self):
 		return json.loads( self.handle.read() )
 
+class jsonPairSplitter:
+	def __init__(self, iHandle):
+		self.handle = iHandle
+	
+	def __iter__(self):
+		for line in self.handle:
+			data  = json.loads( line )
+			for key in data:
+				yield key, data[key]
+				
 getCache={}
 
 def httpGetJson( url, useCache=False ):
@@ -75,3 +85,13 @@ if __name__=="__main__":
 			kpData = httpGetJson( kpURL )
 			func( jobDesc['key'], kpData )
 	
+	if ( run == "pipe" ):
+		inList = []
+		for inFile in inPath.split(','):
+			kpURL = host + inFile + "@data/%s" % ( instance )
+			iHandle = jsonPairSplitter( urlopen( kpURL ) )
+			inList.append( iHandle )
+		func( inList )
+		fileMap = remus.getoutput()
+		for path in fileMap:
+			print str(fileMap[path])

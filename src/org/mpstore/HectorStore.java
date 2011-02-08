@@ -1,6 +1,7 @@
 package org.mpstore;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -238,8 +239,15 @@ public class HectorStore implements MPStore {
 	}
 
 	@Override
-	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream) {
+	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public InputStream readAttachement(String string, String instance,
+			String key) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
