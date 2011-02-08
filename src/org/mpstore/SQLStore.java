@@ -1,6 +1,8 @@
 package org.mpstore;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -305,28 +307,41 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public void writeAttachment(String file, String instance, String key, ServletInputStream inputStream) {
-		File appletDir = new File( basePath, file );
-		File instanceDir = new File( appletDir, instance );
-		if ( !instanceDir.exists() ) {
-			instanceDir.mkdirs();
-		}
-		File outFile = new File(instanceDir, key);
+	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
 		try {
-			FileOutputStream fos = new FileOutputStream(outFile);
-			byte [] buffer = new byte[1024];
-			int len;
-			while ((len=inputStream.read(buffer))>0) {
-				fos.write(buffer, 0, len);
+			String tableName = getTableName( instance+file, true );
+			if ( tableName != null ) {
+				PreparedStatement st = connect.prepareStatement( "INSERT INTO " + tableName + "(jobID, emitID, valkey, value) values(0,0,?,?)" );
+				st.setString( 1, key );			
+				st.setBinaryStream(2, inputStream );
+				st.execute();
+				st.close();		
 			}
-			fos.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
+	}
+
+	@Override
+	public InputStream readAttachement(String file, String instance, String key) {
+		try {
+			String tableName = getTableName( instance+file, true );
+			if ( tableName != null ) {
+				PreparedStatement st = connect.prepareStatement( "SELECT value FROM " + tableName + " WHERE valkey = ? " );
+				st.setString(1, key);
+				ResultSet rs = st.executeQuery();
+				rs.next();
+				InputStream is = rs.getBlob(1).getBinaryStream();
+				rs.close();
+				st.close();
+				return is;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
 	}
 
 
