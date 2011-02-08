@@ -5,7 +5,6 @@ import sys
 import json
 from urllib2 import urlopen
 from urllib  import quote
-import remus
 import imp
 from cStringIO import StringIO
 
@@ -186,7 +185,7 @@ class MapWorker(WorkerBase):
 		self.setupOutput(instance, jobID)
 		jobSet = httpGetJson( url )
 		for jobDesc in jobSet:
-			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote(json.dumps(jobDesc['key'])) )	
+			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )	
 			kpData = httpGetJson( kpURL )
 			for data in kpData:
 				func( jobDesc['key'], data )
@@ -201,7 +200,7 @@ class ReduceWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
-			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote(json.dumps(jobDesc['key'])) )		
+			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )		
 			kpData = httpGetJson( kpURL )
 			func( jobDesc['key'], kpData )
 		self.closeOutput()
@@ -235,7 +234,7 @@ class MergeWorker(WorkerBase):
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
 			leftKey = jobDesc['left_key']
-			leftValURL = self.host + jobDesc['left_input'] + "/%s/%s" % ( instance, quote(json.dumps(jobDesc['left_key'])) )
+			leftValURL = self.host + jobDesc['left_input'] + "/%s/%s" % ( instance, quote( jobDesc['left_key']) )
 			leftVals = list( httpGetJson( leftValURL ) )
 			rightSetURL = self.host + jobDesc['right_input'] + "@reduce/%s" % ( instance )
 			for rightSet in httpGetJson( rightSetURL, True ):

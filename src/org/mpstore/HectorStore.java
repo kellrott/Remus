@@ -54,10 +54,10 @@ public class HectorStore implements MPStore {
 	}
 
 	@Override
-	public void add(String file, String instance, long jobid, long order, Object key, Object data) {
+	public void add(String file, String instance, long jobid, long order, String key, Object data) {
 		try {            
 			mutator.insert(instance + file, columnFamily, 
-					HFactory.createSuperColumn(serial.dumps(key), 
+					HFactory.createSuperColumn( key, 
 							Arrays.asList(HFactory.createStringColumn(Long.toString(jobid) + "_" + Long.toString(order), serial.dumps(data))), 
 							strSer, strSer, strSer));
 		} catch (HectorException e) {
@@ -67,11 +67,11 @@ public class HectorStore implements MPStore {
 
 
 	@Override
-	public boolean containsKey(String file, String instance, Object key) {
+	public boolean containsKey(String file, String instance, String key) {
 		List<Object> out = new LinkedList<Object>();		
 		SuperColumnQuery<String, String, String, String> superColumnQuery = 
 			HFactory.createSuperColumnQuery(keyspaceOperator, strSer, strSer, strSer, strSer);
-		superColumnQuery.setColumnFamily(columnFamily).setKey( instance + file ).setSuperName( serial.dumps(key) );
+		superColumnQuery.setColumnFamily(columnFamily).setKey( instance + file ).setSuperName( key );
 		QueryResult<HSuperColumn<String, String, String>> result = superColumnQuery.execute();
 		HSuperColumn<String, String, String> scol = result.get();
 		if ( scol != null)
@@ -80,11 +80,11 @@ public class HectorStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<Object> get(String file, String instance, Object key) {
+	public Iterable<Object> get(String file, String instance, String key) {
 		List<Object> out = new LinkedList<Object>();		
 		SuperColumnQuery<String, String, String, String> superColumnQuery = 
 			HFactory.createSuperColumnQuery(keyspaceOperator, strSer, strSer, strSer, strSer);
-		superColumnQuery.setColumnFamily(columnFamily).setKey( instance + file ).setSuperName( serial.dumps(key) );
+		superColumnQuery.setColumnFamily(columnFamily).setKey( instance + file ).setSuperName( key );
 		QueryResult<HSuperColumn<String, String, String>> result = superColumnQuery.execute();
 		HSuperColumn<String, String, String> scol = result.get();
 		if ( scol == null ) {
@@ -192,7 +192,7 @@ public class HectorStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<Object> listKeys(String file, String instance) {
+	public Iterable<String> listKeys(String file, String instance) {
 
 		String keySet = instance + file;
 		RangeSuperSlicesQuery<String, String, String, String> q = 
@@ -201,7 +201,7 @@ public class HectorStore implements MPStore {
 		q.setKeys(keySet, keySet);
 		q.setRange("", "", false, 10);
 		//q.setReturnKeysOnly();		
-		List<Object> out = new ArrayList<Object>();	
+		List<String> out = new ArrayList<String>();	
 		QueryResult<OrderedSuperRows<String, String, String, String>> res = q.execute();
 
 
@@ -211,7 +211,7 @@ public class HectorStore implements MPStore {
 			SuperRow<String, String, String, String> r = i.next();
 			SuperSlice<String, String, String> s = r.getSuperSlice();			
 			for ( HSuperColumn<String, String, String> b : s.getSuperColumns() ) {
-				out.add( serial.loads( b.getName() ) );
+				out.add( b.getName() );
 			}
 		}
 		return out;

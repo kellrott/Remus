@@ -115,13 +115,13 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public void add(String file, String instance, long jobid, long order, Object key, Object data) {
+	public void add(String file, String instance, long jobid, long order, String key, Object data) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			PreparedStatement st = connect.prepareStatement("INSERT INTO " + tableName +"(jobID, emitID, valkey, value) values(?,?,?,?)");
 			st.setLong  ( 1, jobid );
 			st.setLong  ( 2, order );
-			st.setString( 3, serializer.dumps( key ) );
+			st.setString( 3, key );
 			st.setString( 4, serializer.dumps( data ) );
 			st.execute();
 			st.close();
@@ -133,12 +133,12 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public boolean containsKey(String file, String instance, Object key) {
+	public boolean containsKey(String file, String instance, String key) {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
 				PreparedStatement st = connect.prepareStatement( "SELECT COUNT(*) FROM " + tableName + " where valkey = ?" );
-				st.setString(1, serializer.dumps(key) );	
+				st.setString(1, key );	
 				ResultSet rs = st.executeQuery();
 				rs.next();
 				int count = rs.getInt(1);
@@ -155,7 +155,7 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<Object> get(String file, String instance, Object key) {
+	public Iterable<Object> get(String file, String instance, String key) {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
@@ -164,7 +164,7 @@ public class SQLStore implements MPStore {
 						ResultSet.CONCUR_READ_ONLY );
 				if ( streaming )
 					st.setFetchSize(Integer.MIN_VALUE);
-				st.setString(1, serializer.dumps(key) );		
+				st.setString(1, key );		
 
 				ResultSet rs = st.executeQuery();			
 				return new RowIterator<Object>(rs,st) {
@@ -190,7 +190,7 @@ public class SQLStore implements MPStore {
 
 
 	@Override
-	public Iterable<Object> listKeys(String file, String instance) {
+	public Iterable<String> listKeys(String file, String instance) {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
@@ -202,11 +202,11 @@ public class SQLStore implements MPStore {
 
 				ResultSet rs = st.executeQuery();
 
-				return new RowIterator<Object>(rs,st) {
+				return new RowIterator<String>(rs,st) {
 					@Override
-					public Object processRow(ResultSet rs) {
+					public String processRow(ResultSet rs) {
 						try {
-							return serializer.loads( rs.getString(1) );
+							return rs.getString(1);
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -219,7 +219,7 @@ public class SQLStore implements MPStore {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return new ArrayList<Object>();
+		return new ArrayList<String>();
 	}
 
 	@Override
@@ -245,7 +245,7 @@ public class SQLStore implements MPStore {
 							Object key = null;
 							Object val = null;
 							if ( keyStr != null )
-								key = serializer.loads(keyStr);
+								key = keyStr;
 							if ( valStr != null )
 								val = serializer.loads(valStr);
 							return new KeyValuePair(outFile, outInstance, rs.getLong(1), rs.getLong(2), key, val );
@@ -294,7 +294,7 @@ public class SQLStore implements MPStore {
 		if ( tableName != null ) {	
 			try {
 				PreparedStatement st = connect.prepareStatement( "DELETE FROM " + tableName + " WHERE valkey = ?" );
-				st.setString(1, serializer.dumps(key));
+				st.setString(1, key);
 				st.execute();
 				st.close();
 			} catch (SQLException e) {
