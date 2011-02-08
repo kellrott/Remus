@@ -194,9 +194,9 @@ public class MasterServlet extends HttpServlet {
 					MPStore ds = app.getDataStore();
 					if ( reqInfo.instance != null && reqInfo.key != null ) {
 						String instStr = reqInfo.instance;
-						Object keyObj = serializer.loads(reqInfo.key);
-						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
-							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyObj ) ) {
+						String keyStr = reqInfo.key;
+						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
+							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
 								out.println( serializer.dumps( value ) );
 								resp.flushBuffer();
 							}
@@ -238,11 +238,11 @@ public class MasterServlet extends HttpServlet {
 					MPStore ds = app.getDataStore();
 					//BUG FIX: SQLStore returns streaming iterator having a double loop of MPStore calls will
 					//crash the connection
-					List<Object> keyList = new LinkedList<Object>();
-					for ( Object key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
+					List<String> keyList = new LinkedList<String>();
+					for ( String key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
 						keyList.add( key );
 					}					
-					for ( Object key : keyList ) {
+					for ( String key : keyList ) {
 						Map outMap = new HashMap();
 						List outList = new ArrayList();
 						for ( Object val : ds.get(reqInfo.file + "@data", reqInfo.instance, key) ) {
@@ -362,7 +362,7 @@ public class MasterServlet extends HttpServlet {
 								(String)inObj.get("instance"), 
 								(Long)inObj.get("id"), 
 								(Long)inObj.get("order"), 
-								inObj.get("key") , 
+								(String)inObj.get("key") , 
 								inObj.get("value") );
 					}
 					resp.getWriter().print("\"OK\"");
@@ -386,7 +386,7 @@ public class MasterServlet extends HttpServlet {
 											reqInfo.instance, 
 											(Long)0L, 
 											(Long)0L, 
-											key , 
+											(String)key , 
 											inObj.get(key) );
 								}
 							}
