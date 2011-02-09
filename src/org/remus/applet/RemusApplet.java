@@ -39,6 +39,10 @@ public class RemusApplet {
 			out.workGenerator = MergeGenerator.class;	
 			break;
 		}
+		case MATCHER: {
+			out.workGenerator = MatchGenerator.class;	
+			break;
+		}
 		case PIPE: {
 			out.workGenerator = PipeGenerator.class;	
 			break;
@@ -68,9 +72,10 @@ public class RemusApplet {
 
 	public static final int MAPPER = 1;
 	public static final int MERGER = 2;
-	public static final int SPLITTER = 3;
-	public static final int REDUCER = 4;
-	public static final int PIPE = 5;
+	public static final int MATCHER = 3;
+	public static final int SPLITTER = 4;
+	public static final int REDUCER = 5;
+	public static final int PIPE = 6;
 
 	Class workGenerator;
 	String path;
@@ -234,6 +239,9 @@ public class RemusApplet {
 		}
 		if(type==MERGER) {
 			out.put("mode", "merge");
+		}
+		if(type==MATCHER) {
+			out.put("mode", "match");
 		}
 		if ( outputs != null && outputs.size() > 0 ) {
 			out.put("output", outputs);

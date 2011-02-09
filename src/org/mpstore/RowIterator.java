@@ -2,17 +2,17 @@ package org.mpstore;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Iterator;
+
 
 
 public abstract class RowIterator<T> implements Iterable<T>, Iterator<T> {
 
 	ResultSet rs;
-	Statement st;
-	public RowIterator( ResultSet rs, Statement st ) {
+	
+	public RowIterator( ResultSet rs ) {
 		this.rs = rs;
-		this.st = st;
+		
 	}
 
 	@Override
@@ -25,13 +25,7 @@ public abstract class RowIterator<T> implements Iterable<T>, Iterator<T> {
 		try {
 			boolean more = rs.next();
 			if ( !more ) {
-				try {
-					rs.close();
-					st.close();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				cleanup();
 			}
 			return more;
 		} catch (SQLException e) {
@@ -47,17 +41,11 @@ public abstract class RowIterator<T> implements Iterable<T>, Iterator<T> {
 	}
 
 	public abstract T processRow(ResultSet rs);
-
+	public abstract void cleanup();
+	
 	@Override
 	public void remove() {
 
 	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		rs.close();
-		st.close();
-
-	}
-
+	
 }

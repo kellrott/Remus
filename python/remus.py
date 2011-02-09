@@ -60,10 +60,11 @@ def submit(applet, key, value ):
 	
 def emit(key, val, output=None):
 	global out_handle_map
+	#print key, val, output, out_handle_map
 	out_handle_map[ output ].emit( key, val )
 
 def setoutput( outmap ):
-	global file_outmap
+	global out_handle_map
 	global out_file_map
 	out_handle_map = outmap
 	out_file_map = {}
