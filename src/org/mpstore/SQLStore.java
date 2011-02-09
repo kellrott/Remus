@@ -16,26 +16,47 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.NoSuchElementException;
 
-import javax.servlet.ServletInputStream;
+import org.apache.commons.pool.*;
+import org.apache.commons.pool.impl.StackObjectPool;
+
 
 
 public class SQLStore implements MPStore {
-	private Connection connect = null;
+	
+	public class ConnectionFactory extends BasePoolableObjectFactory {
+
+		@Override
+		public Object makeObject() throws Exception {
+			return DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott&dontTrackOpenResources=true" );
+		}
+		
+		@Override
+		public void destroyObject(Object obj) throws Exception {
+			((Connection)obj).close();
+		}
+		
+	}
+	
+	
+	private ObjectPool pool = null;
 	private Serializer serializer;
-	Boolean streaming = false;
+	Boolean streaming = true;
 	String basePath;
 	@Override
 	public void init(Serializer serializer, String basePath) {
 		this.serializer = serializer;
 		this.basePath = basePath;
 		try {
+			
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
 
 			Class.forName("com.mysql.jdbc.Driver");
-			connect = DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott&dontTrackOpenResources=true" );
-
+			pool = new StackObjectPool( new ConnectionFactory() );
+			
+			Connection connect = (Connection) pool.borrowObject();			
 			ResultSet rs = connect.getMetaData().getTables(null, null, "mpdata", null);
 			boolean found = false;
 			if ( rs.next() ) {
@@ -52,11 +73,20 @@ public class SQLStore implements MPStore {
 					e.printStackTrace();
 				}
 			}
-
+			pool.returnObject(connect);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -64,6 +94,7 @@ public class SQLStore implements MPStore {
 
 	private String getTableName( String path, Boolean create ) {
 		try {
+			Connection connect = (Connection) pool.borrowObject();			
 			PreparedStatement st = connect.prepareStatement("SELECT tablename FROM mpdata WHERE path = ?");
 			st.setString(1, path);
 			ResultSet rs = st.executeQuery();
@@ -104,11 +135,21 @@ public class SQLStore implements MPStore {
 					st2.close();
 				}
 			}			
+			pool.returnObject(connect);
 			return tableName;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -119,6 +160,8 @@ public class SQLStore implements MPStore {
 	@Override
 	public void add(String file, String instance, long jobid, long order, String key, Object data) {
 		try {
+			Connection connect = (Connection) pool.borrowObject();
+
 			String tableName = getTableName( instance+file, true );
 			PreparedStatement st = connect.prepareStatement("INSERT INTO " + tableName +"(jobID, emitID, valkey, value) values(?,?,?,?)");
 			st.setLong  ( 1, jobid );
@@ -127,8 +170,19 @@ public class SQLStore implements MPStore {
 			st.setString( 4, serializer.dumps( data ) );
 			st.execute();
 			st.close();
+			pool.returnObject(connect);
+
 			//connect.commit();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -139,6 +193,7 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
+				Connection connect = (Connection) pool.borrowObject();
 				PreparedStatement st = connect.prepareStatement( "SELECT COUNT(*) FROM " + tableName + " where valkey = ?" );
 				st.setString(1, key );	
 				ResultSet rs = st.executeQuery();
@@ -146,10 +201,21 @@ public class SQLStore implements MPStore {
 				int count = rs.getInt(1);
 				rs.close();
 				st.close();
+				pool.returnObject(connect);
+
 				if ( count > 0 )
 					return true;
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -161,7 +227,9 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
-				PreparedStatement st = connect.prepareStatement( "SELECT value FROM " + tableName + " where valkey = ?" ,
+				final Connection connect = (Connection) pool.borrowObject();
+
+				final PreparedStatement st = connect.prepareStatement( "SELECT value FROM " + tableName + " where valkey = ?" ,
 						ResultSet.TYPE_FORWARD_ONLY,  
 						ResultSet.CONCUR_READ_ONLY );
 				if ( streaming )
@@ -169,7 +237,7 @@ public class SQLStore implements MPStore {
 				st.setString(1, key );		
 
 				ResultSet rs = st.executeQuery();			
-				return new RowIterator<Object>(rs,st) {
+				return new RowIterator<Object>(rs) {
 					@Override
 					public Object processRow(ResultSet rs) {
 						try {
@@ -178,12 +246,33 @@ public class SQLStore implements MPStore {
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						}
+						}						
 						return null;
+					}
+
+					@Override
+					public void cleanup() {
+						try {
+							rs.close();
+							st.close();
+							pool.returnObject(connect);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}						
 					}
 				};		
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -196,7 +285,8 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
-				PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM " + tableName ,
+				final Connection connect = (Connection) pool.borrowObject();
+				final PreparedStatement st = connect.prepareStatement( "SELECT distinct(valkey) FROM " + tableName ,
 						ResultSet.TYPE_FORWARD_ONLY,  
 						ResultSet.CONCUR_READ_ONLY );
 				if ( streaming )
@@ -204,7 +294,7 @@ public class SQLStore implements MPStore {
 
 				ResultSet rs = st.executeQuery();
 
-				return new RowIterator<String>(rs,st) {
+				return new RowIterator<String>(rs) {
 					@Override
 					public String processRow(ResultSet rs) {
 						try {
@@ -213,11 +303,34 @@ public class SQLStore implements MPStore {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						
 						return null;
 					}				
+					
+					@Override
+					public void cleanup() {
+						try {
+							rs.close();
+							st.close();
+							pool.returnObject(connect);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}						
+					}
 				};		
+				
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -229,7 +342,8 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, false );
 			if ( tableName != null ) {
-				PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID, valkey, value FROM " + tableName,
+				final Connection connect = (Connection) pool.borrowObject();
+				final PreparedStatement st = connect.prepareStatement( "SELECT jobID, emitID, valkey, value FROM " + tableName,
 						ResultSet.TYPE_FORWARD_ONLY,  
 						ResultSet.CONCUR_READ_ONLY );
 				if ( streaming )
@@ -238,7 +352,7 @@ public class SQLStore implements MPStore {
 				ResultSet rs = st.executeQuery();
 				final String outFile = file;
 				final String outInstance = instance;
-				return new RowIterator<KeyValuePair> (rs,st) {
+				return new RowIterator<KeyValuePair> (rs) {
 					@Override
 					public KeyValuePair processRow(ResultSet rs) {
 						try {
@@ -257,9 +371,30 @@ public class SQLStore implements MPStore {
 						}
 						return null;
 					}
+					
+					@Override
+					public void cleanup() {
+						try {
+							rs.close();
+							st.close();
+							pool.returnObject(connect);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}						
+					}
 				};
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -276,6 +411,8 @@ public class SQLStore implements MPStore {
 		String tableName = getTableName( instance+file, false );
 		if ( tableName != null ) {	
 			try {
+				final Connection connect = (Connection) pool.borrowObject();
+
 				PreparedStatement st = connect.prepareStatement( "DROP TABLE " + tableName );
 				st.execute();
 				st.close();
@@ -283,7 +420,12 @@ public class SQLStore implements MPStore {
 				st.setString(1, tableName);
 				st.execute();
 				st.close();
+				pool.returnObject(connect);
+
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -295,11 +437,18 @@ public class SQLStore implements MPStore {
 		String tableName = getTableName( instance+file, false );
 		if ( tableName != null ) {	
 			try {
+				final Connection connect = (Connection) pool.borrowObject();
+
 				PreparedStatement st = connect.prepareStatement( "DELETE FROM " + tableName + " WHERE valkey = ?" );
 				st.setString(1, key);
 				st.execute();
 				st.close();
+				pool.returnObject(connect);
+
 			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -311,13 +460,24 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {
+				final Connection connect = (Connection) pool.borrowObject();
 				PreparedStatement st = connect.prepareStatement( "INSERT INTO " + tableName + "(jobID, emitID, valkey, value) values(0,0,?,?)" );
 				st.setString( 1, key );			
 				st.setBinaryStream(2, inputStream );
 				st.execute();
 				st.close();		
+				pool.returnObject(connect);
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
@@ -328,6 +488,7 @@ public class SQLStore implements MPStore {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {
+				final Connection connect = (Connection) pool.borrowObject();
 				PreparedStatement st = connect.prepareStatement( "SELECT value FROM " + tableName + " WHERE valkey = ? " );
 				st.setString(1, key);
 				ResultSet rs = st.executeQuery();
@@ -335,9 +496,13 @@ public class SQLStore implements MPStore {
 				InputStream is = rs.getBlob(1).getBinaryStream();
 				rs.close();
 				st.close();
+				pool.returnObject(connect);
 				return is;
 			}
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
