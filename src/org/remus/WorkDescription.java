@@ -1,16 +1,15 @@
 package org.remus;
 
-import java.io.File;
 
 import org.remus.applet.RemusApplet;
 
 
 public class WorkDescription {
 	public Object desc=null;
-	public int jobID;
+	public long jobID;
 	public RemusApplet applet;
 	public RemusInstance instance;
-	public WorkDescription(RemusApplet applet, RemusInstance instance, int jobID, Object desc) {
+	public WorkDescription(RemusApplet applet, RemusInstance instance, long jobID, Object desc) {
 		this.jobID = jobID;
 		this.desc = desc;
 		this.applet = applet;

@@ -42,9 +42,12 @@ public class RemusPipeline {
 		List<WorkDescription> out = new LinkedList<WorkDescription>();
 		for ( RemusApplet applet : members.values() ) {			
 			for ( RemusInstance instance : applet.getInstanceList() ) {
-				for ( WorkDescription work : applet.getWorkList( instance ) ) {
-					if ( out.size() < maxCount ) {
-						out.add( work );					
+				Collection<WorkDescription> coll = applet.getWorkList(instance);
+				if ( coll != null ) {
+					for ( WorkDescription work : coll) {
+						if ( out.size() < maxCount ) {
+							out.add( work );					
+						}
 					}
 				}
 			}
@@ -89,6 +92,7 @@ public class RemusPipeline {
 		}
 		return inputs.get(ref);
 	}
+
 	public void addInstance(RemusInstance instance) {
 		if ( inputs == null ) {
 			setupInputs();

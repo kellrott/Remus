@@ -53,22 +53,11 @@ public class RemusApplet {
 			out.path = path;
 			out.type = type;
 			out.inputs = null;
-			try {
-				WorkGenerator gen = (WorkGenerator) out.workGenerator.newInstance();
-				gen.init(out);
-				out.status = new InstanceStatus( out, gen );
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			out.workCache = new HashMap<RemusInstance, HashMap<Long,WorkDescription>>();
+			out.activeInstances = new LinkedList<RemusInstance>();			
 		}
 		return out;
 	}
-
-
 
 	public static final int MAPPER = 1;
 	public static final int MERGER = 2;
@@ -85,7 +74,8 @@ public class RemusApplet {
 	MPStore datastore;
 	int type;
 	protected RemusPipeline pipeline = null;
-	private InstanceStatus status;
+	HashMap<RemusInstance,HashMap<Long,WorkDescription>> workCache;
+	LinkedList<RemusInstance> activeInstances;
 
 	public void addInput( InputReference in ) {
 		if ( inputs == null )
@@ -137,7 +127,31 @@ public class RemusApplet {
 		return code.getSource();
 	}
 
-
+	public Map getInfo() {
+		Map out = new HashMap();
+		if ( type==MAPPER ) {
+			out.put("mode", "map");
+		}
+		if ( type==REDUCER ) {
+			out.put("mode", "reduce");
+		}
+		if(type==SPLITTER) {
+			out.put("mode", "split");
+		}
+		if(type==PIPE) {
+			out.put("mode", "pipe");
+		}
+		if(type==MERGER) {
+			out.put("mode", "merge");
+		}
+		if(type==MATCHER) {
+			out.put("mode", "match");
+		}
+		if ( outputs != null && outputs.size() > 0 ) {
+			out.put("output", outputs);
+		}
+		return out;
+	}
 
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
@@ -193,16 +207,6 @@ public class RemusApplet {
 		datastore.add( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), getPath());
 	}
 
-	public void finishWork(RemusInstance remusInstance, long jobID) {
-		if ( status.hasInstance(remusInstance) ) {
-			status.removeWork( remusInstance, jobID );
-			datastore.add( getPath() + "@work", remusInstance.toString(), jobID, 0, getPath(), jobID );
-			if ( status.jobCount( remusInstance ) == 0 ) {
-				setComplete( remusInstance );
-			}
-		}
-	}
-
 	public boolean hasInputs() {
 		if ( inputs == null )
 			return false;
@@ -213,58 +217,100 @@ public class RemusApplet {
 		return type;
 	}
 
-
 	public WorkDescription getWork(RemusInstance inst, int jobID) {
-		return status.getWork(inst, jobID);
-	}
-
-	public Collection<WorkDescription> getWorkList(RemusInstance job) {
-		Collection<WorkDescription> workSet = status.getWorkList(job);
-		return workSet;
-	}
-
-	public Map getInfo() {
-		Map out = new HashMap();
-		if ( type==MAPPER ) {
-			out.put("mode", "map");
-		}
-		if ( type==REDUCER ) {
-			out.put("mode", "reduce");
-		}
-		if(type==SPLITTER) {
-			out.put("mode", "split");
-		}
-		if(type==PIPE) {
-			out.put("mode", "pipe");
-		}
-		if(type==MERGER) {
-			out.put("mode", "merge");
-		}
-		if(type==MATCHER) {
-			out.put("mode", "match");
-		}
-		if ( outputs != null && outputs.size() > 0 ) {
-			out.put("output", outputs);
+		WorkDescription out = null;
+		for ( Object obj : datastore.get(getPath() + "@work", inst.toString(), Long.toString(jobID) ) ) {
+			out = (WorkDescription) new WorkDescription(this, inst, jobID, obj);
 		}
 		return out;
 	}
 
+	static int maxCacheSize = 1000;
+	public Collection<WorkDescription> getWorkList(RemusInstance inst) {
+		if ( !workCache.containsKey(inst)) {
+			generateWorkCache(inst);
+		}
+		if ( workCache.containsKey(inst) ) {
+			if ( workCache.get(inst).size() <= 0 ) {
+				updateWorkCache(inst);
+			}
+			return workCache.get(inst).values();
+		}
+		return null;
+	}	
+
+	private void updateWorkCache(RemusInstance inst) {
+		HashMap<Long,WorkDescription> a = workCache.get(inst);
+		a.clear();
+		boolean found = false;
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@work", inst.toString() ) ) {
+			if ( a.size() < maxCacheSize ) {
+				long jobID = Long.parseLong(kv.getKey());				
+				a.put(jobID, new WorkDescription(this, inst, jobID, kv.getValue()) );
+			}
+			found = true;
+		}
+		if (!found) {
+			setComplete(inst);
+		}
+	}
+
+	public void finishWork(RemusInstance remusInstance, long jobID) {
+		if ( workCache.get(remusInstance).containsKey(jobID) ) {
+			workCache.get(remusInstance).remove(jobID);
+		}
+		datastore.delete(getPath() + "@work", remusInstance.toString(), Long.toString(jobID) );
+	}
+
+	private void generateWorkCache(RemusInstance inst) {
+		HashMap<Long,WorkDescription> out = new HashMap<Long,WorkDescription>();
+		if ( !isComplete(inst) ) {
+			if ( isReady(inst)) {
+				try {
+					WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
+					gen.init(this);
+					gen.startWork(inst);
+					datastore.delete( getPath() + "@work", inst.toString() );
+					WorkDescription curWork = null;					
+					while ( (curWork=gen.nextWork()) != null) {
+						datastore.add( getPath() + "@work", inst.toString(), 0L, 0L, Long.toString( curWork.jobID ), curWork.desc );
+						if ( out.size() < maxCacheSize ) {
+							out.put(curWork.jobID, curWork );
+						}
+					}
+					workCache.put(inst, out );
+				} catch (InstantiationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IllegalAccessException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+			}
+		}
+	}
+
 	public void addInstance(RemusInstance instance) {
-		status.addInstance(instance);
+		if ( !datastore.containsKey(getPath() + "@instances", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
+			datastore.add(getPath() + "@instances", RemusInstance.STATIC_INSTANCE_STR, 0, 0, instance.toString(), "");
+		}
 	}
 
 	public Collection<RemusInstance> getInstanceList() {
-		String pathStr = getPath();
-		Collection<RemusInstance> out = new HashSet<RemusInstance>( status.getInstanceList() );
+		Collection<RemusInstance> out = new HashSet<RemusInstance>( );
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@instances", RemusInstance.STATIC_INSTANCE_STR ) ) {
+			out.add( new RemusInstance( (String)kv.getKey() ) );
+		}		
+
 		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR ) ) {
-			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
-				out.add( new RemusInstance( (String)kv.getKey() ) );
+			out.add( new RemusInstance( (String)kv.getKey() ) );
 		}
+
 		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
-			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
-				out.add( new RemusInstance( (String)kv.getKey() ) );
+			out.add( new RemusInstance( (String)kv.getKey() ) );
 		}
-		
+
 		return out;
 	}
 

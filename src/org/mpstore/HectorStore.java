@@ -154,7 +154,7 @@ public class HectorStore implements MPStore {
 			public Collection<KeyValuePair> prepNextSlice() {
 				List<KeyValuePair> out = new LinkedList<KeyValuePair>( );
 				for ( SuperRow<String, String, String, String> scol : slice ) {
-					Object key = serial.loads( scol.getKey() );
+					String key = scol.getKey();
 					for ( HSuperColumn<String, String, String> col : scol.getSuperSlice().getSuperColumns() ) {
 						Object object = serial.loads( col.getName() );
 						long jobID = 0;
@@ -249,5 +249,12 @@ public class HectorStore implements MPStore {
 			String key) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void delete(String file, String instance, String key, long jobID,
+			long emitID) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -6,7 +6,7 @@ public interface MPStore {
 	
 	public void init(Serializer serializer, String basePath);
 	
-	public void add(String file, String instance, long jobid, long order, String key, Object data);
+	public void add(String file, String instance, long jobid, long emitID, String key, Object data);
 
 	public Iterable<Object> get(String file, String instance, String key);
 	
@@ -19,8 +19,10 @@ public interface MPStore {
 	public void close();
 
 	public void delete(String file, String instance);
-
+	
 	public void delete(String file, String instance, String key);
+	
+	public void delete(String file, String instance, String key, long jobID, long emitID);
 
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream);
 
