@@ -16,7 +16,9 @@ public class InputReference {
 	int input_type;
 	public static final int AppletInput = 0;
 	public static final int DynamicInput = 1;
+	public static final int ExternalInput = 2;
 	public static final int StaticInput = 2;
+	
 
 	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 
@@ -27,7 +29,7 @@ public class InputReference {
 			printURL = url;
 		} else {
 
-			if ( !url.startsWith("/") && url.compareTo("?")!=0) {
+			if ( !url.startsWith("/") && url.compareTo("?")!=0 && url.compareTo("$")!=0) {
 				if ( url.startsWith(":") ) {
 					String localFile = new File( parent.getSrcBase(), reqPath ).getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
 					url = localFile + url;
@@ -57,13 +59,17 @@ public class InputReference {
 				appletName = null;
 				printURL = url;
 				input_type=DynamicInput;
+			} else if ( url.compareTo("$") == 0) {
+				appletName = null;
+				printURL = "$";
+				input_type=StaticInput;
 			} else {
 				File localFile = new File( parent.getSrcBase(), url );
 				if ( !localFile.exists() ) {
 					throw new FileNotFoundException(localFile.getAbsolutePath());
 				}
 				printURL = url;
-				input_type=StaticInput;
+				input_type=ExternalInput;
 			}
 			
 		}

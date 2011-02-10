@@ -101,7 +101,7 @@ public class CodeManager {
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( !pipeline.dynamic ) {
 				RemusInstance pipelineInstance = null;
-				for ( RemusApplet applet : pipeline.members.values() ) {
+				for ( RemusApplet applet : pipeline.getMembers() ) {
 					for ( RemusInstance inst : applet.getInstanceList() ) {
 						if ( pipelineInstance == null ) 
 							pipelineInstance = inst;
@@ -111,7 +111,12 @@ public class CodeManager {
 				}
 				if ( pipelineInstance == null ) {
 					pipelineInstance = new RemusInstance();
-					datastore.add( "/@submit", RemusInstance.STATIC_INSTANCE_STR, 0, 0, pipelineInstance.toString(), null );
+					int i = 0;
+					for ( InputReference iRef : pipeline.getInputs() ) {
+						RemusApplet applet = pipeline.getInputApplet(iRef);
+						datastore.add( "/@submit", RemusInstance.STATIC_INSTANCE_STR, 0, i, pipelineInstance.toString(), applet.getPath() );
+						i++;
+					}
 				}
 				if ( !pipeline.isComplete( pipelineInstance) ) {
 					pipeline.addInstance( pipelineInstance );				
@@ -120,7 +125,7 @@ public class CodeManager {
 				for (KeyValuePair kp : datastore.listKeyPairs("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					RemusInstance pipelineInstance = new RemusInstance( (String)kp.getKey() );
 					String path = (String)kp.getValue();
-					if ( pipeline.members.containsKey(path) ) {
+					if ( pipeline.getApplet(path) != null ) {
 						if ( !pipeline.isComplete( pipelineInstance ) ) {
 							pipeline.addInstance( pipelineInstance );
 						}

@@ -166,8 +166,8 @@ public class RemusApplet {
 					if ( datastore.get( "/@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
+				} else if (  iRef.getInputType() == InputReference.ExternalInput ) {
 				} else if (  iRef.getInputType() == InputReference.StaticInput ) {
-
 				} else {				
 					allReady = false;
 				}
@@ -260,6 +260,11 @@ public class RemusApplet {
 			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
 				out.add( new RemusInstance( (String)kv.getKey() ) );
 		}
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
+			if ( pathStr.compareTo( (String) kv.getValue() ) == 0 )
+				out.add( new RemusInstance( (String)kv.getKey() ) );
+		}
+		
 		return out;
 	}
 

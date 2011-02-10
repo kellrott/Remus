@@ -12,7 +12,7 @@ import org.remus.applet.RemusApplet;
 public class RemusPipeline {
 
 	boolean dynamic = false;
-	HashMap<String,RemusApplet> members;
+	private HashMap<String,RemusApplet> members;
 	Map<InputReference, RemusApplet> inputs;
 	CodeManager parent;
 
@@ -80,10 +80,15 @@ public class RemusPipeline {
 		if ( inputs == null ) {
 			setupInputs();
 		}
-
 		return inputs.keySet();
 	}
 
+	public RemusApplet getInputApplet( InputReference ref ) {
+		if ( inputs == null ) {
+			setupInputs();
+		}
+		return inputs.get(ref);
+	}
 	public void addInstance(RemusInstance instance) {
 		if ( inputs == null ) {
 			setupInputs();
@@ -97,10 +102,10 @@ public class RemusPipeline {
 		return parent;		
 	}
 
-	public boolean isComplete(RemusInstance statisInstance) {
+	public boolean isComplete(RemusInstance inst) {
 		boolean done = true;
 		for ( RemusApplet applet : members.values() ) {
-			if ( !applet.isComplete(statisInstance) )
+			if ( !applet.isComplete(inst) )
 				done = false;
 		}
 		return done;
