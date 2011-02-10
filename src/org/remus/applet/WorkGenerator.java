@@ -1,6 +1,5 @@
 package org.remus.applet;
 
-import java.util.Map;
 
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;

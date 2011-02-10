@@ -1,11 +1,6 @@
 package org.mpstore;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -29,7 +24,7 @@ public class SQLStore implements MPStore {
 
 		@Override
 		public Object makeObject() throws Exception {
-			return DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott&dontTrackOpenResources=true" );
+			return DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott&dontTrackOpenResources=true&autoReconnect=true" );
 		}
 		
 		@Override
@@ -124,7 +119,8 @@ public class SQLStore implements MPStore {
 				String digest = format.toString();
 				tableName = "mpdata_" + digest;
 				if ( !tableFound ) {
-					st.executeUpdate( "CREATE TABLE " + tableName + " ( valkey VARCHAR(1024), value LONGBLOB, jobID LONG, emitID LONG  )" );
+					//, PRIMARY KEY( valkey(900), jobID(4), emitID(4)) 
+					st.executeUpdate( "CREATE TABLE " + tableName + " ( valkey VARCHAR(2000), value LONGBLOB, jobID LONG, emitID LONG )" );
 					st.executeUpdate( "CREATE INDEX " + tableName + "_index on "+ tableName + "(valkey)" );				
 				}
 				if ( !entryFound ) {
@@ -359,13 +355,10 @@ public class SQLStore implements MPStore {
 						try {
 							String keyStr = rs.getString(3);
 							String valStr = rs.getString(4);
-							Object key = null;
 							Object val = null;
-							if ( keyStr != null )
-								key = keyStr;
 							if ( valStr != null )
 								val = serializer.loads(valStr);
-							return new KeyValuePair(outFile, outInstance, rs.getLong(1), rs.getLong(2), key, val );
+							return new KeyValuePair(outFile, outInstance, rs.getLong(1), rs.getLong(2), keyStr, val );
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -455,6 +448,31 @@ public class SQLStore implements MPStore {
 			}
 		}		
 	}
+	
+	@Override
+	public void delete(String file, String instance, String key, long jobID, long emitID) {
+		String tableName = getTableName( instance+file, false );
+		if ( tableName != null ) {	
+			try {
+				final Connection connect = (Connection) pool.borrowObject();
+				PreparedStatement st = connect.prepareStatement( "DELETE FROM " + tableName + " WHERE valkey = ? and jobID = ? and emitID = ?" );
+				st.setString(1, key);
+				st.setLong(2, jobID);
+				st.setLong(2, emitID);				
+				st.execute();
+				st.close();
+				pool.returnObject(connect);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+		
+	}
+
 
 	@Override
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
@@ -510,5 +528,6 @@ public class SQLStore implements MPStore {
 		return null;
 	}
 
+	
 
 }

@@ -5,10 +5,10 @@ public class KeyValuePair {
 	private long jobID;
 	private String path;
 	private long emitID;
-	private Object key = null;
+	private String key = null;
 	private Object value = null;
 	
-	KeyValuePair( String path, String instance, long jobID, long emitID, Object key, Object value ) {
+	KeyValuePair( String path, String instance, long jobID, long emitID, String key, Object value ) {
 		this.path = path;
 		this.instance = instance;
 		this.jobID = jobID;
@@ -26,7 +26,7 @@ public class KeyValuePair {
 		return emitID;
 	}
 
-	public Object getKey() {		
+	public String getKey() {		
 		return key;
 	}
 

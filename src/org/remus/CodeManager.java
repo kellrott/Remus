@@ -111,27 +111,10 @@ public class CodeManager {
 				}
 				if ( pipelineInstance == null ) {
 					pipelineInstance = new RemusInstance();
-					int i = 0;
-					for ( InputReference iRef : pipeline.getInputs() ) {
-						RemusApplet applet = pipeline.getInputApplet(iRef);
-						datastore.add( "/@submit", RemusInstance.STATIC_INSTANCE_STR, 0, i, pipelineInstance.toString(), applet.getPath() );
-						i++;
-					}
-				}
-				if ( !pipeline.isComplete( pipelineInstance) ) {
-					pipeline.addInstance( pipelineInstance );				
-				}
-			} else {
-				for (KeyValuePair kp : datastore.listKeyPairs("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
-					RemusInstance pipelineInstance = new RemusInstance( (String)kp.getKey() );
-					String path = (String)kp.getValue();
-					if ( pipeline.getApplet(path) != null ) {
-						if ( !pipeline.isComplete( pipelineInstance ) ) {
-							pipeline.addInstance( pipelineInstance );
-						}
-					}
-				}
-			}
+					pipeline.addInstance( pipelineInstance );
+					datastore.add( "/@submit", RemusInstance.STATIC_INSTANCE_STR, 0, 0, pipelineInstance.toString(), "" );
+				}				
+			} 
 		}
 	}
 
