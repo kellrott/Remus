@@ -308,8 +308,13 @@ public class MasterServlet extends HttpServlet {
 				out.println("</ul>");
 
 				out.println( "<h1>Instances:</h1> <ul>");				
-				for ( Object key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
+				for ( String key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					out.println( "<li>" + key + "</li>" );
+					out.println( "<ul>" );
+					for ( Object path : app.codeManager.datastore.get( "/@submit", RemusInstance.STATIC_INSTANCE_STR, key) ) {
+						out.println( "<li>" + path + "</li>" );											
+					}
+					out.println( "</ul>" );					
 				}
 				out.println("</ul>");
 

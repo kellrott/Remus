@@ -35,7 +35,7 @@ public class HectorTest {
 		}
 		
 		for ( KeyValuePair kv : ds.listKeyPairs(file2, instance2) ) {
-			System.out.println( "instance 2 LIST KEYPAIRS" + kv.getKey() + " " + kv.getValue() );
+			System.out.println( "instance 2 LIST KEYPAIRS " + kv.getKey() + " " + kv.getValue() );
 		}
 		
 		for ( Object val : ds.get(file1, instance1, key1) ) {

@@ -33,7 +33,7 @@ public class SplitGenerator implements WorkGenerator {
 							Map out = new HashMap();
 							if ( applet.inputs.get(i).getInputType() == InputReference.AppletInput )
 								out.put( "input", applet.inputs.get(i).getPortPath() + "@data" );
-							if ( applet.inputs.get(i).getInputType() == InputReference.StaticInput )
+							if ( applet.inputs.get(i).getInputType() == InputReference.ExternalInput )
 								out.put( "input", applet.inputs.get(i).getURL() );
 							
 							outList.add( new WorkDescription(applet, instance, i, out) );

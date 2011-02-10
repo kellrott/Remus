@@ -242,7 +242,8 @@ public class SQLStore implements MPStore {
 					public Object processRow(ResultSet rs) {
 						try {
 							String a = rs.getString(1);
-							return serializer.loads( a );
+							if ( a != null )
+								return serializer.loads( a );
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
