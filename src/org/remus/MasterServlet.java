@@ -324,7 +324,7 @@ public class MasterServlet extends HttpServlet {
 				}
 				out.println("</ul>");
 
-				out.println( "<h1>Instances:</h1> <ul>");				
+				out.println( "<h1>Submission:</h1> <ul>");				
 				for ( String key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					out.println( "<li>" + key + "</li>" );
 					out.println( "<ul>" );
@@ -405,23 +405,25 @@ public class MasterServlet extends HttpServlet {
 						}
 					}
 					resp.getWriter().print("\"OK\"");
-				} else if ( reqInfo.api.compareTo("data") == 0 ) {
+				} else if ( reqInfo.api.compareTo("data") == 0 && reqInfo.instance != null) {
 					BufferedReader br = req.getReader();
 					String curline = null;
+					String writeName = null;
+					if ( reqInfo.appletSubName != null )
+						writeName = reqInfo.appletPath + "." + reqInfo.appletSubName;
+					else
+						writeName = reqInfo.appletPath;
+
+					List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
 					while ( (curline = br.readLine() ) != null ) {
-						String writeName = null;
-						if ( reqInfo.appletSubName != null )
-							writeName = reqInfo.appletPath + "." + reqInfo.appletSubName;
-						else
-							writeName = reqInfo.appletPath;
 						Map inObj = (Map)serializer.loads(curline);	
-						app.workStore.add( writeName + "@data", 
-								(String)inObj.get("instance"), 
-								(Long)inObj.get("id"), 
-								(Long)inObj.get("order"), 
-								(String)inObj.get("key") , 
-								inObj.get("value") );
-					}
+						inputList.add( new KeyValuePair((Long)inObj.get("id"), 
+							(Long)inObj.get("order"), (String)inObj.get("key") , 
+							inObj.get("value") ) );
+					}					
+					app.workStore.add( writeName + "@data", 
+							reqInfo.instance, 
+							inputList );
 					resp.getWriter().print("\"OK\"");
 				} else if ( reqInfo.api.compareTo("submit") == 0) {
 					RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
@@ -493,7 +495,11 @@ public class MasterServlet extends HttpServlet {
 					e.printStackTrace();
 				}
 			}
-		}	
+		} else if ( reqInfo.path.compareTo("/") == 0 ) {
+			if ( reqInfo.api.compareTo("submit") == 0 && reqInfo.instance != null ) {
+				app.getDataStore().delete( "/@submit", RemusInstance.STATIC_INSTANCE_STR, reqInfo.instance );
+			}
+		}
 	}
 }
 

@@ -15,11 +15,10 @@ def log(v):
 		sys.stderr.write( v + "\n" )
 
 class http_write:
-	def __init__(self, url, instance, jobID):
+	def __init__(self, url, jobID):
 		self.url = url
 		self.order = 0
 		self.jobID = jobID
-		self.instance = instance
 		self.cache = []
 		
 	def emit( self, key, value ):
@@ -33,7 +32,7 @@ class http_write:
 	def flush(self):
 		data = ""
 		for out in self.cache:
-			data += json.dumps( { 'instance' : self.instance, 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
+			data += json.dumps( { 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
 			self.order += 1
 		urlopen(  self.url , data ).read()
 		self.cache = []
@@ -147,11 +146,11 @@ class WorkerBase:
 		exec self.code in self.module.__dict__
 
 	def setupOutput(self, instance, jobID):
-		outUrl = self.host + self.applet + "@data" 
-		self.outmap = { None: http_write( outUrl, instance, jobID ) }
+		outUrl = self.host + self.applet + "@data/%s" %(instance) 
+		self.outmap = { None: http_write( outUrl, jobID ) }
 		for outname in self.output:
-			outUrl = self.host + self.applet + "." + outname + "@data"
-			self.outmap[ outname ] = http_write( outUrl, instance, jobID )
+			outUrl = self.host + self.applet + "." + outname + "@data/%s" % (instance)
+			self.outmap[ outname ] = http_write( outUrl, jobID )
 		remus.setoutput( self.outmap )
 	
 	def closeOutput(self):
