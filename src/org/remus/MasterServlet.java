@@ -274,7 +274,7 @@ public class MasterServlet extends HttpServlet {
 						}
 						outMap.put(key, outList);
 						out.println( serializer.dumps( outMap ) );
-					}
+					} 
 				} else if ( reqInfo.api.compareTo("attach") == 0 ) {
 					if ( reqInfo.instance != null && reqInfo.key != null ) {
 						MPStore ds = app.getDataStore();
@@ -286,7 +286,23 @@ public class MasterServlet extends HttpServlet {
 							os.write( buffer, 0, len );
 						}
 						os.close();
+					} else {
+						PrintWriter out = resp.getWriter();
+						MPStore ds = app.getDataStore();
+						List<String> outList = new ArrayList<String>();
+						for ( String val : ds.listKeys(reqInfo.appletPath + "@attach", reqInfo.instance) ) {
+							outList.add(val);
+						}
+						out.println( serializer.dumps( outList ) );
 					}
+				} else if ( reqInfo.api.compareTo("list") == 0 ) {
+					PrintWriter out = resp.getWriter();
+					MPStore ds = app.getDataStore();
+					List outList = new LinkedList();
+					for ( String key : ds.listKeys( reqInfo.appletPath + "@instances", RemusInstance.STATIC_INSTANCE_STR) ) {
+						outList.add(key);
+					}
+					out.println( serializer.dumps( outList ) );
 				}
 			}
 		} else if ( reqInfo.path.compareTo("/") == 0 ) {
@@ -356,6 +372,13 @@ public class MasterServlet extends HttpServlet {
 			} else if ( reqInfo.api.compareTo("submit") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( (new RemusInstance()).toString()  ));
+			} else if ( reqInfo.api.compareTo("list") == 0 ) {
+				List outList = new LinkedList();
+				for ( String key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
+					outList.add(key);
+				}
+				PrintWriter out = resp.getWriter();
+				out.print( serializer.dumps( outList ) );
 			}
 		} else if (reqInfo.srcFile.exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
