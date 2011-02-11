@@ -178,12 +178,13 @@ public class MasterServlet extends HttpServlet {
 							out.println("<p>Work Not Ready</p>" );							
 						}
 					}
-					out.println("<ul>");
-					out.println( "<li><a href='" + reqInfo.path + "@keys/"   + instStr + "'>KEYS</a></li>" );
-					out.println( "<li><a href='" + reqInfo.path + "@data/"   + instStr + "'>DATA</a></li>" );					
-					out.println( "<li><a href='" + reqInfo.path + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
-					out.println("</ul>");
-					
+					if ( applet.isReady(curInst) ) {
+						out.println("<ul>");
+						out.println( "<li><a href='" + reqInfo.path + "@keys/"   + instStr + "'>KEYS</a></li>" );
+						out.println( "<li><a href='" + reqInfo.path + "@data/"   + instStr + "'>DATA</a></li>" );					
+						out.println( "<li><a href='" + reqInfo.path + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
+						out.println("</ul>");
+					}
 					if ( applet.getType() == RemusApplet.PIPE ) {
 						MPStore ds = app.getDataStore();
 						boolean first = true;
@@ -197,7 +198,7 @@ public class MasterServlet extends HttpServlet {
 					}					
 				} else {
 					for ( RemusInstance inst : applet.getInstanceList() ) {
-						out.println( "<a href='" + reqInfo.path + "@/" + inst.toString() + "'>" + inst.toString() + "</a>" );
+						out.println( "<li><a href='" + reqInfo.path + "@/" + inst.toString() + "'>" + inst.toString() + "</a></li>" );
 					}
 				}
 			} else {
@@ -302,6 +303,22 @@ public class MasterServlet extends HttpServlet {
 					out.println("<h3>CodeList</h3><ul>");
 					for ( RemusApplet applet : pipeline.getMembers() ) {
 						out.println( "<li><a href='" + applet.getPath() + "'>" + applet.getPath() + "</a></li>" );
+						out.println("<ul>");
+						for ( RemusInstance appInst : applet.getInstanceList() ) {
+							out.print( "<li><a href='" + applet.getPath() + "@/" + appInst.toString() + "'>" +
+									appInst.toString() + "</a> - ");
+							if ( applet.isReady(appInst) ) {
+								if ( applet.isComplete(appInst) ) {
+									out.print( "Complete");
+								} else {
+									out.print( "Ready");									
+								}
+							} else {
+								out.print( "Waiting");
+							}
+							out.print( "</li>" );
+						}
+						out.println("</ul>");
 					}
 					out.println("</ul>");
 				}
