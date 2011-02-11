@@ -74,7 +74,7 @@ public class RemusApplet {
 	MPStore datastore;
 	int type;
 	protected RemusPipeline pipeline = null;
-	HashMap<RemusInstance,HashMap<Long,WorkDescription>> workCache;
+	private HashMap<RemusInstance,HashMap<Long,WorkDescription>> workCache;
 	LinkedList<RemusInstance> activeInstances;
 
 	public void addInput( InputReference in ) {
@@ -204,6 +204,10 @@ public class RemusApplet {
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
+		if ( workCache.containsKey(remusInstance) ) {
+			workCache.remove(remusInstance);
+		}
+		datastore.delete( getPath() + "@work", remusInstance.toString() );
 		datastore.add( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), getPath());
 	}
 
@@ -234,7 +238,10 @@ public class RemusApplet {
 			if ( workCache.get(inst).size() <= 0 ) {
 				updateWorkCache(inst);
 			}
-			return workCache.get(inst).values();
+			//updateWorkCache make delete an instance if it is done,
+			//so check for existance again
+			if ( workCache.containsKey(inst))
+				return workCache.get(inst).values();
 		}
 		return null;
 	}	
@@ -270,6 +277,9 @@ public class RemusApplet {
 					WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 					gen.init(this);
 					gen.startWork(inst);
+					//remove traces of a possible previous run
+					//TODO:Make resuming work possible with out delete full workset
+					datastore.delete( getPath() + "@data", inst.toString() );
 					datastore.delete( getPath() + "@work", inst.toString() );
 					WorkDescription curWork = null;					
 					while ( (curWork=gen.nextWork()) != null) {

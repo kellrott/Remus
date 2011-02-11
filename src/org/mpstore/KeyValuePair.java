@@ -1,16 +1,12 @@
 package org.mpstore;
 
 public class KeyValuePair {
-	private String instance;
 	private long jobID;
-	private String path;
 	private long emitID;
 	private String key = null;
 	private Object value = null;
 	
-	KeyValuePair( String path, String instance, long jobID, long emitID, String key, Object value ) {
-		this.path = path;
-		this.instance = instance;
+	public KeyValuePair( long jobID, long emitID, String key, Object value ) {
 		this.jobID = jobID;
 		this.emitID = emitID;
 		this.key = key;

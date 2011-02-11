@@ -11,30 +11,45 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.*;
+import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.commons.pool.impl.StackObjectPool;
 
 
 
 public class SQLStore implements MPStore {
-	
+
 	public class ConnectionFactory extends BasePoolableObjectFactory {
 
 		@Override
 		public Object makeObject() throws Exception {
 			return DriverManager.getConnection("jdbc:mysql://localhost/test?user=kellrott&dontTrackOpenResources=true&autoReconnect=true" );
 		}
-		
+
 		@Override
 		public void destroyObject(Object obj) throws Exception {
 			((Connection)obj).close();
 		}
-		
+
+		@Override
+		public boolean validateObject(Object obj) {
+			Connection conn = ((Connection)obj);
+			try {
+				if ( conn.isValid(10000) ) {
+					return true;
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
+
 	}
-	
-	
+
+
 	private ObjectPool pool = null;
 	private Serializer serializer;
 	Boolean streaming = true;
@@ -44,13 +59,13 @@ public class SQLStore implements MPStore {
 		this.serializer = serializer;
 		this.basePath = basePath;
 		try {
-			
+
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
 
 			Class.forName("com.mysql.jdbc.Driver");
-			pool = new StackObjectPool( new ConnectionFactory() );
-			
+			pool = new SoftReferenceObjectPool( new ConnectionFactory() );
+
 			Connection connect = (Connection) pool.borrowObject();			
 			ResultSet rs = connect.getMetaData().getTables(null, null, "mpdata", null);
 			boolean found = false;
@@ -165,6 +180,41 @@ public class SQLStore implements MPStore {
 			st.setString( 3, key );
 			st.setString( 4, serializer.dumps( data ) );
 			st.execute();
+			st.close();
+			pool.returnObject(connect);
+
+			//connect.commit();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
+
+	@Override
+	public void add(String path, String instance, List<KeyValuePair> inputList) {
+		try {
+			Connection connect = (Connection) pool.borrowObject();
+
+			String tableName = getTableName( instance+path, true );
+			PreparedStatement st = connect.prepareStatement("INSERT INTO " + tableName +"(jobID, emitID, valkey, value) values(?,?,?,?)");
+			for ( KeyValuePair kv : inputList ) {
+				st.setLong  ( 1, kv.getJobID() );
+				st.setLong  ( 2, kv.getEmitID() );
+				st.setString( 3, kv.getKey() );
+				st.setString( 4, serializer.dumps( kv.getValue() ) );
+				st.execute();
+			}
 			st.close();
 			pool.returnObject(connect);
 
@@ -300,10 +350,10 @@ public class SQLStore implements MPStore {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						
+
 						return null;
 					}				
-					
+
 					@Override
 					public void cleanup() {
 						try {
@@ -316,7 +366,7 @@ public class SQLStore implements MPStore {
 						}						
 					}
 				};		
-				
+
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -358,14 +408,14 @@ public class SQLStore implements MPStore {
 							Object val = null;
 							if ( valStr != null )
 								val = serializer.loads(valStr);
-							return new KeyValuePair(outFile, outInstance, rs.getLong(1), rs.getLong(2), keyStr, val );
+							return new KeyValuePair( rs.getLong(1), rs.getLong(2), keyStr, val );
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						return null;
 					}
-					
+
 					@Override
 					public void cleanup() {
 						try {
@@ -448,7 +498,7 @@ public class SQLStore implements MPStore {
 			}
 		}		
 	}
-	
+
 	@Override
 	public void delete(String file, String instance, String key, long jobID, long emitID) {
 		String tableName = getTableName( instance+file, false );
@@ -470,7 +520,7 @@ public class SQLStore implements MPStore {
 				e.printStackTrace();
 			}
 		}		
-		
+
 	}
 
 
@@ -528,6 +578,6 @@ public class SQLStore implements MPStore {
 		return null;
 	}
 
-	
+
 
 }

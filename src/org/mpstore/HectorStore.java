@@ -164,7 +164,7 @@ public class HectorStore implements MPStore {
 							jobID = Long.parseLong( tmp[0] );
 							emitID = Long.parseLong( tmp[1] );
 						}
-						out.add(new KeyValuePair(oFile, oInstance, jobID, emitID, key, object));
+						out.add(new KeyValuePair(jobID, emitID, key, object));
 					}
 				}
 				return out;
@@ -254,6 +254,12 @@ public class HectorStore implements MPStore {
 	@Override
 	public void delete(String file, String instance, String key, long jobID,
 			long emitID) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void add(String path, String instance, List<KeyValuePair> inputList) {
 		// TODO Auto-generated method stub
 		
 	}
