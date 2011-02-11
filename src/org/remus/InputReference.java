@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class InputReference {
 	private String printURL = null;
 	
+	private String appletView = null;
 	private String appletName = null;
 	private String appletPortName = null;
 	private String fileName = null;
@@ -39,6 +40,13 @@ public class InputReference {
 				}
 			}				
 			if ( url.contains(":") ) {
+				if ( url.contains("@") ) {
+					String [] tmp = url.split("@");
+					url = tmp[0];
+					appletView = tmp[1];					
+				} else {
+					appletView = "data";
+				}
 				Matcher m = appletSub.matcher( url );
 				if ( m.find() ) {
 					appletName = m.replaceFirst( m.group(1) );
@@ -75,34 +83,21 @@ public class InputReference {
 		}
 	}
 	
-	
 
 	public int getInputType() {
 		return input_type;
 	}
-
-	/*
-	public String getElementID() {
-		return appletName;
-	}
-	*/
-	/*
-	public Serializable getContent() {
-		//PageRequest page = parent.openPage( localFile.getAbsolutePath() );
-		//return page.open();
-		return "pageContents";
-	}
-	 */
-	/*
-	public String getURL() {
-		return parent.baseURL + printURL;
-	}
-	*/
 	
 	public String getPortPath() {
 		if ( appletPortName != null )
 			return appletName + "." + appletPortName;
 		return appletName;
+	}
+	
+	public String getViewPath() {
+		if ( appletPortName != null )
+			return appletName + "." + appletPortName + "@" + appletView;
+		return appletName + "@" + appletView;
 	}
 	
 	public String getURL() {

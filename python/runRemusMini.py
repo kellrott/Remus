@@ -75,20 +75,20 @@ if __name__=="__main__":
 
 	if ( run == "map" ):
 		for key in keys:
-			kpURL = host + inPath + "@data/%s/%s" % ( instance, quote( key ) )	
+			kpURL = host + inPath + "/%s/%s" % ( instance, quote( key ) )	
 			kpData = httpGetJson( kpURL )
 			for data in kpData:
 				func( key, data )
 	if ( run == "reduce" ):
 		for key in keys:
-			kpURL = host + inPath + "@reduce/%s/%s" % ( instance, quote( key ) )		
+			kpURL = host + inPath + "/%s/%s" % ( instance, quote( key ) )		
 			kpData = httpGetJson( kpURL )
 			func( jobDesc['key'], kpData )
 	
 	if ( run == "pipe" ):
 		inList = []
 		for inFile in inPath.split(','):
-			kpURL = host + inFile + "@data/%s" % ( instance )
+			kpURL = host + inFile + "/%s" % ( instance )
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )
