@@ -1,5 +1,8 @@
 package org.mpstore;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -528,11 +531,36 @@ public class SQLStore implements MPStore {
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
 		try {
 			String tableName = getTableName( instance+file, true );
-			if ( tableName != null ) {
+			if ( tableName != null ) {							
+				MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
+				sha1.update( file.getBytes() );
+				sha1.update( key.getBytes() );
+				byte []hash = sha1.digest();
+				Formatter format = new Formatter();
+				for ( byte b : hash ) {
+					format.format("%02x", b);
+				}
+				String keyDigest = format.toString();
+				
+				File instanceDir = new File( basePath, instance );
+				if ( !instanceDir.exists() ) {
+					instanceDir.mkdir();
+				}
+				File outFile = new File( instanceDir, keyDigest );
+				FileOutputStream fos = new FileOutputStream(outFile);
+				byte [] buffer = new byte[1024];
+				int len;
+				while ((len=inputStream.read(buffer))>0) {
+					fos.write(buffer, 0, len);
+				}
+				fos.close();
+				
+				
 				final Connection connect = (Connection) pool.borrowObject();
 				PreparedStatement st = connect.prepareStatement( "INSERT INTO " + tableName + "(jobID, emitID, valkey, value) values(0,0,?,?)" );
-				st.setString( 1, key );			
-				st.setBinaryStream(2, inputStream );
+				st.setString( 1, key );	
+				
+				st.setString(2, instance + "/" + keyDigest );
 				st.execute();
 				st.close();		
 				pool.returnObject(connect);
@@ -562,7 +590,8 @@ public class SQLStore implements MPStore {
 				st.setString(1, key);
 				ResultSet rs = st.executeQuery();
 				rs.next();
-				InputStream is = rs.getBlob(1).getBinaryStream();
+				String path = rs.getString(1);
+				InputStream is = new FileInputStream( new File(basePath, path) );
 				rs.close();
 				st.close();
 				pool.returnObject(connect);
