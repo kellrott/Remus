@@ -295,11 +295,11 @@ public class MasterServlet extends HttpServlet {
 						}
 						out.println( serializer.dumps( outList ) );
 					}
-				} else if ( reqInfo.api.compareTo("list") == 0 ) {
+				} else if ( reqInfo.api.compareTo("instance") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					MPStore ds = app.getDataStore();
 					List outList = new LinkedList();
-					for ( String key : ds.listKeys( reqInfo.appletPath + "@instances", RemusInstance.STATIC_INSTANCE_STR) ) {
+					for ( String key : ds.listKeys( reqInfo.appletPath + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 						outList.add(key);
 					}
 					out.println( serializer.dumps( outList ) );
@@ -340,6 +340,7 @@ public class MasterServlet extends HttpServlet {
 				}
 				out.println("</ul>");
 
+				/*
 				out.println( "<h1>Submission:</h1> <ul>");				
 				for ( String key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					out.println( "<li>" + key + "</li>" );
@@ -350,7 +351,7 @@ public class MasterServlet extends HttpServlet {
 					out.println( "</ul>" );					
 				}
 				out.println("</ul>");
-
+				 */
 
 			} else if ( reqInfo.api.compareTo("work") == 0 ) {
 				PrintWriter out = resp.getWriter();
@@ -372,7 +373,9 @@ public class MasterServlet extends HttpServlet {
 			} else if ( reqInfo.api.compareTo("submit") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( (new RemusInstance()).toString()  ));
-			} else if ( reqInfo.api.compareTo("list") == 0 ) {
+			} 
+			/*
+			else if ( reqInfo.api.compareTo("list") == 0 ) {
 				List outList = new LinkedList();
 				for ( String key : app.codeManager.datastore.listKeys("/@submit", RemusInstance.STATIC_INSTANCE_STR )) {
 					outList.add(key);
@@ -380,6 +383,7 @@ public class MasterServlet extends HttpServlet {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( outList ) );
 			}
+			*/
 		} else if (reqInfo.srcFile.exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
 			ServletOutputStream os = resp.getOutputStream();
@@ -472,7 +476,7 @@ public class MasterServlet extends HttpServlet {
 											inObj.get(key) );
 								}
 							}
-							app.workStore.add( "/@submit", 
+							app.workStore.add( submitFile, 
 									RemusInstance.STATIC_INSTANCE_STR, 
 									(Long)0L, 
 									(Long)0L, 
@@ -502,15 +506,7 @@ public class MasterServlet extends HttpServlet {
 		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
 			RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
 			if ( reqInfo.instance != null  ) {
-				app.getDataStore().delete( reqInfo.appletPath + "@work", reqInfo.instance );
-				app.getDataStore().delete( reqInfo.appletPath + "@data", reqInfo.instance );
-				for ( String subname : applet.getOutputs() ) {
-					app.getDataStore().delete( reqInfo.appletPath + "." + subname + "@data", reqInfo.instance );
-				}
-				if ( applet.getType() == RemusApplet.PIPE ) {
-					app.getDataStore().delete( reqInfo.appletPath + "@attach", reqInfo.instance );
-				}
-				app.getDataStore().delete( reqInfo.appletPath + "@done", RemusInstance.STATIC_INSTANCE_STR, reqInfo.instance );
+				applet.deleteInstance( new RemusInstance( reqInfo.instance) );
 				try {
 					app = new RemusApp(new File(srcDir), app.workStore );
 				} catch (RemusDatabaseException e) {
@@ -521,6 +517,17 @@ public class MasterServlet extends HttpServlet {
 		} else if ( reqInfo.path.compareTo("/") == 0 ) {
 			if ( reqInfo.api.compareTo("submit") == 0 && reqInfo.instance != null ) {
 				app.getDataStore().delete( "/@submit", RemusInstance.STATIC_INSTANCE_STR, reqInfo.instance );
+			} else if ( reqInfo.api.compareTo("instance") == 0 && reqInfo.instance != null ) {
+				RemusInstance instance = new RemusInstance(reqInfo.instance);
+				for ( RemusPipeline pipeline : app.codeManager.getPipelines() ) {
+					pipeline.deleteInstance(instance);
+				}
+				try {
+					app = new RemusApp(new File(srcDir), app.workStore );
+				} catch (RemusDatabaseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
