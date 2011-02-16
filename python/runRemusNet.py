@@ -94,13 +94,13 @@ def httpGetJson( url, useCache=False ):
 			getCache[ url ] = urlopen( url ).read()			
 		handle = StringIO(getCache[ url ])
 	else:
-		print url
+		log( "getting: " + url )
 		handle = urlopen( url )
 	return jsonIter( handle )
 
 
 def httpPostJson( url, data ):
-	print url
+	log( "posting:" + url )
 	handle = urlopen( url, json.dumps(data) )
 	return jsonIter( handle )
 
@@ -216,7 +216,7 @@ class PipeWorker(WorkerBase):
 		inList = []
 		for inFile in jobDesc['input']:
 			kpURL = self.host + inFile + "/%s" % ( instance )
-			print kpURL
+			log( "piping: " + kpURL )
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )

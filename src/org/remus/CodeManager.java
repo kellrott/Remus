@@ -1,6 +1,7 @@
 package org.remus;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -148,6 +149,9 @@ public class CodeManager {
 	}
 	public RemusPipeline getPipeline(int i) {
 		return pipelines.get(i);		
+	}
+	public Collection<RemusPipeline> getPipelines() {
+		return pipelines;
 	}
 
 

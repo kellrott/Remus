@@ -40,18 +40,18 @@ public class RemusPipeline {
 			setupInputs();
 		}
 		List<WorkDescription> out = new LinkedList<WorkDescription>();
-		for ( RemusApplet applet : members.values() ) {			
-			for ( RemusInstance instance : applet.getInstanceList() ) {
-				Collection<WorkDescription> coll = applet.getWorkList(instance);
-				if ( coll != null ) {
-					for ( WorkDescription work : coll) {
-						if ( out.size() < maxCount ) {
-							out.add( work );					
-						}
+
+		for ( RemusApplet applet : members.values() ) {
+			if ( out.size() < maxCount ) {
+				for ( RemusInstance instance : applet.getActiveInstanceList() ) {
+					Collection<WorkDescription> coll = applet.getWorkList(instance, maxCount - out.size() );
+					if ( coll != null ) {
+						out.addAll( coll );					
 					}
 				}
 			}
 		}
+
 		return out;
 	}
 
@@ -100,6 +100,13 @@ public class RemusPipeline {
 		for ( RemusApplet applet : members.values() ) {
 			applet.addInstance(instance);
 		}
+	}
+
+	public void deleteInstance(RemusInstance instance) {
+		for ( RemusApplet applet : members.values() ) {
+			applet.deleteInstance(instance);
+		}
+
 	}
 
 	public CodeManager getCodeManager() {

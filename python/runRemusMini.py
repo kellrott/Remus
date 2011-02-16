@@ -62,28 +62,28 @@ if __name__=="__main__":
 	inPath = sys.argv[3]
 	instance = sys.argv[4]
 	
-	
 	code = open( codePath).read()
 	module = imp.new_module( "test_func" )	
 	module.__dict__["__name__"] = "test_func"
 	exec code in module.__dict__
 	func = remus.getFunction( "test_func" )	
-	keys = jsonIter( urlopen( host + inPath + "@keys/" + instance ) )
 	
 	outmap = { None: stdout_write(  ) }
 	remus.setoutput( outmap )
 
 	if ( run == "map" ):
-		for key in keys:
-			kpURL = host + inPath + "/%s/%s" % ( instance, quote( key ) )	
-			kpData = httpGetJson( kpURL )
-			for data in kpData:
-				func( key, data )
+		kpURL = host + inPath + "/%s" % ( instance )	
+		kpData = httpGetJson( kpURL )
+		for data in kpData:
+			for key in data:
+				func( key, data[key] )
+
 	if ( run == "reduce" ):
-		for key in keys:
-			kpURL = host + inPath + "/%s/%s" % ( instance, quote( key ) )		
-			kpData = httpGetJson( kpURL )
-			func( jobDesc['key'], kpData )
+		kpURL = host + inPath + "/%s" % ( instance )		
+		kpData = httpGetJson( kpURL )
+		for data in kpData:
+			for key in data:
+				func( key, data[key] )
 	
 	if ( run == "pipe" ):
 		inList = []

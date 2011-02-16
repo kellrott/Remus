@@ -1,6 +1,5 @@
 package org.remus.applet;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
