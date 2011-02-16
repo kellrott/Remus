@@ -43,8 +43,11 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 
-public class ThirftStore implements MPStore {
+public class ThriftStore implements MPStore {
 
+	
+	
+	
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	Serializer serializer;
@@ -103,17 +106,15 @@ public class ThirftStore implements MPStore {
 	public void add(String path, String instance, long jobID, long emitID,
 			String key, Object data) {		
 		try {
-			String superColumn = instance + path;
-
+			String column = instance + path;
 			ColumnParent cp = new ColumnParent( columnFamily );
-			cp.setSuper_column( ByteBuffer.wrap( superColumn.getBytes()) );
+			cp.setSuper_column( ByteBuffer.wrap( key.getBytes()) );
 			long clock = (new Date()).getTime();
 			String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
 			Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
 					ByteBuffer.wrap( serializer.dumps(data).getBytes()) , clock);	
-
 			Client client = (Client)clientPool.borrowObject();
-			client.insert(ByteBuffer.wrap( key.getBytes() ), cp, col, CL);
+			client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
 			clientPool.returnObject(client);			
 		} catch (InvalidRequestException e) {
 			// TODO Auto-generated catch block
@@ -194,22 +195,50 @@ public class ThirftStore implements MPStore {
 
 	@Override
 	public void delete(String path, String instance) {
-		// TODO Auto-generated method stub
-
+		try {
+			Client client = (Client)clientPool.borrowObject();
+			String column = instance + path;
+			ColumnPath cp = new ColumnPath( columnFamily );
+			long clock = (new Date()).getTime();
+			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
+			//cp.setSuper_column( ByteBuffer.wrap(column.getBytes()) );
+			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+			clientPool.returnObject(client);
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void delete(String path, String instance, String key) {
-		// TODO Auto-generated method stub
-
+		try {
+			Client client = (Client)clientPool.borrowObject();
+			String column = instance + path;
+			ColumnPath cp = new ColumnPath( columnFamily );
+			long clock = (new Date()).getTime();
+			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
+			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
+			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+			clientPool.returnObject(client);
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-
-	@Override
-	public void delete(String path, String instance, String key, long jobID, long emitID) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 	@Override
 	public Iterable<Object> get(String path, String instance, String key) {
 		List<Object> out = new LinkedList<Object>();
@@ -232,10 +261,22 @@ public class ThirftStore implements MPStore {
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (NotFoundException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		} catch (UnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 		
+		} 	
 		return out;
 	}
 

@@ -23,7 +23,7 @@ public interface MPStore {
 	
 	public void delete(String path, String instance, String key);
 	
-	public void delete(String path, String instance, String key, long jobID, long emitID);
+	//public void delete(String path, String instance, String key, long jobID, long emitID);
 
 	public void writeAttachment(String path, String instance, String key, InputStream inputStream);
 
