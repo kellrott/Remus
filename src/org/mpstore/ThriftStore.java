@@ -9,9 +9,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -44,10 +41,6 @@ import org.apache.thrift.transport.TTransportException;
 
 
 public class ThriftStore implements MPStore {
-
-	
-	
-	
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	Serializer serializer;
@@ -63,7 +56,6 @@ public class ThriftStore implements MPStore {
 		clientPool = new SoftReferenceObjectPool( new ClientFactory() );
 		columnFamily = "remusTable";
 		keySpace = "remus";
-
 	}
 
 	class ClientFactory extends BasePoolableObjectFactory {

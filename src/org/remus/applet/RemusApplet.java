@@ -268,13 +268,22 @@ public class RemusApplet {
 			//TODO:Make resuming work possible with out delete full workset
 			datastore.delete( getPath() + "@data", inst.toString() );
 			datastore.delete( getPath() + "@work", inst.toString() );
-			WorkDescription curWork = null;
 			int counter = 0;
-			while ( (curWork=gen.nextWork()) != null) {
-				datastore.add( getPath() + "@work", inst.toString(), 0L, 0L, Long.toString( curWork.jobID ), curWork.desc );
-				counter += 1;
-			}
-			datastore.add( getPath() + "@work", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), counter );
+			boolean hasMore = true;
+			//insert new work into the database in blocks on 1000
+			do {
+				List<KeyValuePair> buffer = new LinkedList<KeyValuePair>();
+				for ( int i =0; i < 1000 && hasMore ; i++) {
+					WorkDescription curWork =gen.nextWork();
+					if ( curWork != null ) {
+						buffer.add( new KeyValuePair(0L, 0L,  Long.toString( curWork.jobID ), curWork.desc) );
+						counter += 1;
+					} else {
+						hasMore = false;
+					}
+				}
+				datastore.add( getPath() + "@work", inst.toString(), buffer );
+			} while ( hasMore );
 		} catch (InstantiationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
