@@ -4,8 +4,11 @@ public class HectorTest {
 
 	static public void main(String []args) {
 		
-		MPStore ds = new HectorStore("testCluster", "localhost:9160", "remus", "remusTable" );
+		//MPStore ds = new HectorStore("testCluster", "localhost:9160", "remus", "remusTable" );
 		//MPStore ds = new SQLStore();
+		
+		MPStore ds = new ThriftStore();
+		
 		ds.init(new JsonSerializer(), "" );
 		
 		String instance1 = "00-testing-01";
@@ -42,9 +45,6 @@ public class HectorTest {
 			System.out.println( "instance 1 GET " + val );					
 		}
 		
-		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key1) );
-		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key2) );
-		
 		for ( Object key : ds.listKeys(file1, instance1) ) {
 			System.out.println( "instance 1 LISTKEY " + key );					
 		}
@@ -52,7 +52,18 @@ public class HectorTest {
 		for ( Object key : ds.listKeys(file2, instance2) ) {
 			System.out.println( "instance 2 LISTKEY " + key );					
 		}
+		
+		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key1) );
+		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key2) );
+		
+		
+			
+		ds.delete( file1, instance1, key1 );
+		ds.delete( file2, instance2 );
 		ds.close();
+		
+		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key1) );
+		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key2) );
 	}
 	
 }

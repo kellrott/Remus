@@ -251,12 +251,7 @@ public class HectorStore implements MPStore {
 		return null;
 	}
 
-	@Override
-	public void delete(String file, String instance, String key, long jobID,
-			long emitID) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 	@Override
 	public void add(String path, String instance, List<KeyValuePair> inputList) {

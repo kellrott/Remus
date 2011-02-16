@@ -502,6 +502,7 @@ public class SQLStore implements MPStore {
 		}		
 	}
 
+	/*
 	@Override
 	public void delete(String file, String instance, String key, long jobID, long emitID) {
 		String tableName = getTableName( instance+file, false );
@@ -525,7 +526,7 @@ public class SQLStore implements MPStore {
 		}		
 
 	}
-
+	 */
 
 	@Override
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
