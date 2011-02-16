@@ -13,8 +13,8 @@ public class MasterServer {
 			Server server = new Server(16016);
 			Context root = new Context(server,"/",Context.SESSIONS);
 			ServletHolder sh = new ServletHolder(new MasterServlet());
-			//sh.setInitParameter("org.remus.mpstore", "org.mpstore.SQLStore");
-			sh.setInitParameter("org.remus.mpstore", "org.mpstore.ThriftStore");			
+			sh.setInitParameter("org.remus.mpstore", "org.mpstore.SQLStore");
+			//sh.setInitParameter("org.remus.mpstore", "org.mpstore.ThriftStore");			
 			sh.setInitParameter("org.remus.srcdir", args[0] );
 			sh.setInitParameter("org.remus.workdir", args[1] );
 			root.addServlet(sh, "/*");

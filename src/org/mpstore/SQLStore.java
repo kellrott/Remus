@@ -18,9 +18,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.*;
+import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
-import org.apache.commons.pool.impl.StackObjectPool;
-
 
 
 public class SQLStore implements MPStore {
@@ -62,13 +61,10 @@ public class SQLStore implements MPStore {
 		this.serializer = serializer;
 		this.basePath = basePath;
 		try {
-
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );		
-
+			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );
 			Class.forName("com.mysql.jdbc.Driver");
 			pool = new SoftReferenceObjectPool( new ConnectionFactory() );
-
 			Connection connect = (Connection) pool.borrowObject();			
 			ResultSet rs = connect.getMetaData().getTables(null, null, "mpdata", null);
 			boolean found = false;
@@ -106,28 +102,22 @@ public class SQLStore implements MPStore {
 	}
 
 	private String getTableName( String path, Boolean create ) {
+		String tableName = null;
+		Connection connect = null;
+		boolean entryFound = false;
+		boolean tableFound = false;			
+		
 		try {
-			Connection connect = (Connection) pool.borrowObject();			
+			connect = (Connection) pool.borrowObject();			
 			PreparedStatement st = connect.prepareStatement("SELECT tablename FROM mpdata WHERE path = ?");
 			st.setString(1, path);
 			ResultSet rs = st.executeQuery();
-			String tableName = null;
-			boolean entryFound = false;
 			if ( rs.next() ) {
 				entryFound = true;
 				tableName = rs.getString(1);
 			}
 
-			boolean tableFound = false;			
-			if ( tableName != null ) {
-				ResultSet rs2 = connect.getMetaData().getTables(null, null, tableName, null);
-				if ( rs2.next() ) {
-					tableFound = true;
-				}
-				rs2.close();
-			}
-
-			if ( create && (!entryFound || !tableFound) ) {
+			if ( tableName == null ) {
 				MessageDigest md = MessageDigest.getInstance("SHA-1");
 				md.update( path.getBytes() );
 				Formatter format = new Formatter();
@@ -136,21 +126,34 @@ public class SQLStore implements MPStore {
 				}
 				String digest = format.toString();
 				tableName = "mpdata_" + digest;
-				if ( !tableFound ) {
-					//, PRIMARY KEY( valkey(900), jobID(4), emitID(4)) 
-					st.executeUpdate( "CREATE TABLE " + tableName + " ( valkey VARCHAR(2000), value LONGBLOB, jobID LONG, emitID LONG )" );
-					st.executeUpdate( "CREATE INDEX " + tableName + "_index on "+ tableName + "(valkey)" );				
+			}
+
+			if ( tableName != null ) {
+				ResultSet rs2 = connect.getMetaData().getTables(null, null, tableName, null);
+				if ( rs2.next() ) {
+					tableFound = true;
 				}
-				if ( !entryFound ) {
-					PreparedStatement st2 = connect.prepareStatement( "INSERT INTO mpdata(path,tablename) VALUES( ?, ? ) " );
-					st2.setString(1, path );
-					st2.setString(2, tableName );				
-					st2.execute();
-					st2.close();
-				}
-			}			
-			pool.returnObject(connect);
-			return tableName;
+				rs2.close();
+			}
+
+			if ( create && !entryFound) {				
+				PreparedStatement st2 = connect.prepareStatement( "INSERT INTO mpdata(path,tablename) VALUES( ?, ? ) " );
+				st2.setString(1, path );
+				st2.setString(2, tableName );				
+				st2.execute();
+				st2.close();
+				entryFound = true;
+			}
+
+			if ( create && !tableFound) {
+				st.executeUpdate( "CREATE TABLE " + tableName + " ( valkey VARCHAR(2000), value LONGBLOB, jobID LONG, emitID LONG )" );
+				st.executeUpdate( "CREATE INDEX " + tableName + "_index on "+ tableName + "(valkey)" );				
+				tableFound = true;
+			}
+
+			st.close();
+			rs.close();
+			//pool.returnObject(connect);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -166,8 +169,17 @@ public class SQLStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if ( connect != null )
+					pool.returnObject(connect);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-
+		if ( entryFound && tableFound )
+			return tableName;
 		return null;
 	}
 
@@ -177,6 +189,8 @@ public class SQLStore implements MPStore {
 			Connection connect = (Connection) pool.borrowObject();
 
 			String tableName = getTableName( instance+file, true );
+			if ( tableName == null ) 
+				System.out.println("Error:" + file);
 			PreparedStatement st = connect.prepareStatement("INSERT INTO " + tableName +"(jobID, emitID, valkey, value) values(?,?,?,?)");
 			st.setLong  ( 1, jobid );
 			st.setLong  ( 2, order );
@@ -542,7 +556,7 @@ public class SQLStore implements MPStore {
 					format.format("%02x", b);
 				}
 				String keyDigest = format.toString();
-				
+
 				File instanceDir = new File( basePath, instance );
 				if ( !instanceDir.exists() ) {
 					instanceDir.mkdir();
@@ -555,12 +569,12 @@ public class SQLStore implements MPStore {
 					fos.write(buffer, 0, len);
 				}
 				fos.close();
-				
-				
+
+
 				final Connection connect = (Connection) pool.borrowObject();
 				PreparedStatement st = connect.prepareStatement( "INSERT INTO " + tableName + "(jobID, emitID, valkey, value) values(0,0,?,?)" );
 				st.setString( 1, key );	
-				
+
 				st.setString(2, instance + "/" + keyDigest );
 				st.execute();
 				st.close();		
