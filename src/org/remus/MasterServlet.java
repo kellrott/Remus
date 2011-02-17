@@ -260,13 +260,7 @@ public class MasterServlet extends HttpServlet {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
 					MPStore ds = app.getDataStore();
-					//BUG FIX: SQLStore returns streaming iterator having a double loop of MPStore calls will
-					//crash the connection
-					List<String> keyList = new LinkedList<String>();
 					for ( String key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
-						keyList.add( key );
-					}					
-					for ( String key : keyList ) {
 						Map outMap = new HashMap();
 						List outList = new ArrayList();
 						for ( Object val : ds.get(reqInfo.file + "@data", reqInfo.instance, key) ) {

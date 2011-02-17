@@ -101,7 +101,8 @@ public class ThriftStore implements MPStore {
 			String column = instance + path;
 			ColumnParent cp = new ColumnParent( columnFamily );
 			cp.setSuper_column( ByteBuffer.wrap( key.getBytes()) );
-			long clock = (new Date()).getTime();
+			//long clock = (new Date()).getTime();
+			long clock = System.currentTimeMillis();
 			String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
 			Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
 					ByteBuffer.wrap( serializer.dumps(data).getBytes()) , clock);	
@@ -191,7 +192,8 @@ public class ThriftStore implements MPStore {
 			Client client = (Client)clientPool.borrowObject();
 			String column = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
-			long clock = (new Date()).getTime();
+			//long clock = (new Date()).getTime();
+			long clock = System.currentTimeMillis();
 			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
 			//cp.setSuper_column( ByteBuffer.wrap(column.getBytes()) );
 			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
@@ -214,7 +216,8 @@ public class ThriftStore implements MPStore {
 			Client client = (Client)clientPool.borrowObject();
 			String column = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
-			long clock = (new Date()).getTime();
+			//long clock = (new Date()).getTime();
+			long clock = System.currentTimeMillis();
 			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
 			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
 			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);

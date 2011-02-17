@@ -284,6 +284,7 @@ public class RemusApplet {
 				}
 				datastore.add( getPath() + "@work", inst.toString(), buffer );
 			} while ( hasMore );
+			datastore.add( getPath() + "@work", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), counter );
 		} catch (InstantiationException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
