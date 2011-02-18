@@ -18,7 +18,11 @@ public class MasterServer {
 			Properties prop = new Properties();
 			prop.load( new FileInputStream( new File( args[0] ) ) );
 
-			Server server = new Server(16016);
+			int serverPort = 16016;
+			if ( prop.containsKey("org.remus.port") ) {
+				serverPort = Integer.parseInt( prop.getProperty("org.remus.port") );
+			}
+			Server server = new Server(serverPort);
 			Context root = new Context(server,"/",Context.SESSIONS);
 			ServletHolder sh = new ServletHolder(new MasterServlet());
 
@@ -28,10 +32,6 @@ public class MasterServer {
 				sh.setInitParameter(key, value);
 			}
 
-			//sh.setInitParameter("org.remus.mpstore", "org.mpstore.SQLStore");
-			//sh.setInitParameter("org.remus.mpstore", "org.mpstore.ThriftStore");			
-			//sh.setInitParameter("org.remus.srcdir", args[0] );
-			//sh.setInitParameter("org.remus.workdir", args[1] );
 			root.addServlet(sh, "/*");
 			server.start();
 

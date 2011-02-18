@@ -1,5 +1,8 @@
 package org.mpstore;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class HectorTest {
 
 	static public void main(String []args) {
@@ -16,6 +19,7 @@ public class HectorTest {
 		
 		String file1 = "@testfile_1";
 		String file2 = "@testfile_2";
+		String file3 = "@testfile_3";
 				
 		String keyPath2 ="hello";
 		
@@ -32,6 +36,12 @@ public class HectorTest {
 		for ( int i = 0; i < 100; i++) {
 			ds.add(file2, instance2, 0, 0, "key_" + Integer.toString(i), "value" );
 		}
+		
+		List<KeyValuePair> inList = new LinkedList<KeyValuePair>();
+		for ( int i = 0; i < 100; i++) {
+			inList.add( new KeyValuePair(0, 0, "key_" + Integer.toString(i), "value" ) );
+		}
+		ds.add(file3 , instance2, inList);
 		
 		for ( KeyValuePair kv : ds.listKeyPairs(file1, instance1) ) {
 			System.out.println( "instance 1 LIST KEYSPAIRS " + kv.getKey() + " " + kv.getValue() );
@@ -56,10 +66,15 @@ public class HectorTest {
 		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key1) );
 		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key2) );
 		
-		
 			
 		ds.delete( file1, instance1, key1 );
 		ds.delete( file2, instance2 );
+
+		for ( int i = 0; i < 50; i++ ) {
+			ds.delete(file3, instance2, "key_" + Integer.toString(i) );
+		}
+
+		
 		ds.close();
 		
 		System.out.println( "instance 1 HAS " + ds.containsKey(file1, instance1, key1) );
