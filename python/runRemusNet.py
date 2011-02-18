@@ -89,12 +89,12 @@ class jsonPairSplitter:
 getCache={}
 
 def httpGetJson( url, useCache=False ):
+	log( "getting: " + url )
 	if ( useCache ):
 		if not getCache.has_key( url ):
 			getCache[ url ] = urlopen( url ).read()			
 		handle = StringIO(getCache[ url ])
 	else:
-		log( "getting: " + url )
 		handle = urlopen( url )
 	return jsonIter( handle )
 
@@ -255,7 +255,7 @@ def doWork( host, applet, instance, jobID ):
 		worker.doWork(instance, jobID)
 	
 if __name__=="__main__":
-	host = "http://localhost:16016/"
+	host = sys.argv[1]
 	remus.init(host)
 	while 1:
 		workList = httpGetJson( host + "/@work?max=100" ).read()	

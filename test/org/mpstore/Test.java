@@ -7,8 +7,10 @@ import java.util.UUID;
 public class Test {
 
 	public static void main( String [] args ) {
-		System.setProperty("me.prettyprint.hector.TimingLogger", "none" );
-		MPStore dataStore = new HectorStore("testcluster", "localhost:9160", "remus", "remusTable" );
+		//System.setProperty("me.prettyprint.hector.TimingLogger", "none" );
+		//MPStore dataStore = new HectorStore("testcluster", "localhost:9160", "remus", "remusTable" );
+		MPStore dataStore = new ThriftStore();
+		
 		dataStore.init( new JsonSerializer() , "" );
 		
 		String instance1 = UUID.randomUUID().toString();

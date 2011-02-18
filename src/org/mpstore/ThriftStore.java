@@ -97,18 +97,17 @@ public class ThriftStore implements MPStore {
 	@Override
 	public void add(String path, String instance, long jobID, long emitID,
 			String key, Object data) {		
+		Client client = null;
 		try {
 			String column = instance + path;
 			ColumnParent cp = new ColumnParent( columnFamily );
 			cp.setSuper_column( ByteBuffer.wrap( key.getBytes()) );
-			//long clock = (new Date()).getTime();
-			long clock = System.currentTimeMillis();
+			long clock = System.currentTimeMillis() * 1000;
 			String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
 			Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
 					ByteBuffer.wrap( serializer.dumps(data).getBytes()) , clock);	
-			Client client = (Client)clientPool.borrowObject();
+			client = (Client)clientPool.borrowObject();
 			client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
-			clientPool.returnObject(client);			
 		} catch (InvalidRequestException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -130,6 +129,14 @@ public class ThriftStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -152,14 +159,16 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public boolean containsKey(String path, String instance, String key) {
+		boolean returnVal = false;
+		Client client = null;
 		try {
 			String superColumn = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
 			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
-			Client client = (Client)clientPool.borrowObject();
+			client = (Client)clientPool.borrowObject();
 			ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
 			if ( res != null )
-				return true;
+				returnVal = true;
 		} catch (InvalidRequestException e) {
 			//not found, return false
 		} catch (NoSuchElementException e) {
@@ -181,23 +190,30 @@ public class ThriftStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
-		return false;
+		return returnVal;
 	}
 
 	@Override
 	public void delete(String path, String instance) {
+		Client client = null;
 		try {
-			Client client = (Client)clientPool.borrowObject();
+			client = (Client)clientPool.borrowObject();
 			String column = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
-			//long clock = (new Date()).getTime();
-			long clock = System.currentTimeMillis();
+			long clock = System.currentTimeMillis() * 1000;
 			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
 			//cp.setSuper_column( ByteBuffer.wrap(column.getBytes()) );
 			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
-			clientPool.returnObject(client);
 		} catch (NoSuchElementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -207,21 +223,28 @@ public class ThriftStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
 	@Override
 	public void delete(String path, String instance, String key) {
+		Client client = null;
 		try {
-			Client client = (Client)clientPool.borrowObject();
+			client = (Client)clientPool.borrowObject();
 			String column = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
-			//long clock = (new Date()).getTime();
-			long clock = System.currentTimeMillis();
+			long clock = System.currentTimeMillis() * 1000;
 			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
 			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
 			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
-			clientPool.returnObject(client);
 		} catch (NoSuchElementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -231,22 +254,30 @@ public class ThriftStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
-	
+
 	@Override
 	public Iterable<Object> get(String path, String instance, String key) {
 		List<Object> out = new LinkedList<Object>();
+		Client client = null;
 		try {
 			String superColumn = instance + path;
 			ColumnPath cp = new ColumnPath( columnFamily );
 			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
-			Client client = (Client)clientPool.borrowObject();
+			client = (Client)clientPool.borrowObject();
 			ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
 			for ( Column col : res.getSuper_column().columns ) {
 				out.add( serializer.loads( new String(col.getValue()) ) );
 			}
-			clientPool.returnObject(client);
 		} catch (InvalidRequestException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -271,14 +302,22 @@ public class ThriftStore implements MPStore {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 	
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return out;
 	}
 
 
 	abstract class SliceIterator<T> implements Iterable<T>, Iterator<T> {
 		boolean hasMore = true, firstSlice = true, elemAdded;
-		int maxFetch = 10;
+		int maxFetch = 100;
 		LinkedList<T> outList;
 		byte [] keyStart,  keyEnd;
 		ColumnParent cp;
@@ -310,23 +349,24 @@ public class ThriftStore implements MPStore {
 		}
 
 		private boolean getNextSlice() {
+			boolean elemAdded = false;
+			Client client = null;
 			try {
 				SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart),ByteBuffer.wrap(keyEnd), false, maxFetch);
 				SlicePredicate slice = new SlicePredicate();	 
 				slice.setSlice_range(sRange);
-				Client client = (Client)clientPool.borrowObject();
+				client = (Client)clientPool.borrowObject();
 				List<ColumnOrSuperColumn> res = client.get_slice( superColumn, cp, slice, CL);
 				clientPool.returnObject(client);
-				elemAdded = false;
 				for ( ColumnOrSuperColumn col : res ) {		
 					String curKey = new String( col.getSuper_column().getName() );
 					if ( firstSlice || curKey.compareTo( new String(keyStart)) != 0 ) {
 						processColumn(col);
-						keyStart = col.getSuper_column().getName();						
+						keyStart = col.getSuper_column().getName();
+						elemAdded = true;
 					}
 				}	
 				firstSlice = false;
-				return elemAdded;				
 			} catch (InvalidRequestException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -348,8 +388,16 @@ public class ThriftStore implements MPStore {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				try {
+					if ( client != null )
+						clientPool.returnObject(client);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			return false;
+			return elemAdded;
 		}
 
 		abstract void processColumn( ColumnOrSuperColumn col );

@@ -421,7 +421,7 @@ public class MasterServlet extends HttpServlet {
 							RemusApplet applet = app.codeManager.get( reqInfo.appletPath );
 							for ( Object key2 : jobList ) {
 								Long jobID = (Long)key2;
-								applet.finishWork(inst,jobID.intValue() );
+								applet.finishWork(inst,jobID.intValue(), req.getRemoteAddr() );
 							}						
 						}
 					}
