@@ -1,6 +1,5 @@
 package org.mpstore;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.servlet.ServletInputStream;
 
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.hector.api.Cluster;
@@ -66,6 +64,12 @@ public class HectorStore implements MPStore {
 		} 		
 	}
 
+	@Override
+	public void add(String path, String instance, List<KeyValuePair> inputList) {
+		for ( KeyValuePair kv : inputList ) {
+			add( path, instance, kv.getJobID(), kv.getEmitID(), kv.getKey(), kv.getValue() );
+		}
+	}
 
 	@Override
 	public boolean containsKey(String file, String instance, String key) {
@@ -100,7 +104,6 @@ public class HectorStore implements MPStore {
 
 
 	abstract class HectorIterator<T> implements Iterable<T>, Iterator<T> {
-
 		LinkedList<T> outList;
 		@Override
 		public Iterator<T> iterator() {			
@@ -147,48 +150,30 @@ public class HectorStore implements MPStore {
 
 		QueryResult<OrderedSuperRows<String, String, String, String>> res = q.execute();
 		final OrderedSuperRows<String, String, String, String> slice = res.get();
-		final String oFile = file;
-		final String oInstance = instance;
+
 		HectorIterator<KeyValuePair> out = new HectorIterator<KeyValuePair>() {		
 			@Override
 			public Collection<KeyValuePair> prepNextSlice() {
 				List<KeyValuePair> out = new LinkedList<KeyValuePair>( );
-				for ( SuperRow<String, String, String, String> scol : slice ) {
-					String key = scol.getKey();
-					for ( HSuperColumn<String, String, String> col : scol.getSuperSlice().getSuperColumns() ) {
-						Object object = serial.loads( col.getName() );
-						long jobID = 0;
-						long emitID = 0;
-						String [] tmp = col.getName().split("_");
-						if ( tmp.length == 2) {
-							jobID = Long.parseLong( tmp[0] );
-							emitID = Long.parseLong( tmp[1] );
+				for ( SuperRow<String, String, String, String> srow : slice ) {
+					String key = srow.getKey();
+					for ( HSuperColumn<String, String, String> scol : srow.getSuperSlice().getSuperColumns() ) {
+						for ( HColumn<String, String> col : scol.getColumns() ) {
+							Object object = serial.loads( col.getName() );
+							long jobID = 0;
+							long emitID = 0;
+							String [] tmp = col.getName().split("_");
+							if ( tmp.length == 2) {
+								jobID = Long.parseLong( tmp[0] );
+								emitID = Long.parseLong( tmp[1] );
+							}
+							out.add(new KeyValuePair(jobID, emitID, key, object));
 						}
-						out.add(new KeyValuePair(jobID, emitID, key, object));
 					}
 				}
 				return out;
 			}		
-		};
-
-		/*
-		List<KeyValuePair> out = new LinkedList<KeyValuePair>( );
-		List<HSuperColumn<String, String, String>> scols = slice.getSuperColumns();
-		for ( HSuperColumn<String, String, String> scol : scols ) {
-			Object key = serial.loads( scol.getName() );
-			for ( HColumn<String, String> col : scol.getColumns() ) {
-				Object object = serial.loads( col.getValue() );
-				long jobID = 0;
-				long emitID = 0;
-				String [] tmp = col.getName().split("_");
-				if ( tmp.length == 2) {
-					jobID = Long.parseLong( tmp[0] );
-					emitID = Long.parseLong( tmp[1] );
-				}
-				out.add(new KeyValuePair(file, instance, jobID, emitID, key, object));
-			}
-		}
-		 */
+		};		
 		return out;
 	}
 
@@ -229,19 +214,19 @@ public class HectorStore implements MPStore {
 	@Override
 	public void delete(String file, String instance) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void delete(String file, String instance, String key) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -251,11 +236,7 @@ public class HectorStore implements MPStore {
 		return null;
 	}
 
-	
 
-	@Override
-	public void add(String path, String instance, List<KeyValuePair> inputList) {
-		// TODO Auto-generated method stub
-		
-	}
+
+
 }

@@ -7,10 +7,9 @@ public class HectorTest {
 
 	static public void main(String []args) {
 		
-		//MPStore ds = new HectorStore("testCluster", "localhost:9160", "remus", "remusTable" );
+		MPStore ds = new HectorStore("testCluster", "localhost:9160", "remus", "remusTable" );
 		//MPStore ds = new SQLStore();
-		
-		MPStore ds = new ThriftStore();
+		//MPStore ds = new ThriftStore();
 		
 		ds.init(new JsonSerializer(), "" );
 		
