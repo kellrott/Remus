@@ -6,8 +6,11 @@ import java.util.LinkedList;
 import java.util.Collection;
 import java.util.Map;
 
+import org.remus.applet.RemusApplet;
+
 public class WorkManager {
 
+	public static final int QUEUE_MAX = 10000;
 	LinkedList<WorkDescription> workQueue;
 	
 	Map<String,LinkedList<WorkDescription>> workerSets;
@@ -28,6 +31,10 @@ public class WorkManager {
 			workerSets.put(workerID, new LinkedList<WorkDescription>());
 		}
 		
+		if ( workQueue.size() == 0 ) {
+			workQueue.addAll( app.codeManager.getWorkQueue(QUEUE_MAX) );
+		}
+		
 		LinkedList<WorkDescription> wList = workerSets.get(workerID);
 		if ( wList.size() == 0 ) {
 			wList.add( workQueue.removeFirst() );
@@ -36,7 +43,7 @@ public class WorkManager {
 		return wList;
 	}
 	
-	public WorkDescription checkoutWork( String workerID  ) {
+	public WorkDescription finishWork( String workerID, RemusApplet applet, RemusInstance inst, int jobID  ) {
 		lastAccess.put(workerID, new Date() );
 		
 		
