@@ -11,6 +11,7 @@ import java.util.Map;
 import org.mpstore.KeyValuePair;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 public class PipeGenerator implements WorkGenerator {
 	ArrayList<WorkDescription> outList;
@@ -33,7 +34,7 @@ public class PipeGenerator implements WorkGenerator {
 						a.add( applet.inputs.get(i).getViewPath() );
 					}
 					out.put( "input", a );
-					outList.add( new WorkDescription(applet, instance, 0, out) );
+					outList.add( new WorkDescription( new WorkReference(applet, instance, 0), out) );
 				}
 			} 
 		}

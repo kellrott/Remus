@@ -9,6 +9,7 @@ import java.util.Map;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 public class ReduceGenerator implements WorkGenerator {
 
@@ -23,7 +24,7 @@ public class ReduceGenerator implements WorkGenerator {
 				Map map = new HashMap();
 				map.put("input", iRef.getPortPath() + "@data" );
 				map.put("key", key );
-				outList.add( new WorkDescription(applet, instance, jobID, map) );
+				outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
 				jobID++;
 			}
 		}

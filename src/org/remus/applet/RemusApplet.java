@@ -15,6 +15,7 @@ import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 
 public class RemusApplet {
@@ -235,10 +236,10 @@ public class RemusApplet {
 		return type;
 	}
 
-	public WorkDescription getWork(RemusInstance inst, int jobID) {
+	public WorkDescription getWork(RemusInstance inst, long jobID) {
 		WorkDescription out = null;
 		for ( Object obj : datastore.get(getPath() + "@work", inst.toString(), Long.toString(jobID) ) ) {
-			out = (WorkDescription) new WorkDescription(this, inst, jobID, obj);
+			out = (WorkDescription) new WorkDescription(new WorkReference(this, inst, jobID), obj);
 		}
 		return out;
 	}
@@ -256,7 +257,7 @@ public class RemusApplet {
 						if ( !datastore.containsKey(getPath() + "@done", inst.toString(), kv.getKey() ) ) {
 							counter++;
 							long jobID = Long.parseLong(kv.getKey());				
-							out.add( new WorkDescription(this, inst, jobID, kv.getValue()) );
+							out.add( new WorkDescription(new WorkReference(this, inst, jobID), kv.getValue()) );
 						}
 					}
 				}
@@ -277,6 +278,7 @@ public class RemusApplet {
 
 	private void generateWork(RemusInstance inst) {
 		try {
+			System.err.println("GENERATING WORK");
 			WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 			gen.init(this);
 			gen.startWork(inst);
@@ -292,7 +294,7 @@ public class RemusApplet {
 				for ( int i =0; i < 1000 && hasMore ; i++) {
 					WorkDescription curWork =gen.nextWork();
 					if ( curWork != null ) {
-						buffer.add( new KeyValuePair(0L, 0L,  Long.toString( curWork.jobID ), curWork.desc) );
+						buffer.add( new KeyValuePair(0L, 0L,  Long.toString( curWork.ref.jobID ), curWork.desc) );
 						counter += 1;
 					} else {
 						hasMore = false;
@@ -347,11 +349,16 @@ public class RemusApplet {
 		datastore.delete(getPath() + "@work", instance.toString() );		
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
+		datastore.delete(getPath() + "@error", instance.toString() );		
 		datastore.delete(getPath() + "@attach", instance.toString() );
 		for ( String subname : getOutputs() ) {
 			datastore.delete( getPath() + "." + subname + "@data", instance.toString() );
 		}		
 		datastore.delete( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+	}
+
+	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {
+		datastore.add( getPath() + "@error", inst.toString(), jobID, 0L, workerID, error);
 	}
 
 

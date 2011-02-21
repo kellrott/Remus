@@ -3,10 +3,20 @@
 import remus
 import sys
 import json
-from urllib2 import urlopen
 from urllib  import quote
 import imp
 from cStringIO import StringIO
+import urllib2
+import uuid
+
+
+workerID = str(uuid.uuid4())
+
+opener = urllib2.build_opener()
+opener.addheaders.append(('Cookie', 'remusWorker=%s' % (workerID) ))
+
+def urlopen(url,data=None):
+	return opener.open(url,data)
 
 verbose = True
 
@@ -73,7 +83,8 @@ class jsonIter:
 		self.handle.close()
 	
 	def read(self):
-		return json.loads( self.handle.read() )
+		a = self.handle.read()
+		return json.loads( a )
 
 
 class jsonPairSplitter:
