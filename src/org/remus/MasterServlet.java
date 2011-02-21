@@ -226,7 +226,9 @@ public class MasterServlet extends HttpServlet {
 						String keyStr = reqInfo.key;
 						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
 							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
-								out.println( serializer.dumps( value ) );
+								Map oMap = new HashMap();
+								oMap.put( keyStr, value);
+								out.println( serializer.dumps( oMap ) );
 								resp.flushBuffer();
 							}
 						} else {
@@ -383,8 +385,7 @@ public class MasterServlet extends HttpServlet {
 				out.print( serializer.dumps( (new RemusInstance()).toString()  ));
 			} else if ( reqInfo.api.compareTo("status") == 0 ) {
 				PrintWriter out = resp.getWriter();
-				Map outMap = new HashMap();
-				
+				Map outMap = new HashMap();				
 				Map workerMap = new HashMap();
 				for ( String workerID : workManage.workerSets.keySet() ) {
 					Map curMap = new HashMap();
@@ -406,7 +407,7 @@ public class MasterServlet extends HttpServlet {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( outList ) );
 			}
-			 */
+			*/
 		} else if (reqInfo.srcFile.exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
 			ServletOutputStream os = resp.getOutputStream();
@@ -527,7 +528,6 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-
 		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );		
 		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
 			RemusApplet applet = app.codeManager.get(reqInfo.appletPath);

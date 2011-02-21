@@ -40,7 +40,6 @@ public class RemusPipeline {
 			setupInputs();
 		}
 		List<WorkDescription> out = new LinkedList<WorkDescription>();
-
 		for ( RemusApplet applet : members.values() ) {
 			if ( out.size() < maxCount ) {
 				for ( RemusInstance instance : applet.getActiveInstanceList() ) {

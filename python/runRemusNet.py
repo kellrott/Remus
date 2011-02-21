@@ -198,7 +198,8 @@ class MapWorker(WorkerBase):
 			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )	
 			kpData = httpGetJson( kpURL )
 			for data in kpData:
-				func( jobDesc['key'], data )
+				for key in data:
+					func( key, data[key] )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
@@ -212,7 +213,8 @@ class ReduceWorker(WorkerBase):
 		for jobDesc in jobSet:
 			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )		
 			kpData = httpGetJson( kpURL )
-			func( jobDesc['key'], kpData )
+			for key in kpData:
+				func(  key, kpData[key] )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
@@ -249,13 +251,13 @@ class MergeWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
-			leftKey = jobDesc['left_key']
 			leftValURL = self.host + jobDesc['left_input'] + "/%s/%s" % ( instance, quote( jobDesc['left_key']) )
-			leftVals = list( httpGetJson( leftValURL ) )
+			leftSet = httpGetJson( leftValURL )
 			rightSetURL = self.host + jobDesc['right_input'] + "@reduce/%s" % ( instance )
-			for rightSet in httpGetJson( rightSetURL, True ):
-				for rightKey in rightSet:
-					func( leftKey, leftVals, rightKey, rightSet[rightKey] )
+			for leftKey in leftSet:
+				for rightSet in httpGetJson( rightSetURL, True ):
+					for rightKey in rightSet:
+						func( leftKey, leftVals[leftKey], rightKey, rightSet[rightKey] )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
