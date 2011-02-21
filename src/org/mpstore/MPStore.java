@@ -17,7 +17,8 @@ public interface MPStore {
 	public Iterable<KeyValuePair> listKeyPairs(String oath, String instance);
 
 	public boolean containsKey(String path, String instance, String key);
-	
+
+	//public long keyCount( String path, String instance );
 
 	public void delete(String path, String instance);
 	

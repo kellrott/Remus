@@ -8,6 +8,7 @@ import org.mpstore.KeyValuePair;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 public class SplitGenerator implements WorkGenerator {
 
@@ -35,7 +36,7 @@ public class SplitGenerator implements WorkGenerator {
 							if ( applet.inputs.get(i).getInputType() == InputReference.ExternalInput )
 								out.put( "input", applet.inputs.get(i).getURL() );
 							
-							outList.add( new WorkDescription(applet, instance, i, out) );
+							outList.add( new WorkDescription( new WorkReference(applet, instance, i), out) );
 						//}
 					}
 				} else {
@@ -43,7 +44,7 @@ public class SplitGenerator implements WorkGenerator {
 					//if ( d == null ) {
 						Map out = new HashMap();
 						out.put( "input", null );
-						outList.add( new WorkDescription(applet, instance, 0, out) );	
+						outList.add( new WorkDescription( new WorkReference(applet, instance, 0), out) );	
 					//}	
 				}
 			}

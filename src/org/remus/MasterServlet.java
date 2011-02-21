@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +30,7 @@ import org.remus.applet.RemusApplet;
 
 public class MasterServlet extends HttpServlet {
 	RemusApp app;
+	WorkManager workManage;
 	Serializer serializer;
 	String workDir;
 	String srcDir;
@@ -44,6 +46,7 @@ public class MasterServlet extends HttpServlet {
 			MPStore store = (MPStore) mpClass.newInstance();
 			store.init(serializer, workDir);			
 			app = new RemusApp(new File(srcDir), store);
+			workManage = new WorkManager(app);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -67,7 +70,7 @@ public class MasterServlet extends HttpServlet {
 
 	Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
 	Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
-	
+
 	class RequestInfo {
 		public String path;
 		public String appletPath;
@@ -123,6 +126,19 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
+
+	private String getWorkerID( HttpServletRequest req ) {
+		String workerID = null;
+		if ( req.getCookies() != null ) {
+			for ( Cookie cookie : req.getCookies() ) {
+				if ( cookie.getName().compareTo( "remusWorker" ) == 0 ) {
+					workerID = cookie.getValue();
+				}
+			}
+		}
+		return workerID;
+	}
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
@@ -140,7 +156,6 @@ public class MasterServlet extends HttpServlet {
 				RemusInstance curInst = null;
 				if ( instStr != null )
 					curInst = new RemusInstance(instStr);
-
 
 				out.println("INPUTS<ul>");
 				for ( InputReference iRef : applet.getInputs() ) {
@@ -245,9 +260,12 @@ public class MasterServlet extends HttpServlet {
 						if ( applet.getPipeline() != null ) {
 							RemusInstance inst = new RemusInstance( reqInfo.instance );
 							int jobID = Integer.parseInt(reqInfo.key);
-							WorkDescription w = applet.getWork(inst, jobID);
-							if ( w != null )
-								out.println( serializer.dumps( w.getDesc() ) );
+							String workerID = getWorkerID(req);
+							if ( workerID != null ) {
+								Object workDesc = workManage.getWork( workerID, applet, inst, jobID );
+								if ( workDesc != null )
+									out.println( serializer.dumps( workDesc) );
+							}
 						}
 					}
 				} else if ( reqInfo.api.compareTo("info") == 0 ) {
@@ -353,21 +371,32 @@ public class MasterServlet extends HttpServlet {
 				if ( req.getParameter("max") != null ) {
 					count = Integer.parseInt(req.getParameter("max"));
 				}
-				Map<String,Map<?,?>> outMap = new HashMap<String,Map<?,?>>();
-				for ( WorkDescription work : app.codeManager.getWorkQueue( count ) ) {
-					if ( !outMap.containsKey(work.getInstance().toString()) )
-						outMap.put( work.getInstance().toString(), new HashMap() );
-					Map iMap = outMap.get(work.getInstance().toString());
-					if ( !iMap.containsKey( work.getApplet().getPath() ) )
-						iMap.put( work.getApplet().getPath(), new ArrayList() );
-					List aList = (List)iMap.get( work.getApplet().getPath() );
-					aList.add(work.jobID);
+				String workerID = getWorkerID(req);
+				if ( workerID != null ) {
+					Object outVal = workManage.getWorkMap( workerID, count );
+					out.print( serializer.dumps(outVal) );
+				} else {
+					resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 				}
-				out.print( serializer.dumps(outMap) );
 			} else if ( reqInfo.api.compareTo("submit") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( (new RemusInstance()).toString()  ));
-			} 
+			} else if ( reqInfo.api.compareTo("status") == 0 ) {
+				PrintWriter out = resp.getWriter();
+				Map outMap = new HashMap();
+				
+				Map workerMap = new HashMap();
+				for ( String workerID : workManage.workerSets.keySet() ) {
+					Map curMap = new HashMap();
+					curMap.put("activeCount", workManage.workerSets.get(workerID).size() );
+					curMap.put("lastContact", workManage.lastAccess.get(workerID).toString() );
+					workerMap.put(workerID, curMap );	
+				}
+				outMap.put( "workers", workerMap );
+				outMap.put( "workBufferSize", workManage.workQueue.size() );
+				outMap.put("finishRate", workManage.getFinishRate() );
+				out.print( serializer.dumps(outMap) );
+			}
 			/*
 			else if ( reqInfo.api.compareTo("list") == 0 ) {
 				List outList = new LinkedList();
@@ -377,7 +406,7 @@ public class MasterServlet extends HttpServlet {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( outList ) );
 			}
-			*/
+			 */
 		} else if (reqInfo.srcFile.exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
 			ServletOutputStream os = resp.getOutputStream();
@@ -410,22 +439,25 @@ public class MasterServlet extends HttpServlet {
 		} else if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
 			if ( reqInfo.api != null ) {
 				if ( reqInfo.api.compareTo("work") == 0 ) {
-					BufferedReader br = req.getReader();
-					String curline = null;
-					while ((curline=br.readLine())!= null ) {
-						Map m = (Map)serializer.loads( curline );
-						for ( Object key : m.keySet() ) {
-							String instStr = (String)key;
-							RemusInstance inst=new RemusInstance(instStr);
-							List jobList = (List)m.get(key);
-							RemusApplet applet = app.codeManager.get( reqInfo.appletPath );
-							for ( Object key2 : jobList ) {
-								Long jobID = (Long)key2;
-								applet.finishWork(inst,jobID.intValue(), req.getRemoteAddr() );
-							}						
+					String workerID = getWorkerID(req);
+					if ( workerID != null ) {
+						BufferedReader br = req.getReader();
+						String curline = null;
+						while ((curline=br.readLine())!= null ) {
+							Map m = (Map)serializer.loads( curline );
+							for ( Object key : m.keySet() ) {
+								String instStr = (String)key;
+								RemusInstance inst=new RemusInstance(instStr);
+								List jobList = (List)m.get(key);
+								RemusApplet applet = app.codeManager.get( reqInfo.appletPath );
+								for ( Object key2 : jobList ) {
+									Long jobID = (Long)key2;
+									workManage.finishWork(workerID, applet, inst, jobID);
+								}						
+							}
 						}
+						resp.getWriter().print("\"OK\"");
 					}
-					resp.getWriter().print("\"OK\"");
 				} else if ( reqInfo.api.compareTo("data") == 0 && reqInfo.instance != null) {
 					BufferedReader br = req.getReader();
 					String curline = null;
@@ -439,8 +471,8 @@ public class MasterServlet extends HttpServlet {
 					while ( (curline = br.readLine() ) != null ) {
 						Map inObj = (Map)serializer.loads(curline);	
 						inputList.add( new KeyValuePair((Long)inObj.get("id"), 
-							(Long)inObj.get("order"), (String)inObj.get("key") , 
-							inObj.get("value") ) );
+								(Long)inObj.get("order"), (String)inObj.get("key") , 
+								inObj.get("value") ) );
 					}					
 					app.workStore.add( writeName + "@data", 
 							reqInfo.instance, 

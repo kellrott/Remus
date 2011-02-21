@@ -9,6 +9,7 @@ import org.mpstore.KeyValuePair;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 public class MapGenerator implements WorkGenerator {
 
@@ -37,7 +38,7 @@ public class MapGenerator implements WorkGenerator {
 							Map map = new HashMap();
 							map.put("input", portPath );
 							map.put("key",   key );
-							outList.add( new WorkDescription(applet, instance, jobID, map) );
+							outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
 							jobID++;							
 						}
 					}

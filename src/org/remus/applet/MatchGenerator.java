@@ -8,6 +8,7 @@ import java.util.Map;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
+import org.remus.WorkReference;
 
 public class MatchGenerator implements WorkGenerator {
 
@@ -31,7 +32,7 @@ public class MatchGenerator implements WorkGenerator {
 					map.put("key", key);
 					map.put("left_input", lStr );
 					map.put("right_input", rRef.getPortPath() + "@reduce" );
-					outList.add( new WorkDescription(applet, instance, jobID, map) );
+					outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
 					jobID++;
 				}
 			}
