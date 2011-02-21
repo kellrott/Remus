@@ -17,7 +17,7 @@ public class WorkManager {
 	Map<String,Map<WorkReference, Object>> workerSets;
 	Map<String,Date> lastAccess;
 	LinkedList<Date> finishTimes;
-	
+
 	RemusApp app;
 	public WorkManager(RemusApp app) {
 		this.app = app;		
@@ -61,19 +61,21 @@ public class WorkManager {
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
 
-	
-	
+
+
 	public void finishWork( String workerID, RemusApplet applet, RemusInstance inst, long jobID  ) {
 		Date d = new Date();
 		lastAccess.put(workerID, d );
-		finishTimes.add(d);
-		while ( finishTimes.size() > 100 ) {
-			finishTimes.removeFirst();
+		synchronized (finishTimes) {
+			finishTimes.add(d);
+			while ( finishTimes.size() > 100 ) {
+				finishTimes.removeFirst();
+			}
 		}
 		WorkReference ref = new WorkReference(applet, inst, jobID);
 		workerSets.get(workerID).remove(ref);
 		applet.finishWork(inst, jobID, workerID);
-		
+
 	}
 
 
@@ -107,9 +109,11 @@ public class WorkManager {
 	public long getFinishRate() {
 		long count = 0;
 		long sum = 0;
-		for ( int i = 0; i < finishTimes.size() - 1; i++ ) {
-			sum += finishTimes.get(i).getTime() - finishTimes.get(i+1).getTime();
-			count++;
+		synchronized ( finishTimes ) {
+			for ( int i = 0; i < finishTimes.size() - 1; i++ ) {
+				sum += finishTimes.get(i).getTime() - finishTimes.get(i+1).getTime();
+				count++;
+			}
 		}
 		if ( count > 0 )
 			return sum / count;
