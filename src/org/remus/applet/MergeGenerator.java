@@ -22,7 +22,7 @@ public class MergeGenerator implements WorkGenerator {
 	}
 
 	@Override
-	public void startWork(RemusInstance instance) {
+	public void startWork(RemusInstance instance, long reqCount) {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();
 		for ( InputReference lRef : applet.lInputs ) {

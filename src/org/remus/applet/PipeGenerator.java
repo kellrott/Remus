@@ -23,7 +23,7 @@ public class PipeGenerator implements WorkGenerator {
 	}
 
 	@Override
-	public void startWork(RemusInstance instance) {
+	public void startWork(RemusInstance instance, long reqCount) {
 		outList = new ArrayList<WorkDescription>();
 		if ( !applet.isComplete(instance) ) {
 			if ( applet.isReady(instance) ) {

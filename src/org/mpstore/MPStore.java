@@ -18,7 +18,7 @@ public interface MPStore {
 
 	public boolean containsKey(String path, String instance, String key);
 
-	//public long keyCount( String path, String instance );
+	public long keyCount( String path, String instance );
 
 	public void delete(String path, String instance);
 	

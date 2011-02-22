@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
@@ -22,7 +21,7 @@ public class SplitGenerator implements WorkGenerator {
 
 
 	@Override
-	public void startWork(RemusInstance instance) {
+	public void startWork(RemusInstance instance, long reqQuest) {
 		outList = new ArrayList<WorkDescription>();
 		if ( !applet.isComplete(instance) ) {
 			if ( applet.isReady(instance) ) {

@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -30,6 +29,7 @@ import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.PoolUtils;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -357,7 +357,6 @@ public class ThriftStore implements MPStore {
 				slice.setSlice_range(sRange);
 				client = (Client)clientPool.borrowObject();
 				List<ColumnOrSuperColumn> res = client.get_slice( superColumn, cp, slice, CL);
-				clientPool.returnObject(client);
 				for ( ColumnOrSuperColumn col : res ) {		
 					String curKey = new String( col.getSuper_column().getName() );
 					if ( firstSlice || curKey.compareTo( new String(keyStart)) != 0 ) {
@@ -501,6 +500,12 @@ public class ThriftStore implements MPStore {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public long keyCount(String path, String instance) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
