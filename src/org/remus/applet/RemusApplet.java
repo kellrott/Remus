@@ -281,7 +281,7 @@ public class RemusApplet {
 			System.err.println("GENERATING WORK");
 			WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 			gen.init(this);
-			gen.startWork(inst);
+			gen.startWork(inst, 100);
 			//remove traces of a possible previous run
 			//TODO:Make resuming work possible with out delete full workset
 			//datastore.delete( getPath() + "@data", inst.toString() );

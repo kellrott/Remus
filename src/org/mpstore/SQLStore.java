@@ -14,7 +14,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.*;
@@ -59,6 +61,7 @@ public class SQLStore implements MPStore {
 	public void init(Serializer serializer, String basePath) {
 		this.serializer = serializer;
 		this.basePath = basePath;
+		this.tableCache = new HashMap<String, String>();
 		Connection connect = null;
 		try {
 			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
@@ -108,12 +111,15 @@ public class SQLStore implements MPStore {
 		}
 	}
 
+	Map<String,String> tableCache;
+
 	private String getTableName( String path, Boolean create ) {
 		String tableName = null;
 		Connection connect = null;
 		boolean entryFound = false;
 		boolean tableFound = false;			
-
+		if ( tableCache.containsKey(path) )
+			return tableCache.get(path);
 		try {
 			connect = (Connection) pool.borrowObject();			
 			PreparedStatement st = connect.prepareStatement("SELECT tablename FROM mpdata WHERE path = ?");
@@ -185,8 +191,10 @@ public class SQLStore implements MPStore {
 				e.printStackTrace();
 			}
 		}
-		if ( entryFound && tableFound )
+		if ( entryFound && tableFound ) {
+			tableCache.put(path, tableName);
 			return tableName;
+		}
 		return null;
 	}
 
@@ -430,6 +438,49 @@ public class SQLStore implements MPStore {
 		return new ArrayList<String>();
 	}
 
+
+
+
+	@Override
+	public long keyCount(String path, String instance) {
+		long count = 0;
+		Connection connect = null;
+		try {
+			String tableName = getTableName( instance+path, false );
+			if ( tableName != null ) {
+				connect = (Connection) pool.borrowObject();
+				PreparedStatement st = connect.prepareStatement( "SELECT count(distinct(valkey)) FROM " + tableName  );
+				ResultSet rs = st.executeQuery();
+				rs.next();
+				count = rs.getLong(1);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if ( connect != null )
+					pool.returnObject(connect);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return count;
+	}
+
+
+
+
 	@Override
 	public Iterable<KeyValuePair> listKeyPairs(String file, String instance) {
 		try {
@@ -505,6 +556,7 @@ public class SQLStore implements MPStore {
 				st.execute();
 				st.close();
 				st = connect.prepareStatement("DELETE FROM mpdata WHERE tableName = ? ");
+				tableCache.remove(instance+file);
 				st.setString(1, tableName);
 				st.execute();
 				st.close();
@@ -554,7 +606,7 @@ public class SQLStore implements MPStore {
 			}
 		}		
 	}
-	
+
 
 	@Override
 	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
@@ -635,7 +687,5 @@ public class SQLStore implements MPStore {
 		}		
 		return null;
 	}
-
-
 
 }

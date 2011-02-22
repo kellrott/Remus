@@ -6,17 +6,30 @@ import json
 from urllib  import quote
 import imp
 from cStringIO import StringIO
-import urllib2
 import uuid
-
+from urlparse import urlparse
+import httplib
 
 workerID = str(uuid.uuid4())
 
-opener = urllib2.build_opener()
-opener.addheaders.append(('Cookie', 'remusWorker=%s' % (workerID) ))
+curServer = None
+curConn = None
 
 def urlopen(url,data=None):
-	return opener.open(url,data)
+	u = urlparse( url )
+	global curConn
+	global curServer
+	if curConn is None or curServer != u.netloc:
+		curConn = httplib.HTTPConnection(u.netloc)
+		curServer = u.netloc
+	if data is not None:
+		headers = {"Cookie":  'remusWorker=%s' % (workerID) }
+		curConn.request("POST", u.path, data, headers)
+		return StringIO( curConn.getresponse().read() )
+	else:
+		headers = {"Cookie":  'remusWorker=%s' % (workerID) }
+		curConn.request("GET", u.path, None, headers)
+		return StringIO( curConn.getresponse().read() )
 
 verbose = True
 
@@ -86,7 +99,15 @@ class jsonIter:
 		a = self.handle.read()
 		return json.loads( a )
 
-
+class valueIter:
+	def __init__(self, handle):
+		self.handle = handle
+	
+	def __iter__(self):
+		for v in self.handle:
+			for k in v:
+				yield v[k]
+	
 class jsonPairSplitter:
 	def __init__(self, iHandle):
 		self.handle = iHandle
@@ -195,11 +216,12 @@ class MapWorker(WorkerBase):
 		self.setupOutput(instance, jobID)
 		jobSet = httpGetJson( url )
 		for jobDesc in jobSet:
-			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )	
-			kpData = httpGetJson( kpURL )
-			for data in kpData:
-				for key in data:
-					func( key, data[key] )
+			for wKey in jobDesc['key']:
+				kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( wKey ) )	
+				kpData = httpGetJson( kpURL )
+				for data in kpData:
+					for key in data:
+						func( key, data[key] )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
@@ -211,10 +233,10 @@ class ReduceWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
-			kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( jobDesc['key']) )		
-			kpData = httpGetJson( kpURL )
-			for key in kpData:
-				func(  key, kpData[key] )
+			for wKey in jobDesc['key']:
+				kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( wKey ) )		
+				kpData = httpGetJson( kpURL )
+				func(  wKey, valueIter(kpData) )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
@@ -271,7 +293,7 @@ if __name__=="__main__":
 	host = sys.argv[1]
 	remus.init(host)
 	while 1:
-		workList = httpGetJson( host + "/@work?max=100" ).read()	
+		workList = httpGetJson( host + "/@work" ).read()	
 		if len(workList) == 0:
 			break
 		for instance in workList:		

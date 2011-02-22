@@ -1,6 +1,5 @@
 package org.remus.applet;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,15 +15,27 @@ public class ReduceGenerator implements WorkGenerator {
 	List<WorkDescription> outList;
 	int curPos;
 	@Override
-	public void startWork(RemusInstance instance) {
+	public void startWork(RemusInstance instance, long reqCount) {
 		int jobID = 0;
-		outList = new ArrayList<WorkDescription>();
+		outList = new ArrayList<WorkDescription>();		
 		for ( InputReference iRef : applet.getInputs() ) {
+			long keyCount = applet.datastore.keyCount( iRef.getPortPath() + "@data", instance.toString() );
+			long keysPerJob = keyCount / reqCount;
+			if ( keysPerJob == 0 )
+				keysPerJob = 1;
+			long count = 0;
+			Map map = null;
+			List keyList = null;
 			for ( Object key : applet.datastore.listKeys( iRef.getPortPath() + "@data", instance.toString() ) ) {
-				Map map = new HashMap();
-				map.put("input", iRef.getPortPath() + "@data" );
-				map.put("key", key );
-				outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
+				if ( count % keysPerJob == 0) {
+					map = new HashMap();
+					map.put("input", iRef.getPortPath() + "@data" );
+					keyList = new ArrayList();
+					map.put("key", keyList );
+					outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
+				}
+				count++;
+				keyList.add(key);
 				jobID++;
 			}
 		}

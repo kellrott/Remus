@@ -1,11 +1,10 @@
 package org.remus.applet;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
 import org.remus.InputReference;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
@@ -22,23 +21,36 @@ public class MapGenerator implements WorkGenerator {
 	}
 
 	@Override
-	public void startWork(RemusInstance instance) {
+	public void startWork(RemusInstance instance, long reqCount) {
 		outList = new ArrayList<WorkDescription>();
 		if ( !applet.isComplete(instance) ) {
 			if ( applet.hasInputs() ) {
 				if ( applet.isReady(instance) ) {
 					int jobID = 0;
 					for ( InputReference iRef : applet.inputs ) {
+						long keyCount = applet.datastore.keyCount( iRef.getPortPath() + "@data", instance.toString() );
+						long keysPerJob = keyCount / reqCount;
+						if ( keysPerJob == 0)
+							keysPerJob = 1;
+						long count = 0;
+						Map map = null;
+						List keyList = null;
+
 						String portPath = null;
 						if ( iRef.getInputType() == InputReference.DynamicInput )
 							portPath = applet.getPath() + "@submit";
 						else
 							portPath =  iRef.getPortPath() +"@data";
 						for ( Object key : applet.datastore.listKeys( portPath, instance.toString() ) ) {
-							Map map = new HashMap();
-							map.put("input", portPath );
-							map.put("key",   key );
-							outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
+							if ( count % keysPerJob == 0) {
+								map = new HashMap();
+								map.put("input", portPath );
+								keyList = new ArrayList();
+								map.put("key", keyList );
+								outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
+							}
+							count++;
+							keyList.add( key );
 							jobID++;							
 						}
 					}

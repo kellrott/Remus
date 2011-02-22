@@ -28,10 +28,22 @@ public class WorkManager {
 	}
 
 
+	public static final long WORKER_TIMEOUT = 5 * 60 * 1000;
+
 	public Map<WorkReference,Object> getWorkList( String workerID, int maxCount ) {
-		lastAccess.put(workerID, new Date() );
+		Date curDate = new Date();
+		lastAccess.put(workerID, curDate );
 		if ( !workerSets.containsKey( workerID ) ) {
 			workerSets.put(workerID, new HashMap<WorkReference,Object>());
+		}
+
+		synchronized (workerSets) {			
+			for ( String worker : lastAccess.keySet() ) {
+				Date last = lastAccess.get(worker);
+				if ( curDate.getTime() - last.getTime() > WORKER_TIMEOUT && workerSets.containsKey(worker)) {
+					workerSets.remove(worker);
+				}
+			}
 		}
 		if ( workQueue.size() == 0 ) {
 			for (WorkDescription desc : app.codeManager.getWorkQueue(QUEUE_MAX) ) {
@@ -42,7 +54,9 @@ public class WorkManager {
 					}
 				}
 				if ( !found ) {
-					workQueue.add( desc );
+					synchronized (workQueue) {						
+						workQueue.add( desc );
+					}
 				}
 			}
 		}
