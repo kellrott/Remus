@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -66,66 +64,6 @@ public class MasterServlet extends HttpServlet {
 	 */
 	private static final long serialVersionUID = -8067165004515233805L;
 
-	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
-
-	Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
-	Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
-
-	class RequestInfo {
-		public String path;
-		public String appletPath;
-		public String appletSubName;
-		public String api;
-		public String instance;
-		public String key;
-		File file, srcFile;
-
-		public RequestInfo( String pathinfo ) {
-			String [] tmp = pathinfo.split("@");
-			path = tmp[0];
-			api = null;
-			instance = null;
-			appletSubName = null;
-			key = null;
-			if ( tmp.length > 1 ) {
-				Matcher m1 = instancePat.matcher(tmp[1]);
-				if ( m1.find() ) {
-					api = m1.group(1);
-					instance = m1.group(2);
-				} else {
-					Matcher m2 = instanceKeyPat.matcher(tmp[1]); 
-					if ( m2.find() ) {
-						api = m2.group(1);
-						instance = m2.group(2);
-						key = m2.group(3);
-					} else {
-						api = tmp[1];
-					}
-				}
-			}
-			if ( api != null && api.length() == 0 )
-				api = null;
-			Matcher m = appletSub.matcher( tmp[0] );
-			if ( m.find() ) {
-				String appletName = m.group(1);
-				appletSubName = m.group(2);
-				appletPath = m.replaceAll(appletName);
-			} else {
-				appletPath = tmp[0];
-			}
-			appletPath = (new File(appletPath)).getAbsolutePath();
-			file = new File( path );	
-			path = file.getAbsolutePath();
-			srcFile = new File(app.srcbase, path );		
-		}
-
-		public boolean isSubName() {
-			if ( appletSubName == null )
-				return false;
-			return true;
-		}
-	}
-
 
 	private String getWorkerID( HttpServletRequest req ) {
 		String workerID = null;
@@ -142,23 +80,23 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
-		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );
-		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
-			if ( reqInfo.api == null ) {
+		RemusPath reqInfo = new RemusPath( app, req.getPathInfo() );
+		if ( app.codeManager.containsKey( reqInfo.getAppletPath() ) ) {
+			if ( reqInfo.getView() == null ) {
 				PrintWriter out = resp.getWriter();				
 				resp.setContentType( "text/html" );
 				out.println( "<p><a href='../'>MAIN</a></p>" );
 
-				out.println( "<p><a href='" + reqInfo.path + "@code'>CODE</a></p>" );
+				out.println( "<p><a href='" + reqInfo.getAppletPath() + "@code'>CODE</a></p>" );
 
-				RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
-				String instStr = reqInfo.instance;
+				RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
+				String instStr = reqInfo.getInstance();
 				RemusInstance curInst = null;
 				if ( instStr != null )
 					curInst = new RemusInstance(instStr);
 
 				out.println("INPUTS<ul>");
-				for ( InputReference iRef : applet.getInputs() ) {
+				for ( RemusPath iRef : applet.getInputs() ) {
 					if ( instStr != null )
 						out.println( "<li><a href='" + iRef.getPortPath() + "@/" + instStr + "'>" + iRef.getPortPath() + "</a></li>" );
 					else
@@ -195,9 +133,9 @@ public class MasterServlet extends HttpServlet {
 					}
 					if ( applet.isReady(curInst) ) {
 						out.println("<ul>");
-						out.println( "<li><a href='" + reqInfo.path + "@keys/"   + instStr + "'>KEYS</a></li>" );
-						out.println( "<li><a href='" + reqInfo.path + "@data/"   + instStr + "'>DATA</a></li>" );					
-						out.println( "<li><a href='" + reqInfo.path + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
+						out.println( "<li><a href='" + reqInfo.getPortPath() + "@keys/"   + instStr + "'>KEYS</a></li>" );
+						out.println( "<li><a href='" + reqInfo.getPortPath() + "@data/"   + instStr + "'>DATA</a></li>" );					
+						out.println( "<li><a href='" + reqInfo.getPortPath() + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
 						out.println("</ul>");
 					}
 					if ( applet.getType() == RemusApplet.PIPE ) {
@@ -208,24 +146,24 @@ public class MasterServlet extends HttpServlet {
 								out.println( "<p>Attachments</p>" );
 								first = false;
 							}
-							out.println( "<li><a href='" + reqInfo.path + "@attach/"   + instStr + "/" + key + "'>" + key + "</a></li>" );
+							out.println( "<li><a href='" + reqInfo.getAppletPath() + "@attach/"   + instStr + "/" + key + "'>" + key + "</a></li>" );
 						}
 					}					
 				} else {
 					for ( RemusInstance inst : applet.getInstanceList() ) {
-						out.println( "<li><a href='" + reqInfo.path + "@/" + inst.toString() + "'>" + inst.toString() + "</a></li>" );
+						out.println( "<li><a href='" + reqInfo.getPortPath() + "@/" + inst.toString() + "'>" + inst.toString() + "</a></li>" );
 					}
 				}
 			} else {
-				if ( reqInfo.api.compareTo("data") == 0 || reqInfo.api.compareTo("submit") == 0 ) {
+				if ( reqInfo.getView().compareTo("data") == 0 || reqInfo.getView().compareTo("submit") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
 					MPStore ds = app.getDataStore();
-					if ( reqInfo.instance != null && reqInfo.key != null ) {
-						String instStr = reqInfo.instance;
-						String keyStr = reqInfo.key;
-						if ( ds.containsKey( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
-							for ( Object value : ds.get( reqInfo.file + "@" + reqInfo.api, instStr, keyStr ) ) {
+					if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
+						String instStr = reqInfo.getInstance();
+						String keyStr = reqInfo.getKey();
+						if ( ds.containsKey( reqInfo.getPortPath() + "@" + reqInfo.getView(), instStr, keyStr ) ) {
+							for ( Object value : ds.get( reqInfo.getPortPath() + "@" + reqInfo.getView(), instStr, keyStr ) ) {
 								Map oMap = new HashMap();
 								oMap.put( keyStr, value);
 								out.println( serializer.dumps( oMap ) );
@@ -234,8 +172,8 @@ public class MasterServlet extends HttpServlet {
 						} else {
 							resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 						}
-					} else if ( reqInfo.instance != null) {
-						for ( KeyValuePair kp : ds.listKeyPairs( reqInfo.file + "@" + reqInfo.api , reqInfo.instance ) ) {
+					} else if ( reqInfo.getInstance() != null) {
+						for ( KeyValuePair kp : ds.listKeyPairs( reqInfo.getPortPath() + "@" + reqInfo.getView() , reqInfo.getInstance() ) ) {
 							Map outMap = new HashMap();
 							outMap.put(kp.getKey(), kp.getValue() );
 							out.println( serializer.dumps( outMap ) );
@@ -243,25 +181,25 @@ public class MasterServlet extends HttpServlet {
 							resp.flushBuffer();
 						}						
 					}
-				} else if ( reqInfo.api.compareTo("keys") == 0 && reqInfo.instance != null ) {
+				} else if ( reqInfo.getView().compareTo("keys") == 0 && reqInfo.getInstance() != null ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
 					MPStore ds = app.getDataStore();
-					for ( Object key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
+					for ( Object key : ds.listKeys( reqInfo.getPortPath() + "@data", reqInfo.getInstance() ) ) {
 						out.println( serializer.dumps(key) );
 					}
-				} else if ( reqInfo.api.compareTo("code") == 0  ) {
+				} else if ( reqInfo.getView().compareTo("code") == 0  ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
-					out.write( app.codeManager.get(reqInfo.appletPath).getSource() );
-				} else if ( reqInfo.api.compareTo("work") == 0 ) {
+					out.write( app.codeManager.get( reqInfo.getAppletPath() ).getSource() );
+				} else if ( reqInfo.getView().compareTo("work") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
-					RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
-					if ( reqInfo.instance != null && reqInfo.key != null ) {
+					RemusApplet applet = app.codeManager.get( reqInfo.getAppletPath() );
+					if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
 						if ( applet.getPipeline() != null ) {
-							RemusInstance inst = new RemusInstance( reqInfo.instance );
-							int jobID = Integer.parseInt(reqInfo.key);
+							RemusInstance inst = new RemusInstance( reqInfo.getInstance() );
+							int jobID = Integer.parseInt(reqInfo.getKey());
 							String workerID = getWorkerID(req);
 							if ( workerID != null ) {
 								Object workDesc = workManage.getWork( workerID, applet, inst, jobID );
@@ -270,29 +208,29 @@ public class MasterServlet extends HttpServlet {
 							}
 						}
 					}
-				} else if ( reqInfo.api.compareTo("info") == 0 ) {
+				} else if ( reqInfo.getView().compareTo("info") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
-					RemusApplet applet = app.codeManager.get( reqInfo.appletPath );
+					RemusApplet applet = app.codeManager.get( reqInfo.getAppletPath() );
 					Map outMap = applet.getInfo();
 					out.print( serializer.dumps(outMap) );
-				} else if ( reqInfo.api.compareTo("reduce") == 0 ) {
+				} else if ( reqInfo.getView().compareTo("reduce") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					resp.setBufferSize(2048);
 					MPStore ds = app.getDataStore();
-					for ( String key : ds.listKeys( reqInfo.file + "@data", reqInfo.instance ) ) {
+					for ( String key : ds.listKeys( reqInfo.getPortPath() + "@data", reqInfo.getInstance() ) ) {
 						Map outMap = new HashMap();
 						List outList = new ArrayList();
-						for ( Object val : ds.get(reqInfo.file + "@data", reqInfo.instance, key) ) {
+						for ( Object val : ds.get(reqInfo.getPortPath() + "@data", reqInfo.getInstance(), key) ) {
 							outList.add(val);							
 						}
 						outMap.put(key, outList);
 						out.println( serializer.dumps( outMap ) );
 					} 
-				} else if ( reqInfo.api.compareTo("attach") == 0 ) {
-					if ( reqInfo.instance != null && reqInfo.key != null ) {
+				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
+					if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
 						MPStore ds = app.getDataStore();
-						InputStream is = ds.readAttachement( reqInfo.appletPath + "@attach", reqInfo.instance, reqInfo.key );
+						InputStream is = ds.readAttachement( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey() );
 						ServletOutputStream os = resp.getOutputStream();
 						byte [] buffer = new byte[1024];
 						int len;
@@ -304,23 +242,23 @@ public class MasterServlet extends HttpServlet {
 						PrintWriter out = resp.getWriter();
 						MPStore ds = app.getDataStore();
 						List<String> outList = new ArrayList<String>();
-						for ( String val : ds.listKeys(reqInfo.appletPath + "@attach", reqInfo.instance) ) {
+						for ( String val : ds.listKeys(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance() ) ) {
 							outList.add(val);
 						}
 						out.println( serializer.dumps( outList ) );
 					}
-				} else if ( reqInfo.api.compareTo("instance") == 0 ) {
+				} else if ( reqInfo.getView().compareTo("instance") == 0 ) {
 					PrintWriter out = resp.getWriter();
 					MPStore ds = app.getDataStore();
 					List outList = new LinkedList();
-					for ( String key : ds.listKeys( reqInfo.appletPath + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+					for ( String key : ds.listKeys( reqInfo.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 						outList.add(key);
 					}
 					out.println( serializer.dumps( outList ) );
 				}
 			}
-		} else if ( reqInfo.path.compareTo("/") == 0 ) {
-			if ( reqInfo.api == null ) {
+		} else if ( reqInfo.getAppletPath().compareTo("/") == 0 ) {
+			if ( reqInfo.getView() == null ) {
 				PrintWriter out = resp.getWriter();
 				resp.setContentType( "text/html" );
 				out.println( "<h1>Pipelines:</h1> <ul>");
@@ -367,7 +305,7 @@ public class MasterServlet extends HttpServlet {
 				out.println("</ul>");
 				 */
 
-			} else if ( reqInfo.api.compareTo("work") == 0 ) {
+			} else if ( reqInfo.getView().compareTo("work") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				int count = 10;
 				if ( req.getParameter("max") != null ) {
@@ -380,10 +318,10 @@ public class MasterServlet extends HttpServlet {
 				} else {
 					resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 				}
-			} else if ( reqInfo.api.compareTo("submit") == 0 ) {
+			} else if ( reqInfo.getView().compareTo("submit") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( (new RemusInstance()).toString()  ));
-			} else if ( reqInfo.api.compareTo("status") == 0 ) {
+			} else if ( reqInfo.getView().compareTo("status") == 0 ) {
 				PrintWriter out = resp.getWriter();
 				Map outMap = new HashMap();				
 				Map workerMap = new HashMap();
@@ -408,8 +346,8 @@ public class MasterServlet extends HttpServlet {
 				out.print( serializer.dumps( outList ) );
 			}
 			*/
-		} else if (reqInfo.srcFile.exists() ) {
-			FileInputStream fis = new FileInputStream( reqInfo.srcFile );
+		} else if (reqInfo.getSrcFile().exists() ) {
+			FileInputStream fis = new FileInputStream( reqInfo.getSrcFile() );
 			ServletOutputStream os = resp.getOutputStream();
 			byte [] buffer = new byte[1024];
 			int len;
@@ -418,7 +356,7 @@ public class MasterServlet extends HttpServlet {
 			}
 		} else {
 			PrintWriter out = resp.getWriter();
-			out.write( "Not Found:" + reqInfo.path );
+			out.write( "Not Found:" + reqInfo.getURL() );
 		}
 	}
 
@@ -427,9 +365,9 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );		
-		if ( reqInfo.path.compareTo("/") == 0 ) {
-			if ( reqInfo.api.compareTo("restart") == 0 ) {
+		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );		
+		if ( reqInfo.getAppletPath().compareTo("/") == 0 ) {
+			if ( reqInfo.getView().compareTo("restart") == 0 ) {
 				try {
 					app = new RemusApp(new File(srcDir), app.workStore );
 				} catch (RemusDatabaseException e) {
@@ -437,9 +375,9 @@ public class MasterServlet extends HttpServlet {
 					e.printStackTrace();
 				}
 			}
-		} else if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
-			if ( reqInfo.api != null ) {
-				if ( reqInfo.api.compareTo("work") == 0 ) {
+		} else if ( app.codeManager.containsKey( reqInfo.getAppletPath() ) ) {
+			if ( reqInfo.getView() != null ) {
+				if ( reqInfo.getView().compareTo("work") == 0 ) {
 					String workerID = getWorkerID(req);
 					if ( workerID != null ) {
 						BufferedReader br = req.getReader();
@@ -450,7 +388,7 @@ public class MasterServlet extends HttpServlet {
 								String instStr = (String)key;
 								RemusInstance inst=new RemusInstance(instStr);
 								List jobList = (List)m.get(key);
-								RemusApplet applet = app.codeManager.get( reqInfo.appletPath );
+								RemusApplet applet = app.codeManager.get( reqInfo.getAppletPath() );
 								for ( Object key2 : jobList ) {
 									Long jobID = (Long)key2;
 									workManage.finishWork(workerID, applet, inst, jobID);
@@ -459,14 +397,14 @@ public class MasterServlet extends HttpServlet {
 						}
 						resp.getWriter().print("\"OK\"");
 					}
-				} else if ( reqInfo.api.compareTo("data") == 0 && reqInfo.instance != null) {
+				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
 					BufferedReader br = req.getReader();
 					String curline = null;
 					String writeName = null;
-					if ( reqInfo.appletSubName != null )
-						writeName = reqInfo.appletPath + "." + reqInfo.appletSubName;
+					if ( reqInfo.getPortName() != null )
+						writeName = reqInfo.getAppletPath() + "." + reqInfo.getPortName();
 					else
-						writeName = reqInfo.appletPath;
+						writeName = reqInfo.getAppletPath();
 
 					List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
 					while ( (curline = br.readLine() ) != null ) {
@@ -476,15 +414,15 @@ public class MasterServlet extends HttpServlet {
 								inObj.get("value") ) );
 					}					
 					app.workStore.add( writeName + "@data", 
-							reqInfo.instance, 
+							reqInfo.getInstance(), 
 							inputList );
 					resp.getWriter().print("\"OK\"");
-				} else if ( reqInfo.api.compareTo("submit") == 0) {
-					RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
-					if ( applet.getInputs().size() == 1 && applet.getInputs().get(0).getInputType() == InputReference.DynamicInput ) {
+				} else if ( reqInfo.getView().compareTo("submit") == 0) {
+					RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
+					if ( applet.getInputs().size() == 1 && applet.getInputs().get(0).getInputType() == RemusPath.DynamicInput ) {
 						boolean found = false;
-						String submitFile = reqInfo.appletPath + "@submit";
-						for ( Object instStr : app.workStore.listKeys( submitFile,  reqInfo.instance ) ) {
+						String submitFile = reqInfo.getAppletPath() + "@submit";
+						for ( Object instStr : app.workStore.listKeys( submitFile,  reqInfo.getInstance() ) ) {
 							found = true;
 						}
 						if ( found ) {
@@ -496,7 +434,7 @@ public class MasterServlet extends HttpServlet {
 								Map inObj = (Map)serializer.loads(curline);	
 								for ( Object key : inObj.keySet() ) {
 									app.workStore.add(submitFile, 
-											reqInfo.instance, 
+											reqInfo.getInstance(), 
 											(Long)0L, 
 											(Long)0L, 
 											(String)key , 
@@ -507,17 +445,17 @@ public class MasterServlet extends HttpServlet {
 									RemusInstance.STATIC_INSTANCE_STR, 
 									(Long)0L, 
 									(Long)0L, 
-									reqInfo.instance, 
-									reqInfo.appletPath );
-							applet.getPipeline().addInstance( new RemusInstance(reqInfo.instance) );
+									reqInfo.getInstance(), 
+									reqInfo.getAppletPath() );
+							applet.getPipeline().addInstance( new RemusInstance(reqInfo.getInstance() ) );
 							resp.getWriter().print("\"OK\"");
 						}
 					} else {
 						resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 					}
-				} else if ( reqInfo.api.compareTo("attach") == 0 ) {
-					if ( reqInfo.instance != null && reqInfo.key != null ) {
-						app.getDataStore().writeAttachment( reqInfo.appletPath + "@attach", reqInfo.instance, reqInfo.key, req.getInputStream() );
+				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
+					if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
+						app.getDataStore().writeAttachment( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), req.getInputStream() );
 					}
 				}
 			}
@@ -528,11 +466,11 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		RequestInfo reqInfo = new RequestInfo( req.getPathInfo() );		
-		if ( app.codeManager.containsKey( reqInfo.appletPath ) ) {
-			RemusApplet applet = app.codeManager.get(reqInfo.appletPath);
-			if ( reqInfo.instance != null  ) {
-				applet.deleteInstance( new RemusInstance( reqInfo.instance) );
+		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );		
+		if ( app.codeManager.containsKey( reqInfo.getAppletPath() ) ) {
+			RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
+			if ( reqInfo.getInstance() != null  ) {
+				applet.deleteInstance( new RemusInstance( reqInfo.getInstance()) );
 				try {
 					app = new RemusApp(new File(srcDir), app.workStore );
 				} catch (RemusDatabaseException e) {
@@ -540,11 +478,11 @@ public class MasterServlet extends HttpServlet {
 					e.printStackTrace();
 				}
 			}
-		} else if ( reqInfo.path.compareTo("/") == 0 ) {
-			if ( reqInfo.api.compareTo("submit") == 0 && reqInfo.instance != null ) {
-				app.getDataStore().delete( "/@submit", RemusInstance.STATIC_INSTANCE_STR, reqInfo.instance );
-			} else if ( reqInfo.api.compareTo("instance") == 0 && reqInfo.instance != null ) {
-				RemusInstance instance = new RemusInstance(reqInfo.instance);
+		} else if ( reqInfo.getAppletPath().compareTo("/") == 0 ) {
+			if ( reqInfo.getView().compareTo("submit") == 0 && reqInfo.getInstance() != null ) {
+				app.getDataStore().delete( "/@submit", RemusInstance.STATIC_INSTANCE_STR, reqInfo.getInstance() );
+			} else if ( reqInfo.getView().compareTo("instance") == 0 && reqInfo.getInstance() != null ) {
+				RemusInstance instance = new RemusInstance(reqInfo.getInstance());
 				for ( RemusPipeline pipeline : app.codeManager.getPipelines() ) {
 					pipeline.deleteInstance(instance);
 				}

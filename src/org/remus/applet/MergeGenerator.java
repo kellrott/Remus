@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.remus.InputReference;
+import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 import org.remus.WorkReference;
@@ -25,10 +25,10 @@ public class MergeGenerator implements WorkGenerator {
 	public void startWork(RemusInstance instance, long reqCount) {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();
-		for ( InputReference lRef : applet.lInputs ) {
+		for ( RemusPath lRef : applet.lInputs ) {
 			String lStr = lRef.getPortPath() + "@data";
 			for ( Object key : applet.datastore.listKeys( lStr, instance.toString() ) ) {
-				for ( InputReference rRef : applet.rInputs ) {
+				for ( RemusPath rRef : applet.rInputs ) {
 					Map map = new HashMap();
 					map.put("left_key", key);
 					map.put("left_input", lStr );

@@ -11,7 +11,7 @@ import java.util.Map;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.remus.CodeFragment;
-import org.remus.InputReference;
+import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.WorkDescription;
@@ -77,7 +77,7 @@ public class RemusApplet {
 
 	Class workGenerator;
 	String path;
-	List<InputReference> inputs = null, lInputs = null, rInputs = null;
+	List<RemusPath> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
 	CodeFragment code;
 	MPStore datastore;
@@ -85,22 +85,22 @@ public class RemusApplet {
 	protected RemusPipeline pipeline = null;
 	LinkedList<RemusInstance> activeInstances;
 
-	public void addInput( InputReference in ) {
+	public void addInput( RemusPath in ) {
 		if ( inputs == null )
-			inputs = new ArrayList<InputReference>();
+			inputs = new ArrayList<RemusPath>();
 		inputs.add(in);
 	}	
 
-	public void addLeftInput( InputReference in ) {
+	public void addLeftInput( RemusPath in ) {
 		if ( lInputs == null )
-			lInputs = new LinkedList<InputReference>();
+			lInputs = new LinkedList<RemusPath>();
 		lInputs.add(in);
 		addInput(in);
 	}
 
-	public void addRightInput( InputReference in ) {
+	public void addRightInput( RemusPath in ) {
 		if ( rInputs == null )
-			rInputs = new LinkedList<InputReference>();
+			rInputs = new LinkedList<RemusPath>();
 		rInputs.add(in);
 		addInput(in);
 	}
@@ -115,10 +115,10 @@ public class RemusApplet {
 		return code;
 	}
 
-	public List<InputReference> getInputs() {
+	public List<RemusPath> getInputs() {
 		if ( inputs != null )
 			return inputs;
-		return new ArrayList<InputReference>();
+		return new ArrayList<RemusPath>();
 	}
 
 	public String [] getOutputs() {
@@ -174,8 +174,8 @@ public class RemusApplet {
 	public boolean isReady( RemusInstance remusInstance ) {
 		if ( hasInputs() ) {
 			boolean allReady = true;
-			for ( InputReference iRef : inputs ) {
-				if ( iRef.getInputType() == InputReference.AppletInput ) {
+			for ( RemusPath iRef : inputs ) {
+				if ( iRef.getInputType() == RemusPath.AppletInput ) {
 					RemusApplet iApplet = getPipeline().getApplet( iRef.getAppletPath() );
 					if ( iApplet != null ) {
 						if ( !iApplet.isComplete(remusInstance) ) {
@@ -184,12 +184,12 @@ public class RemusApplet {
 					} else {
 						allReady = false;
 					}
-				} else if ( iRef.getInputType() == InputReference.DynamicInput ) {
+				} else if ( iRef.getInputType() == RemusPath.DynamicInput ) {
 					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
-				} else if (  iRef.getInputType() == InputReference.ExternalInput ) {
-				} else if (  iRef.getInputType() == InputReference.StaticInput ) {
+				} else if (  iRef.getInputType() == RemusPath.ExternalInput ) {
+				} else if (  iRef.getInputType() == RemusPath.StaticInput ) {
 				} else {				
 					allReady = false;
 				}

@@ -53,7 +53,7 @@ public class CodeManager {
 			change = false;
 			for ( String path : codeMap.keySet() ) {
 				if ( codeMap.get(path).hasInputs() ) {
-					for ( InputReference inRef : codeMap.get(path).getInputs() ) {
+					for ( RemusPath inRef : codeMap.get(path).getInputs() ) {
 						if ( colorMap.containsKey( inRef.getPortPath() ) ) {
 							int val1 = colorMap.get(path);
 							int val2 = colorMap.get(inRef.getPortPath());
