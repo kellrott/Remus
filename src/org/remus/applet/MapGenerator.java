@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.remus.InputReference;
+import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 import org.remus.WorkReference;
@@ -27,8 +27,14 @@ public class MapGenerator implements WorkGenerator {
 			if ( applet.hasInputs() ) {
 				if ( applet.isReady(instance) ) {
 					int jobID = 0;
-					for ( InputReference iRef : applet.inputs ) {
-						long keyCount = applet.datastore.keyCount( iRef.getPortPath() + "@data", instance.toString() );
+					for ( RemusPath iRef : applet.inputs ) {
+						String portPath = null;
+						if ( iRef.getInputType() == RemusPath.DynamicInput )
+							portPath = applet.getPath() + "@submit";
+						else
+							portPath =  iRef.getPortPath() +"@data";
+						
+						long keyCount = applet.datastore.keyCount( portPath, instance.toString() );
 						long keysPerJob = keyCount / reqCount;
 						if ( keysPerJob == 0)
 							keysPerJob = 1;
@@ -36,11 +42,7 @@ public class MapGenerator implements WorkGenerator {
 						Map map = null;
 						List keyList = null;
 
-						String portPath = null;
-						if ( iRef.getInputType() == InputReference.DynamicInput )
-							portPath = applet.getPath() + "@submit";
-						else
-							portPath =  iRef.getPortPath() +"@data";
+						
 						for ( Object key : applet.datastore.listKeys( portPath, instance.toString() ) ) {
 							if ( count % keysPerJob == 0) {
 								map = new HashMap();

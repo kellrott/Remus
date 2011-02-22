@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.remus.InputReference;
+import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 import org.remus.WorkReference;
@@ -30,9 +30,9 @@ public class SplitGenerator implements WorkGenerator {
 						//KeyValuePair d = applet.datastore.get(new File("/@work"), instance.toString(),i, 0 );
 						//if ( d == null ) {
 							Map out = new HashMap();
-							if ( applet.inputs.get(i).getInputType() == InputReference.AppletInput )
+							if ( applet.inputs.get(i).getInputType() == RemusPath.AppletInput )
 								out.put( "input", applet.inputs.get(i).getPortPath() + "@data" );
-							if ( applet.inputs.get(i).getInputType() == InputReference.ExternalInput )
+							if ( applet.inputs.get(i).getInputType() == RemusPath.ExternalInput )
 								out.put( "input", applet.inputs.get(i).getURL() );
 							
 							outList.add( new WorkDescription( new WorkReference(applet, instance, i), out) );

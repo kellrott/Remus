@@ -13,19 +13,19 @@ public class RemusPipeline {
 
 	boolean dynamic = false;
 	private HashMap<String,RemusApplet> members;
-	Map<InputReference, RemusApplet> inputs;
+	Map<RemusPath, RemusApplet> inputs;
 	CodeManager parent;
 
 	public RemusPipeline(CodeManager parent) {
 		this.parent = parent;
 		members = new HashMap<String,RemusApplet>();
-		inputs = new HashMap<InputReference, RemusApplet >();
+		inputs = new HashMap<RemusPath, RemusApplet >();
 	}
 
 	public void addApplet(RemusApplet applet) {
 		if ( applet.hasInputs() ) {
-			for ( InputReference iref : applet.getInputs() ) {
-				if ( iref.getInputType() == InputReference.DynamicInput ) {
+			for ( RemusPath iref : applet.getInputs() ) {
+				if ( iref.getInputType() == RemusPath.DynamicInput ) {
 					dynamic = true;
 				}
 			}
@@ -56,12 +56,12 @@ public class RemusPipeline {
 
 
 	private void setupInputs() {
-		inputs = new HashMap<InputReference, RemusApplet>();
+		inputs = new HashMap<RemusPath, RemusApplet>();
 		for ( RemusApplet applet : members.values() ) {
 			if ( applet.hasInputs() ) {
-				for ( InputReference iref : applet.getInputs() ) {
-					if ( iref.getInputType() == InputReference.DynamicInput 
-							|| iref.getInputType() == InputReference.AppletInput 
+				for ( RemusPath iref : applet.getInputs() ) {
+					if ( iref.getInputType() == RemusPath.DynamicInput 
+							|| iref.getInputType() == RemusPath.AppletInput 
 							|| !parent.containsKey( iref.getPortPath() )) {
 						inputs.put(iref, applet);
 					}
@@ -78,14 +78,14 @@ public class RemusPipeline {
 		return members.get(path);
 	}
 
-	public Set<InputReference> getInputs() {
+	public Set<RemusPath> getInputs() {
 		if ( inputs == null ) {
 			setupInputs();
 		}
 		return inputs.keySet();
 	}
 
-	public RemusApplet getInputApplet( InputReference ref ) {
+	public RemusApplet getInputApplet( RemusPath ref ) {
 		if ( inputs == null ) {
 			setupInputs();
 		}

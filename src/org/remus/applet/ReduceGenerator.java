@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.remus.InputReference;
+import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.WorkDescription;
 import org.remus.WorkReference;
@@ -18,7 +18,7 @@ public class ReduceGenerator implements WorkGenerator {
 	public void startWork(RemusInstance instance, long reqCount) {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();		
-		for ( InputReference iRef : applet.getInputs() ) {
+		for ( RemusPath iRef : applet.getInputs() ) {
 			long keyCount = applet.datastore.keyCount( iRef.getPortPath() + "@data", instance.toString() );
 			long keysPerJob = keyCount / reqCount;
 			if ( keysPerJob == 0 )
