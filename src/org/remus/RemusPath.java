@@ -2,29 +2,29 @@ package org.remus;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mpstore.MPStore;
 
-import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimePartDataSource;
 
 public class RemusPath {
 	private String printURL = null;
-	
+
 	private String appletView = null;
 	private String appletName = null;
 	private String appletPortName = null;
 	private String instance = null;
-	
+
 	private String fileName = null;
 
-	int input_type;
+	private int input_type;
 	public static final int AppletInput = 0;
 	public static final int DynamicInput = 1;
 	public static final int ExternalInput = 2;
 	public static final int StaticInput = 2;
-	
+
 
 	Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
 	Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
@@ -34,7 +34,28 @@ public class RemusPath {
 	private String key;
 	private File file, srcFile;
 
+	public RemusPath(RemusPath ref, RemusInstance instance) {
+		this.parent = ref.parent;
+		this.instance = instance.toString();
+		if ( ref.getInputType() == DynamicInput ) {
+			String submitPath = null;
+			for ( Object path : ref.parent.getDataStore().get( ref.getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
+				submitPath = (String)path;
+			}
+			if ( submitPath != null ) {
+				ref = new RemusPath(ref.parent, submitPath);
+			}
+			this.instance = ref.instance;
+		}
+		this.appletName = ref.appletName;
+		this.appletPortName = ref.appletPortName;
+		this.appletView = ref.appletView;
+		this.input_type = ref.input_type;
+		this.key = ref.key;
+	}
+	
 	public RemusPath( RemusApp parent, String pathinfo ) {
+		this.parent = parent;
 		String [] tmp = pathinfo.split("@");
 		path = tmp[0];
 		appletView = null;
@@ -76,6 +97,10 @@ public class RemusPath {
 
 	RemusApp parent;
 	public RemusPath(RemusApp parent, String url, String reqPath) throws FileNotFoundException {
+		String [] reqSplit = reqPath.split(":");
+		String reqFile   = reqSplit[0];
+		String reqApplet = reqSplit[1];
+		
 		this.parent = parent;
 		if ( url.startsWith("http://") || url.startsWith("https://") ) {
 			printURL = url;
@@ -83,10 +108,10 @@ public class RemusPath {
 
 			if ( !url.startsWith("/") && url.compareTo("?")!=0 && url.compareTo("$")!=0) {
 				if ( url.startsWith(":") ) {
-					String localFile = new File( parent.getSrcBase(), reqPath ).getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
+					String localFile = new File( parent.getSrcBase(), reqFile ).getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
 					url = localFile + url;
 				} else {
-					String localFile = new File( parent.getSrcBase(), reqPath ).getParentFile().getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
+					String localFile = new File( parent.getSrcBase(), reqFile ).getParentFile().getAbsolutePath().replaceFirst( parent.getSrcBase().toString(), "" );
 					url = localFile + "/" + url;
 				}
 			}				
@@ -115,11 +140,11 @@ public class RemusPath {
 				printURL = url;
 				input_type=AppletInput;
 			} else if ( url.compareTo("?") == 0) {
-				appletName = null;
+				appletName = reqPath;
 				printURL = url;
 				input_type=DynamicInput;
 			} else if ( url.compareTo("$") == 0) {
-				appletName = null;
+				appletName = reqPath;
 				printURL = "$";
 				input_type=StaticInput;
 			} else {
@@ -130,58 +155,49 @@ public class RemusPath {
 				printURL = url;
 				input_type=ExternalInput;
 			}
-			
+
 		}
 	}
-		
+
+	
+
 	public long getKeyCount( MPStore ds ) {
-		if ( getInputType() == DynamicInput ) {
-			String submitPath = null;
-			for ( Object path : ds.get( getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance ) ) {
-				submitPath = (String)path;
-			}
-			RemusPath iref = new RemusPath(parent, submitPath);
-			return ds.keyCount(iref.getViewPath(), iref.instance);
-		}
+		if ( key != null )
+			return 1;
 		return ds.keyCount( getViewPath(), instance );			
 	}
-	
+
 	public Iterable<String> listKeys( MPStore ds ) {
-		if ( getInputType() == DynamicInput ) {
-			String submitPath = null;
-			for ( Object path : ds.get( getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance ) ) {
-				submitPath = (String)path;
-			}
-			RemusPath iref = new RemusPath(parent, submitPath);
-			return ds.listKeys(iref.getViewPath(), iref.instance);
+		if ( key != null ) {
+			return Arrays.asList(key);
 		}
 		return ds.listKeys(getViewPath(), instance);
 	}
-	
+
 
 	public int getInputType() {
 		return input_type;
 	}
-	
+
 	public String getPortPath() {
 		if ( appletPortName != null )
 			return appletName + "." + appletPortName;
 		return appletName;
 	}
-	
+
 	public String getViewPath() {
 		if ( appletPortName != null )
 			return appletName + "." + appletPortName + "@" + appletView;
 		return appletName + "@" + appletView;
 	}
-	
-	
+
+
 	public boolean isPortName() {
 		if ( appletPortName == null )
 			return false;
 		return true;
 	}
-	
+
 	public String getURL() {
 		return printURL;
 	}
@@ -210,7 +226,7 @@ public class RemusPath {
 		return key;
 	}
 
-	
+
 	public File getSrcFile() {
 		return srcFile;
 	}

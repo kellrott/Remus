@@ -24,7 +24,6 @@ public class RemusApp {
 		codeManager = new CodeManager(this);
 		scanSource(srcbase);
 		codeManager.mapPipelines();
-		codeManager.startWorkQueue();
 	}
 	
 	public void setBaseURL(String baseURL) {
@@ -65,4 +64,13 @@ public class RemusApp {
 		return workStore;
 	}	
 
+	public void kickStart() {
+		try {
+			codeManager.startWorkQueue();
+		} catch (RemusDatabaseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }
