@@ -29,7 +29,6 @@ import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.PoolUtils;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -504,8 +503,47 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public long keyCount(String path, String instance) {
-		// TODO Auto-generated method stub
-		return 0;
+		Client client = null;
+		long count = 0;
+		try {
+			String superColumn = instance + path;
+			ColumnParent cp = new ColumnParent(columnFamily);
+			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, 100);
+			SlicePredicate slice = new SlicePredicate();	 
+			slice.setSlice_range(sRange);
+			client = (Client)clientPool.borrowObject();
+			count = client.get_count( ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
+		} catch (InvalidRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return count;
 	}
 
 }

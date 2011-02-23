@@ -33,11 +33,11 @@ public class WorkManager {
 	public Map<WorkReference,Object> getWorkList( String workerID, int maxCount ) {
 		Date curDate = new Date();
 		lastAccess.put(workerID, curDate );
-		if ( !workerSets.containsKey( workerID ) ) {
-			workerSets.put(workerID, new HashMap<WorkReference,Object>());
-		}
 
 		synchronized (workerSets) {			
+			if ( !workerSets.containsKey( workerID ) ) {
+				workerSets.put(workerID, new HashMap<WorkReference,Object>());
+			}
 			for ( String worker : lastAccess.keySet() ) {
 				Date last = lastAccess.get(worker);
 				if ( curDate.getTime() - last.getTime() > WORKER_TIMEOUT && workerSets.containsKey(worker)) {
@@ -61,17 +61,23 @@ public class WorkManager {
 			}
 		}
 		Map<WorkReference,Object> wMap = workerSets.get(workerID);
-		while ( wMap.size() < maxCount && workQueue.size() > 0 ) {
-			WorkDescription desc = workQueue.removeFirst();
-			wMap.put( desc.ref, desc.desc );
+		synchronized ( workQueue ) {
+			while ( wMap.size() < maxCount && workQueue.size() > 0 ) {
+				WorkDescription desc = workQueue.removeFirst();
+				wMap.put( desc.ref, desc.desc );
+			}
 		}
 		return wMap;
 	}
 
 	public void errorWork( String workerID, RemusApplet applet, RemusInstance inst, long jobID, String error )	 {
-		lastAccess.put(workerID, new Date() );
+		synchronized ( lastAccess ) {
+			lastAccess.put(workerID, new Date() );
+		}
 		WorkReference ref = new WorkReference(applet, inst, jobID);
-		workerSets.get(workerID).remove(ref);
+		synchronized (workerSets) {
+			workerSets.get(workerID).remove(ref);
+		}
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
 
@@ -87,9 +93,10 @@ public class WorkManager {
 			}
 		}
 		WorkReference ref = new WorkReference(applet, inst, jobID);
-		workerSets.get(workerID).remove(ref);
+		synchronized (workerSets) {
+			workerSets.get(workerID).remove(ref);
+		}
 		applet.finishWork(inst, jobID, workerID);
-
 	}
 
 

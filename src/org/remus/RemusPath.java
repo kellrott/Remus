@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mpstore.MPStore;
+
+import com.sun.xml.internal.messaging.saaj.packaging.mime.internet.MimePartDataSource;
+
 public class RemusPath {
 	private String printURL = null;
 	
@@ -57,7 +61,7 @@ public class RemusPath {
 			appletView = null;
 		Matcher m = appletSub.matcher( tmp[0] );
 		if ( m.find() ) {
-			String appletName = m.group(1);
+			appletName = m.group(1);
 			appletPortName = m.group(2);
 			appletName = m.replaceAll(appletName);
 		} else {
@@ -128,6 +132,30 @@ public class RemusPath {
 			}
 			
 		}
+	}
+		
+	public long getKeyCount( MPStore ds ) {
+		if ( getInputType() == DynamicInput ) {
+			String submitPath = null;
+			for ( Object path : ds.get( getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance ) ) {
+				submitPath = (String)path;
+			}
+			RemusPath iref = new RemusPath(parent, submitPath);
+			return ds.keyCount(iref.getViewPath(), iref.instance);
+		}
+		return ds.keyCount( getViewPath(), instance );			
+	}
+	
+	public Iterable<String> listKeys( MPStore ds ) {
+		if ( getInputType() == DynamicInput ) {
+			String submitPath = null;
+			for ( Object path : ds.get( getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance ) ) {
+				submitPath = (String)path;
+			}
+			RemusPath iref = new RemusPath(parent, submitPath);
+			return ds.listKeys(iref.getViewPath(), iref.instance);
+		}
+		return ds.listKeys(getViewPath(), instance);
 	}
 	
 

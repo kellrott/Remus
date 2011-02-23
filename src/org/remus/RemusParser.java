@@ -50,7 +50,7 @@ public class RemusParser {
 				for ( int i = 0; i < nodes.getLength(); i++ ) {
 					NamedNodeMap attr = nodes.item(i).getAttributes();
 					String id = pagePath + ":" + attr.getNamedItem("id").getTextContent();
-					System.out.println(id);
+					//System.out.println(id);
 
 					CodeFragment cf =  new CodeFragment("python", nodes.item(i).getTextContent());
 					RemusApplet applet = RemusApplet.newApplet(id, cf, appletType);
