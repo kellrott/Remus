@@ -508,7 +508,8 @@ public class ThriftStore implements MPStore {
 		try {
 			String superColumn = instance + path;
 			ColumnParent cp = new ColumnParent(columnFamily);
-			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, 100);
+			//BUG:Need smarter way to get slice count
+			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, 2147483647);
 			SlicePredicate slice = new SlicePredicate();	 
 			slice.setSlice_range(sRange);
 			client = (Client)clientPool.borrowObject();
