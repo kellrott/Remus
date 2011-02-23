@@ -23,30 +23,24 @@ public class MapGenerator implements WorkGenerator {
 	@Override
 	public void startWork(RemusInstance instance, long reqCount) {
 		outList = new ArrayList<WorkDescription>();
+						
 		if ( !applet.isComplete(instance) ) {
 			if ( applet.hasInputs() ) {
 				if ( applet.isReady(instance) ) {
 					int jobID = 0;
-					for ( RemusPath iRef : applet.inputs ) {
-						String portPath = null;
-						if ( iRef.getInputType() == RemusPath.DynamicInput )
-							portPath = applet.getPath() + "@submit";
-						else
-							portPath =  iRef.getPortPath() +"@data";
-						
-						long keyCount = applet.datastore.keyCount( portPath, instance.toString() );
+					for ( RemusPath ref : applet.inputs ) {
+						RemusPath iRef = new RemusPath( ref, instance );						
+						long keyCount = iRef.getKeyCount( applet.datastore );
 						long keysPerJob = keyCount / reqCount;
 						if ( keysPerJob == 0)
 							keysPerJob = 1;
 						long count = 0;
 						Map map = null;
-						List keyList = null;
-
-						
-						for ( Object key : applet.datastore.listKeys( portPath, instance.toString() ) ) {
+						List keyList = null;						
+						for ( Object key : iRef.listKeys( applet.datastore ) ) {
 							if ( count % keysPerJob == 0) {
 								map = new HashMap();
-								map.put("input", portPath );
+								map.put("input", iRef.getViewPath() );
 								keyList = new ArrayList();
 								map.put("key", keyList );
 								outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );

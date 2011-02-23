@@ -58,7 +58,7 @@ public class RemusParser {
 					if ( attr.getNamedItem("input") != null ) {
 						String inputStr = attr.getNamedItem("input").getTextContent();
 						for ( String inName : inputStr.split(",") ) {
-							RemusPath iRef = new RemusPath(parent, inName, pagePath );
+							RemusPath iRef = new RemusPath(parent, inName, id );
 							applet.addInput(iRef);
 						}
 					}
@@ -70,10 +70,10 @@ public class RemusParser {
 					}
 					if ( appletType == RemusApplet.MERGER ) {
 						String lInputStr = attr.getNamedItem("left").getTextContent();
-						RemusPath lIRef = new RemusPath(parent, lInputStr, pagePath );
+						RemusPath lIRef = new RemusPath(parent, lInputStr, id );
 						applet.addLeftInput(lIRef);						
 						String rInputStr = attr.getNamedItem("right").getTextContent();
-						RemusPath rIRef = new RemusPath(parent, rInputStr, pagePath );
+						RemusPath rIRef = new RemusPath(parent, rInputStr, id );
 						applet.addRightInput(rIRef);						
 					}
 					

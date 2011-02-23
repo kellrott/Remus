@@ -95,6 +95,18 @@ public class MasterServlet extends HttpServlet {
 				if ( instStr != null )
 					curInst = new RemusInstance(instStr);
 
+				for ( RemusPath iref : applet.getInputs() )	{
+					if ( iref.getInputType() == RemusPath.DynamicInput ) {
+						out.println("SUBMISSION<ul>");
+						MPStore ds = app.getDataStore();
+						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR)  ) {
+							out.println( "<li>" + kv.getKey() + " " + kv.getValue() + "</li>" );
+						}
+
+						out.println("</ul>");
+
+					}
+				}
 				out.println("INPUTS<ul>");
 				for ( RemusPath iRef : applet.getInputs() ) {
 					if ( instStr != null )
@@ -345,7 +357,7 @@ public class MasterServlet extends HttpServlet {
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( outList ) );
 			}
-			*/
+			 */
 		} else if (reqInfo.getSrcFile().exists() ) {
 			FileInputStream fis = new FileInputStream( reqInfo.getSrcFile() );
 			ServletOutputStream os = resp.getOutputStream();
@@ -374,6 +386,8 @@ public class MasterServlet extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			} else if ( reqInfo.getView().compareTo("kickstart") == 0 ) {
+				app.kickStart();
 			}
 		} else if ( app.codeManager.containsKey( reqInfo.getAppletPath() ) ) {
 			if ( reqInfo.getView() != null ) {
@@ -429,24 +443,13 @@ public class MasterServlet extends HttpServlet {
 							resp.sendError( HttpServletResponse.SC_FORBIDDEN );
 						} else {
 							BufferedReader br = req.getReader();
-							String curline = null;
-							while ( (curline = br.readLine() ) != null ) {
-								Map inObj = (Map)serializer.loads(curline);	
-								for ( Object key : inObj.keySet() ) {
-									app.workStore.add(submitFile, 
-											reqInfo.getInstance(), 
-											(Long)0L, 
-											(Long)0L, 
-											(String)key , 
-											inObj.get(key) );
-								}
-							}
+							String curline = br.readLine();
 							app.workStore.add( submitFile, 
 									RemusInstance.STATIC_INSTANCE_STR, 
 									(Long)0L, 
 									(Long)0L, 
 									reqInfo.getInstance(), 
-									reqInfo.getAppletPath() );
+									curline );
 							applet.getPipeline().addInstance( new RemusInstance(reqInfo.getInstance() ) );
 							resp.getWriter().print("\"OK\"");
 						}

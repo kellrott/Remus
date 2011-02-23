@@ -111,7 +111,19 @@ public class CodeManager {
 					pipelineInstance = new RemusInstance();
 					pipeline.addInstance( pipelineInstance );
 				}				
-			}			
+			}	
+			//TODO:Figure out a faster why to do this
+			//re-add all instances connected to the pipeline, it they already exist for
+			//an applet, they'll be skipped, otherwise it will make sure each member is aware
+			//of all the different instances
+			for ( RemusApplet applet : pipeline.getMembers() ) {
+				for ( RemusInstance inst : applet.getInstanceList() ) {
+					for ( RemusApplet applet2 : pipeline.getMembers() ) {
+						if ( applet != applet2)
+							applet2.addInstance(inst);
+					}
+				}
+			}		
 		}
 	}
 

@@ -142,6 +142,7 @@ public class PipelineAdmin {
 						for (String view : allViews ) {
 							store.delete(path, inst);
 						}
+						store.delete( path + "@instance", RemusInstance.STATIC_INSTANCE_STR, inst);
 					}
 					store.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst);
 				}
