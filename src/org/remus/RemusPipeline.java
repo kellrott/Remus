@@ -54,6 +54,9 @@ public class RemusPipeline {
 		return out;
 	}
 
+	public void submitJob( RemusInstance inst ) {
+		
+	}
 
 	private void setupInputs() {
 		inputs = new HashMap<RemusPath, RemusApplet>();
@@ -96,8 +99,11 @@ public class RemusPipeline {
 		if ( inputs == null ) {
 			setupInputs();
 		}		
+		int i = 0;
 		for ( RemusApplet applet : members.values() ) {
 			applet.addInstance(instance);
+			parent.datastore.add( "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, i, 0, instance.toString(), applet.getPath() );
+			i++;
 		}
 	}
 

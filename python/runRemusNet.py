@@ -121,7 +121,7 @@ class jsonPairSplitter:
 getCache={}
 
 def httpGetJson( url, useCache=False ):
-	log( "getting: " + url )
+	#log( "getting: " + url )
 	if ( useCache ):
 		if not getCache.has_key( url ):
 			getCache[ url ] = urlopen( url ).read()			
@@ -132,7 +132,7 @@ def httpGetJson( url, useCache=False ):
 
 
 def httpPostJson( url, data ):
-	log( "posting:" + url )
+	#log( "posting:" + url )
 	handle = urlopen( url, json.dumps(data) )
 	return jsonIter( handle )
 
