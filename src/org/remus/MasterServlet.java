@@ -433,29 +433,27 @@ public class MasterServlet extends HttpServlet {
 					resp.getWriter().print("\"OK\"");
 				} else if ( reqInfo.getView().compareTo("submit") == 0) {
 					RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
-					if ( applet.getInputs().size() == 1 && applet.getInputs().get(0).getInputType() == RemusPath.DynamicInput ) {
-						boolean found = false;
-						String submitFile = reqInfo.getAppletPath() + "@submit";
-						for ( Object instStr : app.workStore.listKeys( submitFile,  reqInfo.getInstance() ) ) {
-							found = true;
-						}
-						if ( found ) {
-							resp.sendError( HttpServletResponse.SC_FORBIDDEN );
-						} else {
-							BufferedReader br = req.getReader();
-							String curline = br.readLine();
-							app.workStore.add( submitFile, 
-									RemusInstance.STATIC_INSTANCE_STR, 
-									(Long)0L, 
-									(Long)0L, 
-									reqInfo.getInstance(), 
-									curline );
-							applet.getPipeline().addInstance( new RemusInstance(reqInfo.getInstance() ) );
-							resp.getWriter().print("\"OK\"");
-						}
-					} else {
-						resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+
+					boolean found = false;
+					String submitFile = reqInfo.getAppletPath() + "@submit";
+					for ( Object instStr : app.workStore.listKeys( submitFile,  reqInfo.getInstance() ) ) {
+						found = true;
 					}
+					if ( found ) {
+						resp.sendError( HttpServletResponse.SC_FORBIDDEN );
+					} else {
+						BufferedReader br = req.getReader();
+						String curline = br.readLine();
+						app.workStore.add( submitFile, 
+								RemusInstance.STATIC_INSTANCE_STR, 
+								(Long)0L, 
+								(Long)0L, 
+								reqInfo.getInstance(), 
+								curline );
+						applet.getPipeline().addInstance( new RemusInstance(reqInfo.getInstance() ) );
+						resp.getWriter().print("\"OK\"");
+					}
+
 				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
 					if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
 						app.getDataStore().writeAttachment( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), req.getInputStream() );

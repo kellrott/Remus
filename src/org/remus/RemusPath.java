@@ -191,6 +191,9 @@ public class RemusPath {
 		return appletName + "@" + appletView;
 	}
 
+	public Object getInstancePath() {
+		return getViewPath() + "/" + instance;
+	}
 
 	public boolean isPortName() {
 		if ( appletPortName == null )
@@ -230,4 +233,6 @@ public class RemusPath {
 	public File getSrcFile() {
 		return srcFile;
 	}
+
+	
 }

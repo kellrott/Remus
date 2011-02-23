@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.KeyValuePair;
+import org.remus.RemusApp;
 import org.remus.RemusInstance;
+import org.remus.RemusPath;
 import org.remus.WorkDescription;
 import org.remus.WorkReference;
 
@@ -25,19 +27,14 @@ public class PipeGenerator implements WorkGenerator {
 	@Override
 	public void startWork(RemusInstance instance, long reqCount) {
 		outList = new ArrayList<WorkDescription>();
-		if ( !applet.isComplete(instance) ) {
-			if ( applet.isReady(instance) ) {
-				if ( applet.hasInputs() ) {
-					Map out = new HashMap();
-					List a = new LinkedList();
-					for ( int i = 0; i < applet.inputs.size(); i++ ) {
-						a.add( applet.inputs.get(i).getViewPath() );
-					}
-					out.put( "input", a );
-					outList.add( new WorkDescription( new WorkReference(applet, instance, 0), out) );
-				}
-			} 
+		Map out = new HashMap();
+		List a = new LinkedList();
+		for ( int i = 0; i < applet.inputs.size(); i++ ) {
+			RemusPath iRef = new RemusPath(applet.inputs.get(i), instance);
+			a.add( iRef.getInstancePath() );
 		}
+		out.put( "input", a );
+		outList.add( new WorkDescription( new WorkReference(applet, instance, 0), out) );
 		curPos = 0;
 	}		
 

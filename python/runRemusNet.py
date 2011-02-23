@@ -121,7 +121,7 @@ class jsonPairSplitter:
 getCache={}
 
 def httpGetJson( url, useCache=False ):
-	#log( "getting: " + url )
+	log( "getting: " + url )
 	if ( useCache ):
 		if not getCache.has_key( url ):
 			getCache[ url ] = urlopen( url ).read()			
@@ -132,7 +132,7 @@ def httpGetJson( url, useCache=False ):
 
 
 def httpPostJson( url, data ):
-	#log( "posting:" + url )
+	log( "posting:" + url )
 	handle = urlopen( url, json.dumps(data) )
 	return jsonIter( handle )
 
@@ -217,7 +217,7 @@ class MapWorker(WorkerBase):
 		jobSet = httpGetJson( url )
 		for jobDesc in jobSet:
 			for wKey in jobDesc['key']:
-				kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( wKey ) )	
+				kpURL = self.host + jobDesc['input'] + "/%s" % ( quote( wKey ) )	
 				kpData = httpGetJson( kpURL )
 				for data in kpData:
 					for key in data:
@@ -234,7 +234,7 @@ class ReduceWorker(WorkerBase):
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
 			for wKey in jobDesc['key']:
-				kpURL = self.host + jobDesc['input'] + "/%s/%s" % ( instance, quote( wKey ) )		
+				kpURL = self.host + jobDesc['input'] + "/%s" % ( quote( wKey ) )		
 				kpData = httpGetJson( kpURL )
 				func(  wKey, valueIter(kpData) )
 		self.closeOutput()
@@ -250,7 +250,7 @@ class PipeWorker(WorkerBase):
 		self.setupOutput(instance, jobID)
 		inList = []
 		for inFile in jobDesc['input']:
-			kpURL = self.host + inFile + "/%s" % ( instance )
+			kpURL = self.host + inFile
 			log( "piping: " + kpURL )
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
@@ -273,9 +273,9 @@ class MergeWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		self.setupOutput(instance, jobID)
 		for jobDesc in jobSet:
-			leftValURL = self.host + jobDesc['left_input'] + "/%s/%s" % ( instance, quote( jobDesc['left_key']) )
+			leftValURL = self.host + jobDesc['left_input'] + "/%s" % (  quote( jobDesc['left_key']) )
 			leftSet = httpGetJson( leftValURL )
-			rightSetURL = self.host + jobDesc['right_input'] + "@reduce/%s" % ( instance )
+			rightSetURL = self.host + jobDesc['right_input']
 			for leftKey in leftSet:
 				for rightSet in httpGetJson( rightSetURL, True ):
 					for rightKey in rightSet:

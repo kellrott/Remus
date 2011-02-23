@@ -18,18 +18,19 @@ public class ReduceGenerator implements WorkGenerator {
 	public void startWork(RemusInstance instance, long reqCount) {
 		int jobID = 0;
 		outList = new ArrayList<WorkDescription>();		
-		for ( RemusPath iRef : applet.getInputs() ) {
-			long keyCount = applet.datastore.keyCount( iRef.getPortPath() + "@data", instance.toString() );
+		for ( RemusPath ref : applet.getInputs() ) {
+			RemusPath iRef = new RemusPath(ref, instance);
+			long keyCount = iRef.getKeyCount( applet.datastore );
 			long keysPerJob = keyCount / reqCount;
 			if ( keysPerJob == 0 )
 				keysPerJob = 1;
 			long count = 0;
 			Map map = null;
 			List keyList = null;
-			for ( Object key : applet.datastore.listKeys( iRef.getPortPath() + "@data", instance.toString() ) ) {
+			for ( Object key : iRef.listKeys( applet.datastore  ) ) {
 				if ( count % keysPerJob == 0) {
 					map = new HashMap();
-					map.put("input", iRef.getPortPath() + "@data" );
+					map.put("input", iRef.getInstancePath() );
 					keyList = new ArrayList();
 					map.put("key", keyList );
 					outList.add( new WorkDescription( new WorkReference(applet, instance, jobID), map) );
