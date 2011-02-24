@@ -1,5 +1,11 @@
 package org.remus.applet;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,8 +14,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
+import org.mpstore.Serializer;
 import org.remus.CodeFragment;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
@@ -65,17 +73,18 @@ public class RemusApplet {
 	public static final int SPLITTER = 4;
 	public static final int REDUCER = 5;
 	public static final int PIPE = 6;
+	public static final int STORE = 7;
 
 	public static final String INIT_OP = "init";
 	public static final String WORKGEN_OP = "workgen";
 	public static final String WORKDONE_OP = "workdone";	
-	
+
 	public static final int INIT_OP_CODE = 0;
 	public static final int WORKGEN_OP_CODE = 1;
 	public static final int WORKDONE_OP_CODE = 2;
-	
 
-	Class workGenerator;
+	String codeType=null;
+	Class workGenerator = null;
 	String path;
 	List<RemusPath> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
@@ -135,6 +144,10 @@ public class RemusApplet {
 		return code.getSource();
 	}
 
+	public void setCodeType(String type) {
+		codeType = type;
+	}
+	
 	public Map getInfo() {
 		Map out = new HashMap();
 		if ( type==MAPPER ) {
@@ -172,6 +185,8 @@ public class RemusApplet {
 
 
 	public boolean isReady( RemusInstance remusInstance ) {
+		if ( type==STORE )
+			return false;
 		if ( hasInputs() ) {
 			boolean allReady = true;
 			for ( RemusPath iRef : inputs ) {
@@ -361,6 +376,45 @@ public class RemusApplet {
 		datastore.add( getPath() + "@error", inst.toString(), jobID, 0L, workerID, error);
 	}
 
+	public void formatInput(RemusInstance instance, InputStream inputStream, Serializer serializer ) {
+		if ( type == STORE ) {
+			if ( codeType.compareTo( "couchdb" ) == 0 ) {
+				try {
+					JsonSerializer json = new JsonSerializer();
+					StringBuilder sb = new StringBuilder();
+					byte [] buffer = new byte[1024];
+					int len;
+					while ((len = inputStream.read(buffer)) > 0) {
+						sb.append( new String(buffer, 0, len ));
+					}
+					Object obj = json.loads(sb.toString());
+					String key = (String) ((Map)obj).get( "_id" );
+					datastore.add(getPath() + "@data", instance.toString(), 0, 0, key, obj);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		} else {
+			try {
+				BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+				String curline = null;
+				List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
+				while ( (curline = br.readLine() ) != null ) {
+					Map inObj = (Map)serializer.loads(curline);	
+					inputList.add( new KeyValuePair((Long)inObj.get("id"), 
+							(Long)inObj.get("order"), (String)inObj.get("key") , 
+							inObj.get("value") ) );
+				}
+				datastore.add( getPath() + "@data", 
+						instance.toString(),
+						inputList );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+	}
 
 
 }

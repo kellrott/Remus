@@ -44,6 +44,7 @@ public class RemusParser {
 			codeTypes.put( RemusApplet.REDUCER, xpath.compile("//*/remus_reducer"));
 			codeTypes.put( RemusApplet.MERGER,  xpath.compile("//*/remus_merger"));
 			codeTypes.put( RemusApplet.PIPE,    xpath.compile("//*/remus_pipe"));
+			codeTypes.put( RemusApplet.STORE,    xpath.compile("//*/remus_store"));
 			List<RemusApplet> outList = new LinkedList<RemusApplet>();			
 			for ( Integer appletType : codeTypes.keySet() ) {
 				NodeList nodes = (NodeList) codeTypes.get( appletType ).evaluate( doc, XPathConstants.NODESET );
@@ -68,6 +69,11 @@ public class RemusParser {
 							applet.addOutput(outName);
 						}
 					}
+					if ( attr.getNamedItem("type") != null ) {
+						String typeStr = attr.getNamedItem("type").getTextContent();
+						applet.setCodeType(typeStr);
+					}
+					
 					if ( appletType == RemusApplet.MERGER ) {
 						String lInputStr = attr.getNamedItem("left").getTextContent();
 						RemusPath lIRef = new RemusPath(parent, lInputStr, id );
