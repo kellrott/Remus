@@ -376,7 +376,7 @@ public class RemusApplet {
 		datastore.add( getPath() + "@error", inst.toString(), jobID, 0L, workerID, error);
 	}
 
-	public void formatInput(RemusInstance instance, InputStream inputStream, Serializer serializer ) {
+	public void formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
 		if ( type == STORE ) {
 			if ( codeType.compareTo( "couchdb" ) == 0 ) {
 				try {
@@ -389,7 +389,7 @@ public class RemusApplet {
 					}
 					Object obj = json.loads(sb.toString());
 					String key = (String) ((Map)obj).get( "_id" );
-					datastore.add(getPath() + "@data", instance.toString(), 0, 0, key, obj);
+					datastore.add(getPath() + "@data", path.getInstance(), 0, 0, key, obj);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -406,8 +406,8 @@ public class RemusApplet {
 							(Long)inObj.get("order"), (String)inObj.get("key") , 
 							inObj.get("value") ) );
 				}
-				datastore.add( getPath() + "@data", 
-						instance.toString(),
+				datastore.add( path.getViewPath(), 
+						path.getInstance(),
 						inputList );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
