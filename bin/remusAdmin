@@ -1,5 +1,5 @@
 #!/bin/bash
 
-basepath=`dirname $0`
-
-java -Djava.ext.dirs=${basepath}/lib/ -cp ${basepath}/bin/ org.remus.PipelineAdmin $*
+binpath=`dirname $0`
+basepath=`dirname $binpath`
+java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib/:${basepath}/build/jar  org.remus.PipelineAdmin $*
