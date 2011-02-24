@@ -44,8 +44,14 @@ public class PipelineAdmin {
 				cmd = args[1];
 
 			if ( cmd == null || cmd.compareTo("list") == 0 ) {
-				for (String pipeline : store.listKeys("/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
-					System.out.println( pipeline );
+				if ( args.length > 2 ) {
+					for (String inst : store.listKeys(args[2] + "@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
+						System.out.println( inst );
+					}
+				} else {
+					for (String pipeline : store.listKeys("/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
+						System.out.println( pipeline );
+					}
 				}
 			} else {
 				if ( cmd.compareTo("dump") == 0 && args.length > 2 ) {

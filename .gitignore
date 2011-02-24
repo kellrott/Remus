@@ -3,5 +3,4 @@
 .settings
 build
 .DS_Store
-bin
 *.pyc
