@@ -414,7 +414,7 @@ public class MasterServlet extends HttpServlet {
 				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
 					RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
 
-					applet.formatInput( new RemusInstance(reqInfo.getInstance()), req.getInputStream(), serializer );
+					applet.formatInput( reqInfo, req.getInputStream(), serializer );
 					
 					
 					resp.getWriter().print("\"OK\"");
