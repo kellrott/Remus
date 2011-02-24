@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="remus">
+    <property environment="env"/>
+    <property name="version" value="0.1"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir"     value="${build.dir}/jar"/>
+    <path id="Remus.classpath">
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="WebContent/WEB-INF/lib/commons-collections.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/commons-httpclient-3.1.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/commons-lang-2.5.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/commons-logging-1.1.1.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/js.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/json-20100208.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/slf4j-jdk14-1.5.10.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/wb.jar"/>
+        <pathelement location="lib/jetty-6.1.26.jar"/>
+        <pathelement location="lib/jetty-util-6.1.26.jar"/>
+        <pathelement location="lib/servlet-api-2.5-20081211.jar"/>
+        <pathelement location="lib/derby.jar"/>
+        <pathelement location="lib/mysql-5.1.10.jar"/>
+        <pathelement location="lib/json_simple-1.1.jar"/>
+        <pathelement location="lib/cassandra-all-0.7.0.jar"/>
+        <pathelement location="lib/cassandra-javautils-0.7.0.jar"/>
+        <pathelement location="lib/commons-lang-2.4.jar"/>
+        <pathelement location="lib/commons-pool-1.5.3.jar"/>
+        <pathelement location="lib/high-scale-lib-1.1.1.jar"/>
+        <pathelement location="lib/libthrift-0.5.0.jar"/>
+        <pathelement location="lib/uuid-3.2.0.jar"/>
+        <pathelement location="lib/perf4j-0.9.12.jar"/>
+        <pathelement location="lib/hector-core-0.7.0-25.jar"/>
+        <pathelement location="lib/commons-codec-1.4.jar"/>
+        <pathelement location="WebContent/WEB-INF/lib/slf4j-api-1.5.10.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="test">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${classes.dir}" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="Remus.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${classes.dir}" source="${source}" target="${target}">
+            <src path="test"/>
+            <classpath refid="Remus.classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="build-project">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}-${version}.jar" basedir="${classes.dir}">
+            <!-- manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest -->
+        </jar>
+    </target>
+
+</project>
