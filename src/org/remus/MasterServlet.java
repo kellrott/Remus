@@ -143,7 +143,7 @@ public class MasterServlet extends HttpServlet {
 							out.println("<p>Work Not Ready</p>" );							
 						}
 					}
-					if ( applet.isReady(curInst) ) {
+					if ( applet.isReady(curInst) || applet.getType() == RemusApplet.STORE ) {
 						out.println("<ul>");
 						out.println( "<li><a href='" + reqInfo.getPortPath() + "@keys/"   + instStr + "'>KEYS</a></li>" );
 						out.println( "<li><a href='" + reqInfo.getPortPath() + "@data/"   + instStr + "'>DATA</a></li>" );					
@@ -412,24 +412,11 @@ public class MasterServlet extends HttpServlet {
 						resp.getWriter().print("\"OK\"");
 					}
 				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
-					BufferedReader br = req.getReader();
-					String curline = null;
-					String writeName = null;
-					if ( reqInfo.getPortName() != null )
-						writeName = reqInfo.getAppletPath() + "." + reqInfo.getPortName();
-					else
-						writeName = reqInfo.getAppletPath();
+					RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
 
-					List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
-					while ( (curline = br.readLine() ) != null ) {
-						Map inObj = (Map)serializer.loads(curline);	
-						inputList.add( new KeyValuePair((Long)inObj.get("id"), 
-								(Long)inObj.get("order"), (String)inObj.get("key") , 
-								inObj.get("value") ) );
-					}					
-					app.workStore.add( writeName + "@data", 
-							reqInfo.getInstance(), 
-							inputList );
+					applet.formatInput( new RemusInstance(reqInfo.getInstance()), req.getInputStream(), serializer );
+					
+					
 					resp.getWriter().print("\"OK\"");
 				} else if ( reqInfo.getView().compareTo("submit") == 0) {
 					RemusApplet applet = app.codeManager.get(reqInfo.getAppletPath());
