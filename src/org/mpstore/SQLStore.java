@@ -442,7 +442,7 @@ public class SQLStore implements MPStore {
 
 
 	@Override
-	public long keyCount(String path, String instance) {
+	public long keyCount(String path, String instance, int maxCount ) {
 		long count = 0;
 		Connection connect = null;
 		try {
@@ -686,6 +686,12 @@ public class SQLStore implements MPStore {
 			e.printStackTrace();
 		}		
 		return null;
+	}
+
+	@Override
+	public long getTimeStamp(String path, String instance) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

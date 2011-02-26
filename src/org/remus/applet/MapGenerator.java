@@ -26,7 +26,7 @@ public class MapGenerator implements WorkGenerator {
 		int jobID = 0;
 		for ( RemusPath ref : applet.inputs ) {
 			RemusPath iRef = new RemusPath( ref, instance );						
-			long keyCount = iRef.getKeyCount( applet.datastore );
+			long keyCount = iRef.getKeyCount( applet.datastore, (int)reqCount * 1000 );
 			long keysPerJob = keyCount / reqCount;
 			if ( keysPerJob == 0)
 				keysPerJob = 1;

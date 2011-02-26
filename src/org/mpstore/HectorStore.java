@@ -237,7 +237,13 @@ public class HectorStore implements MPStore {
 	}
 
 	@Override
-	public long keyCount(String path, String instance) {
+	public long keyCount(String path, String instance, int maxCount) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long getTimeStamp(String path, String instance) {
 		// TODO Auto-generated method stub
 		return 0;
 	}

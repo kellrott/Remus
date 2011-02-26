@@ -54,10 +54,6 @@ public class RemusPipeline {
 		return out;
 	}
 
-	public void submitJob( RemusInstance inst ) {
-		
-	}
-
 	private void setupInputs() {
 		inputs = new HashMap<RemusPath, RemusApplet>();
 		for ( RemusApplet applet : members.values() ) {
@@ -93,19 +89,7 @@ public class RemusPipeline {
 			setupInputs();
 		}
 		return inputs.get(ref);
-	}
-
-	public void addInstance(RemusInstance instance) {
-		if ( inputs == null ) {
-			setupInputs();
-		}		
-		int i = 0;
-		for ( RemusApplet applet : members.values() ) {
-			applet.addInstance(instance);
-			parent.datastore.add( "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, i, 0, instance.toString(), applet.getPath() );
-			i++;
-		}
-	}
+	}	
 
 	public void deleteInstance(RemusInstance instance) {
 		for ( RemusApplet applet : members.values() ) {

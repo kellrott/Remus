@@ -82,7 +82,7 @@ public class PipelineAdmin {
 							}
 						}
 						for ( String view : fileViews ) {
-							if ( store.keyCount(path + view, inst) > 0 ) {
+							if ( store.keyCount(path + view, inst, 1) > 0 ) {
 								System.out.println( "==" + path + view + "/" + inst);
 							}
 							int j = 0;

@@ -161,10 +161,10 @@ public class RemusPath {
 
 	
 
-	public long getKeyCount( MPStore ds ) {
+	public long getKeyCount( MPStore ds, int maxCount ) {
 		if ( key != null )
 			return 1;
-		return ds.keyCount( getViewPath(), instance );			
+		return ds.keyCount( getViewPath(), instance, maxCount );			
 	}
 
 	public Iterable<String> listKeys( MPStore ds ) {
