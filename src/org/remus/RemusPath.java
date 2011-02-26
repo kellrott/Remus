@@ -55,13 +55,15 @@ public class RemusPath {
 	}
 	
 	public RemusPath( RemusApp parent, String pathinfo ) {
-		this.parent = parent;
-		String [] tmp = pathinfo.split("@");
-		path = tmp[0];
 		appletView = null;
 		instance = null;
 		appletPortName = null;
 		key = null;
+		this.parent = parent;
+		if (pathinfo == null)
+			return;
+		String [] tmp = pathinfo.split("@");
+		path = tmp[0];
 		if ( tmp.length > 1 ) {
 			Matcher m1 = instancePat.matcher(tmp[1]);
 			if ( m1.find() ) {

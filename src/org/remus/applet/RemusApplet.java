@@ -345,8 +345,17 @@ public class RemusApplet {
 					RemusInstance inst = new RemusInstance(key);
 					if ( !out.contains( inst ) ) {
 						addInstance(inst);
+						out.add(inst);
 					}
 				}
+			} else if ( iRef.getInputType() == RemusPath.StaticInput ) {
+				for ( String key : datastore.listKeys(iRef.getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
+					RemusInstance inst = new RemusInstance(key);
+					if ( !out.contains( inst ) ) {
+						addInstance(inst);
+						out.add(inst);
+					}
+				}			
 			}
 		}		
 		return out;

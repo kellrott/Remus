@@ -40,6 +40,7 @@
         <pathelement location="lib/hector-core-0.7.0-25.jar"/>
         <pathelement location="lib/commons-codec-1.4.jar"/>
         <pathelement location="WebContent/WEB-INF/lib/slf4j-api-1.5.10.jar"/>
+        <pathelement location="lib/junit4-4.8.2.jar"/>
     </path>
     <target name="init">
         <mkdir dir="${build.dir}"/>

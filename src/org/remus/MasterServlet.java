@@ -428,16 +428,22 @@ public class MasterServlet extends HttpServlet {
 
 					boolean found = false;
 					String submitFile = reqInfo.getAppletPath() + "@submit";
-					for ( Object instStr : app.workStore.listKeys( submitFile,  reqInfo.getInstance() ) ) {
+					String instStr = null;
+					if ( reqInfo.getInstance() != null ) {
+						instStr = (new RemusInstance(app.getDataStore(), reqInfo.getInstance() )).toString(); 
+					} else {
+						instStr = (new RemusInstance()).toString();
+					}
+					for ( Object instmp : app.workStore.listKeys( submitFile,  instStr ) ) {
 						found = true;
 					}
 					if ( found ) {
 						resp.sendError( HttpServletResponse.SC_FORBIDDEN );
 					} else {
 						BufferedReader br = req.getReader();
-						String curline = br.readLine();						
-						applet.submit(new RemusInstance(reqInfo.getInstance()), new RemusPath(app, curline)) ;						
-						resp.getWriter().print("\"OK\"");
+						String curline = br.readLine();	
+						applet.submit(new RemusInstance(instStr), new RemusPath(app, curline)) ;
+						resp.getWriter().print("{\"" + instStr + "\":\"OK\"}");
 					}
 
 				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
