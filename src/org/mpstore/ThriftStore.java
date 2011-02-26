@@ -60,25 +60,13 @@ public class ThriftStore implements MPStore {
 	class ClientFactory extends BasePoolableObjectFactory {
 		@Override
 		public Object makeObject() throws Exception {
-			try {
-				TTransport tr = new TSocket("localhost", 9160);	 //new default in 0.7 is framed transport	 
-				TFramedTransport tf = new TFramedTransport(tr);	 
-				TProtocol proto = new TBinaryProtocol(tf);	 
-				tf.open();
-				Client client = new Client(proto);	
-				client.set_keyspace(keySpace);
-				return client;
-			} catch (TTransportException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvalidRequestException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	 
-			return null;
+			TTransport tr = new TSocket("localhost", 9160);	 //new default in 0.7 is framed transport	 
+			TFramedTransport tf = new TFramedTransport(tr);	 
+			TProtocol proto = new TBinaryProtocol(tf);	 
+			tf.open();
+			Client client = new Client(proto);	
+			client.set_keyspace(keySpace);
+			return client;
 		}
 
 		@Override
@@ -502,14 +490,14 @@ public class ThriftStore implements MPStore {
 	}
 
 	@Override
-	public long keyCount(String path, String instance) {
+	public long keyCount(String path, String instance, int maxCount) {
 		Client client = null;
 		long count = 0;
 		try {
 			String superColumn = instance + path;
 			ColumnParent cp = new ColumnParent(columnFamily);
 			//BUG:Need smarter way to get slice count
-			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, 2147483647);
+			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, maxCount);
 			SlicePredicate slice = new SlicePredicate();	 
 			slice.setSlice_range(sRange);
 			client = (Client)clientPool.borrowObject();
@@ -545,6 +533,27 @@ public class ThriftStore implements MPStore {
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public long getTimeStamp(String path, String instance) {
+		String superColumn = instance + path;
+		SliceIterator<Long> out = new SliceIterator<Long>(superColumn, columnFamily, "","") {				
+			@Override
+			void processColumn(ColumnOrSuperColumn scol) {
+				for ( Column col : scol.getSuper_column().getColumns() ) {
+					addElement( col.timestamp );
+				}
+			}
+		};
+		
+		long timestamp = 0;
+		while ( out.hasNext() ) {
+			long cur = out.next();
+			if ( cur > timestamp )
+				timestamp = cur;
+		}
+		return timestamp;
 	}
 
 }

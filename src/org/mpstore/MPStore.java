@@ -18,7 +18,7 @@ public interface MPStore {
 
 	public boolean containsKey(String path, String instance, String key);
 
-	public long keyCount( String path, String instance );
+	public long keyCount( String path, String instance, int maxCount );
 
 	public void delete(String path, String instance);
 	
@@ -26,6 +26,8 @@ public interface MPStore {
 	
 	//public void delete(String path, String instance, String key, long jobID, long emitID);
 
+	public long getTimeStamp(String path, String instance);
+	
 	public void writeAttachment(String path, String instance, String key, InputStream inputStream);
 
 	public InputStream readAttachement(String path, String instance, String key);

@@ -2,6 +2,8 @@ package org.remus;
 
 import java.util.UUID;
 
+import org.mpstore.MPStore;
+
 public class RemusInstance implements Comparable<RemusInstance> {
 
 	UUID id;
@@ -11,7 +13,13 @@ public class RemusInstance implements Comparable<RemusInstance> {
 		id = UUID.randomUUID();
 	}
 	
-
+	public RemusInstance(MPStore store, String id) {
+		for ( Object orig : store.get("/@alias", RemusInstance.STATIC_INSTANCE_STR, id) ) {
+			id = (String)orig;
+		}
+		this.id = UUID.fromString(id);
+	}
+	
 	public RemusInstance(String id) {
 		this.id = UUID.fromString(id);
 	}

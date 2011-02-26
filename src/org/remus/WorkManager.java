@@ -83,7 +83,7 @@ public class WorkManager {
 
 
 
-	public void finishWork( String workerID, RemusApplet applet, RemusInstance inst, long jobID  ) {
+	public void finishWork( String workerID, RemusApplet applet, RemusInstance inst, long jobID, long emitCount  ) {
 		Date d = new Date();
 		lastAccess.put(workerID, d );
 		synchronized (finishTimes) {
@@ -96,7 +96,7 @@ public class WorkManager {
 		synchronized (workerSets) {
 			workerSets.get(workerID).remove(ref);
 		}
-		applet.finishWork(inst, jobID, workerID);
+		applet.finishWork(inst, jobID, workerID, emitCount);
 	}
 
 

@@ -20,7 +20,7 @@ public class ReduceGenerator implements WorkGenerator {
 		outList = new ArrayList<WorkDescription>();		
 		for ( RemusPath ref : applet.getInputs() ) {
 			RemusPath iRef = new RemusPath(ref, instance);
-			long keyCount = iRef.getKeyCount( applet.datastore );
+			long keyCount = iRef.getKeyCount( applet.datastore, (int)reqCount * 1000 );
 			long keysPerJob = keyCount / reqCount;
 			if ( keysPerJob == 0 )
 				keysPerJob = 1;
