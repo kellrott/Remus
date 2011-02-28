@@ -248,6 +248,13 @@ public class HectorStore implements MPStore {
 		return 0;
 	}
 
+	@Override
+	public Iterable<String> keySlice(String path, String instance,
+			String startKey, int count) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 
 
 

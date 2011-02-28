@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.remus.applet.RemusApplet;
+import org.remus.manage.CodeManager;
+import org.remus.work.AppletInstance;
+import org.remus.work.RemusApplet;
+import org.remus.work.WorkKey;
 
 public class RemusPipeline {
 
@@ -35,22 +38,16 @@ public class RemusPipeline {
 		members.put(applet.getPath(), applet);
 	}
 
-	public List<WorkDescription> getWorkQueue(int maxCount) {
+	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxCount) {
 		if ( inputs == null ) {
 			setupInputs();
 		}
-		List<WorkDescription> out = new LinkedList<WorkDescription>();
+		Map<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();
 		for ( RemusApplet applet : members.values() ) {
 			if ( out.size() < maxCount ) {
-				for ( RemusInstance instance : applet.getActiveInstanceList() ) {
-					Collection<WorkDescription> coll = applet.getWorkList(instance, maxCount - out.size() );
-					if ( coll != null ) {
-						out.addAll( coll );					
-					}
-				}
+				out.putAll( applet.getWorkList( maxCount - out.size()) );
 			}
 		}
-
 		return out;
 	}
 
@@ -113,6 +110,10 @@ public class RemusPipeline {
 
 	public int appletCount() {
 		return members.size();
+	}
+
+	public boolean isDynamic() {
+		return dynamic;
 	}
 
 }

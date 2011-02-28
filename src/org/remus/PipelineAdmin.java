@@ -24,7 +24,7 @@ public class PipelineAdmin {
 	static public String [] storeViews = { "@data" }; 
 	static public String [] fileViews = { "@attach" }; 
 
-	static public String [] allViews = { "@data", "@work", "@done", "@instance" }; 
+	static public String [] allViews = { "@data", "@done", "@instance" }; 
 
 	public static void main(String []args) throws FileNotFoundException, IOException, RemusDatabaseException {
 		Properties prop = new Properties();

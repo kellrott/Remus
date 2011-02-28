@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -554,6 +555,56 @@ public class ThriftStore implements MPStore {
 				timestamp = cur;
 		}
 		return timestamp;
+	}
+
+	@Override
+	public Iterable<String> keySlice(String path, String instance,
+			String startKey, int count) {
+		Client client = null;
+		List<String> out = new ArrayList<String>();
+		String superColumn = instance + path;
+		try {
+			SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
+			SlicePredicate slice = new SlicePredicate();	 
+			slice.setSlice_range(sRange);
+			ColumnParent cp = new ColumnParent(columnFamily);
+			client = (Client)clientPool.borrowObject();
+			List<ColumnOrSuperColumn> res = client.get_slice( ByteBuffer.wrap( superColumn.getBytes() ), cp, slice, CL);
+			for ( ColumnOrSuperColumn col : res ) {		
+				String curKey = new String( col.getSuper_column().getName() );
+				out.add(curKey);
+			}	
+		} catch (InvalidRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnavailableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimedOutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			try {
+				if ( client != null )
+					clientPool.returnObject(client);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return out;
 	}
 
 }

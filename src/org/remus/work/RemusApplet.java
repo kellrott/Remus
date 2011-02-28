@@ -1,4 +1,4 @@
-package org.remus.applet;
+package org.remus.work;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
@@ -21,8 +22,6 @@ import org.remus.CodeFragment;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
-import org.remus.WorkDescription;
-import org.remus.WorkReference;
 
 
 public class RemusApplet {
@@ -93,6 +92,7 @@ public class RemusApplet {
 	protected RemusPipeline pipeline = null;
 	LinkedList<RemusInstance> activeInstances;
 
+
 	public void addInput( RemusPath in ) {
 		if ( inputs == null )
 			inputs = new ArrayList<RemusPath>();
@@ -117,6 +117,18 @@ public class RemusApplet {
 		if ( outputs == null ) 
 			outputs = new LinkedList<String>();
 		outputs.add(name);
+	}
+
+	public RemusPath getInput() {
+		return inputs.get(0);
+	}
+
+	public RemusPath getLeftInput() {
+		return lInputs.get(0);
+	}
+
+	public RemusPath getRightInput() {
+		return rInputs.get(0);
 	}
 
 	public CodeFragment getCode() {
@@ -236,7 +248,6 @@ public class RemusApplet {
 
 	public void setComplete(RemusInstance remusInstance) {
 		datastore.add( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, WORKDONE_OP_CODE, 0, remusInstance.toString(), WORKDONE_OP );
-		datastore.delete( getPath() + "@work", remusInstance.toString() );
 		datastore.delete( getPath() + "@done", remusInstance.toString() );
 	}
 
@@ -250,82 +261,35 @@ public class RemusApplet {
 		return type;
 	}
 
-	public WorkDescription getWork(RemusInstance inst, long jobID) {
-		WorkDescription out = null;
-		for ( Object obj : datastore.get(getPath() + "@work", inst.toString(), Long.toString(jobID) ) ) {
-			out = (WorkDescription) new WorkDescription(new WorkReference(this, inst, jobID), obj);
-		}
-		return out;
-	}
-
-	public Collection<WorkDescription> getWorkList(RemusInstance inst, int maxListSize) {
-		HashSet<WorkDescription> out = new HashSet<WorkDescription>();
-		if ( !isComplete(inst) ) {
-			if ( isReady(inst)) {
-				if ( !hasWorkSet(inst) ) {
-					generateWork(inst);
-				}
-				int counter = 0;
-				for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@work", inst.toString() ) ) {
-					if ( out.size() < maxListSize ) {
-						if ( !datastore.containsKey(getPath() + "@done", inst.toString(), kv.getKey() ) ) {
-							counter++;
-							long jobID = Long.parseLong(kv.getKey());				
-							out.add( new WorkDescription(new WorkReference(this, inst, jobID), kv.getValue()) );
+	public Map<AppletInstance,Set<WorkKey>> getWorkList(int maxListSize) {
+		HashMap<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();		
+		for ( RemusInstance inst : getActiveInstanceList() ) {
+			if ( !isComplete(inst) ) {
+				if ( isReady(inst)) {
+					try {
+						System.err.println("GENERATING WORK");
+						WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
+						Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
+						out.put( gen.getAppletInstance(), workSet );
+						if ( gen.isDone() ) {
+							setComplete(inst);
 						}
-					}
-				}
-				if ( out.size() < maxListSize && counter == 0 ) {
-					setComplete(inst);
+					} catch (InstantiationException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					} catch (IllegalAccessException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}					
 				}
 			}
 		}
-
 		return out;
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) {
 		datastore.add(getPath() + "@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
 	}
-
-
-
-	private void generateWork(RemusInstance inst) {
-		try {
-			System.err.println("GENERATING WORK");
-			WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
-			gen.init(this);
-			gen.startWork(inst, 100);
-			//remove traces of a possible previous run
-			//TODO:Make resuming work possible with out delete full workset
-			//datastore.delete( getPath() + "@data", inst.toString() );
-			//datastore.delete( getPath() + "@work", inst.toString() );
-			int counter = 0;
-			boolean hasMore = true;
-			//insert new work into the database in blocks on 1000
-			do {
-				List<KeyValuePair> buffer = new LinkedList<KeyValuePair>();
-				for ( int i =0; i < 1000 && hasMore ; i++) {
-					WorkDescription curWork =gen.nextWork();
-					if ( curWork != null ) {
-						buffer.add( new KeyValuePair(0L, 0L,  Long.toString( curWork.ref.jobID ), curWork.desc) );
-						counter += 1;
-					} else {
-						hasMore = false;
-					}
-				}
-				datastore.add( getPath() + "@work", inst.toString(), buffer );
-			} while ( hasMore );
-			datastore.add( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, WORKGEN_OP_CODE, 0L, inst.toString(), WORKGEN_OP );
-		} catch (InstantiationException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IllegalAccessException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-
 
 	private void addInstance(RemusInstance instance) {
 		if ( !datastore.containsKey(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
@@ -348,16 +312,15 @@ public class RemusApplet {
 						out.add(inst);
 					}
 				}
-			} else if ( iRef.getInputType() == RemusPath.StaticInput ) {
-				for ( String key : datastore.listKeys(iRef.getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
-					RemusInstance inst = new RemusInstance(key);
-					if ( !out.contains( inst ) ) {
-						addInstance(inst);
-						out.add(inst);
-					}
-				}			
+			} 
+		}
+		for ( String key : datastore.listKeys(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
+			RemusInstance inst = new RemusInstance(key);
+			if ( !out.contains( inst ) ) {
+				addInstance(inst);
+				out.add(inst);
 			}
-		}		
+		}
 		return out;
 	}
 
@@ -392,8 +355,6 @@ public class RemusApplet {
 
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "@work", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "@work", instance.toString() );		
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
 		datastore.delete(getPath() + "@error", instance.toString() );		
@@ -434,7 +395,7 @@ public class RemusApplet {
 				List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
 				while ( (curline = br.readLine() ) != null ) {
 					Map inObj = (Map)serializer.loads(curline);	
-					inputList.add( new KeyValuePair((Long)inObj.get("id"), 
+					inputList.add( new KeyValuePair( Long.parseLong( inObj.get("id").toString() ), 
 							(Long)inObj.get("order"), (String)inObj.get("key") , 
 							inObj.get("value") ) );
 				}
@@ -457,5 +418,15 @@ public class RemusApplet {
 				src.getURL() );
 	}
 
+	@Override
+	public int hashCode() { 
+		return getPath().hashCode();
+	};
+
+	@Override
+	public boolean equals(Object obj) {
+		RemusApplet a = (RemusApplet)obj;
+		return a.getPath().equals(getPath());
+	};
 
 }
