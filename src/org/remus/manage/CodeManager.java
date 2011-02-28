@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.manage;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,7 +8,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mpstore.MPStore;
-import org.remus.applet.RemusApplet;
+import org.remus.RemusApp;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusInstance;
+import org.remus.RemusPath;
+import org.remus.RemusPipeline;
+import org.remus.work.AppletInstance;
+import org.remus.work.RemusApplet;
+import org.remus.work.WorkKey;
 
 
 public class CodeManager {
@@ -36,7 +43,7 @@ public class CodeManager {
 
 	private List<RemusPipeline> pipelines;
 
-	void mapPipelines() {
+	public void mapPipelines() {
 		HashMap<String,Integer> colorMap = new HashMap<String,Integer>();
 		int i = 0;
 		for ( String path : codeMap.keySet() ) {
@@ -97,7 +104,7 @@ public class CodeManager {
 
 	public void startWorkQueue() throws RemusDatabaseException {
 		for ( RemusPipeline pipeline : pipelines ) {			
-			if ( !pipeline.dynamic ) {
+			if ( !pipeline.isDynamic() ) {
 				RemusInstance pipelineInstance = null;
 				for ( RemusApplet applet : pipeline.getMembers() ) {
 					for ( RemusInstance inst : applet.getInstanceList() ) {
@@ -119,11 +126,11 @@ public class CodeManager {
 		}
 	}
 
-	public List<WorkDescription> getWorkQueue(int maxSize) {		
-		LinkedList<WorkDescription> out = new LinkedList<WorkDescription>();
+	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxSize) {		
+		Map<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();
 		for ( RemusPipeline pipeline : pipelines ) {			
 			if ( out.size() < maxSize ) {
-				out.addAll( pipeline.getWorkQueue( maxSize - out.size() ) );
+				out.putAll( pipeline.getWorkQueue( maxSize - out.size() ) );
 			}
 		}
 		return out;		

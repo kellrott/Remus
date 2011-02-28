@@ -6,7 +6,8 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import org.mpstore.MPStore;
-import org.remus.applet.RemusApplet;
+import org.remus.manage.CodeManager;
+import org.remus.work.RemusApplet;
 
 public class RemusApp {
 	public static final String configStore = "org.remus.mpstore";
@@ -54,6 +55,9 @@ public class RemusApp {
 		return srcbase;
 	}
 
+	public CodeManager getCodeManager() {
+		return codeManager;
+	}
 
 	public Map<String, PluginConfig> getPluginMap() {
 		// TODO Auto-generated method stub

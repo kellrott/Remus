@@ -2,6 +2,8 @@ package org.remus;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,6 +54,7 @@ public class RemusPath {
 		this.appletView = ref.appletView;
 		this.input_type = ref.input_type;
 		this.key = ref.key;
+		this.printURL = getInstancePath(); 
 	}
 	
 	public RemusPath( RemusApp parent, String pathinfo ) {
@@ -74,7 +77,11 @@ public class RemusPath {
 				if ( m2.find() ) {
 					appletView = m2.group(1);
 					instance = m2.group(2);
-					key = m2.group(3);
+					try {
+						key = URLDecoder.decode( m2.group(3), "UTF-8" ) ;
+					} catch (UnsupportedEncodingException e) {
+						
+					}
 				} else {
 					appletView = tmp[1];
 				}
@@ -193,7 +200,7 @@ public class RemusPath {
 		return appletName + "@" + appletView;
 	}
 
-	public Object getInstancePath() {
+	public String getInstancePath() {
 		return getViewPath() + "/" + instance;
 	}
 
