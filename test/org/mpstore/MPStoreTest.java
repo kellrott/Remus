@@ -1,10 +1,14 @@
 package org.mpstore;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
 import org.junit.*;
 import org.junit.Test;
+import org.remus.RemusApp;
 
 public class MPStoreTest {
 
@@ -12,8 +16,10 @@ public class MPStoreTest {
 
 
 	@Before public void setUp() {
+		Map param = new HashMap();
+		param.put(RemusApp.configWork, "/tmp/remusWorkerPath");
 		ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
-		ds.init(new JsonSerializer(), "" );
+		ds.init(new JsonSerializer(), param );
 	}
 
 	@Test public void insertTest() {

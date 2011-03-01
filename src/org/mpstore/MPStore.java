@@ -2,10 +2,11 @@ package org.mpstore;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 public interface MPStore {
 	
-	public void init(Serializer serializer, String basePath);
+	public void init(Serializer serializer, Map paramMap);
 	
 	public void add(String path, String instance, long jobid, long emitID, String key, Object data);
 	public void add(String path, String instance, List<KeyValuePair> inputList); 

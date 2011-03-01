@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,12 +39,18 @@ public class MasterServlet extends HttpServlet {
 		super.init(config);
 		try {
 			String mpStore = config.getInitParameter(RemusApp.configStore);
-			workDir = config.getInitParameter(RemusApp.configWork);
+			//workDir = config.getInitParameter(RemusApp.configWork);
 			srcDir = config.getInitParameter(RemusApp.configSource);
+			Map<String,String> configMap = new HashMap<String,String>();			
+			Enumeration names = config.getInitParameterNames();
+			while ( names.hasMoreElements() ) {
+				String name = (String) names.nextElement();
+				configMap.put(name, config.getInitParameter(name));
+			}
 			serializer = new JsonSerializer();
 			Class<?> mpClass = Class.forName(mpStore);			
 			MPStore store = (MPStore) mpClass.newInstance();
-			store.init(serializer, workDir);			
+			store.init(serializer, configMap);			
 			app = new RemusApp(new File(srcDir), store);
 			workManage = new WorkManager(app);
 		} catch (ClassNotFoundException e) {

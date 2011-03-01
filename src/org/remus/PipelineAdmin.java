@@ -37,7 +37,7 @@ public class PipelineAdmin {
 			Serializer serializer = new JsonSerializer();
 			Class<?> mpClass = Class.forName(mpStore);			
 			MPStore store = (MPStore) mpClass.newInstance();
-			store.init(serializer, workDir);			
+			store.init(serializer, prop);			
 			RemusApp app = new RemusApp(new File(srcDir), store);
 			String cmd = null;
 			if ( args.length > 1 )

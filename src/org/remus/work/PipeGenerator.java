@@ -15,7 +15,7 @@ public class PipeGenerator implements WorkGenerator {
 	RemusApplet applet;
 	RemusInstance inst;
 	boolean done;
-	
+
 	@Override
 	public boolean isDone() {
 		return done;
@@ -33,14 +33,13 @@ public class PipeGenerator implements WorkGenerator {
 			return outList;
 		}		
 		List<String> arrayList = new ArrayList();
-		for ( RemusPath iRef : applet.getInputs() ) {
+		for ( RemusPath ref : applet.getInputs() ) {
+			RemusPath iRef = new RemusPath(ref, instance);
 			arrayList.add( iRef.getURL() );
-			}
-			WorkKey w =  new WorkKey(instance, 0);
-			outList.add( w );
-			w.pathArray = arrayList;
-			//}
-			//}
+		}
+		WorkKey w =  new WorkKey(instance, 0);
+		outList.add( w );
+		w.pathArray = arrayList;
 		return outList;		
 	}
 
@@ -50,11 +49,11 @@ public class PipeGenerator implements WorkGenerator {
 			@Override
 			public Object formatWork(Set<WorkKey> keys) {
 				Map out = new HashMap();
-				List outList = null;
+				Map inMap = new HashMap();
 				for (WorkKey wk : keys) {
-					outList = wk.pathArray;
+					inMap.put( "0", wk.pathArray );
 				}
-				out.put( "input", outList );	
+				out.put( "input", inMap );	
 				return out;
 			}
 		};		
