@@ -264,23 +264,27 @@ public class RemusApplet {
 	public Map<AppletInstance,Set<WorkKey>> getWorkList(int maxListSize) {
 		HashMap<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();		
 		for ( RemusInstance inst : getActiveInstanceList() ) {
-			if ( !isComplete(inst) ) {
-				if ( isReady(inst)) {
-					try {
-						System.err.println("GENERATING WORK");
-						WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
-						Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
-						out.put( gen.getAppletInstance(), workSet );
-						if ( gen.isDone() ) {
-							setComplete(inst);
-						}
-					} catch (InstantiationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (IllegalAccessException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}					
+			if ( out.size() < maxListSize ) {
+				if ( !isComplete(inst) ) {
+					if ( isReady(inst)) {
+						try {
+							System.err.println("GENERATING WORK: " + getPath() + " " + inst.toString() );
+							WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
+							Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
+							AppletInstance ai =  gen.getAppletInstance();
+							assert ai != null;
+							out.put( ai, workSet );
+							if ( gen.isDone() ) {
+								setComplete(inst);
+							}
+						} catch (InstantiationException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IllegalAccessException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}					
+					}
 				}
 			}
 		}

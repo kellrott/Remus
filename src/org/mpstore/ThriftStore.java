@@ -14,6 +14,7 @@ import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.cassandra.thrift.Column;
@@ -37,7 +38,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
+import org.remus.RemusApp;
 
 
 public class ThriftStore implements MPStore {
@@ -47,21 +48,33 @@ public class ThriftStore implements MPStore {
 	String basePath;
 	ObjectPool clientPool;
 
-	String columnFamily,keySpace;
+	String columnFamily,keySpace,serverName;
+	int serverPort;
+
+	public static final String COLUMN_FAMILY = "org.mpstore.ThriftStore.columnFamily";
+	public static final String KEY_SPACE = "org.mpstore.ThriftStore.keySpace";
+	public static final String SERVER = "org.mpstore.ThriftStore.server";
+	public static final String PORT = "org.mpstore.ThriftStore.port";
 
 	@Override
-	public void init(Serializer serializer, String basePath) {
+	public void init(Serializer serializer, Map paramMap) {
 		this.serializer = serializer;
-		this.basePath = basePath;
+		this.basePath = (String)paramMap.get(RemusApp.configWork);
 		clientPool = new SoftReferenceObjectPool( new ClientFactory() );
-		columnFamily = "remusTable";
-		keySpace = "remus";
+		columnFamily = (String)paramMap.get(COLUMN_FAMILY);
+		keySpace     = (String)paramMap.get(KEY_SPACE);
+		serverName = "localhost";
+		if ( paramMap.containsKey(SERVER))
+			serverName   = (String)paramMap.get(SERVER);
+		serverPort = 9160;
+		if ( paramMap.containsKey(PORT) )
+			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
 	}
 
 	class ClientFactory extends BasePoolableObjectFactory {
 		@Override
 		public Object makeObject() throws Exception {
-			TTransport tr = new TSocket("localhost", 9160);	 //new default in 0.7 is framed transport	 
+			TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
 			TFramedTransport tf = new TFramedTransport(tr);	 
 			TProtocol proto = new TBinaryProtocol(tf);	 
 			tf.open();

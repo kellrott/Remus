@@ -40,19 +40,18 @@ public class MatchGenerator implements WorkGenerator {
 
 	@Override
 	public AppletInstance getAppletInstance() {
-return new AppletInstance(applet, inst) {
-	
-	@Override
-	public Object formatWork(Set<WorkKey> keys) {
-		Map map = new HashMap();
-		map.put("key", keys);
-		map.put("left_input", applet.lInputs.get(0).getViewPath() );
-		map.put("right_input", applet.rInputs.get(0) + "@reduce" );
-		return map;
-	}
-};
+		return new AppletInstance(applet, inst) {
+			@Override
+			public Object formatWork(Set<WorkKey> keys) {
+				Map map = new HashMap();
+				map.put("key", keys);
+				map.put("left_input", applet.lInputs.get(0).getViewPath() );
+				map.put("right_input", applet.rInputs.get(0) + "@reduce" );
+				return map;
+			}
+		};
 	}
 
-	
+
 
 }

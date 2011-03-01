@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.*;
 import org.apache.commons.pool.impl.SoftReferenceObjectPool;
+import org.remus.RemusApp;;
 
 
 public class SQLStore implements MPStore {
@@ -58,9 +59,9 @@ public class SQLStore implements MPStore {
 	Boolean streaming = true;
 	String basePath;
 	@Override
-	public void init(Serializer serializer, String basePath) {
+	public void init(Serializer serializer, Map paramMap) {
 		this.serializer = serializer;
-		this.basePath = basePath;
+		this.basePath = (String)paramMap.get(RemusApp.configWork);
 		this.tableCache = new HashMap<String, String>();
 		Connection connect = null;
 		try {
@@ -68,7 +69,7 @@ public class SQLStore implements MPStore {
 			//connect = DriverManager.getConnection("jdbc:derby:" + basePath + "/derby;create=true" );
 			Class.forName("com.mysql.jdbc.Driver");
 			pool = new SoftReferenceObjectPool( new ConnectionFactory() );
-			connect = (Connection) pool.borrowObject();			
+			connect = (Connection) pool.borrowObject();	
 			ResultSet rs = connect.getMetaData().getTables(null, null, "mpdata", null);
 			boolean found = false;
 			if ( rs.next() ) {

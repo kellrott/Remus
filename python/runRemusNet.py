@@ -195,8 +195,8 @@ class SplitWorker(WorkerBase):
 	def doWork(self, instance, workDesc):
 		func = remus.getFunction( self.applet )
 		doneIDs = []
+		log( "Starting Split %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		for jobID in workDesc['input']:
-			log( "Starting Split %s %s" % (self.applet, jobID) )
 			self.setupOutput(instance, jobID)
 			if ( workDesc[ 'input' ][jobID] is not None ):
 				inputURL = self.host + workDesc[ 'input' ][jobID]
@@ -243,27 +243,26 @@ class ReduceWorker(WorkerBase):
 
 
 class PipeWorker(WorkerBase):	
-	def doWork(self, instance, jobID):
-		log( "Starting Pipe %s %d" % (self.applet, jobID) )
-		url = self.host + self.applet + "@work/%s/%s" % ( instance, jobID )
-		jobDesc = httpGetJson( url ).read()
+	def doWork(self, instance, workDesc):
+		log( "Starting Pipe %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		func = remus.getFunction( self.applet )
-		self.setupOutput(instance, jobID)
-		inList = []
-		for inFile in jobDesc['input']:
-			kpURL = self.host + inFile
-			log( "piping: " + kpURL )
-			iHandle = jsonPairSplitter( urlopen( kpURL ) )
-			inList.append( iHandle )
-		func( inList )
-		self.closeOutput()
+		for jobID in workDesc['input']:
+			self.setupOutput(instance, jobID)
+			inList = []
+			for inFile in workDesc['input'][jobID]:
+				kpURL = self.host + inFile
+				log( "piping: " + kpURL )
+				iHandle = jsonPairSplitter( urlopen( kpURL ) )
+				inList.append( iHandle )
+			func( inList )
+			self.closeOutput()
 		
-		fileMap = remus.getoutput()
-		for path in fileMap:
-			postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
-			print postURL
-			urlopen( postURL, str(fileMap[path]) ).read()		
-		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
+			fileMap = remus.getoutput()
+			for path in fileMap:
+				postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
+				print postURL
+				urlopen( postURL, str(fileMap[path]) ).read()		
+			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 
 class MergeWorker(WorkerBase):	

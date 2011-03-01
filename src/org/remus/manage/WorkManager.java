@@ -56,6 +56,7 @@ public class WorkManager {
 		if ( workQueue.size() == 0 ) {
 			Map<AppletInstance, Set<WorkKey>> newwork = app.getCodeManager().getWorkQueue(QUEUE_MAX);
 			for (AppletInstance ai : newwork.keySet() ) {
+				assert ai != null;
 				for ( WorkKey wk : newwork.get(ai) ) {
 					boolean found = false;
 					for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
@@ -88,15 +89,25 @@ public class WorkManager {
 					}
 				}
 				wqSet.removeAll(addSet);
-				if ( wqSet.size() == 0)
-					workQueue.remove(ai);
 				if ( !wMap.containsKey(ai) )
 					wMap.put(ai, new HashSet<WorkKey>() );
 				wMap.get(ai).addAll(addSet);
 			}
 		}
-
+		emptyQueues();
 		return workerSets.get(workerID);
+	}
+
+	private void emptyQueues() {
+		Set<AppletInstance> rmSet = new HashSet<AppletInstance>();
+		for ( AppletInstance ai : workQueue.keySet() ) {	
+			Set<WorkKey> wqSet = workQueue.get(ai);
+			if ( wqSet.size() == 0)
+				rmSet.add(ai);
+		}
+		for (AppletInstance ai : rmSet){
+			workQueue.remove(ai);
+		}	
 	}
 
 	public void errorWork( String workerID, RemusApplet applet, RemusInstance inst, int jobID, String error )	 {
@@ -140,6 +151,8 @@ public class WorkManager {
 		int i = 0;
 		Map<String,Map<String,List>> out = new HashMap();
 		for ( AppletInstance ai : workList.keySet() ) {
+			assert ai != null;
+			assert ai.applet != null;
 			String appletStr = ai.applet.getPath();
 			String instStr = ai.inst.toString();
 			if ( i < count ) {

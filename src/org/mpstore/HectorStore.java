@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 
 import me.prettyprint.cassandra.serializers.StringSerializer;
@@ -48,7 +49,7 @@ public class HectorStore implements MPStore {
 
 	Serializer serial;	
 	@Override
-	public void init(Serializer serializer, String basePath) {
+	public void init(Serializer serializer, Map paramMap) {
 		serial = serializer;
 	}
 
@@ -255,6 +256,7 @@ public class HectorStore implements MPStore {
 		return null;
 	}
 
+	
 
 
 
