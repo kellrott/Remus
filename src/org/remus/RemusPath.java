@@ -101,6 +101,7 @@ public class RemusPath {
 		file = new File( path );	
 		path = file.getAbsolutePath();
 		srcFile = new File(parent.srcbase, path );		
+		printURL = pathinfo;
 	}
 
 
