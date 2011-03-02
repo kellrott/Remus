@@ -23,10 +23,12 @@ import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 
+import com.sun.org.apache.xml.internal.dtm.ref.DTMDefaultBaseIterators.ParentIterator;
+
 
 public class RemusApplet {
 
-	public static RemusApplet newApplet( String path, CodeFragment code, int type ) {
+	public static RemusApplet newApplet( String id, CodeFragment code, int type ) {
 		RemusApplet out = new RemusApplet();
 
 		switch (type) {
@@ -57,7 +59,7 @@ public class RemusApplet {
 		}
 		if ( out != null ) {
 			out.code = code;
-			out.path = path;
+			out.id = id;
 			out.type = type;
 			out.inputs = null;
 			out.activeInstances = new LinkedList<RemusInstance>();			
@@ -83,7 +85,7 @@ public class RemusApplet {
 
 	String codeType=null;
 	Class workGenerator = null;
-	String path;
+	private String id;
 	List<RemusPath> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
 	CodeFragment code;
@@ -148,7 +150,7 @@ public class RemusApplet {
 	}
 
 	public String getPath() {
-		return path;
+		return "/" + pipeline.getID() + ":" + id;
 	}
 
 	public String getSource() {
@@ -187,7 +189,7 @@ public class RemusApplet {
 
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
-		this.datastore = remusPipeline.getCodeManager().getApp().getDataStore();
+		this.datastore = remusPipeline.getDataStore();
 	}
 
 	public RemusPipeline getPipeline() {
@@ -202,7 +204,7 @@ public class RemusApplet {
 			boolean allReady = true;
 			for ( RemusPath iRef : inputs ) {
 				if ( iRef.getInputType() == RemusPath.AppletInput ) {
-					RemusApplet iApplet = getPipeline().getApplet( iRef.getAppletPath() );
+					RemusApplet iApplet = getPipeline().getApplet( iRef.getApplet() );
 					if ( iApplet != null ) {
 						if ( !iApplet.isComplete(remusInstance) ) {
 							allReady = false;
@@ -214,7 +216,7 @@ public class RemusApplet {
 					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
-				} else if (  iRef.getInputType() == RemusPath.ExternalInput ) {
+				} else if (  iRef.getInputType() == RemusPath.AttachInput ) {
 				} else if (  iRef.getInputType() == RemusPath.StaticInput ) {
 				} else {				
 					allReady = false;
@@ -421,7 +423,7 @@ public class RemusApplet {
 				(Long)0L, 
 				(Long)0L, 
 				pipelineInstance.toString(), 
-				src.getURL() );
+				src.getPath() );
 	}
 
 	@Override
@@ -433,6 +435,14 @@ public class RemusApplet {
 	public boolean equals(Object obj) {
 		RemusApplet a = (RemusApplet)obj;
 		return a.getPath().equals(getPath());
+	}
+
+	public MPStore getDataStore() {
+		return datastore;
+	}
+
+	public String getID() {
+		return id;
 	};
 
 }

@@ -3,11 +3,17 @@ package org.remus;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.mpstore.JsonSerializer;
 import org.mpstore.MPStore;
-import org.remus.manage.CodeManager;
+import org.mpstore.Serializer;
+import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
+import org.remus.work.WorkKey;
 
 public class RemusApp {
 	public static final String configStore = "org.remus.mpstore";
@@ -15,31 +21,49 @@ public class RemusApp {
 	public static final String configWork = "org.remus.workdir";
 
 	File srcbase;
-	MPStore workStore;
-	CodeManager codeManager;
 	public String baseURL = "";
-	
-	public RemusApp( File srcdir, MPStore workStore ) throws RemusDatabaseException {
+	Map<String,RemusPipeline> pipelines;
+	Map params;
+	public RemusApp( File srcdir, Map params ) throws RemusDatabaseException {
 		this.srcbase = srcdir;
-		this.workStore = workStore;
-		codeManager = new CodeManager(this);
+		pipelines = new HashMap<String, RemusPipeline>();
+		this.params = params;
 		scanSource(srcbase);
-		codeManager.mapPipelines();
+		//codeManager.mapPipelines();
 	}
-	
+
 	public void setBaseURL(String baseURL) {
 		this.baseURL = baseURL;
 	}
-	
+
 	void scanSource(File curFile) {
 		if ( curFile.isFile() && curFile.getName().endsWith( ".xml" ) ) {
 			try { 
 				FileInputStream fis = new FileInputStream(curFile);
 				String pagePath = curFile.getAbsolutePath().replaceFirst( "^" + srcbase.getAbsolutePath(), "" ).replaceFirst(".xml$", "");
 				RemusParser p = new RemusParser(this);
-				for ( RemusApplet code : p.parse(fis, pagePath) ) {
-					codeManager.put(code.getPath(), code);
+				List<RemusApplet> appletList = p.parse(fis, pagePath);
+
+				String mpStore = (String)params.get(RemusApp.configStore);
+				Class<?> mpClass = Class.forName(mpStore);			
+				MPStore store = (MPStore) mpClass.newInstance();
+				Serializer serializer = new JsonSerializer();
+				store.init(serializer, params);			
+				
+				RemusPipeline pipeline = new RemusPipeline(p.getPipelineName(), store);
+				for ( RemusApplet applet : appletList ) {
+					pipeline.addApplet(applet);
 				}
+				pipelines.put(pipeline.id, pipeline);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			} catch (FileNotFoundException e) {
 
 			}
@@ -51,23 +75,47 @@ public class RemusApp {
 		}
 	}
 
-	public File getSrcBase() {
-		return srcbase;
+
+	public void addPipeline( RemusPipeline rp ) {
+		pipelines.put(rp.id, rp);
 	}
 
-	public CodeManager getCodeManager() {
-		return codeManager;
-	}
+	public File getSrcBase() {
+		return srcbase;
+	}	
 
 	public Map<String, PluginConfig> getPluginMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public MPStore getDataStore() {
-		return workStore;
-	}	
+	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxSize) {		
+		Map<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();
+		for ( RemusPipeline pipeline : pipelines.values() ) {			
+			if ( out.size() < maxSize ) {
+				out.putAll( pipeline.getWorkQueue( maxSize - out.size() ) );
+			}
+		}
+		return out;		
+	}
 
+	public RemusApplet getApplet(String appletPath) {
+		if (appletPath.startsWith("/"))
+			appletPath = appletPath.replaceFirst("^\\/", "");
+		String []tmp = appletPath.split(":");
+		return pipelines.get(tmp[0]).getApplet(tmp[1]);
+	}
+
+	public boolean hasApplet(String appletPath) {
+		if (appletPath.startsWith("/"))
+			appletPath = appletPath.replaceFirst("^\\/", "");
+		String []tmp = appletPath.split(":");
+		if ( pipelines.containsKey(tmp[0]) && pipelines.get(tmp[0]).hasApplet( tmp[1] ) )		
+			return true;
+		return false;
+	}
+
+	/*
 	public void kickStart() {
 		try {
 			codeManager.startWorkQueue();
@@ -76,5 +124,5 @@ public class RemusApp {
 			e.printStackTrace();
 		}
 	}
-	
+	 */
 }

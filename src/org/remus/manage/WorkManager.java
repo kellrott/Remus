@@ -54,7 +54,7 @@ public class WorkManager {
 			}
 		}
 		if ( workQueue.size() == 0 ) {
-			Map<AppletInstance, Set<WorkKey>> newwork = app.getCodeManager().getWorkQueue(QUEUE_MAX);
+			Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
 			for (AppletInstance ai : newwork.keySet() ) {
 				assert ai != null;
 				for ( WorkKey wk : newwork.get(ai) ) {

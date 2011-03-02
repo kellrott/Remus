@@ -2,40 +2,31 @@ package org.remus;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.remus.manage.CodeManager;
+import org.mpstore.MPStore;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
 
 public class RemusPipeline {
 
-	boolean dynamic = false;
 	private HashMap<String,RemusApplet> members;
 	Map<RemusPath, RemusApplet> inputs;
-	CodeManager parent;
-
-	public RemusPipeline(CodeManager parent) {
-		this.parent = parent;
+	String id;
+	MPStore datastore;
+	public RemusPipeline(String id, MPStore datastore) {
 		members = new HashMap<String,RemusApplet>();
 		inputs = new HashMap<RemusPath, RemusApplet >();
+		this.id = id;
+		this.datastore = datastore;
 	}
 
-	public void addApplet(RemusApplet applet) {
-		if ( applet.hasInputs() ) {
-			for ( RemusPath iref : applet.getInputs() ) {
-				if ( iref.getInputType() == RemusPath.DynamicInput ) {
-					dynamic = true;
-				}
-			}
-		}
+	public void addApplet(RemusApplet applet) {		
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
-		members.put(applet.getPath(), applet);
+		members.put(applet.getID(), applet);
 	}
 
 	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxCount) {
@@ -58,7 +49,7 @@ public class RemusPipeline {
 				for ( RemusPath iref : applet.getInputs() ) {
 					if ( iref.getInputType() == RemusPath.DynamicInput 
 							|| iref.getInputType() == RemusPath.AppletInput 
-							|| !parent.containsKey( iref.getPortPath() )) {
+							) { //|| !parent.containsKey( iref.getPortPath() )) {
 						inputs.put(iref, applet);
 					}
 				}
@@ -95,10 +86,6 @@ public class RemusPipeline {
 
 	}
 
-	public CodeManager getCodeManager() {
-		return parent;		
-	}
-
 	public boolean isComplete(RemusInstance inst) {
 		boolean done = true;
 		for ( RemusApplet applet : members.values() ) {
@@ -112,8 +99,16 @@ public class RemusPipeline {
 		return members.size();
 	}
 
-	public boolean isDynamic() {
-		return dynamic;
+	public MPStore getDataStore() {
+		return datastore;
+	}
+
+	public boolean hasApplet(String appletPath) {
+		return members.containsKey( appletPath ) ;
+	}
+
+	public String getID() {
+		return id;
 	}
 
 }
