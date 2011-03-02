@@ -25,7 +25,7 @@ public class MapGenerator implements WorkGenerator {
 				if ( !applet.datastore.containsKey( applet.getPath() + "@done", instance.toString(), Integer.toString(jobID)) ) {
 					WorkKey w = new WorkKey(instance, jobID);
 					w.key = key;
-					w.pathStr = iRef.getURL();
+					w.pathStr = iRef.getPath();
 					outList.add( w );					
 				}
 			} else {

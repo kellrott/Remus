@@ -26,18 +26,21 @@ public class RemusParser {
 	public RemusParser( RemusApp app ) {
 		parent = app;
 	}
-
+	String pipelineName;
+	
 	public List<RemusApplet> parse(InputStream is, String pagePath) {
-
 		try {
 			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = df.newDocumentBuilder();
-			Document doc = db.parse(is);			
-
-
+			Document doc = db.parse(is);
+			
+			
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath xpath = xpf.newXPath();
 
+			XPathExpression root = xpath.compile("//remus/@id");
+			pipelineName = (String) root.evaluate(doc, XPathConstants.STRING);
+				
 			HashMap<Integer, XPathExpression> codeTypes = new HashMap<Integer, XPathExpression>();
 			codeTypes.put( RemusApplet.MAPPER,  xpath.compile("//*/remus_mapper") );
 			codeTypes.put( RemusApplet.SPLITTER,xpath.compile("//*/remus_splitter"));
@@ -50,8 +53,7 @@ public class RemusParser {
 				NodeList nodes = (NodeList) codeTypes.get( appletType ).evaluate( doc, XPathConstants.NODESET );
 				for ( int i = 0; i < nodes.getLength(); i++ ) {
 					NamedNodeMap attr = nodes.item(i).getAttributes();
-					String id = pagePath + ":" + attr.getNamedItem("id").getTextContent();
-					//System.out.println(id);
+					String id = attr.getNamedItem("id").getTextContent();
 
 					CodeFragment cf =  new CodeFragment("python", nodes.item(i).getTextContent());
 					RemusApplet applet = RemusApplet.newApplet(id, cf, appletType);
@@ -59,7 +61,7 @@ public class RemusParser {
 					if ( attr.getNamedItem("input") != null ) {
 						String inputStr = attr.getNamedItem("input").getTextContent();
 						for ( String inName : inputStr.split(",") ) {
-							RemusPath iRef = new RemusPath(parent, inName, id );
+							RemusPath iRef = new RemusPath(parent, inName, pipelineName, id );
 							applet.addInput(iRef);
 						}
 					}
@@ -76,10 +78,10 @@ public class RemusParser {
 					
 					if ( appletType == RemusApplet.MERGER ) {
 						String lInputStr = attr.getNamedItem("left").getTextContent();
-						RemusPath lIRef = new RemusPath(parent, lInputStr, id );
+						RemusPath lIRef = new RemusPath(parent, lInputStr, pipelineName, id );
 						applet.addLeftInput(lIRef);						
 						String rInputStr = attr.getNamedItem("right").getTextContent();
-						RemusPath rIRef = new RemusPath(parent, rInputStr, id );
+						RemusPath rIRef = new RemusPath(parent, rInputStr, pipelineName, id );
 						applet.addRightInput(rIRef);						
 					}
 					
@@ -102,6 +104,10 @@ public class RemusParser {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public String getPipelineName() {
+		return pipelineName;
 	}
 
 

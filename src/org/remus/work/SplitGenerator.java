@@ -28,8 +28,8 @@ public class SplitGenerator implements WorkGenerator {
 			String pathStr = "";
 			if ( iRef.getInputType() == RemusPath.AppletInput )
 				pathStr = iRef.getInstancePath();
-			if ( iRef.getInputType() == RemusPath.ExternalInput )
-				pathStr = iRef.getURL();
+			if ( iRef.getInputType() == RemusPath.AttachInput )
+				pathStr = iRef.getPath();
 
 			WorkKey w =  new WorkKey(instance, 0);
 			outList.add( w );

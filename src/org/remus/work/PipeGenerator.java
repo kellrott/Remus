@@ -35,7 +35,7 @@ public class PipeGenerator implements WorkGenerator {
 		List<String> arrayList = new ArrayList();
 		for ( RemusPath ref : applet.getInputs() ) {
 			RemusPath iRef = new RemusPath(ref, instance);
-			arrayList.add( iRef.getURL() );
+			arrayList.add( iRef.getPath() );
 		}
 		WorkKey w =  new WorkKey(instance, 0);
 		outList.add( w );

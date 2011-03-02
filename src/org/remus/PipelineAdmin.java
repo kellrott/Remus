@@ -38,7 +38,7 @@ public class PipelineAdmin {
 			Class<?> mpClass = Class.forName(mpStore);			
 			MPStore store = (MPStore) mpClass.newInstance();
 			store.init(serializer, prop);			
-			RemusApp app = new RemusApp(new File(srcDir), store);
+			RemusApp app = new RemusApp(new File(srcDir), prop);
 			String cmd = null;
 			if ( args.length > 1 )
 				cmd = args[1];
