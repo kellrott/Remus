@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class MapCallback {
 
-	void map(Serializable key, Serializable val) {
+	void emit(Serializable key, Serializable val) {
 		
 	}
 }

@@ -11,7 +11,7 @@ public class Json implements PipeInterface {
 
 	String curSource;
 	@Override
-	public void prepWriter(String config) {
+	public void initWriter(String config) {
 		curSource = config;
 	}
 
