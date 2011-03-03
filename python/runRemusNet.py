@@ -31,7 +31,7 @@ def urlopen(url,data=None):
 		curConn.request("GET", u.path, None, headers)
 		return StringIO( curConn.getresponse().read() )
 
-verbose = True
+verbose = False
 
 def log(v):
 	if ( verbose ):
@@ -122,7 +122,7 @@ class jsonPairSplitter:
 getCache={}
 
 def httpGetJson( url, useCache=False ):
-	#log( "getting: " + url )
+	log( "getting: " + url )
 	if ( useCache ):
 		if not getCache.has_key( url ):
 			getCache[ url ] = urlopen( url ).read()			
@@ -214,17 +214,24 @@ class MapWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		log( "Starting Map %s %s" % (self.applet, ",".join(workDesc['key'].keys()) ) )
 		doneIDs = []
+		errorIDs = []
 		for jobID in workDesc['key']:
 			wKey = workDesc['key'][jobID]
 			self.setupOutput(instance, jobID)
 			kpURL = self.host + workDesc['input'] + "/%s" % ( quote( wKey ) )	
 			kpData = httpGetJson( kpURL )
-			for data in kpData:
-				for key in data:
-					func( key, data[key] )
-			doneIDs.append( jobID )
+			try:
+				for data in kpData:
+					for key in data:
+						func( key, data[key] )
+				doneIDs.append( jobID )
+			except Exception:
+				errorIDs.append( jobID )
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
+		if ( len( errorIDs ) ):
+			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
+
 
 class ReduceWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):

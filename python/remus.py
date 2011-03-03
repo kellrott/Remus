@@ -53,10 +53,6 @@ def addFunction(f):
 	remus_functions[ f.__module__ ] = f
 	return f
 
-def submit(applet, key, value ):
-	instance = json.loads( urlopen( remus_server + "/@submit" ).read() )
-	urlopen( remus_server + applet + "/@submit/" + instance, json.dumps( { key : value } ) ).read()
-	return instance
 	
 def emit(key, val, output=None):
 	global out_handle_map
