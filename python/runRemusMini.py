@@ -61,7 +61,6 @@ if __name__=="__main__":
 	
 	remus.init(host)
 	
-	
 	code = open( codePath).read()
 	module = imp.new_module( "test_func" )	
 	module.__dict__["__name__"] = "test_func"
@@ -88,7 +87,11 @@ if __name__=="__main__":
 	if ( run == "pipe" ):
 		inList = []
 		for inFile in inPath.split(','):
+<<<<<<< HEAD
 			kpURL = host + "/%s" 
+=======
+			kpURL = host + inFile 
+>>>>>>> 080353e59faeab2d75a7dab6f59d6dcd03355cba
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )

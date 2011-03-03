@@ -1,0 +1,52 @@
+      ------
+      Remus: User Guide
+      ------
+      Kyle Ellrott
+      ------
+      2011
+
+
+  Remus is a web orientated pipeline engine.
+
+
+  Remus URL contruction
+
+
++------------------+
+/{pipeline}:{applet}@{view}/{instance}/{key}
++------------------+
+
+
+  Possible views:
+
+
+ * data
+
+ * keys 
+
+ * reduce
+
+ * code
+
+  Accessing data view
+
+
++------------------+
+/testPipeline:testApplet@data/5eb4610c-1f19-4348-84c8-ba1fdd479dc2
++------------------+
+
+
+  Applet Types:
+
+
+ * Map
+
+ * Reduce
+
+ * Pipe
+
+ * Store
+
+ * Merge
+
+ * Match
