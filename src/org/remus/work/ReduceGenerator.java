@@ -22,7 +22,7 @@ public class ReduceGenerator implements WorkGenerator {
 			RemusInstance instance, long reqCount) {
 		this.applet = applet;
 		this.inst = instance;
-		done = true;
+		done = false;
 		RemusPath iRef = new RemusPath(applet.getInput(), instance);
 		Set<WorkKey> keyList = new HashSet<WorkKey>();
 		int jobID = 0;
@@ -34,11 +34,11 @@ public class ReduceGenerator implements WorkGenerator {
 					w.pathStr = iRef.getPath();
 					keyList.add( w );				
 				}
-			} else {
-				done = false;
 			}
 			jobID++;
 		}
+		if ( keyList.size() == 0 && reqCount > 0 )
+			done = true;
 		return keyList;
 	}
 

@@ -14,7 +14,7 @@ public class MapGenerator implements WorkGenerator {
 	boolean done;
 	@Override
 	public Set<WorkKey> getActiveKeys(RemusApplet applet, RemusInstance instance, long reqCount) {
-		done = true;
+		done = false;
 		this.applet = applet;
 		this.inst = instance;
 		Set<WorkKey> outList = new HashSet<WorkKey>();
@@ -28,11 +28,11 @@ public class MapGenerator implements WorkGenerator {
 					w.pathStr = iRef.getPath();
 					outList.add( w );					
 				}
-			} else {
-				done = false;
 			}
 			jobID++;							
 		}
+		if ( outList.size() == 0 && reqCount > 0 )
+			done = true;
 		return outList;
 	}
 

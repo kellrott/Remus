@@ -50,3 +50,20 @@
  * Merge
 
  * Match
+
+
+
+
+Management:
+
+
+Deleting an instance:
+
+curl -X DELETE http://localhost:16017/@instance/b21847d4-17d9-435c-93b7-ad4ad567a4a4
+
+
+
+Submitting job:
+
+curl -d "/tcga_import:Genome_Wide_SNP_6@data/032a2477-68f1-4ea2-a64a-7647b397d61f/broad.mit.edu_LUSC_Genome_Wide_SNP_6" http://localhost:16017/Genome_Wide_SNP_6:tarballExtract@submit
+
