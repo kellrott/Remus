@@ -39,6 +39,8 @@ class jsonPairSplitter:
 			data  = json.loads( line )
 			for key in data:
 				yield key, data[key]
+	def close(self):
+		pass
 				
 getCache={}
 
@@ -87,11 +89,8 @@ if __name__=="__main__":
 	if ( run == "pipe" ):
 		inList = []
 		for inFile in inPath.split(','):
-<<<<<<< HEAD
-			kpURL = host + "/%s" 
-=======
-			kpURL = host + inFile 
->>>>>>> 080353e59faeab2d75a7dab6f59d6dcd03355cba
+			kpURL = host + inFile
+			print "fetching" + kpURL
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )
