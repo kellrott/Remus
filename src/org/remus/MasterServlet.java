@@ -441,6 +441,27 @@ public class MasterServlet extends HttpServlet {
 						}
 						resp.getWriter().print("\"OK\"");
 					}
+				} else if ( reqInfo.getView().compareTo("error") == 0 ) {
+					String workerID = getWorkerID(req);
+					if ( workerID != null ) {
+						BufferedReader br = req.getReader();
+						String curline = null;
+						while ((curline=br.readLine())!= null ) {
+							Map m = (Map)serializer.loads( curline );
+							for ( Object key : m.keySet() ) {
+								String instStr = (String)key;
+								RemusInstance inst=new RemusInstance(instStr);
+								List jobList = (List)m.get(key);
+								RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
+								for ( Object key2 : jobList ) {
+									long jobID = Long.parseLong( key2.toString() );
+									//TODO:get worker exception text
+									workManage.errorWork(workerID, applet, inst, (int)jobID, "WORKER EXCEPTION");
+								}						
+							}
+						}
+						resp.getWriter().print("\"OK\"");
+					}
 				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
 					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 					applet.formatInput( reqInfo, req.getInputStream(), serializer );
