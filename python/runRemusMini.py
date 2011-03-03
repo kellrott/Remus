@@ -54,13 +54,12 @@ def httpGetJson( url, useCache=False ):
 
 
 if __name__=="__main__":
-	host = "http://localhost:16016/"
+	host = "http://localhost:16017/"
 	remus.init(host)
 	
 	run = sys.argv[1]
 	codePath = sys.argv[2]
 	inPath = sys.argv[3]
-	instance = sys.argv[4]
 	
 	code = open( codePath).read()
 	module = imp.new_module( "test_func" )	
@@ -72,14 +71,14 @@ if __name__=="__main__":
 	remus.setoutput( outmap )
 
 	if ( run == "map" ):
-		kpURL = host + inPath + "/%s" % ( instance )	
+		kpURL = host + inPath 
 		kpData = httpGetJson( kpURL )
 		for data in kpData:
 			for key in data:
 				func( key, data[key] )
 
 	if ( run == "reduce" ):
-		kpURL = host + inPath + "/%s" % ( instance )		
+		kpURL = host + inPath 	
 		kpData = httpGetJson( kpURL )
 		for data in kpData:
 			for key in data:
@@ -88,7 +87,7 @@ if __name__=="__main__":
 	if ( run == "pipe" ):
 		inList = []
 		for inFile in inPath.split(','):
-			kpURL = host + inFile + "/%s" % ( instance )
+			kpURL = host + inFile 
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )

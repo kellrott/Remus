@@ -23,9 +23,9 @@ import org.remus.mapred.SplitCallback;
 import org.remus.mapred.SpliterInterface;
 import org.remus.mapred.PipeInterface;
 
-public class JSInterface implements MapperInterface, ReducerInterface, SpliterInterface, PipeInterface {
+public class JSInterface implements MapperInterface {
 	Context cx;	
-	
+
 	public void init(PluginConfig config) {
 		cx = Context.enter();
 		cx.setWrapFactory( new WrapFactory() {
@@ -46,37 +46,8 @@ public class JSInterface implements MapperInterface, ReducerInterface, SpliterIn
 	}
 
 	OutputStream curOUT;
+	private JSFunction currentFunction;
 
-	public void addInterface(String name, Object obj) {
-		//Object wrappedOut = Context.javaToJS(obj, scope);
-		//ScriptableObject.putProperty(scope, name, wrappedOut);				
-	}
-
-	/*
-	public void eval(String source, String fileName) {
-		try {
-			Scriptable scope = cx.initStandardObjects();
-			cx = Context.enter();
-			FakeDOM dom = new FakeDOM();
-			prepScope(scope, dom);
-			//System.out.println( source );
-			Object out = cx.evaluateString(scope, source, fileName, 1, null);
-			//System.out.println( out );
-			//System.out.println( out );
-			if ( out instanceof ScriptableObject ) {
-				//curOUT.write(  JSONUtils.toJSONString(out).getBytes() );
-			}
-		} catch (EcmaError e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-	}
-	 */
 
 	class JSFunction  {
 
@@ -135,51 +106,15 @@ public class JSInterface implements MapperInterface, ReducerInterface, SpliterIn
 		}
 	}
 
-	@Override
-	public void prepReducer(String config) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void reduce(Serializable key, Serializable val) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void prepSpliter(String config) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void split(InputStream input, SplitCallback callback) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	JSFunction currentWriter;
-	@Override
-	public void prepWriter(String config) {
-		currentWriter = compileFunction(config, "test");		
-	}
-
-	@Override
-	public Object write(Serializable val) {
-		return currentWriter.call(val);
-	}
 
 	@Override
 	public void map(Serializable val, MapCallback callback) {
-		// TODO Auto-generated method stub
-		
+		currentFunction.call( val );
 	}
 
 	@Override
-	public void prepMapper(String config) {
-		// TODO Auto-generated method stub
-		
+	public void initMapper(String config) {
+		currentFunction = compileFunction(config, "view");
 	}
 
 }
