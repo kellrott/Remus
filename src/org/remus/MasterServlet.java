@@ -547,6 +547,7 @@ public class MasterServlet extends HttpServlet {
 			ds.add("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, reqInfo.getInstance(), data );			
 			out.println("PUTTING pipeline: " + reqInfo.getInstance() );
 			out.println(data);
+			app.loadPipelines();
 		} else if ( reqInfo.getPipeline() != null && reqInfo.getApplet() != null && reqInfo.getView().compareTo("pipeline") == 0 ) {
 			//posting applet to pipleline
 			BufferedReader br = req.getReader();
@@ -560,6 +561,7 @@ public class MasterServlet extends HttpServlet {
 			ds.add("/" + reqInfo.getPipeline() + "@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, reqInfo.getApplet(), data );
 			out.println( "PUTTING APPLET: " + reqInfo.getPipeline() + " " + reqInfo.getApplet() );
 			out.println(data);
+			app.loadPipelines();
 		} else if ( reqInfo.getPipeline() != null && reqInfo.getApplet() == null && reqInfo.getView().compareTo("attach")==0) {
 			//posting attachment to pipeline			
 			AttachStore ds = app.getRootAttachStore();
