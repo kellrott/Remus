@@ -47,8 +47,7 @@ public class MasterServlet extends HttpServlet {
 				configMap.put(name, config.getInitParameter(name));
 			}
 			serializer = new JsonSerializer();
-			srcDir = configMap.get( RemusApp.configSource );
-			app = new RemusApp(new File(srcDir), configMap);
+			app = new RemusApp(configMap);
 			workManage = new WorkManager(app);
 
 		} catch (RemusDatabaseException e) {
@@ -419,7 +418,7 @@ public class MasterServlet extends HttpServlet {
 		if ( reqInfo.getApplet() == null ) {
 			if ( reqInfo.getView().compareTo("restart") == 0 ) {
 				try {
-					app = new RemusApp(new File(srcDir),configMap );
+					app = new RemusApp( configMap );
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -512,11 +511,21 @@ public class MasterServlet extends HttpServlet {
 		} 
 	}
 
+	
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+
+		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
+		PrintWriter out = resp.getWriter();
+		out.println( reqInfo.getInstance() );
+		out.println( reqInfo.getKey() );
+	}
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );	
+		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
 		if ( reqInfo.getApplet() == null ) {
 			if ( reqInfo.getView().compareTo("instance") == 0 && reqInfo.getInstance() != null ) {
 				RemusInstance instance = new RemusInstance(reqInfo.getInstance());
@@ -524,7 +533,7 @@ public class MasterServlet extends HttpServlet {
 					pipeline.deleteInstance(instance);
 				}
 				try {
-					app = new RemusApp(new File(srcDir), configMap );
+					app = new RemusApp(configMap );
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -535,7 +544,7 @@ public class MasterServlet extends HttpServlet {
 			if ( reqInfo.getInstance() != null  ) {
 				applet.deleteInstance( new RemusInstance( reqInfo.getInstance()) );
 				try {
-					app = new RemusApp(new File(srcDir), configMap );
+					app = new RemusApp(  configMap );
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

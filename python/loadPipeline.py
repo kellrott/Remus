@@ -26,6 +26,9 @@ def parseRemus(path, server):
 	handle.close()	
 	includeFiles = []
 	pipelineName = dom.childNodes[0].getAttribute("id")
+	desc = dom.childNodes[0].getAttribute("desc")
+	print server + "/@pipeline" 
+	print json.dumps( { "id" : pipelineName, "description" : desc } )
 	for node in dom.childNodes[0].childNodes:
 		if node.nodeType == node.ELEMENT_NODE:
 			if node.localName.startswith( "remus_" ):
@@ -34,8 +37,8 @@ def parseRemus(path, server):
 				remusNode['input'] = node.getAttribute('input')
 				remusNode['type'] = node.getAttribute('type' )
 				remusNode['code'] = getText( node.childNodes )
-				print server + "/" + pipelineName + ":" + remusNode['id'] 
-				print json.dumps( remusNode )
+				print server + "/@pipeline/" + pipelineName + "/" + remusNode['id'] 
+				#print json.dumps( remusNode )
 			if node.localName == "include":
 				includePath = os.path.join( dir, node.getAttribute("path") )
 				if os.path.isdir( includePath ):
