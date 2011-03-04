@@ -1,9 +1,9 @@
 
 import sys
 import json
-from cStringIO import StringIO
 from urllib import urlopen
-
+import mmap
+import tempfile
 global remus_functions
 global remus_server
 global out_handle_map
@@ -12,17 +12,21 @@ global out_file_map
 class PipeFileBuffer:
 	def __init__(self, path):
 		self.path = path
-		self.buff = StringIO()
+		self.buff = tempfile.NamedTemporaryFile(delete=False)
 		
 	def write(self, data):
 		self.buff.write( data )
 	
-	def __repr__(self):
-		return self.buff.getvalue()
+	def mem_map(self):
+		mFile = mmap.mmap( self.buff.fileno(), 0, access=mmap.ACCESS_READ )
+		return mFile
 		
 	def close(self):
+		#self.buff.close()
 		pass
-	
+	def unlink(self):
+		self.buff.close()
+		os.path.unlink( self.buff.name )
 
 def open(path, mode="r"):
 	global out_file_map

@@ -9,6 +9,7 @@ from cStringIO import StringIO
 import uuid
 from urlparse import urlparse
 import httplib
+import traceback
 
 workerID = str(uuid.uuid4())
 
@@ -58,7 +59,8 @@ class http_write:
 		for out in self.cache:
 			data += json.dumps( { 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
 			self.order += 1
-		urlopen(  self.url , data ).read()
+		if (len(data)):
+			urlopen(  self.url , data ).read()
 		self.cache = []
 		
 class stdout_write:
@@ -118,7 +120,8 @@ class jsonPairSplitter:
 			data  = json.loads( line )
 			for key in data:
 				yield key, data[key]
-
+	def close(self):
+		pass
 getCache={}
 
 def httpGetJson( url, useCache=False ):
@@ -214,7 +217,7 @@ class MapWorker(WorkerBase):
 		func = remus.getFunction( self.applet )
 		log( "Starting Map %s %s" % (self.applet, ",".join(workDesc['key'].keys()) ) )
 		doneIDs = []
-		errorIDs = []
+		errorIDs = {}
 		for jobID in workDesc['key']:
 			wKey = workDesc['key'][jobID]
 			self.setupOutput(instance, jobID)
@@ -226,7 +229,10 @@ class MapWorker(WorkerBase):
 						func( key, data[key] )
 				doneIDs.append( jobID )
 			except Exception:
-				errorIDs.append( jobID )
+				exc_type, exc_value, exc_traceback = sys.exc_info()
+				e = StringIO()
+				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
+				errorIDs[jobID ] = e.getvalue()
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		if ( len( errorIDs ) ):
@@ -268,7 +274,8 @@ class PipeWorker(WorkerBase):
 			for path in fileMap:
 				postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
 				print postURL
-				urlopen( postURL, str(fileMap[path]) ).read()		
+				urlopen( postURL, fileMap[path].mem_map() ).read()
+				fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 
