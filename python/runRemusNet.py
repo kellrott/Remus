@@ -9,7 +9,10 @@ from cStringIO import StringIO
 import uuid
 from urlparse import urlparse
 import httplib
+import tempfile
 import traceback
+import os
+import shutil
 
 workerID = str(uuid.uuid4())
 
@@ -32,7 +35,7 @@ def urlopen(url,data=None):
 		curConn.request("GET", u.path, None, headers)
 		return StringIO( curConn.getresponse().read() )
 
-verbose = False
+verbose = True
 
 def log(v):
 	if ( verbose ):
@@ -148,7 +151,7 @@ def getWorker( host, applet ):
 	if workerList.has_key( applet ):
 		return workerList[ applet ]
 
-	appletDesc = httpGetJson( host + applet + "@info" ).read()
+	appletDesc = httpGetJson( host + applet + "@pipeline" ).read()
 	worker = None
 	if appletDesc['mode'] == 'split':
 		worker = SplitWorker( host, applet )
@@ -174,6 +177,13 @@ class WorkerBase:
 	def __init__(self, host, applet):
 		self.host = host
 		self.applet = applet
+		pipeline = applet.split(":")[0]
+		fileList = json.loads( urlopen( self.host + pipeline + "@attach" ).read() )
+		for file in fileList:
+			oHandle = open( file, "w" )
+			fileURL =  self.host + pipeline + "@attach///" + file
+			oHandle.write( urlopen( fileURL ).read() )
+			oHandle.close()
 		
 	def getCode(self):
 		self.code = urlopen( self.host + self.applet + "@code" ).read()
@@ -306,14 +316,17 @@ def doWork( host, applet, instance, workDesc ):
 if __name__=="__main__":
 	host = sys.argv[1]
 	remus.init(host)
+	tmpDir = tempfile.mkdtemp()
+	os.chdir( tmpDir )
+	sys.path.append( tmpDir )
 	if ( len(sys.argv) >= 3 ):
 		workerID = sys.argv[2]
 	while 1:
 		workList = httpGetJson( host + "/@work?max=100" ).read()	
 		if len(workList) == 0:
 			break
-		for instance in workList:		
+		for instance in workList:
 			for node in workList[instance]:
 				for workDesc in workList[instance][node]:
 					doWork( host, node, instance, workDesc )
-	
+	shutil.rmtree( tmpDir ) 

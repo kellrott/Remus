@@ -24,7 +24,7 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.remus.RemusApp;;
 
 
-public class SQLStore implements MPStore {
+public class SQLStore implements MPStore, AttachStore {
 
 	public class ConnectionFactory extends BasePoolableObjectFactory {
 
@@ -59,7 +59,7 @@ public class SQLStore implements MPStore {
 	Boolean streaming = true;
 	String basePath;
 	@Override
-	public void init(Serializer serializer, Map paramMap) {
+	public void initMPStore(Serializer serializer, Map paramMap) {
 		this.serializer = serializer;
 		this.basePath = (String)paramMap.get(RemusApp.configWork);
 		this.tableCache = new HashMap<String, String>();
@@ -610,7 +610,7 @@ public class SQLStore implements MPStore {
 
 
 	@Override
-	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
+	public void writeAttachment(String file, String instance, String key, String attachment, InputStream inputStream) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {							
@@ -663,7 +663,7 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public InputStream readAttachement(String file, String instance, String key) {
+	public InputStream readAttachement(String file, String instance, String key, String attachment) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {
@@ -698,6 +698,18 @@ public class SQLStore implements MPStore {
 	@Override
 	public Iterable<String> keySlice(String path, String instance,
 			String startKey, int count) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void initAttachStore(Map paramMap) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<String> listAttachment(String path, String instance, String key) {
 		// TODO Auto-generated method stub
 		return null;
 	}

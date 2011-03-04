@@ -18,6 +18,7 @@ import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
+import org.mpstore.AttachStore;
 import org.remus.CodeFragment;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
@@ -299,7 +300,6 @@ public class RemusApplet {
 		if ( !datastore.containsKey(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
 			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), INIT_OP);
 		}		
-		datastore.add( "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0, 0, instance.toString() + getPath(), (new Date()).getTime() );		
 	}
 
 	public Collection<RemusInstance> getInstanceList() {
@@ -441,6 +441,10 @@ public class RemusApplet {
 
 	public String getID() {
 		return id;
+	}
+
+	public AttachStore getAttachStore() {
+		return pipeline.getAttachStore();
 	};
 
 }

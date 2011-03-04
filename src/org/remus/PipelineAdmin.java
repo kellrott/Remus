@@ -36,7 +36,7 @@ public class PipelineAdmin {
 			Serializer serializer = new JsonSerializer();
 			Class<?> mpClass = Class.forName(mpStore);			
 			MPStore store = (MPStore) mpClass.newInstance();
-			store.init(serializer, prop);			
+			store.initMPStore(serializer, prop);			
 			RemusApp app = new RemusApp( prop);
 			String cmd = null;
 			if ( args.length > 1 )
@@ -87,7 +87,9 @@ public class PipelineAdmin {
 							int j = 0;
 							for ( String key : store.listKeys(path + view, inst) ) {
 								System.out.println( Integer.toString(j) +"\t0\t===\t" + key );
+/*
 								try {
+
 									InputStream in = store.readAttachement(path + view, inst, key);
 									Base64InputStream bis = new Base64InputStream(in,true);
 									BufferedReader br = new BufferedReader( new InputStreamReader( bis ) );
@@ -98,6 +100,7 @@ public class PipelineAdmin {
 									br.close();
 								} catch (IOException e) {									
 								}
+									*/
 								System.out.println("===");
 								j++;
 							}							
@@ -129,7 +132,7 @@ public class PipelineAdmin {
 								} while (reading);
 								ByteArrayInputStream bis = new ByteArrayInputStream( sb.toString().getBytes() );
 								Base64InputStream is = new Base64InputStream(bis);
-								store.writeAttachment(curPath.getViewPath(), curPath.getInstance(), key, is);
+								//store.writeAttachment(curPath.getViewPath(), curPath.getInstance(), key, is);
 								is.close();
 							} else {
 								Map m = (Map)serializer.loads( tmp[2] );

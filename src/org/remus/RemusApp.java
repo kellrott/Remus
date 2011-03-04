@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
@@ -19,11 +20,14 @@ import org.remus.work.WorkKey;
 public class RemusApp {
 	public static final String configStore = "org.remus.mpstore";
 	public static final String configWork = "org.remus.workdir";
+	public static final String configAttachStore = "org.remus.attachstore";
 
 	//File srcbase;
 	public String baseURL = "";
 	Map<String,RemusPipeline> pipelines;
 	Map params;
+	MPStore rootStore;
+	AttachStore rootAttachStore;
 	public RemusApp( Map params ) throws RemusDatabaseException {
 		this.params = params;
 		//scanSource(srcbase);
@@ -39,12 +43,16 @@ public class RemusApp {
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
 			Class<?> mpClass = Class.forName(mpStore);			
-			MPStore store = (MPStore) mpClass.newInstance();
+			rootStore = (MPStore) mpClass.newInstance();
 			Serializer serializer = new JsonSerializer();
-			store.init(serializer, params);			
+			rootStore.initMPStore(serializer, params);			
 
-			for ( KeyValuePair kv : store.listKeyPairs("/@pipeline", RemusInstance.STATIC_INSTANCE_STR ) ) {
-				loadPipeline(kv.getKey(), store, serializer);
+			String attachStoreName = (String)params.get(RemusApp.configAttachStore);
+			Class<?> attachClass = Class.forName(attachStoreName);			
+			rootAttachStore = (AttachStore) attachClass.newInstance();
+			rootAttachStore.initAttachStore(params);
+			for ( KeyValuePair kv : rootStore.listKeyPairs("/@pipeline", RemusInstance.STATIC_INSTANCE_STR ) ) {
+				loadPipeline(kv.getKey(), rootStore, serializer, rootAttachStore);
 			}
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -58,9 +66,9 @@ public class RemusApp {
 		} 
 	}
 
-	public void loadPipeline(String name, MPStore store, Serializer serializer) {
-		RemusPipeline pipeline = new RemusPipeline(name, store);		
-		for ( KeyValuePair kv : store.listKeyPairs( "/" + name, RemusInstance.STATIC_INSTANCE_STR) ) {
+	public void loadPipeline(String name, MPStore store, Serializer serializer, AttachStore attachStore) {
+		RemusPipeline pipeline = new RemusPipeline(name, store, attachStore);		
+		for ( KeyValuePair kv : store.listKeyPairs( "/" + name + "@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
 			RemusApplet applet = loadApplet( name, kv.getKey(), store, serializer );
 			pipeline.addApplet(applet);
 		}
@@ -109,19 +117,16 @@ public class RemusApp {
 	 */
 
 	private RemusApplet loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
-		String dbPath = "/" + pipelineName + ":" + name;
-		String code = null;
-		for ( Object obj : store.get(dbPath, RemusInstance.STATIC_INSTANCE_STR, "code") ) {
-			code = (String)obj;
+		String dbPath = "/" + pipelineName + "@pipeline";
+
+		Map appletObj = null;
+		for ( Object obj : store.get(dbPath, RemusInstance.STATIC_INSTANCE_STR, name) ) {
+			appletObj = (Map)obj;		
 		}
-		String type = null;
-		for ( Object obj : store.get(dbPath, RemusInstance.STATIC_INSTANCE_STR, "type") ) {
-			type = (String)obj;
-		}
-		String codeType = null;
-		for ( Object obj : store.get(dbPath, RemusInstance.STATIC_INSTANCE_STR, "codeType") ) {
-			codeType = (String)obj;
-		}
+
+		String code = (String)appletObj.get("code");
+		String type = (String)appletObj.get("mode");
+		String codeType = (String)appletObj.get("codeType");
 
 		CodeFragment cf =  new CodeFragment(codeType, code);
 		int appletType = RemusApplet.MAPPER;
@@ -140,36 +145,40 @@ public class RemusApp {
 		if ( type.compareTo("match") == 0 ) {
 			appletType = RemusApplet.MATCHER;
 		}
+		if ( type.compareTo("split") == 0 ) {
+			appletType = RemusApplet.SPLITTER;
+		}
+		if ( type.compareTo("store") == 0 ) {
+			appletType = RemusApplet.STORE;
+		}
+
 		RemusApplet applet = RemusApplet.newApplet(name, cf, appletType);
-		
+
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
-			for ( Object input : store.get( dbPath, RemusInstance.STATIC_INSTANCE_STR, "leftInput" ) ) {
-				try {
-					RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-					applet.addLeftInput(path);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				String input = (String) appletObj.get("leftInput");
+				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+				applet.addLeftInput(path);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			for ( Object input : store.get( dbPath, RemusInstance.STATIC_INSTANCE_STR, "rightInput" ) ) {
-				try {
-					RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-					applet.addRightInput(path);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}		
+			try {
+				String input = (String) appletObj.get("rightInput");
+				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+				applet.addRightInput(path);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else {
-			for ( Object input : store.get( dbPath, RemusInstance.STATIC_INSTANCE_STR, "input" ) ) {
-				try {
-					RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-					applet.addInput(path);
-				} catch (FileNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			try {
+				String input = (String) appletObj.get("input");
+				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+				applet.addInput(path);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		return applet;
@@ -211,14 +220,12 @@ public class RemusApp {
 		return false;
 	}
 
-	/*
-	public void kickStart() {
-		try {
-			codeManager.startWorkQueue();
-		} catch (RemusDatabaseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public MPStore getRootDatastore() {
+		return rootStore;
 	}
-	 */
+
+	public AttachStore getRootAttachStore() {
+		return rootAttachStore;
+	}
+
 }

@@ -1,12 +1,11 @@
 package org.mpstore;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
 public interface MPStore {
 	
-	public void init(Serializer serializer, Map paramMap);
+	public void initMPStore(Serializer serializer, Map paramMap);
 	
 	public void add(String path, String instance, long jobid, long emitID, String key, Object data);
 	public void add(String path, String instance, List<KeyValuePair> inputList); 
@@ -30,10 +29,6 @@ public interface MPStore {
 	//public void delete(String path, String instance, String key, long jobID, long emitID);
 
 	public long getTimeStamp(String path, String instance);
-	
-	public void writeAttachment(String path, String instance, String key, InputStream inputStream);
-
-	public InputStream readAttachement(String path, String instance, String key);
 
 	public void close();
 
