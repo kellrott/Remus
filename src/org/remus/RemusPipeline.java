@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.mpstore.AttachStore;
 import org.mpstore.MPStore;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
@@ -16,11 +17,13 @@ public class RemusPipeline {
 	Map<RemusPath, RemusApplet> inputs;
 	String id;
 	MPStore datastore;
-	public RemusPipeline(String id, MPStore datastore) {
+	AttachStore attachStore;
+	public RemusPipeline(String id, MPStore datastore, AttachStore attachStore) {
 		members = new HashMap<String,RemusApplet>();
 		inputs = new HashMap<RemusPath, RemusApplet >();
 		this.id = id;
 		this.datastore = datastore;
+		this.attachStore = attachStore;
 	}
 
 	public void addApplet(RemusApplet applet) {		
@@ -109,6 +112,10 @@ public class RemusPipeline {
 
 	public String getID() {
 		return id;
+	}
+
+	public AttachStore getAttachStore() {
+		return attachStore;
 	}
 
 }

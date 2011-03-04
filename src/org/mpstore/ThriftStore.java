@@ -57,7 +57,7 @@ public class ThriftStore implements MPStore {
 	public static final String PORT = "org.mpstore.ThriftStore.port";
 
 	@Override
-	public void init(Serializer serializer, Map paramMap) {
+	public void initMPStore(Serializer serializer, Map paramMap) {
 		this.serializer = serializer;
 		this.basePath = (String)paramMap.get(RemusApp.configWork);
 		clientPool = new SoftReferenceObjectPool( new ClientFactory() );
@@ -447,61 +447,6 @@ public class ThriftStore implements MPStore {
 		return out;
 	}
 
-	@Override
-	public InputStream readAttachement(String path, String instance, String key) {
-		try {
-			String pathStr=null;
-			for ( Object obj : get(path, instance, key ) ) {
-				pathStr = (String)obj;
-			}
-			if ( pathStr != null ) {
-				InputStream is = new FileInputStream( new File(basePath, pathStr) );
-				return is;
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	@Override
-	public void writeAttachment(String path, String instance, String key,
-			InputStream inputStream) {
-		try {
-			MessageDigest sha1 = MessageDigest.getInstance("SHA-1");
-			sha1.update( path.getBytes() );
-			sha1.update( key.getBytes() );
-			byte []hash = sha1.digest();
-			Formatter format = new Formatter();
-			for ( byte b : hash ) {
-				format.format("%02x", b);
-			}
-			String keyDigest = format.toString();
-
-			File instanceDir = new File( basePath, instance );
-			if ( !instanceDir.exists() ) {
-				instanceDir.mkdir();
-			}
-			File outFile = new File( instanceDir, keyDigest );
-			FileOutputStream fos = new FileOutputStream(outFile);
-			byte [] buffer = new byte[1024];
-			int len;
-			while ((len=inputStream.read(buffer))>0) {
-				fos.write(buffer, 0, len);
-			}
-			fos.close();
-			add( path, instance, 0L, 0L, key, instance + "/" + keyDigest );
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	@Override
 	public long keyCount(String path, String instance, int maxCount) {
@@ -560,7 +505,7 @@ public class ThriftStore implements MPStore {
 				}
 			}
 		};
-		
+
 		long timestamp = 0;
 		while ( out.hasNext() ) {
 			long cur = out.next();

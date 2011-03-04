@@ -19,7 +19,7 @@ public class MPStoreTest {
 		Map param = new HashMap();
 		param.put(RemusApp.configWork, "/tmp/remusWorkerPath");
 		ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
-		ds.init(new JsonSerializer(), param );
+		ds.initMPStore(new JsonSerializer(), param );
 	}
 
 	@Test public void insertTest() {

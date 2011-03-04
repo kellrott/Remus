@@ -22,7 +22,8 @@ public class RemusPath {
 	private String appletName = null;
 	private String appletPortName = null;
 	private String instance = null;
-	private String key;
+	private String key = null;
+	private String attachName = null;
 	private int input_type;
 
 	public static final int AppletInput = 0;
@@ -31,7 +32,7 @@ public class RemusPath {
 	public static final int StaticInput = 2;
 
 	static final Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
-	static final Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
+	//static final Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
 	static final Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
 
 	public RemusPath(RemusPath ref, RemusInstance instance) {
@@ -68,23 +69,22 @@ public class RemusPath {
 		String [] tmp = pathinfo.split("@");
 		String path = tmp[0];
 		if ( tmp.length > 1 ) {
-			Matcher m1 = instancePat.matcher(tmp[1]);
-			if ( m1.find() ) {
-				appletView = m1.group(1);
-				instance = m1.group(2);
-			} else {
-				Matcher m2 = instanceKeyPat.matcher(tmp[1]); 
-				if ( m2.find() ) {
-					appletView = m2.group(1);
-					instance = m2.group(2);
+			String [] tmp3 = tmp[1].split("/");			
+			appletView = tmp3[0];
+			if ( tmp3.length > 1 ) {
+				instance = tmp3[1];
+			}
+			if ( tmp3.length > 2 ) {				
 					try {
-						key = URLDecoder.decode( m2.group(3), "UTF-8" ) ;
+						key = URLDecoder.decode( tmp3[2], "UTF-8" ) ;
 					} catch (UnsupportedEncodingException e) {
-
 					}
-				} else {
-					appletView = tmp[1];
-				}
+			}
+			if ( tmp3.length > 3 ) {		
+				try {
+					attachName = URLDecoder.decode( tmp3[3], "UTF-8" ) ;
+				} catch (UnsupportedEncodingException e) {
+				}				 
 			}
 		}
 		if ( appletView != null && appletView.length() == 0 )
@@ -103,6 +103,11 @@ public class RemusPath {
 		if ( tmp2.length == 2) {
 			appletName = tmp2[1];
 			pipelineName = tmp2[0].replaceFirst("^/", "");
+		} else if ( tmp2.length == 1 ) {
+			appletName = null;
+			pipelineName = tmp2[0].replaceFirst("^/", "");;
+			if ( pipelineName.length() == 0 )
+				pipelineName = null;
 		}
 		url = pathinfo;
 	}
@@ -218,6 +223,15 @@ public class RemusPath {
 
 	public String getApplet() {
 		return appletName;
+	}
+
+	public String getPipeline() {
+		return pipelineName;
+	}
+
+	public String getAttachment() {
+		// TODO Auto-generated method stub
+		return attachName;
 	}
 
 

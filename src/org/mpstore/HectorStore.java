@@ -49,7 +49,7 @@ public class HectorStore implements MPStore {
 
 	Serializer serial;	
 	@Override
-	public void init(Serializer serializer, Map paramMap) {
+	public void initMPStore(Serializer serializer, Map paramMap) {
 		serial = serializer;
 	}
 
@@ -224,18 +224,6 @@ public class HectorStore implements MPStore {
 
 	}
 
-	@Override
-	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public InputStream readAttachement(String string, String instance,
-			String key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public long keyCount(String path, String instance, int maxCount) {
