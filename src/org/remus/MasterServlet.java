@@ -149,17 +149,30 @@ public class MasterServlet extends HttpServlet {
 							out.println( "<li><a href='" + reqInfo.getPortPath() + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
 							out.println("</ul>");
 						}
-						if ( applet.getType() == RemusApplet.PIPE ) {
-							MPStore ds = applet.getDataStore();
-							boolean first = true;
+						MPStore ds = applet.getDataStore();
+						boolean first = true;
+
+						if ( applet.getType() == RemusApplet.PIPE ) {							
+							first = true;
 							for ( String key : ds.listKeys( applet.getPath() + "@attach", curInst.toString() ) ) {
 								if ( first ) {
 									out.println( "<p>Attachments</p>" );
 									first = false;
 								}
 								out.println( "<li><a href='" + reqInfo.getAppletPath() + "@attach/"   + instStr + "/" + key + "'>" + key + "</a></li>" );
+							}						
+							
+						}
+						
+						first = true;
+						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@error", curInst.toString() ) ) {
+							if ( first ) {
+								out.println( "<p>ERRORS</p>" );
+								first = false;
 							}
-						}					
+							out.println( "<li>" + kv.getValue() + "</li>" );
+						}
+				
 					} else {
 						for ( RemusInstance inst : applet.getInstanceList() ) {
 							out.println( "<li><a href='" + reqInfo.getPortPath() + "@/" + inst.toString() + "'>" + inst.toString() + "</a></li>" );
@@ -451,12 +464,12 @@ public class MasterServlet extends HttpServlet {
 							for ( Object key : m.keySet() ) {
 								String instStr = (String)key;
 								RemusInstance inst=new RemusInstance(instStr);
-								List jobList = (List)m.get(key);
+								Map jobErrors = (Map)m.get(key);
 								RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
-								for ( Object key2 : jobList ) {
+								for ( Object key2 : jobErrors.keySet() ) {
 									long jobID = Long.parseLong( key2.toString() );
 									//TODO:get worker exception text
-									workManage.errorWork(workerID, applet, inst, (int)jobID, "WORKER EXCEPTION");
+									workManage.errorWork(workerID, applet, inst, (int)jobID, (String)jobErrors.get(key2) );
 								}						
 							}
 						}
