@@ -173,9 +173,17 @@ public class RemusApp {
 			}
 		} else {
 			try {
-				String input = (String) appletObj.get("input");
-				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-				applet.addInput(path);
+				if ( appletObj.get("input") instanceof String ) {
+					String input = (String) appletObj.get("input");
+					RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+					applet.addInput(path);
+				}
+				if ( appletObj.get("input") instanceof List ) {
+					for ( Object obj : (List)  appletObj.get("input") )	{
+						RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
+						applet.addInput(path);
+					}
+				}
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
