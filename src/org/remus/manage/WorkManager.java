@@ -196,5 +196,13 @@ public class WorkManager {
 		return workerSets.keySet();
 	}
 
+	public int getWorkerActiveCount(String workerID) {
+		int count = 0;
+		for ( Set<WorkKey> set : workerSets.get(workerID).values() ) {
+			count += set.size();
+		}
+		return count;
+	}
+
 
 }

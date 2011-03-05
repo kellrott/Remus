@@ -160,32 +160,6 @@ public class RemusApplet {
 		codeType = type;
 	}
 
-	public Map getInfo() {
-		Map out = new HashMap();
-		if ( type==MAPPER ) {
-			out.put("mode", "map");
-		}
-		if ( type==REDUCER ) {
-			out.put("mode", "reduce");
-		}
-		if(type==SPLITTER) {
-			out.put("mode", "split");
-		}
-		if(type==PIPE) {
-			out.put("mode", "pipe");
-		}
-		if(type==MERGER) {
-			out.put("mode", "merge");
-		}
-		if(type==MATCHER) {
-			out.put("mode", "match");
-		}
-		if ( outputs != null && outputs.size() > 0 ) {
-			out.put("output", outputs);
-		}
-		return out;
-	}
-
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
