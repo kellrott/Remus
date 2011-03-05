@@ -87,6 +87,8 @@ public class RemusPath {
 				}				 
 			}
 		}
+		if ( key != null && key.length() == 0 )
+			key = null;
 		if ( appletView != null && appletView.length() == 0 )
 			appletView = null;
 		Matcher m = appletSub.matcher( tmp[0] );

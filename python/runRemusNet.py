@@ -163,7 +163,8 @@ def getWorker( host, applet ):
 		worker = PipeWorker( host, applet )
 	if appletDesc['mode'] == 'merge':
 		worker = MergeWorker( host, applet )
-	worker.getCode()
+	worker.code = appletDesc['code']
+	worker.compileCode()
 	if ( appletDesc.has_key( "output" ) ):
 		worker.output = appletDesc[ "output" ]
 	else:
@@ -185,8 +186,7 @@ class WorkerBase:
 			oHandle.write( urlopen( fileURL ).read() )
 			oHandle.close()
 		
-	def getCode(self):
-		self.code = urlopen( self.host + self.applet + "@code" ).read()
+	def compileCode(self):
 		self.module = imp.new_module( self.applet )	
 		self.module.__dict__["__name__"] = self.applet
 		exec self.code in self.module.__dict__
@@ -282,9 +282,12 @@ class PipeWorker(WorkerBase):
 		
 			fileMap = remus.getoutput()
 			for path in fileMap:
-				postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
+				postURL = self.host + self.applet + "@attach/%s//%s" % (instance, path)
 				print postURL
-				urlopen( postURL, fileMap[path].mem_map() ).read()
+				#print urlopen( postURL, fileMap[path].mem_map() ).read()
+				#TODO, figure out streaming post in python
+				cmd = "curl -d @%s %s" % (fileMap[ path ].getPath(), postURL )
+				os.system( cmd )
 				fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 

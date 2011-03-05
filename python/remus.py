@@ -8,7 +8,7 @@ global remus_functions
 global remus_server
 global out_handle_map
 global out_file_map
-
+import os
 class PipeFileBuffer:
 	def __init__(self, path):
 		self.path = path
@@ -24,9 +24,13 @@ class PipeFileBuffer:
 	def close(self):
 		#self.buff.close()
 		pass
+		
+	def getPath(self):
+		return self.buff.name
+		
 	def unlink(self):
 		self.buff.close()
-		os.path.unlink( self.buff.name )
+		os.unlink( self.buff.name )
 
 def open(path, mode="r"):
 	global out_file_map
