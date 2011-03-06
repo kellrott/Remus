@@ -76,7 +76,7 @@ public class MasterServlet extends HttpServlet {
 	private void doGet_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if ( reqInfo.getApplet() != null && app.hasApplet( reqInfo.getAppletPath() ) ) {
-			
+
 			PrintWriter out = resp.getWriter();
 			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 			MPStore ds = applet.getDataStore();
@@ -85,10 +85,9 @@ public class MasterServlet extends HttpServlet {
 				outObj = obj;
 			}
 			out.println( serializer.dumps( outObj ) );
-			
-			/*
-			if ( reqInfo.getInstance() != null ) {
-				RemusPipeline pipe = app.pipelines.get(reqInfo.getInstance() );
+		} else {
+			if ( reqInfo.getPipeline() != null ) {
+				RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline() );
 				PrintWriter out = resp.getWriter();
 				Map outMap = new HashMap();
 				for ( RemusApplet applet : pipe.getMembers() ) {
@@ -111,10 +110,9 @@ public class MasterServlet extends HttpServlet {
 				}
 				out.print( serializer.dumps(outMap) );
 			}
-			*/
-		} else {				
-		
-		}	
+
+
+		}
 
 	}
 
