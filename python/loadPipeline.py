@@ -31,7 +31,7 @@ def putData( url, data ):
 	curConn.close()
 	return outStr
 	
-def parseRemus(path, server):
+def parseRemus(server, path):
 	dir = os.path.dirname( path )
 	handle = open( path )
 	dom = parseString( handle.read() )
@@ -71,5 +71,6 @@ def parseRemus(path, server):
 		print putData( url, handle.read() ).read()
 		handle.close()
 if __name__ == "__main__":
-	parseRemus( sys.argv[1], sys.argv[2] )
+	for path in sys.argv[2:]:
+		parseRemus( sys.argv[1], path )
 	

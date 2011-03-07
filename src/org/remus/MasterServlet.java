@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -273,7 +274,9 @@ public class MasterServlet extends HttpServlet {
 			//TODO: put in more methods to access work manager statistics
 			Map curMap = new HashMap();
 			curMap.put("activeCount", workManage.getWorkerActiveCount(wID) );
-			//curMap.put("lastContact", workManage.lastAccess.get(workerID).toString() );
+			Date lastDate = workManage.getLastAccess(wID);
+			if ( lastDate != null )
+				curMap.put("lastContact", System.currentTimeMillis() - lastDate.getTime()  );
 			workerMap.put(wID, curMap );	
 		}
 		outMap.put( "workers", workerMap );
