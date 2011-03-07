@@ -13,11 +13,14 @@ import tempfile
 import traceback
 import os
 import shutil
+import threading
 
 workerID = str(uuid.uuid4())
 
+host = None
 curServer = None
 curConn = None
+statusTimer = None
 
 def urlopen(url,data=None):
 	u = urlparse( url )
@@ -35,6 +38,20 @@ def urlopen(url,data=None):
 		curConn.request("GET", u.path, None, headers)
 		return StringIO( curConn.getresponse().read() )
 
+
+def statusPulse():
+	log( "STATUS PULSE" )
+	global host
+	global statusTimer
+	u = urlparse( host )
+	conn = httplib.HTTPConnection(u.netloc)
+	headers = {"Cookie":  'remusWorker=%s' % (workerID) }
+	conn.request("GET", "/@status", None, headers)
+	conn.close()
+	statusTimer = threading.Timer(60, statusPulse)
+	statusTimer.start()
+	
+	
 verbose = True
 
 def log(v):
@@ -324,6 +341,7 @@ if __name__=="__main__":
 	sys.path.append( tmpDir )
 	if ( len(sys.argv) >= 3 ):
 		workerID = sys.argv[2]
+	statusPulse()
 	while 1:
 		workList = httpGetJson( host + "/@work?max=100" ).read()	
 		if len(workList) == 0:
@@ -333,3 +351,4 @@ if __name__=="__main__":
 				for workDesc in workList[instance][node]:
 					doWork( host, node, instance, workDesc )
 	shutil.rmtree( tmpDir ) 
+	statusTimer.cancel()

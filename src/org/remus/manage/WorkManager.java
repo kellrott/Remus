@@ -38,7 +38,9 @@ public class WorkManager {
 
 	public Map<AppletInstance,Set<WorkKey>> getWorkList( String workerID, int maxCount ) {
 		Date curDate = new Date();
-		lastAccess.put(workerID, curDate );
+		synchronized ( lastAccess ) {
+			lastAccess.put(workerID, curDate );
+		}
 
 		synchronized (workerSets) {			
 			if ( !workerSets.containsKey( workerID ) ) {
@@ -206,6 +208,10 @@ public class WorkManager {
 		synchronized ( lastAccess ) {
 			lastAccess.put(workerID, new Date() );
 		}		
+	}
+
+	public Date getLastAccess(String workerID) {
+		return lastAccess.get(workerID);
 	}
 
 

@@ -214,7 +214,9 @@ public class RemusApp {
 		if (appletPath.startsWith("/"))
 			appletPath = appletPath.replaceFirst("^\\/", "");
 		String []tmp = appletPath.split(":");
-		return pipelines.get(tmp[0]).getApplet(tmp[1]);
+		if ( pipelines.containsKey(tmp[0]) )
+			return pipelines.get(tmp[0]).getApplet(tmp[1]);
+		return null;
 	}
 
 	public boolean hasApplet(String appletPath) {
