@@ -9,9 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.AbstractMap.SimpleEntry;
 
-import org.mpstore.MPStore;
 import org.remus.RemusApp;
 import org.remus.RemusInstance;
 import org.remus.work.AppletInstance;
@@ -202,6 +200,12 @@ public class WorkManager {
 			count += set.size();
 		}
 		return count;
+	}
+
+	public void touchWorkerStatus(String workerID) {
+		synchronized ( lastAccess ) {
+			lastAccess.put(workerID, new Date() );
+		}		
 	}
 
 

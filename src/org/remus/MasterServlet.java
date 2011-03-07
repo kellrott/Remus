@@ -259,15 +259,22 @@ public class MasterServlet extends HttpServlet {
 	}
 
 	private void doGet_status(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+		String workerID = getWorkerID(req);
+		if ( workerID != null ) {
+			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+			workManage.touchWorkerStatus( workerID );
+		}
+		
 		PrintWriter out = resp.getWriter();
 		Map outMap = new HashMap();				
 		Map workerMap = new HashMap();
-		for ( String workerID : workManage.getWorkers()) {
+		for ( String wID : workManage.getWorkers()) {
 			//TODO: put in more methods to access work manager statistics
 			Map curMap = new HashMap();
-			curMap.put("activeCount", workManage.getWorkerActiveCount(workerID) );
+			curMap.put("activeCount", workManage.getWorkerActiveCount(wID) );
 			//curMap.put("lastContact", workManage.lastAccess.get(workerID).toString() );
-			workerMap.put(workerID, curMap );	
+			workerMap.put(wID, curMap );	
 		}
 		outMap.put( "workers", workerMap );
 		//outMap.put( "workBufferSize", workManage.workQueue.size() );
@@ -514,9 +521,13 @@ public class MasterServlet extends HttpServlet {
 						resp.getWriter().print("\"OK\"");
 					}
 				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
-					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-					applet.formatInput( reqInfo, req.getInputStream(), serializer );
-					resp.getWriter().print("\"OK\"");
+					String workerID = getWorkerID(req);
+					if ( workerID != null ) {
+						RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+						workManage.touchWorkerStatus( workerID );
+						applet.formatInput( reqInfo, req.getInputStream(), serializer );
+						resp.getWriter().print("\"OK\"");
+					}
 				} else if ( reqInfo.getView().compareTo("submit") == 0) {
 					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 					boolean found = false;
