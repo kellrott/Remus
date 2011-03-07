@@ -389,7 +389,19 @@ public class MasterServlet extends HttpServlet {
 					}
 				}
 			}
+		} else if (reqInfo.getPipeline() != null && reqInfo.getAttachment() != null ) {
+			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
+			InputStream is = pipe.getAttachStore().readAttachement("/" + reqInfo.getPipeline() + "@attach", RemusInstance.STATIC_INSTANCE_STR, null, reqInfo.getAttachment() );
+			ServletOutputStream os = resp.getOutputStream();
+			byte [] buffer = new byte[1024];
+			int len;
+			while ( (len = is.read(buffer)) >= 0 ) {
+				os.write( buffer, 0, len );
+			}
+			os.close();
+			is.close();
 		} else {
+		
 			PrintWriter out = resp.getWriter();
 			resp.setContentType( "text/html" );
 			out.println( "<h1>Pipelines:</h1> <ul>");
