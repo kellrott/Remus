@@ -75,10 +75,10 @@ public class RemusPath {
 				instance = tmp3[1];
 			}
 			if ( tmp3.length > 2 ) {				
-					try {
-						key = URLDecoder.decode( tmp3[2], "UTF-8" ) ;
-					} catch (UnsupportedEncodingException e) {
-					}
+				try {
+					key = URLDecoder.decode( tmp3[2], "UTF-8" ) ;
+				} catch (UnsupportedEncodingException e) {
+				}
 			}
 			if ( tmp3.length > 3 ) {		
 				try {
@@ -86,32 +86,35 @@ public class RemusPath {
 				} catch (UnsupportedEncodingException e) {
 				}				 
 			}
-		}
-		if ( key != null && key.length() == 0 )
-			key = null;
-		if ( appletView != null && appletView.length() == 0 )
-			appletView = null;
-		Matcher m = appletSub.matcher( tmp[0] );
-		String appletPath = null;
-		if ( m.find() ) {
-			appletPath = m.group(1);
-			appletPortName = m.group(2);
-			appletPath = m.replaceAll(appletPath);
+			if ( key != null && key.length() == 0 )
+				key = null;
+			if ( appletView != null && appletView.length() == 0 )
+				appletView = null;
+			Matcher m = appletSub.matcher( tmp[0] );
+			String appletPath = null;
+			if ( m.find() ) {
+				appletPath = m.group(1);
+				appletPortName = m.group(2);
+				appletPath = m.replaceAll(appletPath);
+			} else {
+				appletPath = tmp[0];
+			}
+			appletPath = (new File(appletPath)).getAbsolutePath();
+			String [] tmp2 = appletPath.split(":");
+			if ( tmp2.length == 2) {
+				appletName = tmp2[1];
+				pipelineName = tmp2[0].replaceFirst("^/", "");
+			} else if ( tmp2.length == 1 ) {
+				appletName = null;
+				pipelineName = tmp2[0].replaceFirst("^/", "");;
+				if ( pipelineName.length() == 0 )
+					pipelineName = null;
+			}
+			url = pathinfo;
 		} else {
-			appletPath = tmp[0];
+			String tmpPath = (new File(pathinfo)).getAbsolutePath();
+			
 		}
-		appletPath = (new File(appletPath)).getAbsolutePath();
-		String [] tmp2 = appletPath.split(":");
-		if ( tmp2.length == 2) {
-			appletName = tmp2[1];
-			pipelineName = tmp2[0].replaceFirst("^/", "");
-		} else if ( tmp2.length == 1 ) {
-			appletName = null;
-			pipelineName = tmp2[0].replaceFirst("^/", "");;
-			if ( pipelineName.length() == 0 )
-				pipelineName = null;
-		}
-		url = pathinfo;
 	}
 
 
