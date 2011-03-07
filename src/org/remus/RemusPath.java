@@ -32,8 +32,10 @@ public class RemusPath {
 	public static final int StaticInput = 2;
 
 	static final Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
+	static final Pattern pipelineAttachment = Pattern.compile("^/([^/]*)/(.*)$");
 	//static final Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
-	static final Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
+	//static final Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
+
 
 	public RemusPath(RemusPath ref, RemusInstance instance) {
 		this.parent = ref.parent;
@@ -113,7 +115,14 @@ public class RemusPath {
 			url = pathinfo;
 		} else {
 			String tmpPath = (new File(pathinfo)).getAbsolutePath();
-			
+			Matcher m = pipelineAttachment.matcher(tmpPath);
+			if ( m.matches() ) {
+				pipelineName = m.group(1);
+				attachName = m.group(2);
+
+			}
+			url = pathinfo;
+
 		}
 	}
 
@@ -149,7 +158,7 @@ public class RemusPath {
 			url = "$";
 			input_type=StaticInput;
 		} else {
-			url = "/" + pipelineID + "@attach/" + inputStr; 
+			url = "/" + pipelineID + "/" + inputStr; 
 			input_type=AttachInput;
 		}
 
