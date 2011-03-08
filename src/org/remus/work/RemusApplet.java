@@ -92,6 +92,7 @@ public class RemusApplet {
 	int type;
 	protected RemusPipeline pipeline = null;
 	LinkedList<RemusInstance> activeInstances;
+	private AttachStore attachstore;
 
 
 	public void addInput( RemusPath in ) {
@@ -163,6 +164,7 @@ public class RemusApplet {
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
+		this.attachstore = remusPipeline.getAttachStore();
 	}
 
 	public RemusPipeline getPipeline() {
@@ -337,7 +339,9 @@ public class RemusApplet {
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
 		datastore.delete(getPath() + "@error", instance.toString() );		
-		datastore.delete(getPath() + "@attach", instance.toString() );
+		
+		
+		attachstore.delete(getPath() + "@attach", instance.toString() );
 		
 		for ( String subname : getOutputs() ) {
 			datastore.delete( getPath() + "." + subname + "@data", instance.toString() );

@@ -617,12 +617,11 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
-	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
-		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
+	
+	
+	private void doDelete_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() == null ) {
-			if ( reqInfo.getView().compareTo("instance") == 0 && reqInfo.getInstance() != null ) {
+			if ( reqInfo.getInstance() != null ) {
 				RemusInstance instance = new RemusInstance(reqInfo.getInstance());
 				for ( RemusPipeline pipeline : app.pipelines.values() ) {
 					pipeline.deleteInstance(instance);
@@ -639,13 +638,43 @@ public class MasterServlet extends HttpServlet {
 			if ( reqInfo.getInstance() != null  ) {
 				applet.deleteInstance( new RemusInstance( reqInfo.getInstance()) );
 				try {
-					app = new RemusApp(  configMap );
+					app = new RemusApp( configMap );
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-		} 
+		} 		
+	}	
+	
+	
+	private void doDelete_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
+		if ( pipe != null ) {
+			RemusApplet applet = pipe.getApplet( reqInfo.getApplet() );
+			if ( applet != null  ) {
+				for ( RemusInstance inst : applet.getActiveInstanceList() ) {
+					applet.deleteInstance(inst);
+				}
+				app.deleteApplet( reqInfo.getPipeline(), reqInfo.getApplet() );
+			}
+		}
+	}
+
+	
+	@Override
+	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
+	throws ServletException, IOException {
+		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
+		
+		if ( reqInfo.getView() == null ) {
+						
+		} else if ( reqInfo.getView().compareTo("instance") == 0 ) {
+			doDelete_instance(reqInfo, req, resp);
+		} else if ( reqInfo.getView().compareTo("pipeline") == 0 ) {
+			doDelete_pipeline(reqInfo, req, resp);
+		}
+		
 	}
 }
 
