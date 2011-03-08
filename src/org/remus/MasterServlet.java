@@ -228,12 +228,13 @@ public class MasterServlet extends HttpServlet {
 					os.write( buffer, 0, len );
 				}
 				os.close();
-			} else {
+			} else if ( reqInfo.getInstance() != null ) {
 				PrintWriter out = resp.getWriter();
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-				MPStore ds = applet.getDataStore();
+				AttachStore ds = applet.getAttachStore();
+				
 				List<String> outList = new ArrayList<String>();
-				for ( String val : ds.listKeys(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance() ) ) {
+				for ( String val : ds.listAttachment(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey()) )  {
 					outList.add(val);
 				}
 				out.println( serializer.dumps( outList ) );
