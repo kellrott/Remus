@@ -22,22 +22,26 @@ curServer = None
 curConn = None
 statusTimer = None
 
-def urlopen(url,data=None):
+def urlopen(url,data=None,retry=1):
 	u = urlparse( url )
 	global curConn
 	global curServer
 	if curConn is None or curServer != u.netloc:
 		curConn = httplib.HTTPConnection(u.netloc)
 		curServer = u.netloc
-	if data is not None:
-		headers = {"Cookie":  'remusWorker=%s' % (workerID) }
-		curConn.request("POST", u.path, data, headers)
-		return StringIO( curConn.getresponse().read() )
-	else:
-		headers = {"Cookie":  'remusWorker=%s' % (workerID) }
-		curConn.request("GET", u.path, None, headers)
-		return StringIO( curConn.getresponse().read() )
-
+	try:
+		if data is not None:
+			headers = {"Cookie":  'remusWorker=%s' % (workerID) }
+			curConn.request("POST", u.path, data, headers)
+			return StringIO( curConn.getresponse().read() )
+		else:
+			headers = {"Cookie":  'remusWorker=%s' % (workerID) }
+			curConn.request("GET", u.path, None, headers)
+			return StringIO( curConn.getresponse().read() )
+	except httplib.BadStatusLine:
+		if retry > 0:
+			curConn = None
+			urlopen( url, data, retry-1)
 
 def statusPulse():
 	log( "STATUS PULSE" )
