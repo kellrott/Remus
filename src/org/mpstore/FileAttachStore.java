@@ -72,4 +72,23 @@ public class FileAttachStore implements AttachStore {
 	}
 
 	
+	public static boolean deleteDir(File dir) {
+	    if (dir.isDirectory()) {
+	        for (File child:dir.listFiles() ) {
+	            boolean success = deleteDir(child);
+	            if (!success) {
+	                return false;
+	            }
+	        }
+	    }
+	    return dir.delete();
+	}
+
+	@Override
+	public void delete(String path, String instance) {
+		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
+		deleteDir( attachDir );
+	}
+
+	
 }

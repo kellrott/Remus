@@ -14,4 +14,6 @@ public interface AttachStore {
 
 	List<String> listAttachment(String path, String instance, String key);
 
+	public void delete(String path, String instance);
+
 }

@@ -190,6 +190,11 @@ public class RemusApp {
 		return applet;
 	}
 
+	public void deleteApplet(String pipelineName, String appletName) {
+		String dbPath = "/" + pipelineName + "@pipeline";
+		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, appletName);
+	}
+	
 	public void addPipeline( RemusPipeline rp ) {
 		pipelines.put(rp.id, rp);
 	}
@@ -235,5 +240,7 @@ public class RemusApp {
 	public AttachStore getRootAttachStore() {
 		return rootAttachStore;
 	}
+
+	
 
 }
