@@ -593,7 +593,6 @@ public class MasterServlet extends HttpServlet {
 								RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
 								for ( Object key2 : jobErrors.keySet() ) {
 									long jobID = Long.parseLong( key2.toString() );
-									//TODO:get worker exception text
 									workManage.errorWork(workerID, applet, inst, (int)jobID, (String)jobErrors.get(key2) );
 								}						
 							}
