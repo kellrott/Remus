@@ -187,6 +187,13 @@ public class RemusApp {
 				e.printStackTrace();
 			}
 		}
+		
+		if ( appletObj.containsKey("output") ) {
+			for ( Object nameObj : (List)appletObj.get("output") ) {
+				applet.addOutput((String)nameObj);
+			}
+		}
+		
 		return applet;
 	}
 
