@@ -40,6 +40,7 @@ public class RemusApplet {
 			break;
 		}
 		case SPLITTER: {
+			out.workValue = 100;
 			out.workGenerator = SplitGenerator.class;	
 			break;
 		}
@@ -52,6 +53,7 @@ public class RemusApplet {
 			break;
 		}
 		case PIPE: {
+			out.workValue = 100;
 			out.workGenerator = PipeGenerator.class;	
 			break;
 		}
@@ -82,6 +84,7 @@ public class RemusApplet {
 	public static final int WORKGEN_OP_CODE = 1;
 	public static final int WORKDONE_OP_CODE = 2;
 
+	public int workValue = 1;
 	String codeType=null;
 	Class workGenerator = null;
 	private String id;
@@ -208,6 +211,11 @@ public class RemusApplet {
 		for ( Object opStr : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			if ( WORKDONE_OP.compareTo((String)opStr) == 0 ) {
 				found = true;
+			}
+		}
+		if ( found ) {
+			for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+				found = false;
 			}
 		}
 		return found;
@@ -339,10 +347,10 @@ public class RemusApplet {
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
 		datastore.delete(getPath() + "@error", instance.toString() );		
-		
-		
+
+
 		attachstore.delete(getPath() + "@attach", instance.toString() );
-		
+
 		for ( String subname : getOutputs() ) {
 			datastore.delete( getPath() + "." + subname + "@data", instance.toString() );
 		}		
@@ -423,6 +431,10 @@ public class RemusApplet {
 
 	public AttachStore getAttachStore() {
 		return pipeline.getAttachStore();
+	}
+
+	public int getWorkValue() {
+		return workValue;
 	};
 
 }

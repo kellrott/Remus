@@ -174,9 +174,23 @@ public class MasterServlet extends HttpServlet {
 				resp.flushBuffer();
 			}						
 		}
-
 	}
 
+	
+	private void doGet_submit(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {	
+		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+		if ( applet != null ) {		
+			PrintWriter out = resp.getWriter();
+			MPStore ds = applet.getDataStore();
+			for ( KeyValuePair kv : ds.listKeyPairs( reqInfo.getPortPath() + "@" + reqInfo.getView(), RemusInstance.STATIC_INSTANCE_STR ) ) {
+				Map outMap = new HashMap();
+				outMap.put(kv.getKey(), kv.getValue() );
+				out.println( serializer.dumps( outMap ) );
+				out.flush();
+			}
+		}				
+	}
+	
 	private void doGet_keys(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		PrintWriter out = resp.getWriter();
 		resp.setBufferSize(2048);
@@ -281,7 +295,7 @@ public class MasterServlet extends HttpServlet {
 			workerMap.put(wID, curMap );	
 		}
 		outMap.put( "workers", workerMap );
-		//outMap.put( "workBufferSize", workManage.workQueue.size() );
+		outMap.put( "workBufferSize", workManage.getWorkBufferSize() );
 		outMap.put("finishRate", workManage.getFinishRate() );
 		out.print( serializer.dumps(outMap) );
 	}
@@ -457,7 +471,7 @@ public class MasterServlet extends HttpServlet {
 		} else if ( reqInfo.getView().compareTo("work") == 0 ) {
 			doGet_work(reqInfo, req, resp);
 		} else if ( reqInfo.getView().compareTo("submit") == 0 ) {
-			doGet_data( reqInfo, req, resp );
+			doGet_submit( reqInfo, req, resp );
 		} else if ( reqInfo.getView().compareTo("data") == 0 ) {
 			doGet_data( reqInfo, req, resp );
 		} else if ( reqInfo.getView().compareTo("reduce") == 0 ) {
@@ -596,6 +610,7 @@ public class MasterServlet extends HttpServlet {
 			out.println("PUTTING pipeline: " + reqInfo.getInstance() );
 			out.println(data);
 			app.loadPipelines();
+			workManage = new WorkManager(app);
 		} else if ( reqInfo.getPipeline() != null && reqInfo.getApplet() != null && reqInfo.getView().compareTo("pipeline") == 0 ) {
 			//posting applet to pipleline
 			BufferedReader br = req.getReader();
@@ -610,6 +625,7 @@ public class MasterServlet extends HttpServlet {
 			out.println( "PUTTING APPLET: " + reqInfo.getPipeline() + " " + reqInfo.getApplet() );
 			out.println(data);
 			app.loadPipelines();
+			workManage = new WorkManager(app);
 		} else if ( reqInfo.getPipeline() != null && reqInfo.getApplet() == null && reqInfo.getView().compareTo("attach")==0) {
 			//posting attachment to pipeline			
 			AttachStore ds = app.getRootAttachStore();
@@ -629,6 +645,7 @@ public class MasterServlet extends HttpServlet {
 				}
 				try {
 					app = new RemusApp(configMap );
+					workManage = new WorkManager(app);
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -640,6 +657,7 @@ public class MasterServlet extends HttpServlet {
 				applet.deleteInstance( new RemusInstance( reqInfo.getInstance()) );
 				try {
 					app = new RemusApp( configMap );
+					workManage = new WorkManager(app);
 				} catch (RemusDatabaseException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -658,6 +676,7 @@ public class MasterServlet extends HttpServlet {
 					applet.deleteInstance(inst);
 				}
 				app.deleteApplet( reqInfo.getPipeline(), reqInfo.getApplet() );
+				workManage = new WorkManager(app);
 			}
 		}
 	}
