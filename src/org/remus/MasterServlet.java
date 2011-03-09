@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -235,13 +237,29 @@ public class MasterServlet extends HttpServlet {
 
 	private void doGet_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {		
 		PrintWriter out = resp.getWriter();
-		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-		MPStore ds = applet.getDataStore();
-		List outList = new LinkedList();
-		for ( String key : ds.listKeys( reqInfo.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
-			outList.add(key);
+		if ( reqInfo.getApplet() != null ) {
+			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+			if ( applet != null ) {
+				MPStore ds = applet.getDataStore();
+				List outList = new LinkedList();
+				for ( String key : ds.listKeys( reqInfo.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+					outList.add(key);
+				}
+				out.println( serializer.dumps( outList ) );
+			}
+		} else if ( reqInfo.getPipeline() != null ) {
+			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
+			if ( pipe != null ) {
+				Set<String> oSet = new HashSet<String>();
+				for ( RemusApplet applet : pipe.getMembers() ) {
+					for ( RemusInstance inst : applet.getInstanceList() ) {
+						oSet.add( inst.toString() );
+					}
+				}	
+				out.println( serializer.dumps( new LinkedList(oSet) ) );
+			}
 		}
-		out.println( serializer.dumps( outList ) );
+
 	}
 
 	private void doGet_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -291,28 +309,45 @@ public class MasterServlet extends HttpServlet {
 
 	private void doGet_status(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
-		String workerID = getWorkerID(req);
-		if ( workerID != null ) {
-			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-			workManage.touchWorkerStatus( workerID );
-		}
+		if ( reqInfo.getApplet() != null ) {
+			RemusApplet applet = app.getApplet(reqInfo.getAppletPath() );
+			if ( applet != null ) {
+				PrintWriter out = resp.getWriter();
+				if ( reqInfo.getInstance() != null ) {
+					out.print( serializer.dumps( applet.getStatus( new RemusInstance(reqInfo.getInstance()) ) ) );
+				} else { 
+					for ( RemusInstance inst : applet.getInstanceList() ) {
+						out.print( serializer.dumps( applet.getStatus( inst ) ) ) ;
 
-		PrintWriter out = resp.getWriter();
-		Map outMap = new HashMap();				
-		Map workerMap = new HashMap();
-		for ( String wID : workManage.getWorkers()) {
-			//TODO: put in more methods to access work manager statistics
-			Map curMap = new HashMap();
-			curMap.put("activeCount", workManage.getWorkerActiveCount(wID) );
-			Date lastDate = workManage.getLastAccess(wID);
-			if ( lastDate != null )
-				curMap.put("lastContact", System.currentTimeMillis() - lastDate.getTime()  );
-			workerMap.put(wID, curMap );	
+					}
+				}
+					
+			}
+
+		} else {		
+			String workerID = getWorkerID(req);
+			if ( workerID != null ) {
+				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+				workManage.touchWorkerStatus( workerID );
+			}
+
+			PrintWriter out = resp.getWriter();
+			Map outMap = new HashMap();				
+			Map workerMap = new HashMap();
+			for ( String wID : workManage.getWorkers()) {
+				//TODO: put in more methods to access work manager statistics
+				Map curMap = new HashMap();
+				curMap.put("activeCount", workManage.getWorkerActiveCount(wID) );
+				Date lastDate = workManage.getLastAccess(wID);
+				if ( lastDate != null )
+					curMap.put("lastContact", System.currentTimeMillis() - lastDate.getTime()  );
+				workerMap.put(wID, curMap );	
+			}
+			outMap.put( "workers", workerMap );
+			outMap.put( "workBufferSize", workManage.getWorkBufferSize() );
+			outMap.put("finishRate", workManage.getFinishRate() );
+			out.print( serializer.dumps(outMap) );
 		}
-		outMap.put( "workers", workerMap );
-		outMap.put( "workBufferSize", workManage.getWorkBufferSize() );
-		outMap.put("finishRate", workManage.getFinishRate() );
-		out.print( serializer.dumps(outMap) );
 	}
 
 	private void doGet_config(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {

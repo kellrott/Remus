@@ -76,7 +76,7 @@ public class RemusApplet {
 	public static final int PIPE = 6;
 	public static final int STORE = 7;
 
-	public static final String WORKDONE_OP = "workdone";	
+	public static final String WORKDONE_OP = "/@workdone";	
 
 	public static final int INIT_OP_CODE = 0;
 	public static final int WORKDONE_OP_CODE = 1;
@@ -208,8 +208,8 @@ public class RemusApplet {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object opStr : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
-			if ( WORKDONE_OP.compareTo((String)opStr) == 0 ) {
+		for ( Object opStr : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			if ( opStr != null && WORKDONE_OP.compareTo((String)opStr) == 0 ) {
 				found = true;
 			}
 		}
@@ -222,7 +222,7 @@ public class RemusApplet {
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
-		datastore.add( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, WORKDONE_OP_CODE, 0, remusInstance.toString(), WORKDONE_OP );
+		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), WORKDONE_OP );
 		datastore.delete( getPath() + "@done", remusInstance.toString() );
 	}
 
@@ -333,6 +333,7 @@ public class RemusApplet {
 
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+		datastore.delete(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		//datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
@@ -396,7 +397,7 @@ public class RemusApplet {
 
 	public RemusInstance submit( RemusPath src ) {
 		String instStr = null;
-		for ( Object obj : datastore.get(getPath() + "submit", RemusInstance.STATIC_INSTANCE_STR, src.getPath() ) ) {
+		for ( Object obj : datastore.get(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, src.getPath() ) ) {
 			instStr = (String)obj;
 		}
 		RemusInstance out = null;
@@ -450,6 +451,14 @@ public class RemusApplet {
 			}
 		}
 		return out;
+	}
+
+	public Object getStatus(RemusInstance remusInstance) {
+		Object out = null;
+		for ( Object obj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+			out = obj;
+		}
+		return out;	
 	};
 
 }
