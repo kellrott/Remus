@@ -347,7 +347,7 @@ public class RemusApplet {
 	}
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {
-		datastore.add( getPath() + "@error", inst.toString(), jobID, 0L, workerID, error);
+		datastore.add( getPath() + "@error", inst.toString(), 0L, 0L, Long.toString(jobID), error);
 	}
 
 	public void deleteErrors(RemusInstance inst) {
