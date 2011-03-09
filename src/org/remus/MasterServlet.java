@@ -184,11 +184,26 @@ public class MasterServlet extends HttpServlet {
 			MPStore ds = applet.getDataStore();
 			for ( KeyValuePair kv : ds.listKeyPairs( reqInfo.getPortPath() + "@" + reqInfo.getView(), RemusInstance.STATIC_INSTANCE_STR ) ) {
 				Map outMap = new HashMap();
-				outMap.put(kv.getKey(), kv.getValue() );
+				Map instMap = new HashMap();
+				instMap.put( kv.getValue(), applet.getInstanceSrc( new RemusInstance((String)kv.getValue()) ) );
+				outMap.put( applet.getPath(), instMap );
 				out.println( serializer.dumps( outMap ) );
 				out.flush();
 			}
-		}				
+		} else {
+			PrintWriter out = resp.getWriter();
+			for ( RemusPipeline pipe : app.pipelines.values() ) {
+				for ( RemusApplet cApp : pipe.getMembers() ) {
+					Map outMap = new HashMap();		
+					Map instMap = new HashMap();
+					for ( RemusInstance inst : cApp.getInstanceList() ) {
+						instMap.put( inst.toString(), cApp.getInstanceSrc( inst ) );
+					}
+					outMap.put(cApp.getPath(), instMap);
+					out.println( serializer.dumps( outMap ) );						
+				}
+			}
+		}
 	}
 	
 	private void doGet_keys(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {

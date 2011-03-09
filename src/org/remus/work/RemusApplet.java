@@ -76,13 +76,10 @@ public class RemusApplet {
 	public static final int PIPE = 6;
 	public static final int STORE = 7;
 
-	public static final String INIT_OP = "init";
-	public static final String WORKGEN_OP = "workgen";
 	public static final String WORKDONE_OP = "workdone";	
 
 	public static final int INIT_OP_CODE = 0;
-	public static final int WORKGEN_OP_CODE = 1;
-	public static final int WORKDONE_OP_CODE = 2;
+	public static final int WORKDONE_OP_CODE = 1;
 
 	public int workValue = 1;
 	String codeType=null;
@@ -191,12 +188,12 @@ public class RemusApplet {
 						allReady = false;
 					}
 				} else if ( iRef.getInputType() == RemusPath.DynamicInput ) {
-					
+
 					/*
 					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
-					*/
+					 */
 				} else if (  iRef.getInputType() == RemusPath.AttachInput ) {
 				} else if (  iRef.getInputType() == RemusPath.StaticInput ) {
 				} else {				
@@ -219,16 +216,6 @@ public class RemusApplet {
 		if ( found ) {
 			for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
 				found = false;
-			}
-		}
-		return found;
-	}
-
-	public boolean hasWorkSet( RemusInstance remusInstance ) {
-		boolean found = false;
-		for ( Object opStr : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
-			if ( WORKGEN_OP.compareTo((String)opStr) == 0 ) {
-				found = true;
 			}
 		}
 		return found;
@@ -283,9 +270,9 @@ public class RemusApplet {
 		datastore.add(getPath() + "@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
 	}
 
-	private void addInstance(RemusInstance instance) {
+	private void addInstance(RemusInstance instance, String srcPath) {
 		if ( !datastore.containsKey(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), INIT_OP);
+			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), srcPath);
 		}		
 	}
 
@@ -299,7 +286,7 @@ public class RemusApplet {
 				for ( String key : datastore.listKeys(iRef.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 					RemusInstance inst = new RemusInstance(key);
 					if ( !out.contains( inst ) ) {
-						addInstance(inst);
+						addInstance(inst, iRef.getPath());
 						out.add(inst);
 					}
 				}
@@ -308,7 +295,7 @@ public class RemusApplet {
 		for ( KeyValuePair kv : datastore.listKeyPairs(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
 			RemusInstance inst = new RemusInstance((String)kv.getValue());
 			if ( !out.contains( inst ) ) {
-				addInstance(inst);
+				addInstance(inst, kv.getKey());
 				out.add(inst);
 			}
 		}
@@ -413,11 +400,11 @@ public class RemusApplet {
 			out = new RemusInstance();
 			instStr = out.toString();
 			datastore.add( getPath() + "@submit", 
-				RemusInstance.STATIC_INSTANCE_STR, 
-				(Long)0L, 
-				(Long)0L, 
-				src.getPath(),
-				instStr );
+					RemusInstance.STATIC_INSTANCE_STR, 
+					(Long)0L, 
+					(Long)0L, 
+					src.getPath(),
+					instStr );
 		} else {
 			out = new RemusInstance(instStr);
 		}
@@ -449,6 +436,16 @@ public class RemusApplet {
 
 	public int getWorkValue() {
 		return workValue;
+	}
+
+	public String getInstanceSrc(RemusInstance remusInstance) {
+		String out = null;
+		for ( Object obj : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+			if ( ((String)obj).compareTo(WORKDONE_OP) != 0) {
+				out = (String)obj;
+			}
+		}
+		return out;
 	};
 
 }
