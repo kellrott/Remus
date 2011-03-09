@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.mpstore.MPStore;
+import org.remus.work.RemusApplet;
 
 
 public class RemusPath {
@@ -43,8 +44,10 @@ public class RemusPath {
 		if ( ref.getInputType() == DynamicInput ) {
 			String submitPath = null;
 			MPStore ds = ref.parent.getApplet( ref.getAppletPath() ).getDataStore();
-			for ( Object path : ds.get( ref.getAppletPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-				submitPath = (String)path;
+			for ( Object path : ds.get( ref.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
+				if ( RemusApplet.WORKDONE_OP.compareTo((String)path) != 0 ) {
+					submitPath = (String)path;
+				}
 			}
 			if ( submitPath != null ) {
 				ref = new RemusPath(ref.parent, submitPath);
