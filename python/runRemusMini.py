@@ -90,10 +90,12 @@ if __name__=="__main__":
 		inList = []
 		for inFile in inPath.split(','):
 			kpURL = host + inFile
-			print "fetching" + kpURL
+			sys.stderr.write( "fetching: " + kpURL + "\n" )
 			iHandle = jsonPairSplitter( urlopen( kpURL ) )
 			inList.append( iHandle )
 		func( inList )
 		fileMap = remus.getoutput()
 		for path in fileMap:
 			print str(fileMap[path])
+
+		
