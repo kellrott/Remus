@@ -560,26 +560,10 @@ public class MasterServlet extends HttpServlet {
 					}
 				} else if ( reqInfo.getView().compareTo("submit") == 0) {
 					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-					boolean found = false;
-					String submitFile = reqInfo.getAppletPath() + "@submit";
-					String instStr = null;
-					if ( reqInfo.getInstance() != null ) {
-						instStr = (new RemusInstance(applet.getDataStore(), reqInfo.getInstance() )).toString(); 
-					} else {
-						instStr = (new RemusInstance()).toString();
-					}
-					for ( Object instmp : applet.getDataStore().listKeys( submitFile,  instStr ) ) {
-						found = true;
-					}
-					if ( found ) {
-						resp.sendError( HttpServletResponse.SC_FORBIDDEN );
-					} else {
-						BufferedReader br = req.getReader();
-						String curline = br.readLine();	
-						applet.submit(new RemusInstance(instStr), new RemusPath(app, curline)) ;
-						resp.getWriter().print("{\"" + instStr + "\":\"OK\"}");
-					}
-
+					BufferedReader br = req.getReader();
+					String curline = br.readLine();	
+					RemusInstance inst = applet.submit( new RemusPath(app, curline) ) ;
+					resp.getWriter().print("{\"" + inst.toString() + "\":\"OK\"}");
 				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
 					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 					if ( reqInfo.getInstance() != null ) {
