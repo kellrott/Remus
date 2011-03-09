@@ -220,6 +220,14 @@ public class RemusApplet {
 		}
 		return found;
 	}
+	
+	public boolean isInError(  RemusInstance remusInstance ) {
+		boolean found = false;
+		for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+			found = true;
+		}
+		return found;
+	}
 
 	public void setComplete(RemusInstance remusInstance) {
 		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), WORKDONE_OP );
