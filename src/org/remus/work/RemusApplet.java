@@ -346,9 +346,7 @@ public class RemusApplet {
 		datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
-		datastore.delete(getPath() + "@error", instance.toString() );		
-
-
+		datastore.delete(getPath() + "@error", instance.toString() );
 		attachstore.delete(getPath() + "@attach", instance.toString() );
 
 		for ( String subname : getOutputs() ) {
@@ -360,6 +358,11 @@ public class RemusApplet {
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {
 		datastore.add( getPath() + "@error", inst.toString(), jobID, 0L, workerID, error);
 	}
+
+	public void deleteErrors(RemusInstance inst) {
+		datastore.delete(getPath() + "@error", inst.toString() );		
+	};
+
 
 	public void formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
 		if ( type == STORE ) {
@@ -435,6 +438,7 @@ public class RemusApplet {
 
 	public int getWorkValue() {
 		return workValue;
-	};
+	}
+
 
 }
