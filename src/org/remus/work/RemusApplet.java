@@ -220,6 +220,14 @@ public class RemusApplet {
 		}
 		return found;
 	}
+	
+	public boolean isInError(  RemusInstance remusInstance ) {
+		boolean found = false;
+		for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+			found = true;
+		}
+		return found;
+	}
 
 	public boolean hasWorkSet( RemusInstance remusInstance ) {
 		boolean found = false;
