@@ -191,9 +191,12 @@ public class RemusApplet {
 						allReady = false;
 					}
 				} else if ( iRef.getInputType() == RemusPath.DynamicInput ) {
+					
+					/*
 					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
+					*/
 				} else if (  iRef.getInputType() == RemusPath.AttachInput ) {
 				} else if (  iRef.getInputType() == RemusPath.StaticInput ) {
 				} else {				
@@ -302,8 +305,8 @@ public class RemusApplet {
 				}
 			} 
 		}
-		for ( String key : datastore.listKeys(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
-			RemusInstance inst = new RemusInstance(key);
+		for ( KeyValuePair kv : datastore.listKeyPairs(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
+			RemusInstance inst = new RemusInstance((String)kv.getValue());
 			if ( !out.contains( inst ) ) {
 				addInstance(inst);
 				out.add(inst);
@@ -343,11 +346,10 @@ public class RemusApplet {
 
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
+		//datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
 		datastore.delete(getPath() + "@done", instance.toString() );		
 		datastore.delete(getPath() + "@data", instance.toString() );		
-		datastore.delete(getPath() + "@error", instance.toString() );		
-
+		datastore.delete(getPath() + "@error", instance.toString() );	
 
 		attachstore.delete(getPath() + "@attach", instance.toString() );
 
@@ -401,13 +403,25 @@ public class RemusApplet {
 		}
 	}
 
-	public void submit(RemusInstance pipelineInstance, RemusPath src) {
-		datastore.add( getPath() + "@submit", 
+	public RemusInstance submit( RemusPath src ) {
+		String instStr = null;
+		for ( Object obj : datastore.get(getPath() + "submit", RemusInstance.STATIC_INSTANCE_STR, src.getPath() ) ) {
+			instStr = (String)obj;
+		}
+		RemusInstance out = null;
+		if ( instStr == null ) {
+			out = new RemusInstance();
+			instStr = out.toString();
+			datastore.add( getPath() + "@submit", 
 				RemusInstance.STATIC_INSTANCE_STR, 
 				(Long)0L, 
 				(Long)0L, 
-				pipelineInstance.toString(), 
-				src.getPath() );
+				src.getPath(),
+				instStr );
+		} else {
+			out = new RemusInstance(instStr);
+		}
+		return out;
 	}
 
 	@Override
