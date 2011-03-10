@@ -326,7 +326,7 @@ public class RemusApplet {
 			}
 			if ( !invalid ) {
 				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object val : datastore.get(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					if ( WORKDONE_OP.compareTo( (String)val) == 0 )
 						hasDone = true;
 				}
