@@ -22,7 +22,10 @@ public class WorkManager {
 	Map<AppletInstance,Set<WorkKey>>  workQueue;
 	Map<String,Map<AppletInstance,Set<WorkKey>>> workerSets;
 	Map<String,Date> lastAccess;
-	LinkedList<Date> finishTimes;
+
+	public static final int MAX_REFRESH_TIME = 30 * 1000;
+	Map<RemusApplet,Integer> assignRate;
+	Map<RemusApplet,Date> finishTimes;
 
 	RemusApp app;
 	public WorkManager(RemusApp app) {
@@ -30,7 +33,8 @@ public class WorkManager {
 		workQueue = new HashMap<AppletInstance,Set<WorkKey>>();
 		workerSets = new HashMap<String, Map<AppletInstance,Set<WorkKey>>>();
 		lastAccess = new HashMap<String, Date>();
-		finishTimes = new LinkedList<Date>();
+		finishTimes = new HashMap<RemusApplet,Date>();
+		assignRate = new HashMap<RemusApplet,Integer>();
 	}
 
 
@@ -40,19 +44,21 @@ public class WorkManager {
 		Date curDate = new Date();
 		synchronized ( lastAccess ) {
 			lastAccess.put(workerID, curDate );
-		}
-
-		synchronized (workerSets) {			
-			if ( !workerSets.containsKey( workerID ) ) {
-				workerSets.put(workerID, new HashMap<AppletInstance,Set<WorkKey>>());
-			}
-			for ( String worker : lastAccess.keySet() ) {
-				Date last = lastAccess.get(worker);
-				if ( curDate.getTime() - last.getTime() > WORKER_TIMEOUT && workerSets.containsKey(worker)) {
-					workerSets.remove(worker);
+			synchronized (workerSets) {			
+				//if worker id isn't setup, do so now
+				if ( !workerSets.containsKey( workerID ) ) {
+					workerSets.put(workerID, new HashMap<AppletInstance,Set<WorkKey>>());
+				}
+				//release work from an worker that hasn't checked in within the time limit
+				for ( String worker : lastAccess.keySet() ) {
+					Date last = lastAccess.get(worker);
+					if ( curDate.getTime() - last.getTime() > WORKER_TIMEOUT && workerSets.containsKey(worker)) {
+						workerSets.remove(worker);
+					}
 				}
 			}
-		}
+		}		
+		//scan applets for new work that hasn't been assigned to workers
 		if ( workQueue.size() == 0 ) {
 			Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
 			for (AppletInstance ai : newwork.keySet() ) {
@@ -75,22 +81,32 @@ public class WorkManager {
 				}
 			}
 		}
-
+		//add jobs to worker's queue 
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
 		synchronized ( workQueue ) {
-			int workCount = 0;
+			Map<AppletInstance,Integer> workCount = new HashMap<AppletInstance,Integer>();
 			for ( AppletInstance ai : wMap.keySet() ) {
-				workCount += ai.applet.getWorkValue() * wMap.get(ai).size();
+				workCount.put(ai, wMap.get(ai).size() );
 			}
 			for ( AppletInstance ai : workQueue.keySet() ) {
 				Set<WorkKey> wqSet = workQueue.get(ai);
 				HashSet<WorkKey> addSet = new HashSet<WorkKey>();
+				int maxAssign = 1;
+				if ( !assignRate.containsKey(ai) ) {
+					assignRate.put(ai.applet, 1);
+				} else {
+					maxAssign = assignRate.get(ai);
+				}
+				int wc = 0;
+				if ( workCount.containsKey(ai) )
+					wc = workCount.get(ai);
 				for ( WorkKey wk : wqSet ) {
-					if ( workCount < maxCount ) {
+					if ( wc < maxAssign ) {
 						addSet.add(wk);
-						workCount += ai.applet.getWorkValue(); 
+						wc++;
 					}
 				}
+				workCount.put(ai,wc);
 				wqSet.removeAll(addSet);
 				if ( !wMap.containsKey(ai) )
 					wMap.put(ai, new HashSet<WorkKey>() );
@@ -109,7 +125,7 @@ public class WorkManager {
 				rmSet.add(ai);
 		}
 		for (AppletInstance ai : rmSet){
-			workQueue.remove(ai);
+			workQueue.remove(ai);			
 		}	
 	}
 
@@ -121,8 +137,8 @@ public class WorkManager {
 
 		synchronized (workerSets) {
 			workerSets.get(workerID).remove(ref);
-			if ( workerSets.get(workerID).size() == 0 )
-				workerSets.remove(workerID);
+			//if ( workerSets.get(workerID).size() == 0 )
+			//	workerSets.remove(workerID);
 		}
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
@@ -130,15 +146,24 @@ public class WorkManager {
 
 
 	public void finishWork( String workerID, RemusApplet applet, RemusInstance inst, int jobID, long emitCount  ) {
-		Date d = new Date();
-		lastAccess.put(workerID, d );
-		synchronized (finishTimes) {
-			finishTimes.add(d);
-			while ( finishTimes.size() > 100 ) {
-				finishTimes.removeFirst();
-			}
+		Date d = new Date();		
+		synchronized (lastAccess) {
+			lastAccess.put(workerID, d );			
 		}
 		AppletInstance ai = new SimpleAppletInstance(applet,inst);
+		synchronized (finishTimes) {
+			Date last = finishTimes.get(ai);
+			synchronized ( assignRate ) {			
+				if ( last != null ) {
+					if ( d.getTime() - last.getTime() < MAX_REFRESH_TIME ) {
+						assignRate.put(ai.applet, assignRate.get(ai) + 1);
+					} else {
+						assignRate.put(ai.applet, Math.max(1, assignRate.get(ai) / 2) );
+					}
+				}
+			}
+			finishTimes.put(ai.applet,d);
+		}
 		WorkKey ref = new WorkKey(inst, jobID);
 		synchronized (workerSets) {
 			workerSets.get(workerID).get(ai).remove(ref);
@@ -180,20 +205,6 @@ public class WorkManager {
 		return out;
 	}
 
-
-	public long getFinishRate() {
-		long count = 0;
-		long sum = 0;
-		synchronized ( finishTimes ) {
-			for ( int i = 0; i < finishTimes.size() - 1; i++ ) {
-				sum += finishTimes.get(i).getTime() - finishTimes.get(i+1).getTime();
-				count++;
-			}
-		}
-		if ( count > 0 )
-			return sum / count;
-		return 0;
-	}
 
 	public Collection<String> getWorkers() {
 		return workerSets.keySet();
