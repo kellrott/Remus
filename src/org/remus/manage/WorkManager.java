@@ -136,9 +136,8 @@ public class WorkManager {
 		WorkKey ref = new WorkKey(inst, jobID);
 
 		synchronized (workerSets) {
-			workerSets.get(workerID).remove(ref);
-			//if ( workerSets.get(workerID).size() == 0 )
-			//	workerSets.remove(workerID);
+			AppletInstance ai = new SimpleAppletInstance(applet,inst);
+			workerSets.get(workerID).get(ai).remove(ref);
 		}
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
