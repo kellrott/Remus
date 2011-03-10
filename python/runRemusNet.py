@@ -68,10 +68,11 @@ class http_write:
 		self.order = 0
 		self.jobID = jobID
 		self.cache = []
+		self.cacheMax = 10000
 		
 	def emit( self, key, value ):
 		self.cache.append( [key, value] )
-		if ( len(self.cache) > 1000 ):
+		if ( len(self.cache) > self.cacheMax ):
 			self.flush()
 	
 	def close(self):
@@ -303,7 +304,7 @@ class PipeWorker(WorkerBase):
 		
 			fileMap = remus.getoutput()
 			for path in fileMap:
-				postURL = self.host + self.applet + "@attach/%s//%s" % (instance, path)
+				postURL = self.host + self.applet + "@attach/%s/%s/%s" % (instance, fileMap[path].key, path)
 				print postURL
 				#print urlopen( postURL, fileMap[path].mem_map() ).read()
 				#TODO, figure out streaming post in python

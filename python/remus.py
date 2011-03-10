@@ -10,8 +10,9 @@ global out_handle_map
 global out_file_map
 import os
 class PipeFileBuffer:
-	def __init__(self, path):
+	def __init__(self, path, key):
 		self.path = path
+		self.key = key
 		self.buff = tempfile.NamedTemporaryFile(delete=False)
 		
 	def write(self, data):
@@ -27,15 +28,17 @@ class PipeFileBuffer:
 		
 	def getPath(self):
 		return self.buff.name
+	def getKey(self):
+		return self.key
 		
 	def unlink(self):
 		self.buff.close()
 		os.unlink( self.buff.name )
 
-def open(path, mode="r"):
+def open(path, mode="r", key=None):
 	global out_file_map
 	if mode=="w":
-		o = PipeFileBuffer(path)
+		o = PipeFileBuffer(path, key)
 		out_file_map[ path ] = o
 		return o
 	return urlopen( remus_server + path )
