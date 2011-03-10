@@ -220,6 +220,14 @@ public class RemusApplet {
 		}
 		return found;
 	}
+	
+	public boolean isInError(  RemusInstance remusInstance ) {
+		boolean found = false;
+		for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+			found = true;
+		}
+		return found;
+	}
 
 	public void setComplete(RemusInstance remusInstance) {
 		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), WORKDONE_OP );
@@ -318,7 +326,7 @@ public class RemusApplet {
 			}
 			if ( !invalid ) {
 				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object val : datastore.get(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					if ( WORKDONE_OP.compareTo( (String)val) == 0 )
 						hasDone = true;
 				}
