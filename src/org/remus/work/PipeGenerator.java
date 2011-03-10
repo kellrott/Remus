@@ -28,7 +28,8 @@ public class PipeGenerator implements WorkGenerator {
 		this.inst = instance;
 		done = false;
 		Set<WorkKey> outList = new HashSet<WorkKey>();
-		if ( applet.datastore.containsKey(applet.getPath() + "@done", instance.toString(), "0" ) ) {
+		if ( applet.datastore.containsKey(applet.getPath() + "@done", instance.toString(), "0" ) ||
+				!applet.datastore.containsKey(applet.getPath() + "@error", instance.toString(), "0" )) {
 			done = true;
 			return outList;
 		}		

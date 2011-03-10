@@ -53,6 +53,11 @@ def parseRemus(server, path):
 				remusNode['codeType'] = node.getAttribute('type' )
 				if node.hasAttribute('output'):
 					remusNode[ 'output' ] = node.getAttribute( 'output' ).split(',')
+				for i in range(node.attributes.length):
+					name = node.attributes.item(i).localName
+					value = node.attributes.item(i).value
+					if not name in ['id', 'input', 'output', 'type', 'code' ]:
+						remusNode[ name ] = value
 				remusNode['code'] = getText( node.childNodes )
 				url = server + "/" + pipelineName + ":" + remusNode['id'] + "@pipeline"  
 				print url

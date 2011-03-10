@@ -239,7 +239,7 @@ class SplitWorker(WorkerBase):
 				iHandle = None
 			func( iHandle )	
 			doneIDs.append( jobID )
-		self.closeOutput()
+			self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		
 
@@ -264,7 +264,7 @@ class MapWorker(WorkerBase):
 				e = StringIO()
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
-		self.closeOutput()
+			self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		if ( len( errorIDs ) ):
 			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
@@ -282,7 +282,7 @@ class ReduceWorker(WorkerBase):
 			kpData = httpGetJson( kpURL )
 			func(  wKey, valueIter(kpData) )
 			doneIDs.append( jobID )
-		self.closeOutput()
+			self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 
 

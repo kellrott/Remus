@@ -22,7 +22,9 @@ public class MapGenerator implements WorkGenerator {
 		int jobID = 0;
 		for ( String key : iRef.listKeys( applet.datastore ) ) {
 			if ( outList.size() < reqCount ) {
-				if ( !applet.datastore.containsKey( applet.getPath() + "@done", instance.toString(), Integer.toString(jobID)) ) {
+				if ( !applet.datastore.containsKey( applet.getPath() + "@done", instance.toString(), Integer.toString(jobID)) &&
+						!applet.datastore.containsKey( applet.getPath() + "@error", instance.toString(), Integer.toString(jobID))
+				) {
 					WorkKey w = new WorkKey(instance, jobID);
 					w.key = key;
 					w.pathStr = iRef.getPath();
