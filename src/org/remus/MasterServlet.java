@@ -293,11 +293,9 @@ public class MasterServlet extends HttpServlet {
 				PrintWriter out = resp.getWriter();
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 				AttachStore ds = applet.getAttachStore();
-				List<String> outList = new ArrayList<String>();
 				for ( String val : ds.listKeys(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance()  ) )  {
-					outList.add(val);
+					out.println( serializer.dumps( val ) );
 				}
-				out.println( serializer.dumps( outList ) );
 			}
 		} else {
 			RemusPipeline pipeline = app.pipelines.get( reqInfo.getPipeline() );
