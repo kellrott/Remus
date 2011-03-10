@@ -308,7 +308,8 @@ class PipeWorker(WorkerBase):
 				print postURL
 				#print urlopen( postURL, fileMap[path].mem_map() ).read()
 				#TODO, figure out streaming post in python
-				cmd = "curl -d @%s %s" % (fileMap[ path ].getPath(), postURL )
+				cmd = "curl --data-binary @%s %s" % (fileMap[ path ].getPath(), postURL )
+				log( "OS: " + cmd )
 				os.system( cmd )
 				fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
@@ -342,6 +343,7 @@ if __name__=="__main__":
 	host = sys.argv[1]
 	remus.init(host)
 	tmpDir = tempfile.mkdtemp()
+	log( "TMPDIR: " + tmpDir )
 	os.chdir( tmpDir )
 	sys.path.append( tmpDir )
 	if ( len(sys.argv) >= 3 ):
