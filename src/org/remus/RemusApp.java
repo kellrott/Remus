@@ -187,9 +187,21 @@ public class RemusApp {
 				e.printStackTrace();
 			}
 		}
+		
+		if ( appletObj.containsKey("output") ) {
+			for ( Object nameObj : (List)appletObj.get("output") ) {
+				applet.addOutput((String)nameObj);
+			}
+		}
+		
 		return applet;
 	}
 
+	public void deleteApplet(String pipelineName, String appletName) {
+		String dbPath = "/" + pipelineName + "@pipeline";
+		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, appletName);
+	}
+	
 	public void addPipeline( RemusPipeline rp ) {
 		pipelines.put(rp.id, rp);
 	}
@@ -235,5 +247,7 @@ public class RemusApp {
 	public AttachStore getRootAttachStore() {
 		return rootAttachStore;
 	}
+
+	
 
 }

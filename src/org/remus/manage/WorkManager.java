@@ -79,13 +79,16 @@ public class WorkManager {
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
 		synchronized ( workQueue ) {
 			int workCount = 0;
+			for ( AppletInstance ai : wMap.keySet() ) {
+				workCount += ai.applet.getWorkValue() * wMap.get(ai).size();
+			}
 			for ( AppletInstance ai : workQueue.keySet() ) {
 				Set<WorkKey> wqSet = workQueue.get(ai);
 				HashSet<WorkKey> addSet = new HashSet<WorkKey>();
 				for ( WorkKey wk : wqSet ) {
 					if ( workCount < maxCount ) {
 						addSet.add(wk);
-						workCount++;
+						workCount += ai.applet.getWorkValue(); 
 					}
 				}
 				wqSet.removeAll(addSet);
@@ -212,6 +215,16 @@ public class WorkManager {
 
 	public Date getLastAccess(String workerID) {
 		return lastAccess.get(workerID);
+	}
+
+	public int getWorkBufferSize() {
+		int count = 0;
+		synchronized (workQueue) {			
+			for ( AppletInstance ai : workQueue.keySet() ) {
+				count += workQueue.get(ai).size();	
+			}
+		}
+		return count;
 	}
 
 
