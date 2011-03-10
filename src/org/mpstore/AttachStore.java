@@ -12,7 +12,8 @@ public interface AttachStore {
 
 	public InputStream readAttachement(String path, String instance, String key, String attachment);
 
-	List<String> listAttachment(String path, String instance, String key);
+	public List<String> listAttachment(String path, String instance, String key);
+	public Iterable<String> listKeys(String path, String instance);
 
 	public void delete(String path, String instance);
 

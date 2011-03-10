@@ -62,11 +62,26 @@ public class FileAttachStore implements AttachStore {
 	}
 
 	@Override
+	public Iterable<String> listKeys(String path, String instance) {
+		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
+		LinkedList<String> out = new LinkedList<String>();
+		if ( attachDir.exists() ) {
+			for ( File file : attachDir.listFiles() ) {
+				out.add( file.getName() );
+			}
+		}
+		return out;
+	}
+
+	
+	@Override
 	public List<String> listAttachment(String path, String instance, String key) {
 		File attachDir = NameFlatten.flatten(basePath, path, instance, key, null).getParentFile();
 		LinkedList<String> out = new LinkedList<String>();
-		for ( File file : attachDir.listFiles() ) {
-			out.add( file.getName() );
+		if ( attachDir.exists() ) {
+			for ( File file : attachDir.listFiles() ) {
+				out.add( file.getName() );
+			}
 		}
 		return out;
 	}
@@ -89,6 +104,8 @@ public class FileAttachStore implements AttachStore {
 		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
 		deleteDir( attachDir );
 	}
+
+
 
 	
 }
