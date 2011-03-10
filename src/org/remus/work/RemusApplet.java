@@ -454,9 +454,7 @@ public class RemusApplet {
 	public String getInstanceSrc(RemusInstance remusInstance) {
 		String out = null;
 		for ( Object obj : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
-			if ( ((String)obj).compareTo(WORKDONE_OP) != 0) {
-				out = (String)obj;
-			}
+			out = (String)obj;
 		}
 		return out;
 	}
