@@ -56,6 +56,9 @@ def pipe(f):
 def merger(f):
 	return addFunction(f)
 
+def match(f):
+	return addFunction(f)
+
 def splitter(f):
 	return addFunction(f)
 
