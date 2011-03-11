@@ -386,7 +386,7 @@ public class MasterServlet extends HttpServlet {
 						out.println("SUBMISSION<ul>");
 						MPStore ds = applet.getDataStore();
 						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR)  ) {
-							out.println( "<li>" + kv.getKey() + " " + kv.getValue() + "</li>" );
+							out.println( "<li>" + kv.getKey() + " <a href='" + kv.getValue() + "'>" + kv.getValue() + "</a></li>" );
 						}
 
 						out.println("</ul>");
