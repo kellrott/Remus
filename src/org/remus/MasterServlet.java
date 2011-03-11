@@ -268,14 +268,18 @@ public class MasterServlet extends HttpServlet {
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 				AttachStore ds = applet.getAttachStore();
 				InputStream is = ds.readAttachement( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), reqInfo.getAttachment() );
-				ServletOutputStream os = resp.getOutputStream();
-				byte [] buffer = new byte[1024];
-				int len;
-				while ( (len = is.read(buffer)) >= 0 ) {
-					os.write( buffer, 0, len );
+				if ( is != null ) {
+					ServletOutputStream os = resp.getOutputStream();
+					byte [] buffer = new byte[1024];
+					int len;
+					while ( (len = is.read(buffer)) >= 0 ) {
+						os.write( buffer, 0, len );
+					}
+					os.close();
+				} else {
+					resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 				}
-				os.close();
-			} else if ( reqInfo.getInstance() != null ) {
+			} else if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
 				PrintWriter out = resp.getWriter();
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 				AttachStore ds = applet.getAttachStore();
@@ -285,6 +289,13 @@ public class MasterServlet extends HttpServlet {
 					outList.add(val);
 				}
 				out.println( serializer.dumps( outList ) );
+			} else if (  reqInfo.getInstance() != null && reqInfo.getKey() == null ) {
+				PrintWriter out = resp.getWriter();
+				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+				AttachStore ds = applet.getAttachStore();
+				for ( String val : ds.listKeys(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance()  ) )  {
+					out.println( serializer.dumps( val ) );
+				}
 			}
 		} else {
 			RemusPipeline pipeline = app.pipelines.get( reqInfo.getPipeline() );
@@ -321,7 +332,7 @@ public class MasterServlet extends HttpServlet {
 
 					}
 				}
-					
+
 			}
 
 		} else {		
@@ -345,7 +356,7 @@ public class MasterServlet extends HttpServlet {
 			}
 			outMap.put( "workers", workerMap );
 			outMap.put( "workBufferSize", workManage.getWorkBufferSize() );
-			outMap.put("finishRate", workManage.getFinishRate() );
+			//outMap.put("finishRate", workManage.getFinishRate() );
 			out.print( serializer.dumps(outMap) );
 		}
 	}
@@ -375,7 +386,7 @@ public class MasterServlet extends HttpServlet {
 						out.println("SUBMISSION<ul>");
 						MPStore ds = applet.getDataStore();
 						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR)  ) {
-							out.println( "<li>" + kv.getKey() + " " + kv.getValue() + "</li>" );
+							out.println( "<li>" + kv.getKey() + " <a href='" + kv.getValue() + "'>" + kv.getValue() + "</a></li>" );
 						}
 
 						out.println("</ul>");
@@ -409,13 +420,17 @@ public class MasterServlet extends HttpServlet {
 					if ( applet.isComplete(curInst ) ) {
 						out.println("<p>Work Complete</p>");
 					} else { 
-						if ( applet.isReady(curInst) ) {
-							if ( applet.isComplete(curInst) )
-								out.println("<p>Work Ready</p>" );
-							else
-								out.println("<p>Work Pending</p>" );
+						if ( applet.isInError(curInst) ) {
+							out.println("<p>Error</p>" );
 						} else {
-							out.println("<p>Work Not Ready</p>" );							
+							if ( applet.isReady(curInst) ) {
+								if ( applet.isComplete(curInst) )
+									out.println("<p>Work Ready</p>" );
+								else
+									out.println("<p>Work Pending</p>" );
+							} else {
+								out.println("<p>Work Not Ready</p>" );							
+							}
 						}
 					}
 					if ( applet.isReady(curInst) || applet.getType() == RemusApplet.STORE ) {
@@ -488,14 +503,18 @@ public class MasterServlet extends HttpServlet {
 					for ( RemusInstance appInst : applet.getInstanceList() ) {
 						out.print( "<li><a href='" + applet.getPath() + "@/" + appInst.toString() + "'>" +
 								appInst.toString() + "</a> - ");
-						if ( applet.isReady(appInst) ) {
-							if ( applet.isComplete(appInst) ) {
-								out.print( "Complete");
-							} else {
-								out.print( "Ready");									
-							}
+						if ( applet.isInError(appInst) ) {
+							out.print("ERROR"); 
 						} else {
-							out.print( "Waiting");
+							if ( applet.isReady(appInst) ) {
+								if ( applet.isComplete(appInst) ) {
+									out.print( "Complete");
+								} else {
+									out.print( "Ready");									
+								}
+							} else {
+								out.print( "Waiting");
+							}
 						}
 						out.print( "</li>" );
 					}

@@ -154,7 +154,7 @@ public class RemusApp {
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
 			try {
-				String input = (String) appletObj.get("leftInput");
+				String input = (String) appletObj.get("left");
 				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 				applet.addLeftInput(path);
 			} catch (FileNotFoundException e) {
@@ -162,7 +162,7 @@ public class RemusApp {
 				e.printStackTrace();
 			}
 			try {
-				String input = (String) appletObj.get("rightInput");
+				String input = (String) appletObj.get("right");
 				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 				applet.addRightInput(path);
 			} catch (FileNotFoundException e) {

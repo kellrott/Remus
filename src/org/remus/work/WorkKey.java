@@ -10,6 +10,8 @@ public class WorkKey {
 	public int jobID;
 	public String pathStr;
 	public List<String> pathArray;
+	public String lPathStr;
+	public String rPathStr;
 	public WorkKey(RemusInstance inst, int jobID) {
 		this.inst = inst;
 		this.jobID = jobID;
