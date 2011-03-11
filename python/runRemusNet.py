@@ -329,6 +329,7 @@ class PipeWorker(WorkerBase):
 				fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 		if ( len( errorIDs ) ):
+			log( "ERROR: " + str(errorIDs) )
 			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
