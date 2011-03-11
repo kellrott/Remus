@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -145,7 +144,15 @@ public class WorkManager {
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
 
-
+	public boolean hasWork(String workerID, RemusApplet applet, RemusInstance inst,	int jobID) {
+		AppletInstance ai = new SimpleAppletInstance(applet,inst);	
+		WorkKey ref = new WorkKey(inst, jobID);
+		synchronized (workerSets) {
+			if ( !workerSets.containsKey(workerID) || !workerSets.get(workerID).containsKey(ai) || !workerSets.get(workerID).get(ai).contains(ref) )
+				return false;
+		}
+		return true;
+	}
 
 	public void finishWork( String workerID, RemusApplet applet, RemusInstance inst, int jobID, long emitCount  ) {
 		Date d = new Date();		
@@ -238,6 +245,10 @@ public class WorkManager {
 			}
 		}
 		return count;
+	}
+
+	public Map<RemusApplet,Integer> getAssignRateMap() {
+		return assignRate;
 	}
 
 

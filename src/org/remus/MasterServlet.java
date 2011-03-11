@@ -354,6 +354,12 @@ public class MasterServlet extends HttpServlet {
 					curMap.put("lastContact", System.currentTimeMillis() - lastDate.getTime()  );
 				workerMap.put(wID, curMap );	
 			}
+			Map<RemusApplet, Integer> assignMap = workManage.getAssignRateMap();
+			Map aMap = new HashMap();
+			for ( RemusApplet applet : assignMap.keySet() ) {
+				aMap.put(applet.getPath(), assignMap.get(applet) );
+			}
+			outMap.put( "assignRate", aMap );
 			outMap.put( "workers", workerMap );
 			outMap.put( "workBufferSize", workManage.getWorkBufferSize() );
 			//outMap.put("finishRate", workManage.getFinishRate() );
@@ -621,9 +627,18 @@ public class MasterServlet extends HttpServlet {
 				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
 					String workerID = getWorkerID(req);
 					if ( workerID != null ) {
+						//TODO: make sure correct worker is returning assigned results before putting them in the database....
 						RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 						workManage.touchWorkerStatus( workerID );
-						applet.formatInput( reqInfo, req.getInputStream(), serializer );
+						Set<Integer> out = applet.formatInput( reqInfo, req.getInputStream(), serializer );
+						if ( out != null ) {
+							RemusInstance inst = new RemusInstance(reqInfo.getInstance());
+							for (int jobID : out ) {
+								if ( !workManage.hasWork( workerID, applet, inst, jobID ) ) {
+									System.err.println("WRONG WORKER RETURNING RESULTS!!!");
+								}
+							}
+						}
 						resp.getWriter().print("\"OK\"");
 					}
 				} else if ( reqInfo.getView().compareTo("submit") == 0) {

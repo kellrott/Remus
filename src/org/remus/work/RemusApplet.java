@@ -363,7 +363,8 @@ public class RemusApplet {
 	};
 
 
-	public void formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
+	public Set<Integer> formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
+		Set<Integer> outSet = null;
 		if ( type == STORE ) {
 			if ( codeType.compareTo( "couchdb" ) == 0 ) {
 				try {
@@ -383,13 +384,16 @@ public class RemusApplet {
 				}
 			}
 		} else {
+			outSet = new HashSet<Integer>();
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 				String curline = null;
 				List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
 				while ( (curline = br.readLine() ) != null ) {
 					Map inObj = (Map)serializer.loads(curline);	
-					inputList.add( new KeyValuePair( Long.parseLong( inObj.get("id").toString() ), 
+					long jobID = Long.parseLong( inObj.get("id").toString() );
+					outSet.add((int)jobID);
+					inputList.add( new KeyValuePair( jobID, 
 							(Long)inObj.get("order"), (String)inObj.get("key") , 
 							inObj.get("value") ) );
 				}
@@ -401,6 +405,7 @@ public class RemusApplet {
 				e.printStackTrace();
 			}	
 		}
+		return outSet;
 	}
 
 	public RemusInstance submit( RemusPath src ) {
