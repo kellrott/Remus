@@ -44,9 +44,10 @@ def urlopen(url,data=None,retry=1):
 			urlopen( url, data, retry-1)
 
 def statusPulse():
-	log( "STATUS PULSE" )
 	global host
 	global statusTimer
+	log( "STATUS PULSE: " + workerID )
+	
 	u = urlparse( host )
 	conn = httplib.HTTPConnection(u.netloc)
 	headers = {"Cookie":  'remusWorker=%s' % (workerID) }
@@ -119,8 +120,11 @@ class jsonIter:
 		self.handle = handle
 	
 	def __iter__(self):
-		for line in self.handle:
-			yield json.loads( line )
+		try:
+			for line in self.handle:
+				yield json.loads( line )
+		except ValueError:
+			pass
 		self.handle.close()
 	
 	def read(self):
@@ -185,6 +189,9 @@ def getWorker( host, applet ):
 		worker = PipeWorker( host, applet )
 	if appletDesc['mode'] == 'merge':
 		worker = MergeWorker( host, applet )
+	if appletDesc['mode'] == 'match':
+		worker = MatchWorker( host, applet )
+	
 	worker.code = appletDesc['code']
 	worker.compileCode()
 	if ( appletDesc.has_key( "output" ) ):
@@ -268,6 +275,7 @@ class MapWorker(WorkerBase):
 			self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		if ( len( errorIDs ) ):
+			log( "ERROR: " + str(errorIDs) )
 			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
@@ -291,6 +299,8 @@ class PipeWorker(WorkerBase):
 	def doWork(self, instance, workDesc):
 		log( "Starting Pipe %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		func = remus.getFunction( self.applet )
+
+		errorIDs = {}
 		for jobID in workDesc['input']:
 			self.setupOutput(instance, jobID)
 			inList = []
@@ -299,9 +309,14 @@ class PipeWorker(WorkerBase):
 				log( "piping: " + kpURL )
 				iHandle = jsonPairSplitter( urlopen( kpURL ) )
 				inList.append( iHandle )
-			func( inList )
-			self.closeOutput()
-		
+			try:
+				func( inList )
+			except Exception:
+				exc_type, exc_value, exc_traceback = sys.exc_info()
+				e = StringIO()
+				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
+				errorIDs[jobID ] = e.getvalue()
+			self.closeOutput()		
 			fileMap = remus.getoutput()
 			for path in fileMap:
 				postURL = self.host + self.applet + "@attach/%s/%s/%s" % (instance, fileMap[path].key, path)
@@ -313,6 +328,9 @@ class PipeWorker(WorkerBase):
 				os.system( cmd )
 				fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
+		if ( len( errorIDs ) ):
+			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
+
 
 
 class MergeWorker(WorkerBase):	
@@ -333,6 +351,25 @@ class MergeWorker(WorkerBase):
 		self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
+
+
+class MatchWorker(WorkerBase):	
+	def doWork(self, instance, workDesc):		
+		func = remus.getFunction( self.applet )
+		errorIDs = {}
+		doneIDs = []
+		for jobID in workDesc['key']:
+			log( "Starting Match %s %s" % (self.applet, jobID) )
+			self.setupOutput(instance, jobID)
+			wKey = workDesc['key'][jobID]
+			leftValURL = self.host + workDesc['left_input'] + "/%s" % (  quote( wKey ) )
+			leftSet = httpGetJson( leftValURL )
+			rightValURL = self.host + workDesc['right_input'] + "/%s" % (  quote( wKey ) )
+			rightSet = httpGetJson( rightValURL )
+			func( wKey, valueIter(leftSet), valueIter(rightSet) )
+			doneIDs.append( jobID )
+			self.closeOutput()
+		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs } )
 
 def doWork( host, applet, instance, workDesc ): 
 	worker = getWorker( host, applet )
