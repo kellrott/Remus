@@ -84,9 +84,12 @@ public class WorkManager {
 		//add jobs to worker's queue 
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
 		synchronized ( workQueue ) {
-			Map<AppletInstance,Integer> workCount = new HashMap<AppletInstance,Integer>();
+			Map<RemusApplet,Integer> workCount = new HashMap<RemusApplet,Integer>();
 			for ( AppletInstance ai : wMap.keySet() ) {
-				workCount.put(ai, wMap.get(ai).size() );
+				Integer wc = workCount.get(ai.applet); 
+				if ( wc == null )
+					wc = 0;
+				workCount.put(ai.applet, wc + wMap.get(ai).size() );
 			}
 			for ( AppletInstance ai : workQueue.keySet() ) {
 				Set<WorkKey> wqSet = workQueue.get(ai);
@@ -97,16 +100,16 @@ public class WorkManager {
 				} else {
 					maxAssign = assignRate.get(ai);
 				}
-				int wc = 0;
-				if ( workCount.containsKey(ai) )
-					wc = workCount.get(ai);
+				Integer wc = workCount.get(ai);
+				if ( wc == null )
+					wc = 0;
 				for ( WorkKey wk : wqSet ) {
 					if ( wc < maxAssign ) {
 						addSet.add(wk);
 						wc++;
 					}
 				}
-				workCount.put(ai,wc);
+				workCount.put(ai.applet,wc);
 				wqSet.removeAll(addSet);
 				if ( !wMap.containsKey(ai) )
 					wMap.put(ai, new HashSet<WorkKey>() );
