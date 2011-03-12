@@ -15,6 +15,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,7 +25,7 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.remus.RemusApp;;
 
 
-public class SQLStore implements MPStore, AttachStore {
+public class SQLStore implements MPStore {
 
 	public class ConnectionFactory extends BasePoolableObjectFactory {
 
@@ -608,9 +609,9 @@ public class SQLStore implements MPStore, AttachStore {
 		}		
 	}
 
-
+/*
 	@Override
-	public void writeAttachment(String file, String instance, String key, String attachment, InputStream inputStream) {
+	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {							
@@ -663,7 +664,7 @@ public class SQLStore implements MPStore, AttachStore {
 	}
 
 	@Override
-	public InputStream readAttachement(String file, String instance, String key, String attachment) {
+	public InputStream readAttachement(String file, String instance, String key) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {
@@ -688,7 +689,8 @@ public class SQLStore implements MPStore, AttachStore {
 		}		
 		return null;
 	}
-
+*/
+	
 	@Override
 	public long getTimeStamp(String path, String instance) {
 		// TODO Auto-generated method stub
@@ -702,16 +704,18 @@ public class SQLStore implements MPStore, AttachStore {
 		return null;
 	}
 
+	/*
 	@Override
 	public void initAttachStore(Map paramMap) {
 		// TODO Auto-generated method stub
 		
 	}
-
+*/
+	/*
 	@Override
-	public List<String> listAttachment(String path, String instance, String key) {
+	public List<String> listKeys(String path, String instance) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	 */
 }

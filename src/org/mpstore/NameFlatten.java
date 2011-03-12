@@ -22,11 +22,10 @@ public class NameFlatten {
 		return out;
 	}
 	
-	public static File flatten(File workbase, String path, String instance, String key, String attachment) {
+	public static File flatten(File workbase, String path, String instance, String key) {
 		File out = new File( workbase, encode(path) );
 		out = new File(out, encode(instance) );
 		out = new File(out, encode(key) );
-		out = new File(out, encode(attachment) );
 		return out;
 	}
 	
