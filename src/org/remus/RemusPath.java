@@ -24,7 +24,6 @@ public class RemusPath {
 	private String appletPortName = null;
 	private String instance = null;
 	private String key = null;
-	private String attachName = null;
 	private int input_type;
 
 	public static final int AppletInput = 0;
@@ -85,12 +84,7 @@ public class RemusPath {
 				} catch (UnsupportedEncodingException e) {
 				}
 			}
-			if ( tmp3.length > 3 ) {		
-				try {
-					attachName = URLDecoder.decode( tmp3[3], "UTF-8" ) ;
-				} catch (UnsupportedEncodingException e) {
-				}				 
-			}
+			
 			if ( key != null && key.length() == 0 )
 				key = null;
 			if ( appletView != null && appletView.length() == 0 )
@@ -121,8 +115,7 @@ public class RemusPath {
 			Matcher m = pipelineAttachment.matcher(tmpPath);
 			if ( m.matches() ) {
 				pipelineName = m.group(1);
-				attachName = m.group(2);
-
+				key = m.group(2);
 			}
 			url = pathinfo;
 		}
@@ -244,11 +237,6 @@ public class RemusPath {
 	public String getPipeline() {
 		return pipelineName;
 	}
-
-	public String getAttachment() {
-		// TODO Auto-generated method stub
-		return attachName;
-	}
-
+	
 
 }
