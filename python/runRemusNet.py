@@ -211,7 +211,7 @@ class WorkerBase:
 		fileList = json.loads( urlopen( self.host + pipeline + "@attach" ).read() )
 		for file in fileList:
 			oHandle = open( file, "w" )
-			fileURL =  self.host + pipeline + "@attach///" + file
+			fileURL =  self.host + pipeline + "@attach//" + file
 			oHandle.write( urlopen( fileURL ).read() )
 			oHandle.close()
 		
@@ -319,7 +319,7 @@ class PipeWorker(WorkerBase):
 			self.closeOutput()		
 			fileMap = remus.getoutput()
 			for path in fileMap:
-				postURL = self.host + self.applet + "@attach/%s/%s/%s" % (instance, fileMap[path].key, path)
+				postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
 				print postURL
 				#print urlopen( postURL, fileMap[path].mem_map() ).read()
 				#TODO, figure out streaming post in python
