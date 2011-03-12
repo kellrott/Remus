@@ -27,4 +27,9 @@ public abstract class AppletInstance {
 			return true;
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return inst.toString() + applet.getPath();
+	}
 }

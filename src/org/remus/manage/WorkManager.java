@@ -57,12 +57,13 @@ public class WorkManager {
 				}
 			}
 		}		
-		//scan applets for new work that hasn't been assigned to workers
+		//scan applets for new work 
 		if ( workQueue.size() == 0 ) {
 			Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
 			for (AppletInstance ai : newwork.keySet() ) {
 				assert ai != null;
 				for ( WorkKey wk : newwork.get(ai) ) {
+					//make sure that it hasn't been assigned to workers yet
 					boolean found = false;
 					for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
 						if ( worker.containsKey( ai ) && worker.get(ai).contains(wk) ) {
@@ -84,6 +85,7 @@ public class WorkManager {
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
 		synchronized ( workQueue ) {
 			Map<RemusApplet,Integer> workCount = new HashMap<RemusApplet,Integer>();
+			//get current counts for every applet type
 			for ( AppletInstance ai : wMap.keySet() ) {
 				Integer wc = workCount.get(ai.applet); 
 				if ( wc == null )
@@ -91,6 +93,7 @@ public class WorkManager {
 				workCount.put(ai.applet, wc + wMap.get(ai).size() );
 			}
 			for ( AppletInstance ai : workQueue.keySet() ) {
+				//System.out.println("WorkCount:" + workCount );
 				Set<WorkKey> wqSet = workQueue.get(ai);
 				HashSet<WorkKey> addSet = new HashSet<WorkKey>();
 				int maxAssign = 1;
@@ -99,20 +102,23 @@ public class WorkManager {
 				} else {
 					maxAssign = assignRate.get(ai);
 				}
-				Integer wc = workCount.get(ai);
+				Integer wc = workCount.get(ai.applet);
 				if ( wc == null )
 					wc = 0;
 				for ( WorkKey wk : wqSet ) {
 					if ( wc < maxAssign ) {
+						//System.out.println( "Adding: " + ai + " " + wk );
 						addSet.add(wk);
 						wc++;
 					}
 				}
-				workCount.put(ai.applet,wc);
-				wqSet.removeAll(addSet);
-				if ( !wMap.containsKey(ai) )
-					wMap.put(ai, new HashSet<WorkKey>() );
-				wMap.get(ai).addAll(addSet);
+				if ( addSet.size() > 0 ) {
+					workCount.put(ai.applet,wc);
+					wqSet.removeAll(addSet);
+					if ( !wMap.containsKey(ai) )
+						wMap.put(ai, new HashSet<WorkKey>() );
+					wMap.get(ai).addAll(addSet);
+				}
 			}
 		}
 		emptyQueues();
@@ -200,8 +206,8 @@ public class WorkManager {
 						i++;
 					}
 				}
-				Map instMap = new HashMap();
-				instMap.put(instStr, ai.formatWork(addSet) );
+				//Map instMap = new HashMap();
+				//instMap.put(instStr, ai.formatWork(addSet) );
 				if ( ! out.containsKey(instStr) ) {
 					out.put( instStr, new HashMap() );
 				}

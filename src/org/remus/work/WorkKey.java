@@ -31,4 +31,9 @@ public class WorkKey {
 		return false;
 	}	
 	
+	@Override
+	public String toString() {
+		return inst.toString() + ":" + Integer.toString(jobID);
+	}
+	
 }
