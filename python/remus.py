@@ -27,7 +27,10 @@ class PipeFileBuffer:
 		
 	def getPath(self):
 		return self.buff.name
-		
+	
+	def fileno(self):
+		return self.buff.fileno()
+	
 	def unlink(self):
 		self.buff.close()
 		os.unlink( self.buff.name )
