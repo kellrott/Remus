@@ -12,6 +12,7 @@ import os
 class PipeFileBuffer:
 	def __init__(self, path):
 		self.path = path
+		self.isOpen = True
 		self.buff = tempfile.NamedTemporaryFile(delete=False)
 		
 	def write(self, data):
@@ -22,9 +23,10 @@ class PipeFileBuffer:
 		return mFile
 		
 	def close(self):
-		#self.buff.close()
-		pass
-		
+		if self.isOpen:
+			self.buff.close()
+		self.isOpen = False
+	
 	def getPath(self):
 		return self.buff.name
 	
@@ -32,7 +34,6 @@ class PipeFileBuffer:
 		return self.buff.fileno()
 	
 	def unlink(self):
-		self.buff.close()
 		os.unlink( self.buff.name )
 
 def open(key, mode="r"):
