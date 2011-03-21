@@ -549,100 +549,144 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
-		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );		
-		if ( reqInfo.getApplet() == null ) {
-			if ( reqInfo.getView().compareTo("restart") == 0 ) {
-				try {
-					app = new RemusApp( configMap );
-				} catch (RemusDatabaseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+
+	private void doPost_alias(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		if( reqInfo.getInstance() != null ) {
+			BufferedReader br = req.getReader();
+			String curline = br.readLine();
+			app.addAlias( new RemusInstance(reqInfo.getInstance()), curline );		
+		}
+	}
+
+	private void doPost_work(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+		String workerID = getWorkerID(req);
+		if ( workerID != null ) {
+			BufferedReader br = req.getReader();
+			String curline = null;
+			while ((curline=br.readLine())!= null ) {
+				Map m = (Map)serializer.loads( curline );
+				for ( Object key : m.keySet() ) {
+					String instStr = (String)key;
+					RemusInstance inst=new RemusInstance(instStr);
+					List jobList = (List)m.get(key);
+					RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
+					for ( Object key2 : jobList ) {
+						long jobID = Long.parseLong( key2.toString() );
+						//TODO:add emit id count check
+						app.getWorkManager().finishWork(workerID, applet, inst, (int)jobID, 0L);
+					}						
 				}
-			}  /* else if ( reqInfo.getView().compareTo("alias") == 0 && reqInfo.getInstance() != null ) {
-				BufferedReader br = req.getReader();
-				String curline = br.readLine();
-				if ( !app.getDataStore().containsKey("/@alias", RemusInstance.STATIC_INSTANCE_STR, curline) ) {
-					app.getDataStore().add("/@alias", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, curline, reqInfo.getInstance() );
+			}
+		}
+		resp.getWriter().print("\"OK\"");
+	}
+
+
+	private void doPost_error(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String workerID = getWorkerID(req);
+		if ( workerID != null ) {
+			BufferedReader br = req.getReader();
+			String curline = null;
+			while ((curline=br.readLine())!= null ) {
+				Map m = (Map)serializer.loads( curline );
+				for ( Object key : m.keySet() ) {
+					String instStr = (String)key;
+					RemusInstance inst=new RemusInstance(instStr);
+					Map jobErrors = (Map)m.get(key);
+					RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
+					for ( Object key2 : jobErrors.keySet() ) {
+						long jobID = Long.parseLong( key2.toString() );
+						app.getWorkManager().errorWork(workerID, applet, inst, (int)jobID, (String)jobErrors.get(key2) );
+					}						
 				}
-			} */
-		} else if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
-			if ( reqInfo.getView() != null ) {
-				if ( reqInfo.getView().compareTo("work") == 0 ) {
-					String workerID = getWorkerID(req);
-					if ( workerID != null ) {
-						BufferedReader br = req.getReader();
-						String curline = null;
-						while ((curline=br.readLine())!= null ) {
-							Map m = (Map)serializer.loads( curline );
-							for ( Object key : m.keySet() ) {
-								String instStr = (String)key;
-								RemusInstance inst=new RemusInstance(instStr);
-								List jobList = (List)m.get(key);
-								RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
-								for ( Object key2 : jobList ) {
-									long jobID = Long.parseLong( key2.toString() );
-									//TODO:add emit id count check
-									app.getWorkManager().finishWork(workerID, applet, inst, (int)jobID, 0L);
-								}						
+			}
+			resp.getWriter().print("\"OK\"");
+		}
+	}
+
+	private void doPost_data(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+		if ( applet != null ) {
+			if ( reqInfo.getInstance() != null) {
+				RemusInstance inst = new RemusInstance(reqInfo.getInstance());
+				String workerID = getWorkerID(req);
+				if ( workerID != null ) {
+					//TODO: make sure correct worker is returning assigned results before putting them in the database....
+					app.getWorkManager().touchWorkerStatus( workerID );
+					Set<Integer> out = applet.formatInput( reqInfo, req.getInputStream(), serializer );
+					if ( out != null ) {
+						for (int jobID : out ) {
+							if ( !app.getWorkManager().hasWork( workerID, applet, inst, jobID ) ) {
+								System.err.println("WRONG WORKER RETURNING RESULTS!!!");
 							}
 						}
-						resp.getWriter().print("\"OK\"");
 					}
-				} else if ( reqInfo.getView().compareTo("error") == 0 ) {
-					String workerID = getWorkerID(req);
-					if ( workerID != null ) {
-						BufferedReader br = req.getReader();
-						String curline = null;
-						while ((curline=br.readLine())!= null ) {
-							Map m = (Map)serializer.loads( curline );
-							for ( Object key : m.keySet() ) {
-								String instStr = (String)key;
-								RemusInstance inst=new RemusInstance(instStr);
-								Map jobErrors = (Map)m.get(key);
-								RemusApplet applet = app.getApplet( reqInfo.getAppletPath() );
-								for ( Object key2 : jobErrors.keySet() ) {
-									long jobID = Long.parseLong( key2.toString() );
-									app.getWorkManager().errorWork(workerID, applet, inst, (int)jobID, (String)jobErrors.get(key2) );
-								}						
-							}
-						}
-						resp.getWriter().print("\"OK\"");
-					}
-				} else if ( reqInfo.getView().compareTo("data") == 0 && reqInfo.getInstance() != null) {
-					String workerID = getWorkerID(req);
-					if ( workerID != null ) {
-						//TODO: make sure correct worker is returning assigned results before putting them in the database....
-						RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-						app.getWorkManager().touchWorkerStatus( workerID );
-						Set<Integer> out = applet.formatInput( reqInfo, req.getInputStream(), serializer );
-						if ( out != null ) {
-							RemusInstance inst = new RemusInstance(reqInfo.getInstance());
-							for (int jobID : out ) {
-								if ( !app.getWorkManager().hasWork( workerID, applet, inst, jobID ) ) {
-									System.err.println("WRONG WORKER RETURNING RESULTS!!!");
-								}
-							}
-						}
-						resp.getWriter().print("\"OK\"");
-					}
-				} else if ( reqInfo.getView().compareTo("submit") == 0) {
-					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-					BufferedReader br = req.getReader();
-					String curline = br.readLine();	
-					RemusInstance inst = applet.submit( new RemusPath(app, curline) ) ;
-					resp.getWriter().print("{\"" + inst.toString() + "\":\"OK\"}");
-				} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
-					RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-					if ( reqInfo.getInstance() != null ) {
-						applet.getAttachStore().writeAttachment( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), req.getInputStream() );
+					resp.getWriter().print("\"OK\"");
+				} else {
+					if ( applet.getType() == RemusApplet.STORE ) {
+						applet.formatInput( reqInfo, req.getInputStream(), serializer );
 					}
 				}
 			}
-		} 
+		}
 	}
+
+
+	private void doPost_submit(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+		if ( applet != null ) {
+			BufferedReader br = req.getReader();
+			String curline = br.readLine();	
+			RemusInstance inst = applet.submit( new RemusPath(app, curline) ) ;
+			resp.getWriter().print("{\"" + inst.toString() + "\":\"OK\"}");
+		}
+	}
+
+	private void doPost_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+		if ( applet != null ) {
+			BufferedReader br = req.getReader();
+			String curline = br.readLine();	
+			RemusInstance inst = applet.createInstance( curline );
+			Map out = new HashMap();
+			out.put("OK", inst.toString() );
+			resp.getWriter().print( serializer.dumps(out) );
+		}
+	}
+
+	private void doPost_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+		if ( reqInfo.getInstance() != null ) {
+			applet.getAttachStore().writeAttachment( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), req.getInputStream() );
+		}
+	}
+
+
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+	throws ServletException, IOException {
+		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );	
+		if ( reqInfo.getView() == null ) {
+
+		} else if ( reqInfo.getView().compareTo("alias") == 0  ) {
+			doPost_alias(reqInfo, req, resp);
+		} else 	if ( reqInfo.getView().compareTo("work") == 0 ) {
+			doPost_work(reqInfo, req, resp);
+		} else if ( reqInfo.getView().compareTo("error") == 0 ) {
+			doPost_error(reqInfo, req, resp);
+		} else if ( reqInfo.getView().compareTo("data") == 0 ) {
+			doPost_data(reqInfo, req, resp);
+		} else if ( reqInfo.getView().compareTo("submit") == 0) {
+			doPost_submit(reqInfo, req, resp);
+		} else if ( reqInfo.getView().compareTo("instance") == 0) {
+			doPost_instance(reqInfo, req, resp);		
+		} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
+			doPost_attach(reqInfo, req, resp);
+		}
+	}
+
 
 
 	@Override

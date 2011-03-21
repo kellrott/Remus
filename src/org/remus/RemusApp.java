@@ -239,6 +239,12 @@ public class RemusApp {
 		return workManage;
 	}
 
+	public void addAlias(RemusInstance remusInstance, String alias) {
+		if ( !rootStore.containsKey("/@alias", RemusInstance.STATIC_INSTANCE_STR, alias) ) {
+			rootStore.add("/@alias", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, alias, remusInstance.toString() );
+		}		
+	}
+
 
 
 }

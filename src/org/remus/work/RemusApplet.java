@@ -82,7 +82,6 @@ public class RemusApplet {
 	public static final int WORKDONE_OP_CODE = 1;
 
 	public int workValue = 1;
-	String codeType=null;
 	Class workGenerator = null;
 	private String id;
 	List<RemusPath> inputs = null, lInputs = null, rInputs = null;
@@ -157,10 +156,11 @@ public class RemusApplet {
 		return code.getSource();
 	}
 
+	/*
 	public void setCodeType(String type) {
 		codeType = type;
 	}
-
+*/
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
@@ -300,13 +300,14 @@ public class RemusApplet {
 				}
 			} 
 		}
+		/*
 		for ( KeyValuePair kv : datastore.listKeyPairs(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
 			RemusInstance inst = new RemusInstance((String)kv.getValue());
 			if ( !out.contains( inst ) ) {
 				addInstance(inst, kv.getKey());
 				out.add(inst);
 			}
-		}
+		}*/		
 		return out;
 	}
 
@@ -339,6 +340,12 @@ public class RemusApplet {
 	}
 
 
+	public RemusInstance createInstance(String submitKey) {
+		RemusInstance inst = new RemusInstance();
+		datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
+		return inst;
+	};
+	
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
@@ -366,7 +373,7 @@ public class RemusApplet {
 	public Set<Integer> formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
 		Set<Integer> outSet = null;
 		if ( type == STORE ) {
-			if ( codeType.compareTo( "couchdb" ) == 0 ) {
+			if ( code.getLang().compareTo( "couchdb" ) == 0 ) {
 				try {
 					JsonSerializer json = new JsonSerializer();
 					StringBuilder sb = new StringBuilder();
@@ -378,6 +385,23 @@ public class RemusApplet {
 					Object obj = json.loads(sb.toString());
 					String key = (String) ((Map)obj).get( "_id" );
 					datastore.add(getPath() + "@data", path.getInstance(), 0, 0, key, obj);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else if ( code.getLang().compareTo("json") == 0 ) {
+				try {
+					JsonSerializer json = new JsonSerializer();
+					StringBuilder sb = new StringBuilder();
+					byte [] buffer = new byte[1024];
+					int len;
+					while ((len = inputStream.read(buffer)) > 0) {
+						sb.append( new String(buffer, 0, len ));
+					}
+					Map objMap = (Map)json.loads(sb.toString());
+					for ( Object key :objMap.keySet() ) {
+						datastore.add(getPath() + "@data", path.getInstance(), 0, 0, (String)key, objMap.get(key));
+					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -470,6 +494,6 @@ public class RemusApplet {
 			out = obj;
 		}
 		return out;	
-	};
+	}
 
 }
