@@ -27,6 +27,13 @@ import org.remus.RemusPath;
 import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
 
+/**
+ * Pipeline administration tool. Primarily for dumping and loading pipeline
+ * instances.
+ * @author kellrott
+ *
+ */
+
 public class PipelineAdmin {
 
 	static public String [] storeViews = { "@data" }; 

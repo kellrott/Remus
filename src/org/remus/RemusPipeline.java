@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mpstore.AttachStore;
+import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
@@ -118,6 +119,19 @@ public class RemusPipeline {
 		return attachStore;
 	}
 
-	
+	public void submit( String key, Object data) {
+		datastore.add( "/" + getID() + "@submit", 
+				RemusInstance.STATIC_INSTANCE_STR, 
+				(Long)0L, 
+				(Long)0L, 
+				key,
+				data );
+	}
+
+	public Iterable<KeyValuePair> getSubmits() {
+		return datastore.listKeyPairs( "/" + getID() + "@submit", 
+				RemusInstance.STATIC_INSTANCE_STR );
+	}
+
 
 }
