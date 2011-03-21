@@ -3,4 +3,25 @@ REMUS
 A map reduce pipeline engine.
 
 
+Remus is web oriented database founded pipeline engine. It 
+is comprised of a series of key/value stacks that are 
+linked together by set operations. 
+
+There are two primary components:
+
+1) The master server: is handles job coordination, assigning
+work to the worker nodes in an orderly fashion.  It also provides 
+a primary web based interface to all of the data.
+
+2) The worker process: these processes check in the master
+asking for work assignments. They then execute the requested code 
+and return results.
+
+
+INSTALLATION
+
+
+
+
+
 

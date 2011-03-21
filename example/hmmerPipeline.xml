@@ -3,4 +3,11 @@
 <remus_store id="fastaStore" type="json"/>
 
 
+<remus_map id="nrBlast" type="bash">
+
+echo ${data}
+
+</remus_map>
+
+
 </remus>
