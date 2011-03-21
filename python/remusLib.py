@@ -1,23 +1,33 @@
 
-from xml.dom.minidom import parseString
-import imp
 import json
+	
+verbose = True
 
-class remusNode(object):
-	def __init__(self, id):
-		self.id = id
+def log(v):
+	"""
+	Generic logging code, replace with something better later
+	"""
+	if ( verbose ):
+		sys.stderr.write( v + "\n" )
 
-	def loadSrc( self, code ):
-		self.module = imp.new_module( self.id )	
-		self.module.__dict__["__name__"] = self.id
-		exec code in self.module.__dict__
 
-class fileStreamer:
+
+def httpPostJson( url, data ):
+	log( "posting:" + url )
+	handle = urlopen( url, json.dumps(data) )
+	return jsonIter( handle )
+
+	
+class httpStreamer:
+	"""
+	Class that reads off list of urls, opens each of the them sequentially
+	then returns the results one line at a time	
+	"""
 	def __init__(self, pathList):
 		self.pathList = pathList
 	def __iter__(self):
 		for path in self.pathList:
-			handle = open( path )
+			handle = urlopen( path )
 			for line in handle:
 				yield line
 			handle.close()
@@ -25,13 +35,49 @@ class fileStreamer:
 	def read(self):
 		out = ""
 		for path in self.pathList:
-			handle = open( path )
+			handle = urlopen( path )
 			out += handle.read()
 			handle.close()
 		return out
 
+class jsonIter:
+	"""
+	take handle, read one line at a time,
+	parse to sequential json objects, and return them
+	one at a time
+	"""
+	def __init__(self, handle):
+		self.handle = handle
+	
+	def __iter__(self):
+		try:
+			for line in self.handle:
+				yield json.loads( line )
+		except ValueError:
+			pass
+		self.handle.close()
+	
+	def read(self):
+		a = self.handle.read()
+		return json.loads( a )
 
+class valueIter:
+	"""
+	take jsonIter, but return only the first level values 
+	in each object
+	"""
+	def __init__(self, handle):
+		self.handle = handle
+	
+	def __iter__(self):
+		for v in self.handle:
+			for k in v:
+				yield v[k]
+	
 class jsonPairSplitter:
+	"""
+
+	"""
 	def __init__(self, iHandle):
 		self.handle = iHandle
 	
@@ -40,80 +86,47 @@ class jsonPairSplitter:
 			data  = json.loads( line )
 			for key in data:
 				yield key, data[key]
+	def close(self):
+		pass
 
 
-
-class remusXmlNode(remusNode):
-	def __init__(self, xmlNode):
-		inputStr   = xmlNode.getAttribute("input")
-		includeStr = xmlNode.getAttribute("include")
-		idStr      = xmlNode.getAttribute("id")
-		self.input = inputStr
-		if xmlNode.hasAttribute("output"):
-			self.output = xmlNode.getAttribute("output")
-		else:
-			self.output = None
-		super(remusXmlNode, self).__init__(idStr)		
-		code = getText( xmlNode.childNodes )				
-		self.loadSrc( code )
-
-class remusMapper(remusXmlNode):
-	def __init__(self, xmlNode):
-		super(remusMapper, self).__init__(xmlNode)
-
-class remusReducer(remusXmlNode):
-	def __init__(self, xmlNode):
-		super(remusReducer, self).__init__(xmlNode)
-
-class remusSplitter(remusXmlNode):
-	def __init__(self, xmlNode):
-		super(remusSplitter, self).__init__(xmlNode)
-
-class remusMerger(remusXmlNode):
-	def __init__(self, xmlNode ):
-		super(remusMerger, self).__init__(xmlNode)
-		mergerLeft = xmlNode.getAttribute("left")
-		mergerRight = xmlNode.getAttribute("right")
-		self.input = [ mergerLeft, mergerRight ]
-
-class remusOutput(remusXmlNode):
-	def __init__(self, xmlNode):
-		super(remusOutput, self).__init__(xmlNode)
-
-
-def getText( node ):
-	out = ""
-	for c in node:
-		out += c.data
-	return out
-
-
-def parseRemus( graph, handle ):	
-	data = handle.read()
-	dom = parseString(data)
-	mappers = dom.getElementsByTagName('remus_mapper')
-	for mapper in mappers:
-		m = remusMapper( mapper )
-		graph.addNode( m )
 	
-	reducers = dom.getElementsByTagName("remus_reducer")
-	for reducer in reducers:
-		m = remusReducer( reducer )
-		graph.addNode( m )
-		
-	outputs = dom.getElementsByTagName("remus_output")
-	for output in outputs:
-		m = remusOutput( output )
-		graph.addNode( m )
+class stdout_write:
+	def __init__(self):
+		self.order = 0
+
+	def emit( self, key, value ):
+		print self.order, key, value
+		self.order += 1
+
+
+
+global workerDict
+workerDict = {}
+
+def addWorker( type, callback ):
+	global workerDict
+	workerDict[ type ] = callback
+
+
+def getWorker( host, applet ):
+	global workerDict
 	
-	splitters = dom.getElementsByTagName("remus_splitter")
-	for splitter in splitters:
-		m = remusSplitter( splitter )
-		graph.addNode( m )
-		
-	mergers = dom.getElementsByTagName("remus_merger")
-	for merger in mergers:
-		m = remusMerger( merger )
-		graph.addNode( m )
+	if workerList.has_key( applet ):
+		return workerList[ applet ]
 
+	appletDesc = httpGetJson( host + applet + "@pipeline" ).read()
 
+	workerType = appletDesc[ 'codeType' ]
+	if not workerDict.has_key( workerType )
+		raise Exception("Unknown code type: %s" % (workerType) )
+
+	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, applet)	
+	worker.compileCode( appletDesc['code'] )
+	
+	if ( appletDesc.has_key( "output" ) ):
+		worker.setOutput( appletDesc[ "output" ] )
+	
+	if worker is not None:
+		workerList[ applet ] = worker
+	return worker
