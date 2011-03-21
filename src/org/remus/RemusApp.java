@@ -17,7 +17,19 @@ import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
 
+/**
+ * Main Interface to Remus applications. In charge of root database interface and pipeline 
+ * management.
+ * 
+ * @author kellrott
+ *
+ */
+
 public class RemusApp {
+	/**
+	 * Class name for MPstore interface.
+	 * @see org.mpstore.ThriftStore
+	 */
 	public static final String configStore = "org.remus.mpstore";
 	public static final String configWork = "org.remus.workdir";
 	public static final String configAttachStore = "org.remus.attachstore";

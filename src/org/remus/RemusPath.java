@@ -12,9 +12,13 @@ import java.util.regex.Pattern;
 import org.mpstore.MPStore;
 import org.remus.work.RemusApplet;
 
+/**
+ * 
+ * @author kellrott
+ *
+ */
 
 public class RemusPath {
-
 	RemusApp parent;
 
 	private String url = null;

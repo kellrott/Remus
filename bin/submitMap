@@ -12,6 +12,8 @@ if len(sys.argv) > 3:
 	codePath = sys.argv[3]
 else:
 	codePath = None
+
+
 class remusInfo:
 	def __init__(self, server):
 		self.server = server
@@ -27,7 +29,7 @@ class remusInfo:
 		return self.serverMap[ name ]
 		
 	def emit(self, key, value, port):
-		print "curl -d '%s' %s%s@submit" % (value, self.server, port)
+		print "curl -d '%s' %s%s@submit" % ( json.dumps( {key : value } ), self.server, port)
 
 	def keys( self, applet, instance ):
 		keyData = urlopen( self.server + applet + "@keys/" + instance )
@@ -53,7 +55,7 @@ class remusInfo:
 		return urlopen( server + path )
 
 instMap = []
-for line in urlopen( server + "@submit" ):
+for line in urlopen( server + "@instance" ):
 	instMap.append( json.loads( line ) )
 
 remus = remusInfo(server)
