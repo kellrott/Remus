@@ -1,6 +1,7 @@
 package org.remus;
 
 import java.io.FileNotFoundException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -209,6 +210,9 @@ public class RemusApp {
 		return pipelines.get(name);
 	}
 	
+	public Collection<RemusPipeline> getPipelines() {
+		return pipelines.values();
+	}
 	public RemusApplet getApplet(String appletPath) {
 		if (appletPath.startsWith("/"))
 			appletPath = appletPath.replaceFirst("^\\/", "");

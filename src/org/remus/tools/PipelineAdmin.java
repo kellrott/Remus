@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.tools;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -10,14 +10,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
+import org.remus.RemusApp;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusInstance;
+import org.remus.RemusPath;
+import org.remus.RemusPipeline;
+import org.remus.work.RemusApplet;
 
 public class PipelineAdmin {
 
@@ -31,82 +39,58 @@ public class PipelineAdmin {
 		prop.load( new FileInputStream( new File( args[0] ) ) );
 
 		try {
-			String mpStore = prop.getProperty(RemusApp.configStore);
-			String workDir = prop.getProperty(RemusApp.configWork);
 			Serializer serializer = new JsonSerializer();
-			Class<?> mpClass = Class.forName(mpStore);			
-			MPStore store = (MPStore) mpClass.newInstance();
-			store.initMPStore(serializer, prop);			
-			RemusApp app = new RemusApp( prop);
+			RemusApp app = new RemusApp( prop );
 			String cmd = null;
 			if ( args.length > 1 )
 				cmd = args[1];
 
 			if ( cmd == null || cmd.compareTo("list") == 0 ) {
 				if ( args.length > 2 ) {
-					for (String inst : store.listKeys(args[2] + "@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
-						System.out.println( inst );
+					Set<RemusInstance> outSet = new HashSet<RemusInstance>(); 
+					RemusPipeline pipe = app.getPipeline(args[2]);
+					if ( pipe != null ) {
+						for ( RemusApplet applet : pipe.getMembers() ) {
+							for ( RemusInstance inst : applet.getInstanceList() ) {
+								outSet.add(inst);
+							}
+						}
+						for ( RemusInstance inst : outSet ) {
+							System.out.println( inst.toString() );
+						}
 					}
 				} else {
-					for (String pipeline : store.listKeys("/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
-						System.out.println( pipeline );
+					for ( RemusPipeline pipeline : app.getPipelines() ) {
+						System.out.println( pipeline.getID() );
 					}
 				}
 			} else {
 				if ( cmd.compareTo("dump") == 0 && args.length > 2 ) {
-					String inst = args[2];
-					System.out.println("==/@pipeline/" + RemusInstance.STATIC_INSTANCE_STR);
-					int i = 0;
-					for (Object pathObj : store.get("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst) ) {
-						Map m = new HashMap();
-						m.put(inst, pathObj );
-						System.out.println( Integer.toString(i) + "\t0\t" + serializer.dumps( m ) );						
-					}
-					for (Object pathObj : store.get("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst) ) {
-						String path = (String)pathObj;						
-						System.out.println( "==" + path + "@instance/" + RemusInstance.STATIC_INSTANCE_STR );
-						for ( KeyValuePair kv : store.listKeyPairs(path + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
-							if ( kv.getKey().compareTo(inst) == 0) {
-								Map m = new HashMap();
-								m.put(kv.getKey(), kv.getValue() );
-								System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );
-							}
-						}						
-						for ( String view : storeViews ) {
-							System.out.println( "==" + path + view + "/" + inst);
-							for ( KeyValuePair kv : store.listKeyPairs(path + view, inst) ) {
-								Map m = new HashMap();
-								m.put(kv.getKey(), kv.getValue() );
-								System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );
-							}
-						}
-						for ( String view : fileViews ) {
-							if ( store.keyCount(path + view, inst, 1) > 0 ) {
-								System.out.println( "==" + path + view + "/" + inst);
-							}
-							int j = 0;
-							for ( String key : store.listKeys(path + view, inst) ) {
-								System.out.println( Integer.toString(j) +"\t0\t===\t" + key );
-/*
-								try {
+					String pipeline = args[2];
+					String inst = args[3];
+					RemusPipeline pipe = app.getPipeline(pipeline);
+					RemusInstance instance = new RemusInstance(inst);
 
-									InputStream in = store.readAttachement(path + view, inst, key);
-									Base64InputStream bis = new Base64InputStream(in,true);
-									BufferedReader br = new BufferedReader( new InputStreamReader( bis ) );
-									String curline = null;
-									while ((curline=br.readLine())!=null) {
-										System.out.println( curline );
-									}
-									br.close();
-								} catch (IOException e) {									
-								}
-									*/
-								System.out.println("===");
-								j++;
-							}							
+					for ( RemusApplet applet : pipe.getMembers() ) {
+						System.out.println( "===" + applet.getPath() + "@data" );
+						MPStore ds = applet.getDataStore();
+						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@data", instance.toString() ) ) {
+							Map m = new HashMap();
+							m.put(kv.getKey(), kv.getValue() );
+							System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
+						}
+						for ( String outpath : applet.getOutputs() ) {
+							System.out.println( "===" + applet.getPath() + "." + outpath + "@data" );
+							for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "." + outpath + "@data", instance.toString() ) ) {
+								Map m = new HashMap();
+								m.put(kv.getKey(), kv.getValue() );
+								System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
+							}
 						}
 					}
+
 				} else if ( cmd.compareTo("load") == 0 && args.length > 2) {
+					/*
 					BufferedReader br = new BufferedReader( new FileReader(args[2]));
 					RemusPath curPath = null;
 					String curline = null;
@@ -154,17 +138,11 @@ public class PipelineAdmin {
 					}
 					store.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst);
 				}
+					 */
+				}
 			}
+		} finally {
 
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} 	
 	}
 
