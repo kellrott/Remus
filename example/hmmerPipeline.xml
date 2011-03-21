@@ -1,0 +1,6 @@
+<remus id="hmmerPipeline">
+
+<remus_store id="fastaStore" type="json"/>
+
+
+</remus>

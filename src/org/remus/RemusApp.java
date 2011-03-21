@@ -11,6 +11,7 @@ import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
+import org.remus.manage.WorkManager;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
@@ -26,10 +27,12 @@ public class RemusApp {
 	Map params;
 	MPStore rootStore;
 	AttachStore rootAttachStore;
+	private WorkManager workManage;
+	
 	public RemusApp( Map params ) throws RemusDatabaseException {
 		this.params = params;
 		//scanSource(srcbase);
-		loadPipelines();
+		loadPipelines();		
 	}
 
 	public void setBaseURL(String baseURL) {
@@ -62,6 +65,7 @@ public class RemusApp {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		workManage = new WorkManager(this);
 	}
 
 	public void loadPipeline(String name, MPStore store, Serializer serializer, AttachStore attachStore) {
@@ -72,47 +76,7 @@ public class RemusApp {
 		}
 		pipelines.put(pipeline.id, pipeline);	
 	}
-
-	/*
-	void scanSource(File curFile) {
-		if ( curFile.isFile() && curFile.getName().endsWith( ".xml" ) ) {
-			try { 
-				FileInputStream fis = new FileInputStream(curFile);
-				String pagePath = curFile.getAbsolutePath().replaceFirst( "^" + srcbase.getAbsolutePath(), "" ).replaceFirst(".xml$", "");
-				RemusParser p = new RemusParser(this);
-				List<RemusApplet> appletList = p.parse(fis, pagePath);
-
-				String mpStore = (String)params.get(RemusApp.configStore);
-				Class<?> mpClass = Class.forName(mpStore);			
-				MPStore store = (MPStore) mpClass.newInstance();
-				Serializer serializer = new JsonSerializer();
-				store.init(serializer, params);			
-
-				RemusPipeline pipeline = new RemusPipeline(p.getPipelineName(), store);
-				for ( RemusApplet applet : appletList ) {
-					pipeline.addApplet(applet);
-				}
-				pipelines.put(pipeline.id, pipeline);
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (FileNotFoundException e) {
-
-			}
-		}		
-		if ( curFile.isDirectory() ) {
-			for ( File child : curFile.listFiles() ) {
-				scanSource(child);
-			}
-		}
-	}
-	 */
+	
 
 	private RemusApplet loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
 		String dbPath = "/" + pipelineName + "@pipeline";
@@ -192,20 +156,39 @@ public class RemusApp {
 			for ( Object nameObj : (List)appletObj.get("output") ) {
 				applet.addOutput((String)nameObj);
 			}
-		}
-		
+		}		
 		return applet;
 	}
 
-	public void deleteApplet(String pipelineName, String appletName) {
-		String dbPath = "/" + pipelineName + "@pipeline";
-		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, appletName);
+		
+	
+	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) {		
+		for ( RemusInstance inst : applet.getActiveInstanceList() ) {
+			applet.deleteInstance(inst);
+		}
+		String dbPath = "/" + pipeline.getID() + "@pipeline";
+		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, applet.getID() );
+		rootStore.delete( applet.getPath() + "@submit" , RemusInstance.STATIC_INSTANCE_STR );
+		loadPipelines();
 	}
 	
-	public void addPipeline( RemusPipeline rp ) {
-		pipelines.put(rp.id, rp);
+	public void deletePipeline(RemusPipeline pipe) {
+		for ( RemusApplet applet : pipe.getMembers() ) {
+			deleteApplet(pipe, applet);
+		}
+		rootStore.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, pipe.getID() );
+		loadPipelines();
 	}
-
+	
+	public void putPipeline(String name, Object data) {
+		rootStore.add("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );		
+		loadPipelines();
+	}
+	
+	public void putApplet(RemusPipeline pipe, String name, Object data) { 
+		rootStore.add("/" + pipe.getID() + "@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );
+		loadPipelines();
+	}	
 
 	public Map<String, PluginConfig> getPluginMap() {
 		// TODO Auto-generated method stub
@@ -222,6 +205,10 @@ public class RemusApp {
 		return out;		
 	}
 
+	public RemusPipeline getPipeline( String name ) {
+		return pipelines.get(name);
+	}
+	
 	public RemusApplet getApplet(String appletPath) {
 		if (appletPath.startsWith("/"))
 			appletPath = appletPath.replaceFirst("^\\/", "");
@@ -248,6 +235,16 @@ public class RemusApp {
 		return rootAttachStore;
 	}
 
-	
+	public WorkManager getWorkManager() {
+		return workManage;
+	}
+
+	public void addAlias(RemusInstance remusInstance, String alias) {
+		if ( !rootStore.containsKey("/@alias", RemusInstance.STATIC_INSTANCE_STR, alias) ) {
+			rootStore.add("/@alias", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, alias, remusInstance.toString() );
+		}		
+	}
+
+
 
 }
