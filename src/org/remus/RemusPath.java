@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,14 +42,16 @@ public class RemusPath {
 		this.parent = ref.parent;
 		this.instance = instance.toString();
 		if ( ref.getInputType() == DynamicInput ) {
-			String submitPath = null;
+			String submitKey = null;
 			MPStore ds = ref.parent.getApplet( ref.getAppletPath() ).getDataStore();
 			for ( Object path : ds.get( ref.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-				if ( RemusApplet.WORKDONE_OP.compareTo((String)path) != 0 ) {
-					submitPath = (String)path;
-				}
+				submitKey = (String)path;
 			}
-			if ( submitPath != null ) {
+			if ( submitKey != null ) {
+				String submitPath = null;				
+				for ( Object submitObj : ds.get( "/" + ref.getPipeline() + "@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey ) ) {
+					submitPath = (String)((Map)submitObj).get("input");
+				}				
 				ref = new RemusPath(ref.parent, submitPath);
 			}
 			this.instance = ref.instance;
