@@ -14,6 +14,8 @@ import traceback
 import os
 import shutil
 import threading
+import copy
+import time
 
 workerID = str(uuid.uuid4())
 
@@ -72,7 +74,7 @@ class http_write:
 		self.cacheMax = 10000
 		
 	def emit( self, key, value ):
-		self.cache.append( [key, value] )
+		self.cache.append( [ copy.deepcopy(key), copy.deepcopy(value)] )
 		if ( len(self.cache) > self.cacheMax ):
 			self.flush()
 	
@@ -83,8 +85,10 @@ class http_write:
 		log("posting results: " + self.url)
 		data = ""
 		for out in self.cache:
-			data += json.dumps( { 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
+			line = json.dumps( { 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
+			data += line
 			self.order += 1
+			
 		if (len(data)):
 			urlopen(  self.url , data ).read()
 		self.cache = []
@@ -323,10 +327,11 @@ class PipeWorker(WorkerBase):
 				print postURL
 				#print urlopen( postURL, fileMap[path].mem_map() ).read()
 				#TODO, figure out streaming post in python
+				fileMap[ path ].close()
 				cmd = "curl --data-binary @%s %s" % (fileMap[ path ].getPath(), postURL )
 				log( "OS: " + cmd )
 				os.system( cmd )
-				fileMap[path].unlink()
+				#fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 		if ( len( errorIDs ) ):
 			log( "ERROR: " + str(errorIDs) )
@@ -387,13 +392,21 @@ if __name__=="__main__":
 	if ( len(sys.argv) >= 3 ):
 		workerID = sys.argv[2]
 	statusPulse()
-	while 1:
-		workList = httpGetJson( host + "/@work?max=100" ).read()	
-		if len(workList) == 0:
-			break
-		for instance in workList:
-			for node in workList[instance]:
-				for workDesc in workList[instance][node]:
-					doWork( host, node, instance, workDesc )
-	shutil.rmtree( tmpDir ) 
+	try:
+		retryCount = 6
+		while retryCount > 0:
+			workList = httpGetJson( host + "/@work?max=100" ).read()	
+			if len(workList) == 0:
+				retryCount -= 1
+				time.sleep(10)
+			else: 
+				retryCount = 6
+				for instance in workList:
+					for node in workList[instance]:
+						for workDesc in workList[instance][node]:
+							doWork( host, node, instance, workDesc )
+		shutil.rmtree( tmpDir ) 
+	except:
+		statusTimer.cancel()
+		raise
 	statusTimer.cancel()
