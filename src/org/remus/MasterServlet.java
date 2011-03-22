@@ -383,6 +383,7 @@ public class MasterServlet extends HttpServlet {
 	private void doGet_template(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() != null ) {
 			if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
+				RemusPipeline pipe = app.getPipeline( reqInfo.getPipeline() );
 				PrintWriter out = resp.getWriter();				
 				resp.setContentType( "text/html" );
 				out.println( "<p><a href='../'>MAIN</a></p>" );
@@ -399,15 +400,20 @@ public class MasterServlet extends HttpServlet {
 				for ( RemusPath iref : applet.getInputs() )	{
 					if ( iref.getInputType() == RemusPath.DynamicInput ) {
 						out.println("SUBMISSION<ul>");
-						MPStore ds = applet.getDataStore();
-						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR)  ) {
-							out.println( "<li>" + kv.getKey() + " <a href='" + kv.getValue() + "'>" + kv.getValue() + "</a></li>" );
+						for ( KeyValuePair kv : pipe.getSubmits() ) {
+							out.println( "<li>" + kv.getKey() + "<blockquote>" + kv.getValue() + "</blockquote></li>" );
 						}
-
 						out.println("</ul>");
-
 					}
 				}
+
+				out.println("Instance<ul>");
+				for ( RemusInstance inst : applet.getInstanceList() ) {					
+					out.println( "<li>" + inst.toString() + " " + applet.getInstanceSubmit(inst) + "</li>" );
+				}
+				out.println("</ul>");
+
+
 				out.println("INPUTS<ul>");
 				for ( RemusPath iRef : applet.getInputs() ) {
 					if ( instStr != null )
@@ -771,6 +777,7 @@ public class MasterServlet extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				resp.getWriter().print( "{\"delete\":\"OK\"}" );
 			}
 		} else if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
 			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
@@ -783,6 +790,7 @@ public class MasterServlet extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				resp.getWriter().print( "{\"delete\":\"OK\"}" );
 			}
 		} 		
 	}	
