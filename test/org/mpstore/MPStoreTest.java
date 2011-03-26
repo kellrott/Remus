@@ -1,13 +1,17 @@
 package org.mpstore;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.junit.*;
-import org.junit.Test;
 import org.remus.RemusApp;
 
 public class MPStoreTest {
@@ -15,11 +19,11 @@ public class MPStoreTest {
 	MPStore ds;
 
 
-	@Before public void setUp() {
-		Map param = new HashMap();
-		param.put(RemusApp.configWork, "/tmp/remusWorkerPath");
+	@Before public void setUp() throws FileNotFoundException, IOException {
+		Properties prop = new Properties();
+		prop.load( new FileInputStream( new File( "cassandra.prop" ) ) );
 		ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
-		ds.initMPStore(new JsonSerializer(), param );
+		ds.initMPStore(new JsonSerializer(), prop );
 	}
 
 	@Test public void insertTest() {
@@ -132,8 +136,6 @@ public class MPStoreTest {
 		//assert that keys have been deleted
 		Assert.assertTrue( !ds.containsKey(file1, instance1, key1) );
 		Assert.assertTrue( !ds.containsKey(file1, instance1, key2) );
-			
-
 	}
 
 	
