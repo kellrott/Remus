@@ -3,6 +3,18 @@ package org.mpstore;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Map Store: Interface for storage system that is designed to take 
+ * key/value pairs and store them in groups. By using the jobID/emitID combo
+ * multiple values can be place into the same key. This is so that later, values 
+ * can be retrieved in a set, by common key. Keys are strings, while values are
+ * objects that can be serialized by the Serializer (right now, commonly 
+ * org.json.simple based serializer)
+ * 
+ * @author kellrott@gmail.com
+ *
+ */
+
 public interface MPStore {
 	
 	public void initMPStore(Serializer serializer, Map paramMap);

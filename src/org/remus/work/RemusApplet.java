@@ -160,7 +160,7 @@ public class RemusApplet {
 	public void setCodeType(String type) {
 		codeType = type;
 	}
-*/
+	 */
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
@@ -220,7 +220,7 @@ public class RemusApplet {
 		}
 		return found;
 	}
-	
+
 	public boolean isInError(  RemusInstance remusInstance ) {
 		boolean found = false;
 		for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
@@ -341,11 +341,22 @@ public class RemusApplet {
 
 
 	public RemusInstance createInstance(String submitKey) {
-		RemusInstance inst = new RemusInstance();
-		datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
+		String instStr = null;
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
+			if ( submitKey.compareTo( (String)kv.getValue() ) == 0 ) {
+				instStr = kv.getKey();
+			}
+		}
+		RemusInstance inst;
+		if ( instStr == null ) {
+			inst = new RemusInstance();
+			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
+		} else {
+			inst = new RemusInstance(instStr);
+		}
 		return inst;
 	};
-	
+
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
@@ -432,27 +443,6 @@ public class RemusApplet {
 		return outSet;
 	}
 
-	public RemusInstance submit( RemusPath src ) {
-		String instStr = null;
-		for ( Object obj : datastore.get(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, src.getPath() ) ) {
-			instStr = (String)obj;
-		}
-		RemusInstance out = null;
-		if ( instStr == null ) {
-			out = new RemusInstance();
-			instStr = out.toString();
-			datastore.add( getPath() + "@submit", 
-					RemusInstance.STATIC_INSTANCE_STR, 
-					(Long)0L, 
-					(Long)0L, 
-					src.getPath(),
-					instStr );
-		} else {
-			out = new RemusInstance(instStr);
-		}
-		return out;
-	}
-
 	@Override
 	public int hashCode() { 
 		return getPath().hashCode();
@@ -494,6 +484,14 @@ public class RemusApplet {
 			out = obj;
 		}
 		return out;	
+	}
+
+	public String getInstanceSubmit(RemusInstance remusInstance) {
+		Object out = null;
+		for ( Object obj : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+			out = obj;
+		}
+		return (String)out;			
 	}
 
 }

@@ -30,6 +30,12 @@ import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
 import org.remus.work.RemusApplet;
 
+/**
+ * MasterServlet: Primary servlet interface for web based Remus Server.
+ * @author kellrott
+ *
+ */
+
 public class MasterServlet extends HttpServlet {
 	RemusApp app;
 	Serializer serializer;
@@ -76,7 +82,6 @@ public class MasterServlet extends HttpServlet {
 	private void doGet_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if ( reqInfo.getApplet() != null && app.hasApplet( reqInfo.getAppletPath() ) ) {
-
 			PrintWriter out = resp.getWriter();
 			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 			MPStore ds = applet.getDataStore();
@@ -84,6 +89,11 @@ public class MasterServlet extends HttpServlet {
 			for ( Object obj : ds.get( "/" + reqInfo.getPipeline() + "@pipeline", RemusInstance.STATIC_INSTANCE_STR, reqInfo.getApplet() ) ) {
 				outObj = obj;
 			}
+			Map instMap = new HashMap();
+			for ( RemusInstance inst : applet.getInstanceList() ) {
+				instMap.put( inst.toString(), applet.getInstanceSubmit(inst ) );
+			}
+			((Map)outObj).put("instance", instMap );
 			out.println( serializer.dumps( outObj ) );
 		} else {
 			if ( reqInfo.getPipeline() != null ) {
@@ -104,9 +114,12 @@ public class MasterServlet extends HttpServlet {
 			} else {			
 				PrintWriter out = resp.getWriter();
 				Map outMap = new HashMap();
-				for ( String pipeline : app.pipelines.keySet() ) {
-					Map pipeMap = new HashMap();
-					outMap.put(pipeline, pipeMap);
+				for ( RemusPipeline pipe : app.getPipelines() ) {
+					List pipeMap = new ArrayList();
+					for ( RemusApplet applet : pipe.getMembers() ) {
+						pipeMap.add(applet.getID());
+					}
+					outMap.put(pipe.getID(), pipeMap);
 				}
 				out.print( serializer.dumps(outMap) );
 			}
@@ -192,13 +205,9 @@ public class MasterServlet extends HttpServlet {
 		} else {
 			PrintWriter out = resp.getWriter();
 			for ( RemusPipeline pipe : app.pipelines.values() ) {
-				for ( RemusApplet cApp : pipe.getMembers() ) {
+				for ( KeyValuePair kv : pipe.getSubmits() ) {
 					Map outMap = new HashMap();		
-					Map instMap = new HashMap();
-					for ( RemusInstance inst : cApp.getInstanceList() ) {
-						instMap.put( inst.toString(), cApp.getInstanceSrc( inst ) );
-					}
-					outMap.put(cApp.getPath(), instMap);
+					outMap.put( kv.getKey(), kv.getValue() );
 					out.println( serializer.dumps( outMap ) );						
 				}
 			}
@@ -239,24 +248,37 @@ public class MasterServlet extends HttpServlet {
 			if ( applet != null ) {
 				MPStore ds = applet.getDataStore();
 				List outList = new LinkedList();
-				for ( String key : ds.listKeys( reqInfo.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
-					outList.add(key);
+				for ( KeyValuePair kv : ds.listKeyPairs( reqInfo.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+					Map outmap = new HashMap();
+					outmap.put(kv.getKey(), kv.getValue() );
+					outList.add( outmap );
 				}
 				out.println( serializer.dumps( outList ) );
 			}
 		} else if ( reqInfo.getPipeline() != null ) {
 			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
 			if ( pipe != null ) {
-				Set<String> oSet = new HashSet<String>();
+				Map<String,Object> oSet = new HashMap<String,Object>();
 				for ( RemusApplet applet : pipe.getMembers() ) {
 					for ( RemusInstance inst : applet.getInstanceList() ) {
-						oSet.add( inst.toString() );
+						oSet.put( inst.toString(), applet.getInstanceSubmit( inst ) );
 					}
-				}	
-				out.println( serializer.dumps( new LinkedList(oSet) ) );
+				}
+				out.println( serializer.dumps( oSet ) );
 			}
+		} else {
+			Map<String,Object> oSet = new HashMap<String,Object>();
+			for ( RemusPipeline pipe : app.getPipelines() ) {
+				for ( RemusApplet applet : pipe.getMembers() ) {
+					Map aMap = new HashMap();
+					for ( RemusInstance inst : applet.getInstanceList() ) {
+						aMap.put(inst.toString(), applet.getInstanceSubmit(inst));
+					}
+					oSet.put(applet.getPath(), aMap);
+				}
+			}
+			out.println( serializer.dumps( oSet ) );
 		}
-
 	}
 
 	private void doGet_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -361,6 +383,7 @@ public class MasterServlet extends HttpServlet {
 	private void doGet_template(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() != null ) {
 			if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
+				RemusPipeline pipe = app.getPipeline( reqInfo.getPipeline() );
 				PrintWriter out = resp.getWriter();				
 				resp.setContentType( "text/html" );
 				out.println( "<p><a href='../'>MAIN</a></p>" );
@@ -377,15 +400,20 @@ public class MasterServlet extends HttpServlet {
 				for ( RemusPath iref : applet.getInputs() )	{
 					if ( iref.getInputType() == RemusPath.DynamicInput ) {
 						out.println("SUBMISSION<ul>");
-						MPStore ds = applet.getDataStore();
-						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR)  ) {
-							out.println( "<li>" + kv.getKey() + " <a href='" + kv.getValue() + "'>" + kv.getValue() + "</a></li>" );
+						for ( KeyValuePair kv : pipe.getSubmits() ) {
+							out.println( "<li>" + kv.getKey() + "<blockquote>" + kv.getValue() + "</blockquote></li>" );
 						}
-
 						out.println("</ul>");
-
 					}
 				}
+
+				out.println("Instance<ul>");
+				for ( RemusInstance inst : applet.getInstanceList() ) {					
+					out.println( "<li>" + inst.toString() + " " + applet.getInstanceSubmit(inst) + "</li>" );
+				}
+				out.println("</ul>");
+
+
 				out.println("INPUTS<ul>");
 				for ( RemusPath iRef : applet.getInputs() ) {
 					if ( instStr != null )
@@ -634,12 +662,19 @@ public class MasterServlet extends HttpServlet {
 
 
 	private void doPost_submit(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-		if ( applet != null ) {
+		RemusPipeline pipe = app.getPipeline( reqInfo.getPipeline() );
+		if ( pipe != null ) {
 			BufferedReader br = req.getReader();
-			String curline = br.readLine();	
-			RemusInstance inst = applet.submit( new RemusPath(app, curline) ) ;
-			resp.getWriter().print("{\"" + inst.toString() + "\":\"OK\"}");
+			StringBuilder sb = new StringBuilder();
+			String curline;
+			while ( (curline=br.readLine()) != null ) {
+				sb.append(curline);
+			}
+			Map objMap=(Map)serializer.loads(sb.toString());			
+			for ( Object keyObj : objMap.keySet() ) {
+				pipe.submit( (String)keyObj, objMap.get(keyObj) );
+			}
+			resp.getWriter().print("{\"submit\":\"OK\"}");
 		}
 	}
 
@@ -742,6 +777,7 @@ public class MasterServlet extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				resp.getWriter().print( "{\"delete\":\"OK\"}" );
 			}
 		} else if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
 			RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
@@ -754,6 +790,7 @@ public class MasterServlet extends HttpServlet {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+				resp.getWriter().print( "{\"delete\":\"OK\"}" );
 			}
 		} 		
 	}	

@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+
+from urllib import urlopen
+import json 
+import os
+import sys
+import imp
+
+server = sys.argv[1]
+mode = sys.argv[2]
+if len(sys.argv) > 3:
+	codePath = sys.argv[3]
+else:
+	codePath = None
+
+
+class remusInfo:
+	def __init__(self, server):
+		self.server = server
+		self.serverMap = {}
+		serverDesc = json.loads( urlopen( self.server + "@pipeline" ).read() )
+		for pipeName in serverDesc:
+			pipeMap = json.loads( urlopen( self.server + "/" + pipeName + "@pipeline" ).read() )
+			for appletName in pipeMap:
+				appletMap = json.loads( urlopen( self.server + "/" + pipeName + ":" + appletName + "@pipeline" ).read() )
+				self.serverMap[ "/" + pipeName + ":" + appletName ] = appletMap
+				
+	def applet(self, name):
+		return self.serverMap[ name ]
+		
+	def emit(self, key, value, port):
+		print "curl -d '%s' %s%s@submit" % ( json.dumps( {key : value } ), self.server, port)
+
+	def keys( self, applet, instance ):
+		keyData = urlopen( self.server + applet + "@keys/" + instance )
+		for key in keyData:
+			yield json.loads( key )
+
+	def attachmentKeys( self, applet, instance ):
+		keyData = urlopen( self.server + applet + "@attach/" + instance )
+		for key in keyData:
+			yield json.loads( key )
+
+	
+	def path( self, applet, view, instance, key ):
+		return applet + "@" + view + "/" + instance + "/" + key
+
+	def map( self, func ):
+		self.mapFunc = func
+
+	def merge( self, func ):
+		self.mergeFunc = func
+
+	def open( self, path ):
+		return urlopen( server + path )
+
+instMap = []
+for line in urlopen( server + "@instance" ):
+	instMap.append( json.loads( line ) )
+
+remus = remusInfo(server)
+
+if codePath is not None:
+	handle = open( codePath )
+else:
+	handle = sys.stdin
+code = handle.read()
+handle.close()
+
+module = imp.new_module( 'test' )	
+module.__dict__["__name__"] = 'test'
+module.__dict__["remus"] = remus
+
+exec code in module.__dict__
+
+instReduce = {}
+for data in instMap:
+	for key in data:
+		if not instReduce.has_key( key ):
+			instReduce[ key ] = []
+		instReduce[key].append( data[key] )
+
+if mode == "map":
+	for data in instMap:
+		for key in data:
+			remus.mapFunc( key, data[key] )
+
+
+if mode == "merge":
+	for lkey in instReduce:
+		for rkey in instReduce:
+			remus.mergeFunc( lkey, instReduce[ lkey ], rkey, instReduce[ rkey ] )
+			
+	
+	"""
+	for data in instMap:
+		for lkey in data:
+			remus.mergeFunc( lkey, data[lkey] )
+	"""
