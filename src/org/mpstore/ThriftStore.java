@@ -1,16 +1,7 @@
 package org.mpstore;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -93,51 +84,98 @@ public class ThriftStore implements MPStore {
 		}
 	}
 
+	
+	abstract class ThriftCaller<T> {
+		public T call() throws Exception {
+			T out = null;
+			boolean done = false;
+			int retryCount = 3;
+			Exception outE = null;
+			do {
+				outE = null;
+				Client client = null;
+				try {
+					client = (Client)clientPool.borrowObject();
+					out = request( client );
+					done = true;
+				} catch (InvalidRequestException e) {	
+					outE = e;
+				} catch (UnavailableException e) {
+					outE = e;
+					try {
+						clientPool.invalidateObject(client);
+					} catch (Exception e2) {						
+					}
+					client = null;					
+				    try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e1) {						
+					}				
+				} catch (TimedOutException e) {
+					outE = e;
+		            try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e1) {						
+					}
+				} catch (TException e) {					
+					outE = e;
+				} catch (NoSuchElementException e) {
+					outE = e;
+					done = true;
+				} catch (IllegalStateException e) {
+					outE = e;
+				} catch (Exception e) {
+					outE = e;
+					retryCount=0;
+				} finally {
+					try {
+						if ( client != null )
+							clientPool.returnObject(client);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				retryCount--;
+			} while ( retryCount > 0 && !done );		
+			if ( outE != null ) {
+				throw outE;
+			}
+			return out;
+		}		
+		protected abstract T request( Client client ) throws InvalidRequestException, UnavailableException, TimedOutException, TException ;
+	}
+	
 
 
 	@Override
 	public void add(String path, String instance, long jobID, long emitID,
 			String key, Object data) {		
-		Client client = null;
+		
+		final String column = instance + path;
+		final ByteBuffer superColumn = ByteBuffer.wrap( key.getBytes());
+		final String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
+		final ByteBuffer colData = ByteBuffer.wrap( serializer.dumps(data).getBytes());
+		
+		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>()  {
+			@Override
+			protected Boolean request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				ColumnParent cp = new ColumnParent( columnFamily );
+				cp.setSuper_column( superColumn );
+				long clock = System.currentTimeMillis() * 1000;				
+				Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
+						colData , clock);	
+				client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
+				return true;
+			}			
+		};
 		try {
-			String column = instance + path;
-			ColumnParent cp = new ColumnParent( columnFamily );
-			cp.setSuper_column( ByteBuffer.wrap( key.getBytes()) );
-			long clock = System.currentTimeMillis() * 1000;
-			String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
-			Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
-					ByteBuffer.wrap( serializer.dumps(data).getBytes()) , clock);	
-			client = (Client)clientPool.borrowObject();
-			client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			addCall.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -159,160 +197,120 @@ public class ThriftStore implements MPStore {
 	}
 
 	@Override
-	public boolean containsKey(String path, String instance, String key) {
-		boolean returnVal = false;
-		Client client = null;
-		try {
-			String superColumn = instance + path;
-			ColumnPath cp = new ColumnPath( columnFamily );
-			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
-			client = (Client)clientPool.borrowObject();
-			ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
-			if ( res != null )
-				returnVal = true;
-		} catch (InvalidRequestException e) {
-			//not found, return false
-		} catch (NoSuchElementException e) {
-			//not found, return false
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		} catch (NotFoundException e) {
-			//not found, return false
-		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+	public boolean containsKey(String path, String instance, String key)  {		
+		final String superColumn = instance + path;
+		final ColumnPath cp = new ColumnPath( columnFamily );
+		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
+		
+		ThriftCaller<Boolean> containsCall = new ThriftCaller<Boolean>() {
+			@Override
+			protected Boolean request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
 
-		return returnVal;
+				boolean returnVal = false;
+				try {
+				ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
+				if ( res != null )
+					returnVal = true;
+				} catch (NoSuchElementException e) {					
+				} catch (NotFoundException e) {					
+				}
+				return returnVal;
+			}			
+		};		
+		try {
+			return containsCall.call();
+		} catch (Exception e) {}
+		return false;
 	}
 
 	@Override
 	public void delete(String path, String instance) {
-		Client client = null;
+		
+		final String column = instance + path;
+		final ColumnPath cp = new ColumnPath( columnFamily );
+		
+		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
+			@Override
+			protected Boolean request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+
+				long clock = System.currentTimeMillis() * 1000;
+				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+
+				return null;
+			}
+			
+		};
 		try {
-			client = (Client)clientPool.borrowObject();
-			String column = instance + path;
-			ColumnPath cp = new ColumnPath( columnFamily );
-			long clock = System.currentTimeMillis() * 1000;
-			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
-			//cp.setSuper_column( ByteBuffer.wrap(column.getBytes()) );
-			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			delCall.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
 	@Override
 	public void delete(String path, String instance, String key) {
-		Client client = null;
+		
+		final String column = instance + path;
+		final ColumnPath cp = new ColumnPath( columnFamily );
+		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
+
+		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
+			@Override
+			protected Boolean request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				
+				long clock = System.currentTimeMillis() * 1000;
+				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+				return null;
+			}
+		};
 		try {
-			client = (Client)clientPool.borrowObject();
-			String column = instance + path;
-			ColumnPath cp = new ColumnPath( columnFamily );
-			long clock = System.currentTimeMillis() * 1000;
-			//cp.setColumn( ByteBuffer.wrap( column.getBytes() ) );
-			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
-			client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			delCall.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
 	@Override
 	public Iterable<Object> get(String path, String instance, String key) {
-		List<Object> out = new LinkedList<Object>();
-		Client client = null;
-		try {
-			String superColumn = instance + path;
-			ColumnPath cp = new ColumnPath( columnFamily );
-			cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
-			client = (Client)clientPool.borrowObject();
-			ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
-			for ( Column col : res.getSuper_column().columns ) {
-				out.add( serializer.loads( new String(col.getValue()) ) );
+		
+		final String superColumn = instance + path;
+		final ColumnPath cp = new ColumnPath( columnFamily );
+		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
+		ThriftCaller<Iterable<Object>> getCall = new ThriftCaller<Iterable<Object>>() {
+
+			@Override
+			protected Iterable<Object> request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				List<Object> out = new LinkedList<Object>();
+				ColumnOrSuperColumn res;
+				try {
+					res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
+					for ( Column col : res.getSuper_column().columns ) {
+						out.add( serializer.loads( new String(col.getValue()) ) );
+					}
+				} catch (NotFoundException e) {					
+				}
+				return out;
 			}
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		};
+		
+		try {
+			return getCall.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
-		return out;
+		return null;
+		
 	}
 
 
@@ -350,54 +348,35 @@ public class ThriftStore implements MPStore {
 		}
 
 		private boolean getNextSlice() {
-			boolean elemAdded = false;
-			Client client = null;
+			ThriftCaller<Boolean> getSliceCall = new ThriftCaller<Boolean>() {
+				@Override
+				protected Boolean request(Client client)
+						throws InvalidRequestException, UnavailableException,
+						TimedOutException, TException {				
+					SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart),ByteBuffer.wrap(keyEnd), false, maxFetch);
+					SlicePredicate slice = new SlicePredicate();	 
+					slice.setSlice_range(sRange);
+					List<ColumnOrSuperColumn> res = client.get_slice( superColumn, cp, slice, CL);
+					for ( ColumnOrSuperColumn col : res ) {		
+						String curKey = new String( col.getSuper_column().getName() );
+						if ( firstSlice || curKey.compareTo( new String(keyStart)) != 0 ) {
+							processColumn(col);
+							keyStart = col.getSuper_column().getName();
+							elemAdded = true;
+						}
+					}	
+					firstSlice = false;
+					return elemAdded;
+				}
+			};
+			
 			try {
-				SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart),ByteBuffer.wrap(keyEnd), false, maxFetch);
-				SlicePredicate slice = new SlicePredicate();	 
-				slice.setSlice_range(sRange);
-				client = (Client)clientPool.borrowObject();
-				List<ColumnOrSuperColumn> res = client.get_slice( superColumn, cp, slice, CL);
-				for ( ColumnOrSuperColumn col : res ) {		
-					String curKey = new String( col.getSuper_column().getName() );
-					if ( firstSlice || curKey.compareTo( new String(keyStart)) != 0 ) {
-						processColumn(col);
-						keyStart = col.getSuper_column().getName();
-						elemAdded = true;
-					}
-				}	
-				firstSlice = false;
-			} catch (InvalidRequestException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (UnavailableException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TimedOutException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return getSliceCall.call();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} finally {
-				try {
-					if ( client != null )
-						clientPool.returnObject(client);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			}
-			return elemAdded;
+			return false;
 		}
 
 		abstract void processColumn( ColumnOrSuperColumn col );
@@ -449,49 +428,31 @@ public class ThriftStore implements MPStore {
 
 
 	@Override
-	public long keyCount(String path, String instance, int maxCount) {
-		Client client = null;
-		long count = 0;
+	public long keyCount(String path, String instance, final int maxCount) {
+		final String superColumn = instance + path;
+		final ColumnParent cp = new ColumnParent(columnFamily);
+
+		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>() {
+			@Override
+			protected Long request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, maxCount);
+				SlicePredicate slice = new SlicePredicate();	 
+				slice.setSlice_range(sRange);
+				long count = client.get_count( ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
+				
+				return count;
+			}
+		};
+		
 		try {
-			String superColumn = instance + path;
-			ColumnParent cp = new ColumnParent(columnFamily);
-			//BUG:Need smarter way to get slice count
-			SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, maxCount);
-			SlicePredicate slice = new SlicePredicate();	 
-			slice.setSlice_range(sRange);
-			client = (Client)clientPool.borrowObject();
-			count = client.get_count( ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return getKeyCount.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		return count;
+		}	
+		return  0;
 	}
 
 	@Override
@@ -516,53 +477,35 @@ public class ThriftStore implements MPStore {
 	}
 
 	@Override
-	public Iterable<String> keySlice(String path, String instance,
-			String startKey, int count) {
-		Client client = null;
-		List<String> out = new ArrayList<String>();
-		String superColumn = instance + path;
+	public Iterable<String> keySlice(String path, String instance, final String startKey, final int count) {
+		final String superColumn = instance + path;
+		ThriftCaller<Iterable<String>> keySliceCall = new ThriftCaller<Iterable<String>>() {
+
+			@Override
+			protected Iterable<String> request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				List<String> out = new ArrayList<String>();
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
+				SlicePredicate slice = new SlicePredicate();	 
+				slice.setSlice_range(sRange);
+				ColumnParent cp = new ColumnParent(columnFamily);
+				List<ColumnOrSuperColumn> res = client.get_slice( ByteBuffer.wrap( superColumn.getBytes() ), cp, slice, CL);
+				for ( ColumnOrSuperColumn col : res ) {		
+					String curKey = new String( col.getSuper_column().getName() );
+					out.add(curKey);
+				}	
+				return out;
+			}
+			
+		};
 		try {
-			SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
-			SlicePredicate slice = new SlicePredicate();	 
-			slice.setSlice_range(sRange);
-			ColumnParent cp = new ColumnParent(columnFamily);
-			client = (Client)clientPool.borrowObject();
-			List<ColumnOrSuperColumn> res = client.get_slice( ByteBuffer.wrap( superColumn.getBytes() ), cp, slice, CL);
-			for ( ColumnOrSuperColumn col : res ) {		
-				String curKey = new String( col.getSuper_column().getName() );
-				out.add(curKey);
-			}	
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnavailableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TimedOutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return keySliceCall.call();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			try {
-				if ( client != null )
-					clientPool.returnObject(client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
-		return out;
+		return null;
 	}
 
 }
