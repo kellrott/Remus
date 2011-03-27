@@ -2,4 +2,4 @@
 
 binpath=`dirname $0`
 basepath=`dirname $binpath`
-java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib/:${basepath}/build/jar  org.remus.PipelineAdmin $*
+java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib/:${basepath}/build/jar  org.remus.tools.PipelineAdmin $*

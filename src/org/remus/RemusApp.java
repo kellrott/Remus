@@ -1,6 +1,7 @@
 package org.remus;
 
 import java.io.FileNotFoundException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,19 @@ import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
 
+/**
+ * Main Interface to Remus applications. In charge of root database interface and pipeline 
+ * management.
+ * 
+ * @author kellrott
+ *
+ */
+
 public class RemusApp {
+	/**
+	 * Class name for MPstore interface.
+	 * @see org.mpstore.ThriftStore
+	 */
 	public static final String configStore = "org.remus.mpstore";
 	public static final String configWork = "org.remus.workdir";
 	public static final String configAttachStore = "org.remus.attachstore";
@@ -209,6 +222,9 @@ public class RemusApp {
 		return pipelines.get(name);
 	}
 	
+	public Collection<RemusPipeline> getPipelines() {
+		return pipelines.values();
+	}
 	public RemusApplet getApplet(String appletPath) {
 		if (appletPath.startsWith("/"))
 			appletPath = appletPath.replaceFirst("^\\/", "");
