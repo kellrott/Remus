@@ -5,7 +5,7 @@ basepath=`dirname $binpath`
 HOST=`hostname`
 confFile=${basepath}/etc/remus.prop
 if [ ! -e ${basepath}/etc/${HOST}.conf ]; then
-    confFile=${basepath}/etc/${HOST}.prop
+    confFile=${basepath}/etc/remus.prop
 fi
 
 java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib/:${basepath}/build/jar org.remus.MasterServer ${confFile}

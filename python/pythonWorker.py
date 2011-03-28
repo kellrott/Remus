@@ -1,9 +1,9 @@
 
 import remusLib
-
-
-class pythonWorker
-
+import json
+import imp
+import remus
+import callback
 
 def pythonWorker( mode ):
 	if mode == 'split':
@@ -27,26 +27,29 @@ class WorkerBase:
 	def __init__(self, host, applet):
 		self.host = host
 		self.applet = applet
-		pipeline = applet.split(":")[0]
-		fileList = json.loads( urlopen( self.host + pipeline + "@attach" ).read() )
+		self.pipeline = applet.split(":")[0]
+		fileList = json.loads( remusLib.urlopen( self.host + self.pipeline + "@attach" ).read() )
 		for file in fileList:
 			oHandle = open( file, "w" )
-			fileURL =  self.host + pipeline + "@attach//" + file
-			oHandle.write( urlopen( fileURL ).read() )
+			fileURL =  self.host + self.pipeline + "@attach//" + file
+			oHandle.write( remusLib.urlopen( fileURL ).read() )
 			oHandle.close()	
 		
-	def compileCode(self):
+	def compileCode(self, code):
+		self.code = code
+		self.callback = callback.RemusCallback( self.host, self.pipeline, self.applet )
 		self.module = imp.new_module( self.applet )	
 		self.module.__dict__["__name__"] = self.applet
+		self.module.__dict__["remus"] = self.callback
 		exec self.code in self.module.__dict__
 
 	def setupOutput(self, instance, jobID):
 		outUrl = self.host + self.applet + "@data/%s" %(instance) 
-		self.outmap = { None: http_write( outUrl, jobID ) }
+		self.outmap = { None: remusLib.http_write( outUrl, jobID ) }
 		for outname in self.output:
 			outUrl = self.host + self.applet + "." + outname + "@data/%s" % (instance)
 			self.outmap[ outname ] = http_write( outUrl, jobID )
-		remus.setoutput( self.outmap )
+		self.callback.setoutput( self.outmap )
 	
 	def closeOutput(self):
 		for name in self.outmap:
@@ -55,26 +58,26 @@ class WorkerBase:
 
 class SplitWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
-		func = remus.getFunction( self.applet )
+		func = self.callback.getFunction( self.applet )
 		doneIDs = []
-		log( "Starting Split %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
+		remusLib.log( "Starting Split %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		for jobID in workDesc['input']:
 			self.setupOutput(instance, jobID)
 			if ( workDesc[ 'input' ][jobID] is not None ):
 				inputURL = self.host + workDesc[ 'input' ][jobID]
-				iHandle = httpStreamer( [inputURL] )
+				iHandle = remusLib.httpStreamer( [inputURL] )
 			else:
 				iHandle = None
 			func( iHandle )	
 			doneIDs.append( jobID )
 			self.closeOutput()
-		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
+		remusLib.httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		
 
 class MapWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
 		func = remus.getFunction( self.applet )
-		log( "Starting Map %s %s" % (self.applet, ",".join(workDesc['key'].keys()) ) )
+		remusLib.log( "Starting Map %s %s" % (self.applet, ",".join(workDesc['key'].keys()) ) )
 		doneIDs = []
 		errorIDs = {}
 		for jobID in workDesc['key']:
@@ -95,14 +98,14 @@ class MapWorker(WorkerBase):
 			self.closeOutput()
 		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		if ( len( errorIDs ) ):
-			log( "ERROR: " + str(errorIDs) )
+			remusLib.log( "ERROR: " + str(errorIDs) )
 			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
 class ReduceWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
 		func = remus.getFunction( self.applet )
-		log( "Starting Reduce %s %s" % (self.applet, ",".join(workDesc['key'].keys())) )
+		remusLib.log( "Starting Reduce %s %s" % (self.applet, ",".join(workDesc['key'].keys())) )
 		doneIDs = []
 		for jobID in workDesc['key']:
 			wKey = workDesc['key'][jobID]
@@ -117,7 +120,7 @@ class ReduceWorker(WorkerBase):
 
 class PipeWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
-		log( "Starting Pipe %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
+		remusLib.log( "Starting Pipe %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		func = remus.getFunction( self.applet )
 
 		errorIDs = {}
@@ -126,8 +129,8 @@ class PipeWorker(WorkerBase):
 			inList = []
 			for inFile in workDesc['input'][jobID]:
 				kpURL = self.host + inFile
-				log( "piping: " + kpURL )
-				iHandle = jsonPairSplitter( urlopen( kpURL ) )
+				remusLib.log( "piping: " + kpURL )
+				iHandle = jsonPairSplitter( remusLib.urlopen( kpURL ) )
 				inList.append( iHandle )
 			try:
 				func( inList )
@@ -145,19 +148,19 @@ class PipeWorker(WorkerBase):
 				#TODO, figure out streaming post in python
 				fileMap[ path ].close()
 				cmd = "curl --data-binary @%s %s" % (fileMap[ path ].getPath(), postURL )
-				log( "OS: " + cmd )
+				remusLib.log( "OS: " + cmd )
 				os.system( cmd )
 				#fileMap[path].unlink()
 			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 		if ( len( errorIDs ) ):
-			log( "ERROR: " + str(errorIDs) )
+			remusLib.log( "ERROR: " + str(errorIDs) )
 			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
 
 class MergeWorker(WorkerBase):	
 	def doWork(self, instance, jobID):
-		log( "Starting Merge %s %d" % (self.applet, jobID) )
+		remusLib.log( "Starting Merge %s %d" % (self.applet, jobID) )
 		url = self.host + self.applet + "@work/%s/%s" % ( instance, jobID )
 		jobSet = httpGetJson( url )
 		func = remus.getFunction( self.applet )
@@ -181,7 +184,7 @@ class MatchWorker(WorkerBase):
 		errorIDs = {}
 		doneIDs = []
 		for jobID in workDesc['key']:
-			log( "Starting Match %s %s" % (self.applet, jobID) )
+			remusLib.log( "Starting Match %s %s" % (self.applet, jobID) )
 			self.setupOutput(instance, jobID)
 			wKey = workDesc['key'][jobID]
 			leftValURL = self.host + workDesc['left_input'] + "/%s" % (  quote( wKey ) )
