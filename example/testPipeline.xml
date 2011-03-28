@@ -1,0 +1,16 @@
+<remus_pipeline id="testPipeline">
+<include path="test.file"/>
+<remus_split id="testSplit" type="python">
+<![CDATA[
+@remus.splitter
+def split( info ):
+	handle = remus.open( "test.file" )
+	for line in handle:
+		tmp = line.split("\t")
+		print tmp
+		remus.emit( tmp[0], tmp[1] )
+	handle.close()
+]]>
+</remus_split>
+
+</remus_pipeline>
