@@ -2,6 +2,7 @@ package org.remus;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
+import org.remus.work.Submission;
 import org.remus.work.WorkKey;
 
 public class RemusPipeline {
@@ -87,7 +89,6 @@ public class RemusPipeline {
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
 		}
-
 	}
 
 	public boolean isComplete(RemusInstance inst) {
@@ -126,6 +127,15 @@ public class RemusPipeline {
 				(Long)0L, 
 				key,
 				data );
+		if ( ((Map)data).containsKey( Submission.AppletField ) ) {
+			List aList = (List)((Map)data).get(Submission.AppletField);
+			for (Object sObj : aList) {
+				RemusApplet applet = members.get((String)sObj);
+				if ( applet != null ) {
+					applet.createInstance(key);
+				}
+			}
+		}
 	}
 
 	public Iterable<KeyValuePair> getSubmits() {
