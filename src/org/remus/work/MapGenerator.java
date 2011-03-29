@@ -43,7 +43,7 @@ public class MapGenerator implements WorkGenerator {
 		stat.put("done", doneCount);
 		stat.put("error", errorCount);
 		stat.put("total", jobID);
-		applet.datastore.add( applet.getPath(), RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, instance.toString(), stat );
+		applet.datastore.add( applet.getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, instance.toString(), stat );
 		if ( outList.size() == 0 && reqCount > 0 )
 			done = true;
 		return outList;

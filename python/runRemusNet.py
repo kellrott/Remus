@@ -3,7 +3,6 @@
 import remus
 import sys
 import json
-from urllib  import quote
 import imp
 from cStringIO import StringIO
 import uuid
@@ -54,18 +53,18 @@ if __name__=="__main__":
 	if ( len(sys.argv) >= 3 ):
 		remusLib.setWorkerID( sys.argv[2] )
 	else:
-		remusLib.setWorkerID(uuid.uuid4())
+		remusLib.setWorkerID( str(uuid.uuid4()) )
 
 	statusPulse()
 	try:
-		retryCount = 6
+		retryCount = 3
 		while retryCount > 0:
 			workList = remusLib.httpGetJson( host + "/@work" ).read()	
 			if len(workList) == 0:
 				retryCount -= 1
 				time.sleep(10)
 			else: 
-				retryCount = 6
+				retryCount = 3
 				for instance in workList:
 					for node in workList[instance]:
 						for workDesc in workList[instance][node]:

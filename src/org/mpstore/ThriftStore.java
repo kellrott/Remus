@@ -84,7 +84,7 @@ public class ThriftStore implements MPStore {
 		}
 	}
 
-	
+
 	abstract class ThriftCaller<T> {
 		public T call() throws Exception {
 			T out = null;
@@ -107,13 +107,13 @@ public class ThriftStore implements MPStore {
 					} catch (Exception e2) {						
 					}
 					client = null;					
-				    try {
+					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e1) {						
 					}				
 				} catch (TimedOutException e) {
 					outE = e;
-		            try {
+					try {
 						Thread.sleep(4000);
 					} catch (InterruptedException e1) {						
 					}
@@ -145,23 +145,23 @@ public class ThriftStore implements MPStore {
 		}		
 		protected abstract T request( Client client ) throws InvalidRequestException, UnavailableException, TimedOutException, TException ;
 	}
-	
+
 
 
 	@Override
 	public void add(String path, String instance, long jobID, long emitID,
 			String key, Object data) {		
-		
+
 		final String column = instance + path;
 		final ByteBuffer superColumn = ByteBuffer.wrap( key.getBytes());
 		final String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap( serializer.dumps(data).getBytes());
-		
+
 		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>()  {
 			@Override
 			protected Boolean request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 				ColumnParent cp = new ColumnParent( columnFamily );
 				cp.setSuper_column( superColumn );
 				long clock = System.currentTimeMillis() * 1000;				
@@ -201,18 +201,18 @@ public class ThriftStore implements MPStore {
 		final String superColumn = instance + path;
 		final ColumnPath cp = new ColumnPath( columnFamily );
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
-		
+
 		ThriftCaller<Boolean> containsCall = new ThriftCaller<Boolean>() {
 			@Override
 			protected Boolean request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 
 				boolean returnVal = false;
 				try {
-				ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
-				if ( res != null )
-					returnVal = true;
+					ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
+					if ( res != null )
+						returnVal = true;
 				} catch (NoSuchElementException e) {					
 				} catch (NotFoundException e) {					
 				}
@@ -227,22 +227,22 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public void delete(String path, String instance) {
-		
+
 		final String column = instance + path;
 		final ColumnPath cp = new ColumnPath( columnFamily );
-		
+
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
 			@Override
 			protected Boolean request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 
 				long clock = System.currentTimeMillis() * 1000;
 				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
 
 				return null;
 			}
-			
+
 		};
 		try {
 			delCall.call();
@@ -254,7 +254,7 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public void delete(String path, String instance, String key) {
-		
+
 		final String column = instance + path;
 		final ColumnPath cp = new ColumnPath( columnFamily );
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
@@ -262,9 +262,9 @@ public class ThriftStore implements MPStore {
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
 			@Override
 			protected Boolean request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
-				
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
+
 				long clock = System.currentTimeMillis() * 1000;
 				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
 				return null;
@@ -280,7 +280,7 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public Iterable<Object> get(String path, String instance, String key) {
-		
+
 		final String superColumn = instance + path;
 		final ColumnPath cp = new ColumnPath( columnFamily );
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
@@ -288,8 +288,8 @@ public class ThriftStore implements MPStore {
 
 			@Override
 			protected Iterable<Object> request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 				List<Object> out = new LinkedList<Object>();
 				ColumnOrSuperColumn res;
 				try {
@@ -302,7 +302,7 @@ public class ThriftStore implements MPStore {
 				return out;
 			}
 		};
-		
+
 		try {
 			return getCall.call();
 		} catch (Exception e) {
@@ -310,7 +310,7 @@ public class ThriftStore implements MPStore {
 			e.printStackTrace();
 		}
 		return null;
-		
+
 	}
 
 
@@ -351,8 +351,8 @@ public class ThriftStore implements MPStore {
 			ThriftCaller<Boolean> getSliceCall = new ThriftCaller<Boolean>() {
 				@Override
 				protected Boolean request(Client client)
-						throws InvalidRequestException, UnavailableException,
-						TimedOutException, TException {				
+				throws InvalidRequestException, UnavailableException,
+				TimedOutException, TException {				
 					SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart),ByteBuffer.wrap(keyEnd), false, maxFetch);
 					SlicePredicate slice = new SlicePredicate();	 
 					slice.setSlice_range(sRange);
@@ -369,7 +369,7 @@ public class ThriftStore implements MPStore {
 					return elemAdded;
 				}
 			};
-			
+
 			try {
 				return getSliceCall.call();
 			} catch (Exception e) {
@@ -435,17 +435,17 @@ public class ThriftStore implements MPStore {
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>() {
 			@Override
 			protected Long request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 				SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, maxCount);
 				SlicePredicate slice = new SlicePredicate();	 
 				slice.setSlice_range(sRange);
 				long count = client.get_count( ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
-				
+
 				return count;
 			}
 		};
-		
+
 		try {
 			return getKeyCount.call();
 		} catch (Exception e) {
@@ -483,8 +483,8 @@ public class ThriftStore implements MPStore {
 
 			@Override
 			protected Iterable<String> request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 				List<String> out = new ArrayList<String>();
 				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
 				SlicePredicate slice = new SlicePredicate();	 
@@ -497,7 +497,7 @@ public class ThriftStore implements MPStore {
 				}	
 				return out;
 			}
-			
+
 		};
 		try {
 			return keySliceCall.call();

@@ -208,8 +208,8 @@ public class RemusApplet {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object opStr : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
-			if ( opStr != null && WORKDONE_OP.compareTo((String)opStr) == 0 ) {
+		for ( Object statObj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) ) {
 				found = true;
 			}
 		}
@@ -230,7 +230,15 @@ public class RemusApplet {
 	}
 
 	public void setComplete(RemusInstance remusInstance) {
-		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), WORKDONE_OP );
+		Object statObj = null;
+		for ( Object curObj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			statObj = curObj;
+		}
+		if ( statObj == null ) {
+			statObj = new HashMap();
+		}
+		((Map)statObj).put(WORKDONE_OP, true);
+		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		datastore.delete( getPath() + "@done", remusInstance.toString() );
 	}
 
@@ -328,7 +336,7 @@ public class RemusApplet {
 			if ( !invalid ) {
 				boolean hasDone = false;
 				for ( Object val : datastore.get(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
-					if ( WORKDONE_OP.compareTo( (String)val) == 0 )
+					if ( ((Map)val).containsKey( WORKDONE_OP ) )
 						hasDone = true;
 				}
 				if ( hasDone )		
