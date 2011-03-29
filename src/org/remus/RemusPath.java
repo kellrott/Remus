@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.mpstore.MPStore;
 import org.remus.work.RemusApplet;
+import org.remus.work.Submission;
 
 /**
  * 
@@ -54,7 +55,7 @@ public class RemusPath {
 			if ( submitKey != null ) {
 				String submitPath = null;				
 				for ( Object submitObj : ds.get( "/" + ref.getPipeline() + "@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey ) ) {
-					submitPath = (String)((Map)submitObj).get("input");
+					submitPath = (String)((Map)submitObj).get(Submission.InputField);
 				}				
 				ref = new RemusPath(ref.parent, submitPath);
 			}
