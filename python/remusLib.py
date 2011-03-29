@@ -7,6 +7,8 @@ from cStringIO import StringIO
 verbose = True
 global workerID
 import copy
+import urllib
+
 
 curServer = None
 curConn = None
@@ -33,7 +35,8 @@ def urlopen(url,data=None,retry=1):
 			curConn = None
 			urlopen( url, data, retry-1)
 
-
+def quote( inStr ):
+	return urllib.quote( inStr )
 
 def log(v):
 	"""

@@ -66,7 +66,7 @@ class RemusCallback:
 	def merger(self, f):
 		return self.addFunction(f)
 	
-	def match(self, f):
+	def matcher(self, f):
 		return self.addFunction(f)
 	
 	def splitter(self, f):

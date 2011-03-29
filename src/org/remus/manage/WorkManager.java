@@ -59,27 +59,34 @@ public class WorkManager {
 		}		
 		//scan applets for new work 
 		if ( workQueue.size() == 0 ) {
-			Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
-			for (AppletInstance ai : newwork.keySet() ) {
-				assert ai != null;
-				for ( WorkKey wk : newwork.get(ai) ) {
-					//make sure that it hasn't been assigned to workers yet
-					boolean found = false;
-					for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
-						if ( worker.containsKey( ai ) && worker.get(ai).contains(wk) ) {
-							found = true;
-						}
-					}
-					if ( !found ) {
-						synchronized (workQueue) {		
-							if ( !workQueue.containsKey(ai) ) {
-								workQueue.put(ai, new HashSet<WorkKey>() );
+			int retry = 2;
+			do {
+				Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
+				if ( newwork.size() == 0 )
+					retry--;
+				else
+					retry = 0;
+				for (AppletInstance ai : newwork.keySet() ) {
+					assert ai != null;
+					for ( WorkKey wk : newwork.get(ai) ) {
+						//make sure that it hasn't been assigned to workers yet
+						boolean found = false;
+						for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
+							if ( worker.containsKey( ai ) && worker.get(ai).contains(wk) ) {
+								found = true;
 							}
-							workQueue.get(ai).add(wk);
+						}
+						if ( !found ) {
+							synchronized (workQueue) {		
+								if ( !workQueue.containsKey(ai) ) {
+									workQueue.put(ai, new HashSet<WorkKey>() );
+								}
+								workQueue.get(ai).add(wk);
+							}
 						}
 					}
 				}
-			}
+			} while (retry > 0 );
 		}
 		//add jobs to worker's queue 
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
@@ -145,7 +152,8 @@ public class WorkManager {
 
 		synchronized (workerSets) {
 			AppletInstance ai = new SimpleAppletInstance(applet,inst);
-			workerSets.get(workerID).get(ai).remove(ref);
+			if ( workerSets.containsKey(workerID) && workerSets.get(workerID).containsKey(ai) )
+				workerSets.get(workerID).get(ai).remove(ref);
 		}
 		applet.errorWork(inst, jobID, workerID, error);		
 	}
@@ -208,13 +216,15 @@ public class WorkManager {
 				}
 				//Map instMap = new HashMap();
 				//instMap.put(instStr, ai.formatWork(addSet) );
-				if ( ! out.containsKey(instStr) ) {
-					out.put( instStr, new HashMap() );
+				if ( addSet.size() > 0 ) {
+					if ( ! out.containsKey(instStr) ) {
+						out.put( instStr, new HashMap() );
+					}
+					if ( ! out.get( instStr ).containsKey( appletStr ) ) {
+						out.get( instStr ).put( appletStr, new ArrayList());
+					}
+					out.get( instStr ).get( appletStr ).add( ai.formatWork(addSet) );
 				}
-				if ( ! out.get( instStr ).containsKey( appletStr ) ) {
-					out.get( instStr ).put( appletStr, new ArrayList());
-				}
-				out.get( instStr ).get( appletStr ).add( ai.formatWork(addSet) );
 			}
 		}
 		return out;

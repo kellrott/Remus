@@ -4,6 +4,10 @@ import json
 import imp
 import remus
 import callback
+import sys
+from cStringIO import StringIO
+import traceback
+
 
 def pythonWorker( mode ):
 	if mode == 'split':
@@ -76,15 +80,15 @@ class SplitWorker(WorkerBase):
 
 class MapWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
-		func = remus.getFunction( self.applet )
+		func = self.callback.getFunction( self.applet )
 		remusLib.log( "Starting Map %s %s" % (self.applet, ",".join(workDesc['key'].keys()) ) )
 		doneIDs = []
 		errorIDs = {}
 		for jobID in workDesc['key']:
 			wKey = workDesc['key'][jobID]
 			self.setupOutput(instance, jobID)
-			kpURL = self.host + workDesc['input'] + "/%s" % ( quote( wKey ) )	
-			kpData = httpGetJson( kpURL )
+			kpURL = self.host + workDesc['input'] + "/%s" % ( remusLib.quote( wKey ) )	
+			kpData = remusLib.httpGetJson( kpURL )
 			try:
 				for data in kpData:
 					for key in data:
@@ -96,32 +100,42 @@ class MapWorker(WorkerBase):
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
 			self.closeOutput()
-		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
+		remusLib.httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
 		if ( len( errorIDs ) ):
 			remusLib.log( "ERROR: " + str(errorIDs) )
-			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
+			remusLib.httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
 class ReduceWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
-		func = remus.getFunction( self.applet )
+		func = self.callback.getFunction( self.applet )
 		remusLib.log( "Starting Reduce %s %s" % (self.applet, ",".join(workDesc['key'].keys())) )
 		doneIDs = []
+		errorIDs = {}
 		for jobID in workDesc['key']:
 			wKey = workDesc['key'][jobID]
 			self.setupOutput(instance, jobID)
-			kpURL = self.host + workDesc['input'] + "/%s" % ( quote( wKey ) )		
-			kpData = httpGetJson( kpURL )
-			func(  wKey, valueIter(kpData) )
-			doneIDs.append( jobID )
+			kpURL = self.host + workDesc['input'] + "/%s" % ( remusLib.quote( wKey ) )		
+			kpData = remusLib.httpGetJson( kpURL )
+			try:
+				func(  wKey, remusLib.valueIter(kpData) )
+				doneIDs.append( jobID )
+			except Exception:
+				exc_type, exc_value, exc_traceback = sys.exc_info()
+				e = StringIO()
+				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
+				errorIDs[jobID ] = e.getvalue()				
 			self.closeOutput()
-		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
-
+		if len( doneIDs ):
+			remusLib.httpPostJson( self.host + self.applet + "@work", { instance : doneIDs  } )
+		if ( len( errorIDs ) ):
+			remusLib.log( "ERROR: " + str(errorIDs) )
+			remusLib.httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 class PipeWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
 		remusLib.log( "Starting Pipe %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
-		func = remus.getFunction( self.applet )
+		func = self.callback.getFunction( self.applet )
 
 		errorIDs = {}
 		for jobID in workDesc['input']:
@@ -130,7 +144,7 @@ class PipeWorker(WorkerBase):
 			for inFile in workDesc['input'][jobID]:
 				kpURL = self.host + inFile
 				remusLib.log( "piping: " + kpURL )
-				iHandle = jsonPairSplitter( remusLib.urlopen( kpURL ) )
+				iHandle = remusLib.jsonPairSplitter( remusLib.urlopen( kpURL ) )
 				inList.append( iHandle )
 			try:
 				func( inList )
@@ -140,7 +154,7 @@ class PipeWorker(WorkerBase):
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
 			self.closeOutput()		
-			fileMap = remus.getoutput()
+			fileMap = self.callback.getoutput()
 			for path in fileMap:
 				postURL = self.host + self.applet + "@attach/%s/%s" % (instance, path)
 				print postURL
@@ -151,47 +165,60 @@ class PipeWorker(WorkerBase):
 				remusLib.log( "OS: " + cmd )
 				os.system( cmd )
 				#fileMap[path].unlink()
-			httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
+			remusLib.httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 		if ( len( errorIDs ) ):
 			remusLib.log( "ERROR: " + str(errorIDs) )
-			httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
+			remusLib.httpPostJson( self.host + self.applet + "@error", { instance : errorIDs  } )
 
 
 
 class MergeWorker(WorkerBase):	
-	def doWork(self, instance, jobID):
-		remusLib.log( "Starting Merge %s %d" % (self.applet, jobID) )
-		url = self.host + self.applet + "@work/%s/%s" % ( instance, jobID )
-		jobSet = httpGetJson( url )
-		func = remus.getFunction( self.applet )
-		self.setupOutput(instance, jobID)
-		for jobDesc in jobSet:
-			leftValURL = self.host + jobDesc['left_input'] + "/%s" % (  quote( jobDesc['left_key']) )
-			leftSet = httpGetJson( leftValURL )
-			rightSetURL = self.host + jobDesc['right_input']
-			for leftKey in leftSet:
-				for rightSet in httpGetJson( rightSetURL, True ):
-					for rightKey in rightSet:
-						func( leftKey, leftVals[leftKey], rightKey, rightSet[rightKey] )
-		self.closeOutput()
-		httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
+	def doWork(self, instance, workDesc):
+		func = self.callback.getFunction( self.applet )
+		errorIDs = {}
+		doneIDs = []
+		for jobID in workDesc['left_key']:
+			url = self.host + self.applet + "@work/%s/%s" % ( instance, jobID )
+			self.setupOutput(instance, jobID)
+
+			leftKey = workDesc['left_key'][jobID]
+			leftValURL = self.host + workDesc['left_input'] + "/%s" % (  remusLib.quote( leftKey ) )
+			rightSetURL = self.host + workDesc['right_input']
+			
+			leftSet = list( remusLib.httpGetJson( leftValURL ) )
+			
+			rightKey = None
+			rightSet = []
+			for data in remusLib.httpGetJson( rightSetURL ):
+				for key in data:
+					if rightKey is None:
+						rightKey = key
+					if key != rightKey:
+						func( leftKey, remusLib.valueIter(leftSet), rightKey, remusLib.valueIter(rightSet) )
+						rightKey = key
+						rightSet = []
+					rightSet.append( { key : data[key] } )
+			if len( rightSet):
+				func( leftKey, remusLib.valueIter(leftSet), rightKey, remusLib.valueIter(rightSet) )
+			self.closeOutput()					
+			remusLib.httpPostJson( self.host + self.applet + "@work", { instance : [ jobID ]  } )
 
 
 
 class MatchWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):		
-		func = remus.getFunction( self.applet )
+		func = self.callback.getFunction( self.applet )
 		errorIDs = {}
 		doneIDs = []
 		for jobID in workDesc['key']:
 			remusLib.log( "Starting Match %s %s" % (self.applet, jobID) )
 			self.setupOutput(instance, jobID)
 			wKey = workDesc['key'][jobID]
-			leftValURL = self.host + workDesc['left_input'] + "/%s" % (  quote( wKey ) )
-			leftSet = httpGetJson( leftValURL )
-			rightValURL = self.host + workDesc['right_input'] + "/%s" % (  quote( wKey ) )
-			rightSet = httpGetJson( rightValURL )
-			func( wKey, valueIter(leftSet), valueIter(rightSet) )
+			leftValURL = self.host + workDesc['left_input'] + "/%s" % (  remusLib.quote( wKey ) )
+			leftSet = remusLib.httpGetJson( leftValURL )
+			rightValURL = self.host + workDesc['right_input'] + "/%s" % (  remusLib.quote( wKey ) )
+			rightSet = remusLib.httpGetJson( rightValURL )
+			func( wKey, remusLib.valueIter(leftSet), remusLib.valueIter(rightSet) )
 			doneIDs.append( jobID )
 			self.closeOutput()
-		httpPostJson( self.host + self.applet + "@work", { instance : doneIDs } )
+		remusLib.httpPostJson( self.host + self.applet + "@work", { instance : doneIDs } )

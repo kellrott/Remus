@@ -176,7 +176,7 @@ public class RemusApp {
 		
 	
 	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) {		
-		for ( RemusInstance inst : applet.getActiveInstanceList() ) {
+		for ( RemusInstance inst : applet.getInstanceList() ) {
 			applet.deleteInstance(inst);
 		}
 		String dbPath = "/" + pipeline.getID() + "@pipeline";
@@ -190,6 +190,8 @@ public class RemusApp {
 			deleteApplet(pipe, applet);
 		}
 		rootStore.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, pipe.getID() );
+		rootStore.delete( "/" + pipe.id + "@submit", RemusInstance.STATIC_INSTANCE_STR  );
+
 		loadPipelines();
 	}
 	
