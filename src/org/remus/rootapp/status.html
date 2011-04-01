@@ -1,0 +1,34 @@
+<html>
+
+<script type="text/javascript" src="mustache.js"></script>
+<script type="text/javascript" src="jquery-1.5.1.min.js"></script>
+
+<script type="text/javascript">
+
+var pipelineList = new Array();
+
+function loadPipeline( div ) {
+	pipelineList = new Array();
+	$.getJSON( "/@pipeline", function(data) {
+		for (var a in data ) {
+			d=$("<div>");
+			d.append( a );
+			pipelineList.push( a );
+			for ( var b in data[a] ){
+				d.append( $("<li/>").append( data[a][b] ) );
+			}
+			$(div).append( d );	
+		}
+	});
+}
+
+
+$(document).ready( function() {
+	loadPipeline( "#data" );
+});
+
+</script>
+
+<div id="data"></div>
+
+</html>

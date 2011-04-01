@@ -28,6 +28,7 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
+import org.remus.rootapp.StatusApp;
 import org.remus.work.RemusApplet;
 
 /**
@@ -381,119 +382,7 @@ public class MasterServlet extends HttpServlet {
 		out.print( serializer.dumps(app.params) );
 	}
 	private void doGet_template(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		if ( reqInfo.getApplet() != null ) {
-			if ( app.hasApplet( reqInfo.getAppletPath() ) ) {
-				RemusPipeline pipe = app.getPipeline( reqInfo.getPipeline() );
-				PrintWriter out = resp.getWriter();				
-				resp.setContentType( "text/html" );
-				out.println( "<p><a href='../'>MAIN</a></p>" );
-
-				out.println( "<p><a href='" + reqInfo.getAppletPath() + "@code'>CODE</a></p>" );
-
-				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
-				String instStr = reqInfo.getInstance();
-				RemusInstance curInst = null;
-				if ( instStr != null ) {
-					curInst = new RemusInstance(applet.getDataStore(), instStr);
-					instStr = curInst.toString();
-				}
-				for ( RemusPath iref : applet.getInputs() )	{
-					if ( iref.getInputType() == RemusPath.DynamicInput ) {
-						out.println("SUBMISSION<ul>");
-						for ( KeyValuePair kv : pipe.getSubmits() ) {
-							out.println( "<li>" + kv.getKey() + "<blockquote>" + kv.getValue() + "</blockquote></li>" );
-						}
-						out.println("</ul>");
-					}
-				}
-
-				out.println("Instance<ul>");
-				for ( RemusInstance inst : applet.getInstanceList() ) {					
-					out.println( "<li>" + inst.toString() + " " + applet.getInstanceSubmit(inst) + "</li>" );
-				}
-				out.println("</ul>");
-
-
-				out.println("INPUTS<ul>");
-				for ( RemusPath iRef : applet.getInputs() ) {
-					if ( instStr != null )
-						out.println( "<li><a href='" + iRef.getPortPath() + "@/" + instStr + "'>" + iRef.getPortPath() + "</a></li>" );
-					else
-						out.println( "<li><a href='" + iRef.getPortPath() + "'>" + iRef.getPortPath() + "</a></li>" );
-				}
-				out.println("</ul>");
-
-				out.println("OUTPUT<ul>");
-				if ( instStr != null )
-					out.println( "<li><a href='" + applet.getPath() + "@/" + instStr + "'>" + applet.getPath() + "</a></li>" );
-				else
-					out.println( "<li><a href='" + applet.getPath() + "'>" + applet.getPath() + "</a></li>" );
-
-				for ( String output : applet.getOutputs() ) {
-					if ( instStr != null )
-						out.println( "<li><a href='" + applet.getPath() + "." + output + "@/" + instStr + "'>" + applet.getPath() + "." + output + "</a></li>" );
-					else
-						out.println( "<li><a href='" + applet.getPath() + "." + output + "'>" + applet.getPath() + "." + output + "</a></li>" );
-				}
-				out.println( "</ul>" );
-
-				if ( instStr != null ) {
-					if ( applet.isComplete(curInst ) ) {
-						out.println("<p>Work Complete</p>");
-					} else { 
-						if ( applet.isInError(curInst) ) {
-							out.println("<p>Error</p>" );
-						} else {
-							if ( applet.isReady(curInst) ) {
-								if ( applet.isComplete(curInst) )
-									out.println("<p>Work Ready</p>" );
-								else
-									out.println("<p>Work Pending</p>" );
-							} else {
-								out.println("<p>Work Not Ready</p>" );							
-							}
-						}
-					}
-					if ( applet.isReady(curInst) || applet.getType() == RemusApplet.STORE ) {
-						out.println("<ul>");
-						out.println( "<li><a href='" + reqInfo.getPortPath() + "@keys/"   + instStr + "'>KEYS</a></li>" );
-						out.println( "<li><a href='" + reqInfo.getPortPath() + "@data/"   + instStr + "'>DATA</a></li>" );					
-						out.println( "<li><a href='" + reqInfo.getPortPath() + "@reduce/" + instStr + "'>REDUCE</a></li>" );					
-						out.println("</ul>");
-					}
-					MPStore ds = applet.getDataStore();
-					boolean first = true;
-
-					if ( applet.getType() == RemusApplet.PIPE ) {		
-						/*
-					//TODO: setup attachment listing system
-					first = true;
-					for ( String key : ds.listKeys( applet.getPath() + "@attach", curInst.toString() ) ) {
-						if ( first ) {
-							out.println( "<p>Attachments</p>" );
-							first = false;
-						}
-						out.println( "<li><a href='" + reqInfo.getAppletPath() + "@attach/"   + instStr + "/" + key + "'>" + key + "</a></li>" );
-					}						
-						 */
-					}
-
-					first = true;
-					for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@error", curInst.toString() ) ) {
-						if ( first ) {
-							out.println( "<p>ERRORS</p>" );
-							first = false;
-						}
-						out.println( "<li>" + kv.getValue() + "</li>" );
-					}
-
-				} else {
-					for ( RemusInstance inst : applet.getInstanceList() ) {
-						out.println( "<li><a href='" + reqInfo.getPortPath() + "@/" + inst.toString() + "'>" + inst.toString() + "</a></li>" );
-					}
-				}
-			}
-		} else if (reqInfo.getPipeline() != null && reqInfo.getKey() != null ) {
+		if (reqInfo.getPipeline() != null && reqInfo.getKey() != null ) {
 			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
 			InputStream is = pipe.getAttachStore().readAttachement("/" + reqInfo.getPipeline() + "@attach", RemusInstance.STATIC_INSTANCE_STR, reqInfo.getKey() );
 			ServletOutputStream os = resp.getOutputStream();
@@ -505,46 +394,27 @@ public class MasterServlet extends HttpServlet {
 			os.close();
 			is.close();
 		} else {
-
-			PrintWriter out = resp.getWriter();
-			resp.setContentType( "text/html" );
-			out.println( "<h1>Pipelines:</h1> <ul>");
-			for ( RemusPipeline pipeline : app.pipelines.values() ) {
-				out.println( "<li><h2><a href='/" + pipeline.id + "'>Pipeline " + pipeline.id + "</a></h2></li>" );
-				out.println("<h3>CodeList</h3><ul>");
-				for ( RemusApplet applet : pipeline.getMembers() ) {
-					out.print( "<li><a href='" + applet.getPath() + "'>" + applet.getPath() + "</a>" );
-					if ( applet.getInput().getInputType() == RemusPath.DynamicInput ) {
-						out.print(" - Input Applet");
-					}
-					if ( applet.getInput().getInputType() == RemusPath.StaticInput ) {
-						out.print(" - Static Applet");
-					}
-					out.println("</li><ul>");
-					for ( RemusInstance appInst : applet.getInstanceList() ) {
-						out.print( "<li><a href='" + applet.getPath() + "@/" + appInst.toString() + "'>" +
-								appInst.toString() + "</a> - ");
-						if ( applet.isInError(appInst) ) {
-							out.print("ERROR"); 
-						} else {
-							if ( applet.isReady(appInst) ) {
-								if ( applet.isComplete(appInst) ) {
-									out.print( "Complete");
-								} else {
-									out.print( "Ready");									
-								}
-							} else {
-								out.print( "Waiting");
-							}
-						}
-						out.print( "</li>" );
-					}
-					out.println("</ul>");
+			String path = reqInfo.getPath() ;
+			if ( path.compareTo("/") == 0 )
+				path = "status.html";
+			if ( path.startsWith("/") )
+				path = path.replaceFirst("/", "");
+			
+			InputStream is = StatusApp.class.getResourceAsStream( path );
+			if ( is == null ) {
+				resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+			} else {
+				ServletOutputStream os = resp.getOutputStream();
+				byte [] buffer = new byte[1024];
+				int len;
+				while ( (len = is.read(buffer)) >= 0 ) {
+					os.write( buffer, 0, len );
 				}
-				out.println("</ul>");
+				os.close();
+				is.close();
 			}
-			out.println("</ul>");			
 		}
+
 	}
 
 	@Override
