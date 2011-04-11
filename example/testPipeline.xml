@@ -1,10 +1,10 @@
 <remus_pipeline id="testPipeline">
 <include path="test.file"/>
-<remus_split id="testSplit" type="python">
+<remus_split id="testSplit" type="python" input="?">
 <![CDATA[
 @remus.splitter
 def split( info ):
-	handle = remus.open( "test.file" )
+	handle = open( "test.file" )
 	for line in handle:
 		tmp = line.rstrip().split("\t")
 		print tmp
@@ -13,7 +13,7 @@ def split( info ):
 ]]>
 </remus_split>
 
-<remus_map id="testMap" type="python" input=":testSplit">
+<remus_map id="testMap" type="python" input="testSplit">
 <![CDATA[
 @remus.mapper
 def map( key, val ):
@@ -23,7 +23,7 @@ def map( key, val ):
 </remus_map>
 
 
-<remus_reduce id="testReduce" type="python" input=":testMap">
+<remus_reduce id="testReduce" type="python" input="testMap">
 <![CDATA[
 @remus.reducer
 def reduce( key, vals ):
@@ -31,7 +31,7 @@ def reduce( key, vals ):
 ]]>
 </remus_reduce>
 
-<remus_merge id="testMerge" type="python" left=":testSplit" right=":testReduce">
+<remus_merge id="testMerge" type="python" left=":testSplit" right="testReduce">
 <![CDATA[
 @remus.merger
 def reduce( lkey, lvals, rkey, rvals ):
@@ -46,7 +46,7 @@ def reduce( lkey, lvals, rkey, rvals ):
 
 </remus_merge>
 
-<remus_pipe id="testPipe" type="python" input=":testReduce">
+<remus_pipe id="testPipe" type="python" input="testReduce">
 <![CDATA[
 @remus.pipe
 def reduce( handles ):
@@ -56,7 +56,7 @@ def reduce( handles ):
 </remus_pipe>
 
 
-<remus_match id="testMatch" type="python" left=":testMerge" right=":testPipe">
+<remus_match id="testMatch" type="python" left="testMerge" right="testPipe">
 <![CDATA[
 @remus.matcher
 def reduce( key, lvals, rvals ):
