@@ -59,7 +59,7 @@ def parseRemus(server, path):
 					if not name in ['id', 'input', 'output', 'type', 'code' ]:
 						remusNode[ name ] = value
 				remusNode['code'] = getText( node.childNodes )
-				url = server + "/" + pipelineName + "/" + remusNode['id'] + "@pipeline"  
+				url = server + "/" + pipelineName + "@pipeline/" + remusNode['id']  
 				print url
 				data = json.dumps( remusNode )
 				print putData( url, data ).read()
