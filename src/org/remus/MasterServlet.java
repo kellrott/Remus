@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,6 @@ import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
-import org.remus.manage.WorkManager;
 import org.remus.rootapp.StatusApp;
 import org.remus.work.RemusApplet;
 
@@ -284,10 +282,10 @@ public class MasterServlet extends HttpServlet {
 
 	private void doGet_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() != null && app.hasApplet( reqInfo.getAppletPath() ) ) {
-			if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
+			if ( reqInfo.getInstance() != null && reqInfo.getAttachment() != null ) {
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 				AttachStore ds = applet.getAttachStore();
-				InputStream is = ds.readAttachement( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey() );
+				InputStream is = ds.readAttachement( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), reqInfo.getAttachment() );
 				if ( is != null ) {
 					ServletOutputStream os = resp.getOutputStream();
 					byte [] buffer = new byte[1024];
@@ -299,6 +297,16 @@ public class MasterServlet extends HttpServlet {
 				} else {
 					resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 				}
+			} else if ( reqInfo.getInstance() != null && reqInfo.getKey() != null ) {
+				PrintWriter out = resp.getWriter();
+				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
+				AttachStore ds = applet.getAttachStore();
+
+				List<String> outList = new ArrayList<String>();
+				for ( String val : ds.listAttachment(reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey()) )  {
+					outList.add(val);
+				}
+				out.println( serializer.dumps( outList ) );
 			} else if (  reqInfo.getInstance() != null && reqInfo.getKey() == null ) {
 				PrintWriter out = resp.getWriter();
 				RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
@@ -309,8 +317,8 @@ public class MasterServlet extends HttpServlet {
 			}
 		} else {
 			RemusPipeline pipeline = app.pipelines.get( reqInfo.getPipeline() );
-			if ( reqInfo.getKey() != null ) { 
-				InputStream is = pipeline.attachStore.readAttachement("/" + pipeline.getID() +"@attach" , RemusInstance.STATIC_INSTANCE_STR, reqInfo.getKey() );
+			if ( reqInfo.getAttachment() != null ) { 
+				InputStream is = pipeline.attachStore.readAttachement("/" + pipeline.getID() +"@attach" , RemusInstance.STATIC_INSTANCE_STR, null, reqInfo.getAttachment() );
 				if ( is != null ) {
 					ServletOutputStream os = resp.getOutputStream();
 					byte [] buffer = new byte[1024];
@@ -321,7 +329,7 @@ public class MasterServlet extends HttpServlet {
 					os.close();
 				}
 			} else {
-				List<String> outList = pipeline.attachStore.listKeys( "/" + pipeline.getID() +"@attach" , RemusInstance.STATIC_INSTANCE_STR );
+				List<String> outList = pipeline.attachStore.listAttachment( "/" + pipeline.getID() +"@attach" , RemusInstance.STATIC_INSTANCE_STR, null );
 				PrintWriter out = resp.getWriter();
 				out.print( serializer.dumps( outList ));
 			}
@@ -384,7 +392,7 @@ public class MasterServlet extends HttpServlet {
 	private void doGet_template(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (reqInfo.getPipeline() != null && reqInfo.getKey() != null ) {
 			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
-			InputStream is = pipe.getAttachStore().readAttachement("/" + reqInfo.getPipeline() + "@attach", RemusInstance.STATIC_INSTANCE_STR, reqInfo.getKey() );
+			InputStream is = pipe.getAttachStore().readAttachement("/" + reqInfo.getPipeline() + "@attach", RemusInstance.STATIC_INSTANCE_STR, null, reqInfo.getAttachment() );
 			ServletOutputStream os = resp.getOutputStream();
 			byte [] buffer = new byte[1024];
 			int len;
@@ -563,7 +571,8 @@ public class MasterServlet extends HttpServlet {
 	private void doPost_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 		if ( reqInfo.getInstance() != null ) {
-			applet.getAttachStore().writeAttachment( reqInfo.getAppletPath() + "@attach", reqInfo.getInstance(), reqInfo.getKey(), req.getInputStream() );
+			applet.getAttachStore().writeAttachment( reqInfo.getAppletPath() + "@attach", 
+					reqInfo.getInstance(), reqInfo.getKey(), reqInfo.getAttachment(), req.getInputStream() );
 		}
 	}
 
@@ -626,7 +635,7 @@ public class MasterServlet extends HttpServlet {
 		} else if ( reqInfo.getPipeline() != null && reqInfo.getApplet() == null && reqInfo.getKey() == null && reqInfo.getView().compareTo("attach")==0) {
 			//posting attachment to pipeline			
 			AttachStore ds = app.getRootAttachStore();
-			ds.writeAttachment("/" + reqInfo.getPipeline() + "@attach" , RemusInstance.STATIC_INSTANCE_STR, reqInfo.getInstance(), req.getInputStream() );
+			ds.writeAttachment("/" + reqInfo.getPipeline() + "@attach" , RemusInstance.STATIC_INSTANCE_STR, null, reqInfo.getInstance(), req.getInputStream() );
 			out.println("PUTTING ATTACHMENT: " +  reqInfo.getPipeline() + " " + reqInfo.getKey() );			
 		}
 	}

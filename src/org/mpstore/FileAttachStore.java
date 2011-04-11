@@ -23,9 +23,9 @@ public class FileAttachStore implements AttachStore {
 
 	
 	@Override
-	public InputStream readAttachement(String path, String instance, String key) {
+	public InputStream readAttachement(String path, String instance, String key, String attachment) {
 		try {
-			File attachFile = NameFlatten.flatten(basePath, path, instance, key);
+			File attachFile = NameFlatten.flatten(basePath, path, instance, key, attachment);
 			if ( attachFile.exists() ) {
 				InputStream is = new FileInputStream( attachFile );
 				return is;
@@ -38,10 +38,10 @@ public class FileAttachStore implements AttachStore {
 	}
 
 	@Override
-	public void writeAttachment(String path, String instance, String key,
+	public void writeAttachment(String path, String instance, String key, String attachment,
 			InputStream inputStream) {
 		try {
-			File attachFile = NameFlatten.flatten(basePath, path, instance, key);
+			File attachFile = NameFlatten.flatten(basePath, path, instance, key, attachment);
 			if ( !attachFile.getParentFile().exists() ) {
 				attachFile.getParentFile().mkdirs();
 			}
@@ -62,8 +62,8 @@ public class FileAttachStore implements AttachStore {
 	}
 
 	@Override
-	public List<String> listKeys(String path, String instance) {
-		File attachDir = NameFlatten.flatten(basePath, path, instance, null).getParentFile();
+	public Iterable<String> listKeys(String path, String instance) {
+		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
 		LinkedList<String> out = new LinkedList<String>();
 		if ( attachDir.exists() ) {
 			for ( File file : attachDir.listFiles() ) {
@@ -73,7 +73,18 @@ public class FileAttachStore implements AttachStore {
 		return out;
 	}
 
-
+	
+	@Override
+	public List<String> listAttachment(String path, String instance, String key) {
+		File attachDir = NameFlatten.flatten(basePath, path, instance, key, null).getParentFile();
+		LinkedList<String> out = new LinkedList<String>();
+		if ( attachDir.exists() ) {
+			for ( File file : attachDir.listFiles() ) {
+				out.add( file.getName() );
+			}
+		}
+		return out;
+	}
 
 	
 	public static boolean deleteDir(File dir) {
@@ -90,7 +101,7 @@ public class FileAttachStore implements AttachStore {
 
 	@Override
 	public void delete(String path, String instance) {
-		File attachDir = NameFlatten.flatten(basePath, path, instance, null).getParentFile();
+		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
 		deleteDir( attachDir );
 	}
 
