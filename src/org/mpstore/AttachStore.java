@@ -8,11 +8,12 @@ public interface AttachStore {
 
 	public void initAttachStore(Map paramMap);
 
-	public void writeAttachment(String path, String instance, String key, InputStream inputStream);
+	public void writeAttachment(String path, String instance, String key, String attachment, InputStream inputStream);
 
-	public InputStream readAttachement(String path, String instance, String key);
+	public InputStream readAttachement(String path, String instance, String key, String attachment);
 
-	public List<String> listKeys(String path, String instance);
+	public List<String> listAttachment(String path, String instance, String key);
+	public Iterable<String> listKeys(String path, String instance);
 
 	public void delete(String path, String instance);
 

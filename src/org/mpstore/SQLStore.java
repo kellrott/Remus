@@ -1,9 +1,5 @@
 package org.mpstore;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -15,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -609,9 +604,9 @@ public class SQLStore implements MPStore {
 		}		
 	}
 
-/*
+	/*
 	@Override
-	public void writeAttachment(String file, String instance, String key, InputStream inputStream) {
+	public void writeAttachment(String file, String instance, String key, String attachment, InputStream inputStream) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {							
@@ -664,7 +659,7 @@ public class SQLStore implements MPStore {
 	}
 
 	@Override
-	public InputStream readAttachement(String file, String instance, String key) {
+	public InputStream readAttachement(String file, String instance, String key, String attachment) {
 		try {
 			String tableName = getTableName( instance+file, true );
 			if ( tableName != null ) {
@@ -689,8 +684,7 @@ public class SQLStore implements MPStore {
 		}		
 		return null;
 	}
-*/
-	
+	 */
 	@Override
 	public long getTimeStamp(String path, String instance) {
 		// TODO Auto-generated method stub
@@ -710,10 +704,9 @@ public class SQLStore implements MPStore {
 		// TODO Auto-generated method stub
 		
 	}
-*/
-	/*
+
 	@Override
-	public List<String> listKeys(String path, String instance) {
+	public List<String> listAttachment(String path, String instance, String key) {
 		// TODO Auto-generated method stub
 		return null;
 	}
