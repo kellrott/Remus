@@ -1,0 +1,13 @@
+<remus_pipeline id="testPipeline">
+
+<include path="pipelineSubmit.html"/>
+
+<remus_adapter id="submitApplet">
+<![CDATA[
+@remus.adapter
+def adapt( in ):
+	remus.emit( in['jobname'], in )
+]]>
+</remus_adapter>
+
+</remus_pipeline>
