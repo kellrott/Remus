@@ -149,7 +149,7 @@ public class RemusApplet {
 	}
 
 	public String getPath() {
-		return "/" + pipeline.getID() + ":" + id;
+		return "/" + pipeline.getID() + "/" + id;
 	}
 
 	public String getSource() {
@@ -188,14 +188,12 @@ public class RemusApplet {
 						allReady = false;
 					}
 				} else if ( iRef.getInputType() == RemusPath.DynamicInput ) {
-
 					/*
 					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
 						allReady = false;
 					}
 					 */
 				} else if (  iRef.getInputType() == RemusPath.AttachInput ) {
-				} else if (  iRef.getInputType() == RemusPath.StaticInput ) {
 				} else {				
 					allReady = false;
 				}

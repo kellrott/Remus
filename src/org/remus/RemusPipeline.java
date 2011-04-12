@@ -121,22 +121,22 @@ public class RemusPipeline {
 	}
 
 	public void submit( String key, Object data) {
-		datastore.add( "/" + getID() + "@submit", 
-				RemusInstance.STATIC_INSTANCE_STR, 
-				(Long)0L, 
-				(Long)0L, 
-				key,
-				data );
 		if ( ((Map)data).containsKey( Submission.AppletField ) ) {
 			List aList = (List)((Map)data).get(Submission.AppletField);
 			for (Object sObj : aList) {
 				RemusApplet applet = members.get((String)sObj);
 				if ( applet != null ) {
-					applet.createInstance(key);
+					RemusInstance inst = applet.createInstance(key);
+					((Map)data).put(Submission.InstanceField, inst.toString());
 				}
 			}
 		}
-	}
+		datastore.add( "/" + getID() + "@submit", 
+				RemusInstance.STATIC_INSTANCE_STR, 
+				(Long)0L, 
+				(Long)0L, 
+				key,
+				data );	}
 
 	public Iterable<KeyValuePair> getSubmits() {
 		return datastore.listKeyPairs( "/" + getID() + "@submit", 

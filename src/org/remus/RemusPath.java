@@ -6,11 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.mpstore.MPStore;
-import org.remus.work.RemusApplet;
 import org.remus.work.Submission;
 
 /**
@@ -25,20 +22,20 @@ public class RemusPath {
 	private String url = null;
 
 	private String pipelineName = null;
-	private String appletView = null;
+	private String viewName = null;
 	private String appletName = null;
 	private String appletPortName = null;
 	private String instance = null;
 	private String key = null;
+	private String attachName = null;
 	private int input_type;
 
 	public static final int AppletInput = 0;
 	public static final int DynamicInput = 1;
 	public static final int AttachInput = 2;
-	public static final int StaticInput = 2;
 
-	static final Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
-	static final Pattern pipelineAttachment = Pattern.compile("^/([^/]*)/(.*)$");
+	//static final Pattern appletSub = Pattern.compile("(\\:\\w+)\\.(\\w+)$");
+	//static final Pattern pipelineAttachment = Pattern.compile("^/([^/]*)/(.*)$");
 	//static final Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
 	//static final Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
 
@@ -64,111 +61,86 @@ public class RemusPath {
 		this.pipelineName = ref.pipelineName;
 		this.appletName = ref.appletName;
 		this.appletPortName = ref.appletPortName;
-		this.appletView = ref.appletView;
+		this.viewName = ref.viewName;
+		if ( viewName == null ) {
+			viewName = "data";
+		}
 		this.input_type = ref.input_type;
 		this.key = ref.key;
 		this.url = getInstancePath(); 
 	}
 
 	public RemusPath( RemusApp parent, String pathinfo ) {
-		appletView = null;
-		instance = null;
-		appletPortName = null;
-		key = null;
 		this.parent = parent;
-		if (pathinfo == null)
-			return;
-		String [] tmp = pathinfo.split("@");
-		String path = tmp[0];
-		if ( tmp.length > 1 ) {
-			String [] tmp3 = tmp[1].split("/");			
-			appletView = tmp3[0];
-			if ( tmp3.length > 1 ) {
-				instance = tmp3[1];
-			}
-			if ( tmp3.length > 2 ) {				
+		readPath( pathinfo );
+	}
+	
+	private void readPath(String pathinfo) {
+		if ( pathinfo.compareTo("$") == 0 ) {
+			input_type = DynamicInput;
+		} else {
+
+			String []pSplit = (new File(pathinfo)).getAbsolutePath().split("/");
+
+			if ( pSplit.length > 5 ) {
 				try {
-					key = URLDecoder.decode( tmp3[2], "UTF-8" ) ;
+					viewName = "attach";
+					attachName = URLDecoder.decode( pSplit[5], "UTF-8" ) ;
+				} catch (UnsupportedEncodingException e) {
+				}	
+			}
+			if ( pSplit.length > 4 ) {
+				try {
+					if ( viewName == null )
+						viewName = "data";
+					key = URLDecoder.decode( pSplit[4], "UTF-8" ) ;
 				} catch (UnsupportedEncodingException e) {
 				}
 			}
-			
-			if ( key != null && key.length() == 0 )
-				key = null;
-			if ( appletView != null && appletView.length() == 0 )
-				appletView = null;
-			Matcher m = appletSub.matcher( tmp[0] );
-			String appletPath = null;
-			if ( m.find() ) {
-				appletPath = m.group(1);
-				appletPortName = m.group(2);
-				appletPath = m.replaceAll(appletPath);
-			} else {
-				appletPath = tmp[0];
+			if ( pSplit.length > 3 ) {
+				if ( viewName == null )
+					viewName = "data";
+				instance = pSplit[3];
 			}
-			appletPath = (new File(appletPath)).getAbsolutePath();
-			String [] tmp2 = appletPath.split(":");
-			if ( tmp2.length == 2) {
-				appletName = tmp2[1];
-				pipelineName = tmp2[0].replaceFirst("^/", "");
-			} else if ( tmp2.length == 1 ) {
-				appletName = null;
-				pipelineName = tmp2[0].replaceFirst("^/", "");;
-				if ( pipelineName.length() == 0 )
-					pipelineName = null;
-			}
-			url = pathinfo;
-		} else {
-			String tmpPath = (new File(pathinfo)).getAbsolutePath();
-			Matcher m = pipelineAttachment.matcher(tmpPath);
-			if ( m.matches() ) {
-				pipelineName = m.group(1);
-				key = m.group(2);
-			}
+			if ( pSplit.length > 2 ) {
+				appletName = pSplit[2];
+				String [] tmp = appletName.split("@");
+				if ( tmp.length == 2 ) {
+					appletName = tmp[0];
+					viewName = tmp[1];
+				}
+			}		
+			if ( pSplit.length > 1 ) {
+				pipelineName = pSplit[1];	
+				String [] tmp = pipelineName.split("@");
+				if ( tmp.length == 2 ) {
+					pipelineName = tmp[0];
+					viewName = tmp[1];
+					if ( pSplit.length == 3 ) {
+						this.key = pSplit[2];
+						this.appletName = null;
+					}
+				}
+			}	
+			if ( pipelineName != null && pipelineName.length() == 0 )
+				pipelineName = null;
 			url = pathinfo;
 		}
 	}
 
 
-	public RemusPath(RemusApp parent, String inputStr, String pipelineID, String appletID) throws FileNotFoundException {
+
+	public RemusPath(RemusApp parent, String inputStr, String pipelineName, String appletName) throws FileNotFoundException {
 		this.parent = parent;
-		if ( inputStr.startsWith(":") ) {
-			if ( inputStr.contains("@") ) {
-				String [] tmp = inputStr.split("@");
-				inputStr = tmp[0];
-				appletView = tmp[1];					
-			} else {
-				appletView = "data";
-			}			
-			Matcher m = appletSub.matcher( inputStr );
-			if ( m.find() ) {
-				appletName = m.group(1).replaceFirst("^:", "");
-				appletPortName = m.group(2);
-			} else {
-				appletName = inputStr.replaceFirst("^:", "");
-				appletPortName = null;
-			}			
-			pipelineName = pipelineID;
-			input_type=AppletInput;
-		} else if ( inputStr.compareTo("?") == 0) {
-			appletName = appletID;
-			pipelineName = pipelineID;
+		if ( inputStr.compareTo("?") == 0) {
+			this.appletName = appletName;
+			this.pipelineName = pipelineName;
 			url = "?";
 			input_type=DynamicInput;
-		} else if ( inputStr.compareTo("$") == 0) {
-			appletName = appletID;
-			pipelineName = pipelineID;
-			url = "$";
-			input_type=StaticInput;
 		} else {
-			url = "/" + pipelineID + "/" + inputStr; 
-			input_type=AttachInput;
+			readPath( "/" + pipelineName + "/" + inputStr );			
 		}
-
 	}
-
-
-
 
 	public long getKeyCount( MPStore ds, int maxCount ) {
 		if ( key != null )
@@ -190,14 +162,19 @@ public class RemusPath {
 
 	public String getPortPath() {
 		if ( appletPortName != null )
-			return "/" + pipelineName + ":" + appletName + "." + appletPortName;
-		return "/" + pipelineName + ":" + appletName;
+			return "/" + pipelineName + "/" + appletName + "." + appletPortName;
+		return "/" + pipelineName + "/" + appletName;
 	}
 
 	public String getViewPath() {
-		if ( appletPortName != null )
-			return "/" + pipelineName + ":" + appletName + "." + appletPortName + "@" + appletView;
-		return "/" + pipelineName + ":" + appletName + "@" + appletView;
+		if ( appletPortName != null ) {
+			if ( viewName != null )
+				return "/" + pipelineName + "/" + appletName + "." + appletPortName + "@" + viewName;
+			return "/" + pipelineName + "/" + appletName + "." + appletPortName;
+		}
+		if ( viewName != null )
+			return "/" + pipelineName + "/" + appletName + "@" + viewName;
+		return "/" + pipelineName + "/" + appletName;
 	}
 
 	public String getInstancePath() {
@@ -216,12 +193,12 @@ public class RemusPath {
 
 
 	public String getAppletPath() {
-		return "/" + pipelineName + ":" + appletName;
+		return "/" + pipelineName + "/" + appletName;
 	}
 
 
 	public String getView() {
-		return appletView;
+		return viewName;
 	}
 
 	public String getPortName() {
@@ -245,6 +222,11 @@ public class RemusPath {
 	public String getPipeline() {
 		return pipelineName;
 	}
-	
+
+	public String getAttachment() {
+		// TODO Auto-generated method stub
+		return attachName;
+	}
+
 
 }

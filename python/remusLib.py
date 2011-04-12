@@ -15,6 +15,7 @@ curConn = None
 workerID= None
 
 def urlopen(url,data=None,retry=1):
+	print "getting", url
 	u = urlparse( url )
 	global curConn
 	global curServer
@@ -59,6 +60,7 @@ class httpStreamer:
 	then returns the results one line at a time	
 	"""
 	def __init__(self, pathList):
+		print "getting:", pathList
 		self.pathList = pathList
 	def __iter__(self):
 		for path in self.pathList:
@@ -192,19 +194,26 @@ def addWorker( type, callback ):
 	workerDict[ type ] = callback
 
 
-def getWorker( host, applet ):
+def getWorker( host, appletPath ):
 	global workerDict
 	
-	if workerDict.has_key( applet ):
-		return workerDict[ applet ]
+	if workerDict.has_key( appletPath ):
+		return workerDict[ appletPath ]
 
-	appletDesc = httpGetJson( host + applet + "@pipeline" ).read()
+	tmp = appletPath.split('/')
+	applet = tmp[2]
+	pipeline = tmp[1]
 
+	appletDesc = None
+	for data in httpGetJson( host + pipeline + "@pipeline/" + applet ):
+		for key in data:
+			appletDesc = data[ key ]
+	print appletDesc
 	workerType = appletDesc[ 'codeType' ]
 	if not workerDict.has_key( workerType ):
 		raise Exception("Unknown code type: %s" % (workerType) )
 
-	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, applet)	
+	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, pipeline, applet)	
 	worker.compileCode( appletDesc['code'] )
 
 	if ( appletDesc.has_key( "output" ) ):

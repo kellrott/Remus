@@ -28,7 +28,7 @@ public class SplitGenerator implements WorkGenerator {
 		}
 		if ( applet.hasInputs() ) {
 			RemusPath iRef = applet.getInput();		
-			String pathStr = "";
+			String pathStr = null;
 			if ( iRef.getInputType() == RemusPath.AppletInput )
 				pathStr = iRef.getInstancePath();
 			if ( iRef.getInputType() == RemusPath.AttachInput )
