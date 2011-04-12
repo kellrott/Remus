@@ -126,7 +126,9 @@ public class RemusApp {
 		if ( type.compareTo("store") == 0 ) {
 			appletType = RemusApplet.STORE;
 		}
-
+		if ( type.compareTo("adapt") == 0 ) {
+			appletType = RemusApplet.ADAPTOR;
+		}
 		RemusApplet applet = RemusApplet.newApplet(name, cf, appletType);
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
