@@ -1,8 +1,10 @@
 package org.remus;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +28,6 @@ import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
-import org.remus.rootapp.StatusApp;
 import org.remus.work.RemusApplet;
 
 /**
@@ -397,6 +398,7 @@ public class MasterServlet extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		out.print( serializer.dumps(app.params) );
 	}
+	
 	private void doGet_template(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (reqInfo.getPipeline() != null && reqInfo.getKey() != null ) {
 			RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
@@ -410,25 +412,7 @@ public class MasterServlet extends HttpServlet {
 			os.close();
 			is.close();
 		} else {
-			String path = reqInfo.getPath() ;
-			if ( path.compareTo("/") == 0 )
-				path = "status.html";
-			if ( path.startsWith("/") )
-				path = path.replaceFirst("/", "");
-
-			InputStream is = StatusApp.class.getResourceAsStream( path );
-			if ( is == null ) {
-				resp.sendError( HttpServletResponse.SC_NOT_FOUND );
-			} else {
-				ServletOutputStream os = resp.getOutputStream();
-				byte [] buffer = new byte[1024];
-				int len;
-				while ( (len = is.read(buffer)) >= 0 ) {
-					os.write( buffer, 0, len );
-				}
-				os.close();
-				is.close();
-			}
+			
 		}
 
 	}
@@ -436,31 +420,14 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
-		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );
-
-		if ( reqInfo.getView() == null ) {
-			doGet_template( reqInfo, req, resp );
-		} else if ( reqInfo.getView().compareTo("pipeline") == 0 ) {
-			doGet_pipeline(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
-			doGet_attach(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("work") == 0 ) {
-			doGet_work(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("submit") == 0 ) {
-			doGet_submit( reqInfo, req, resp );
-		} else if ( reqInfo.getView().compareTo("data") == 0 ) {
-			doGet_data( reqInfo, req, resp );
-		} else if ( reqInfo.getView().compareTo("reduce") == 0 ) {
-			doGet_reduce(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("keys") == 0 ) {
-			doGet_keys(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("instance") == 0 ) {
-			doGet_instance(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("status") == 0 ) {
-			doGet_status(reqInfo, req, resp);
-		} else if ( reqInfo.getView().compareTo("config") == 0 ) {
-			doGet_config(reqInfo, req, resp);
-		}
+		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		try {
+			String workerID = getWorkerID(req);
+			OutputStream os = resp.getOutputStream();
+			app.passGet( reqInfo, req.getParameterMap(), workerID, serializer, os);
+		} catch ( FileNotFoundException e ) {
+			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+		}		
 	}
 
 

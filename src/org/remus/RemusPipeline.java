@@ -1,5 +1,9 @@
 package org.remus;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -9,13 +13,17 @@ import java.util.Set;
 import org.mpstore.AttachStore;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
+import org.mpstore.Serializer;
+import org.remus.serverNodes.BaseNode;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.Submission;
 import org.remus.work.WorkKey;
 
-public class RemusPipeline {
+public class RemusPipeline implements BaseNode {
 
+	HashMap<String,BaseNode> children;
+	
 	private HashMap<String,RemusApplet> members;
 	Map<RemusPath, RemusApplet> inputs;
 	String id;
@@ -23,16 +31,21 @@ public class RemusPipeline {
 	AttachStore attachStore;
 	public RemusPipeline(String id, MPStore datastore, AttachStore attachStore) {
 		members = new HashMap<String,RemusApplet>();
+		children = new HashMap<String, BaseNode>();
+		children.put("@pipeline", new PipelineListView(this) );
+		
 		inputs = new HashMap<RemusPath, RemusApplet >();
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
+		children.put("@attach", new AttachListView(this.attachStore, "/" + id + "@attach", RemusInstance.STATIC_INSTANCE_STR, null ) );
 	}
 
 	public void addApplet(RemusApplet applet) {		
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
 		members.put(applet.getID(), applet);
+		children.put(applet.getID(), applet);
 	}
 
 	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxCount) {
@@ -55,7 +68,7 @@ public class RemusPipeline {
 				for ( RemusPath iref : applet.getInputs() ) {
 					if ( iref.getInputType() == RemusPath.DynamicInput 
 							|| iref.getInputType() == RemusPath.AppletInput 
-							) { //|| !parent.containsKey( iref.getPortPath() )) {
+					) { //|| !parent.containsKey( iref.getPortPath() )) {
 						inputs.put(iref, applet);
 					}
 				}
@@ -141,6 +154,39 @@ public class RemusPipeline {
 	public Iterable<KeyValuePair> getSubmits() {
 		return datastore.listKeyPairs( "/" + getID() + "@submit", 
 				RemusInstance.STATIC_INSTANCE_STR );
+	}
+
+	@Override
+	public void doDelete(Map params) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
+	throws FileNotFoundException {
+
+		Map out = new HashMap();
+		for ( String aName : members.keySet() ) {
+			out.put(aName, members.get(aName).toString() );
+		}
+		try {
+			os.write( serial.dumps(out).getBytes() );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void doPut(InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public BaseNode getChild(String name) {
+		return children.get(name);
 	}
 
 

@@ -32,10 +32,10 @@ class WorkerBase:
 		self.host = host
 		self.applet = applet
 		self.pipeline = pipeline
-		fileList = json.loads( remusLib.urlopen( self.host + self.pipeline + "@attach" ).read() )
+		fileList = json.loads( remusLib.urlopen( self.host + self.pipeline + "/@attach" ).read() )
 		for file in fileList:
 			oHandle = open( file, "w" )
-			fileURL =  self.host + self.pipeline + "@attach//" + file
+			fileURL =  self.host + self.pipeline + "/@attach/" + file
 			oHandle.write( remusLib.urlopen( fileURL ).read() )
 			oHandle.close()	
 		
