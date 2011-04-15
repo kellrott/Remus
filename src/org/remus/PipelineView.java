@@ -16,7 +16,7 @@ public class PipelineView implements BaseNode {
 	PipelineView(RemusApp app) {
 		this.app = app;
 	}
-	
+
 	@Override
 	public void doDelete(Map params) {
 		// TODO Auto-generated method stub
@@ -24,7 +24,7 @@ public class PipelineView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		Map out = new HashMap();		
 		for ( KeyValuePair kv : app.getRootDatastore().listKeyPairs( "/@pipeline", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			out.put(kv.getKey(), kv.getValue());
@@ -35,15 +35,34 @@ public class PipelineView implements BaseNode {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
-		
+
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
-
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
+		try {
+			StringBuilder sb = new StringBuilder();
+			byte [] buffer = new byte[1024];
+			int len;
+			while( (len=is.read(buffer)) > 0 ) {
+				sb.append(new String(buffer, 0, len));
+			}
+			System.err.println( sb.toString() );
+			Object data = serial.loads(sb.toString());
+			app.putPipeline( name, data );					
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public BaseNode getChild(String name) {
 		return null;

@@ -78,7 +78,7 @@ public class MasterServlet extends HttpServlet {
 		return workerID;
 	}
 
-
+/*
 	private void doGet_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if ( reqInfo.getApplet() != null && app.hasApplet( reqInfo.getAppletPath() ) ) {
@@ -132,7 +132,7 @@ public class MasterServlet extends HttpServlet {
 		}
 
 	}
-
+*/
 
 	private void doGet_work(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		PrintWriter out = resp.getWriter();
@@ -289,6 +289,7 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
+	/*
 	private void doGet_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() != null && app.hasApplet( reqInfo.getAppletPath() ) ) {
 			if ( reqInfo.getInstance() != null && reqInfo.getAttachment() != null ) {
@@ -344,7 +345,7 @@ public class MasterServlet extends HttpServlet {
 			}
 		}
 	}
-
+*/
 	private void doGet_status(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if ( reqInfo.getApplet() != null ) {
@@ -423,14 +424,18 @@ public class MasterServlet extends HttpServlet {
 		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
 		try {
 			String workerID = getWorkerID(req);
+			if ( workerID != null ) {
+				app.getWorkManager().touchWorkerStatus( workerID );
+			}
 			OutputStream os = resp.getOutputStream();
-			app.passGet( reqInfo, req.getParameterMap(), workerID, serializer, os);
+			InputStream is = req.getInputStream();
+			app.passCall( RemusApp.GET_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
 	}
 
-
+/*
 	private void doPost_alias(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if( reqInfo.getInstance() != null ) {
 			BufferedReader br = req.getReader();
@@ -438,7 +443,7 @@ public class MasterServlet extends HttpServlet {
 			app.addAlias( new RemusInstance(reqInfo.getInstance()), curline );		
 		}
 	}
-
+*/
 	private void doPost_work(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		String workerID = getWorkerID(req);
@@ -486,6 +491,7 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
+	/*
 	private void doPost_data(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 		if ( applet != null ) {
@@ -512,8 +518,9 @@ public class MasterServlet extends HttpServlet {
 			}
 		}
 	}
-
-
+*/
+	
+/*
 	private void doPost_submit(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusPipeline pipe = app.getPipeline( reqInfo.getPipeline() );
 		if ( pipe != null ) {
@@ -530,7 +537,7 @@ public class MasterServlet extends HttpServlet {
 			resp.getWriter().print("{\"submit\":\"OK\"}");
 		}
 	}
-
+*/
 	private void doPost_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 		if ( applet != null ) {
@@ -556,11 +563,27 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
+		
+		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		try {
+			String workerID = getWorkerID(req);
+			//TODO: make sure correct worker is returning assigned results before putting them in the database....
+			if ( workerID != null ) {
+				app.getWorkManager().touchWorkerStatus( workerID );
+			}			
+			InputStream is = req.getInputStream();
+			OutputStream os = resp.getOutputStream();
+			app.passCall( RemusApp.SUBMIT_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+		} catch ( FileNotFoundException e ) {
+			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+		}		
+		
+		/*
 		RemusPath reqInfo = new RemusPath(app, req.getPathInfo() );	
 		if ( reqInfo.getView() == null ) {
 
-		} else if ( reqInfo.getView().compareTo("alias") == 0  ) {
-			doPost_alias(reqInfo, req, resp);
+		//} else if ( reqInfo.getView().compareTo("alias") == 0  ) {
+		//	doPost_alias(reqInfo, req, resp);
 		} else 	if ( reqInfo.getView().compareTo("work") == 0 ) {
 			doPost_work(reqInfo, req, resp);
 		} else if ( reqInfo.getView().compareTo("error") == 0 ) {
@@ -574,13 +597,25 @@ public class MasterServlet extends HttpServlet {
 		} else if ( reqInfo.getView().compareTo("attach") == 0 ) {
 			doPost_attach(reqInfo, req, resp);
 		}
+		*/
 	}
 
 
 
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
+	throws ServletException, IOException {		
+		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		try {
+			String workerID = getWorkerID(req);
+			InputStream is = req.getInputStream();
+			OutputStream os = resp.getOutputStream();
+			app.passCall( RemusApp.PUT_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+		} catch ( FileNotFoundException e ) {
+			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+		}		
+		
+		/*
 		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
 		PrintWriter out = resp.getWriter();
 		if ( reqInfo.getPipeline() == null && reqInfo.getKey() != null && reqInfo.getView().compareTo("pipeline") == 0 ) {
@@ -615,10 +650,12 @@ public class MasterServlet extends HttpServlet {
 		} else {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}
+		*/
+		
 	}
 
 
-
+/*
 	private void doDelete_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if ( reqInfo.getApplet() == null ) {
 			if ( reqInfo.getInstance() != null ) {
@@ -650,7 +687,7 @@ public class MasterServlet extends HttpServlet {
 			}
 		} 		
 	}	
-
+*/
 
 	private void doDelete_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
@@ -682,6 +719,17 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
+		
+		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		try {
+			String workerID = getWorkerID(req);
+			InputStream is = req.getInputStream();
+			OutputStream os = resp.getOutputStream();
+			app.passCall( RemusApp.DELETE_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+		} catch ( FileNotFoundException e ) {
+			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+		}		
+		/*		
 		RemusPath reqInfo = new RemusPath(app, req.getRequestURI() );	
 
 		if ( reqInfo.getView() == null ) {
@@ -693,7 +741,8 @@ public class MasterServlet extends HttpServlet {
 		} else if ( reqInfo.getView().compareTo("error") == 0 ) {
 			doDelete_error( reqInfo, req, resp);
 		}
-
+		 */
+		
 	}
 }
 

@@ -1,8 +1,10 @@
 package org.remus.manage;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -302,11 +304,41 @@ public class WorkManager implements BaseNode {
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+		try {
+
+			BufferedReader br = new BufferedReader( new InputStreamReader(is) );
+			String curline = null;
+			while ((curline=br.readLine())!= null ) {
+				Map m = (Map)serial.loads( curline );
+				System.out.println( curline );
+				for ( Object instObj : m.keySet() ) {
+					RemusInstance inst=new RemusInstance((String)instObj);
+					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {
+						String appletStr = (String)appletObj;
+						List jobList = (List)((Map)m.get(instObj)).get(appletObj);
+						RemusApplet applet = app.getApplet( appletStr );
+						for ( Object key2 : jobList ) {
+							long jobID = Long.parseLong( key2.toString() );
+							//TODO:add emit id count check
+							app.getWorkManager().finishWork(workerID, applet, inst, (int)jobID, 0L);
+						}						
+					}
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub

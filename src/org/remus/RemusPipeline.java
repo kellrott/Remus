@@ -29,18 +29,25 @@ public class RemusPipeline implements BaseNode {
 	String id;
 	MPStore datastore;
 	AttachStore attachStore;
-	public RemusPipeline(String id, MPStore datastore, AttachStore attachStore) {
+	RemusApp app;
+	public RemusPipeline(RemusApp app, String id, MPStore datastore, AttachStore attachStore) {
+		this.app = app;
 		members = new HashMap<String,RemusApplet>();
 		children = new HashMap<String, BaseNode>();
 		children.put("@pipeline", new PipelineListView(this) );
+		children.put("@submit", new SubmitView(this) );
 		
 		inputs = new HashMap<RemusPath, RemusApplet >();
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
-		children.put("@attach", new AttachListView(this.attachStore, "/" + id + "@attach", RemusInstance.STATIC_INSTANCE_STR, null ) );
+		children.put("@attach", new AttachListView(this.attachStore, "/" + id + "/@attach", RemusInstance.STATIC_INSTANCE_STR, null ) );
 	}
 
+	public RemusApp getApp() {
+		return app;
+	}
+	
 	public void addApplet(RemusApplet applet) {		
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
@@ -133,26 +140,10 @@ public class RemusPipeline implements BaseNode {
 		return attachStore;
 	}
 
-	public void submit( String key, Object data) {
-		if ( ((Map)data).containsKey( Submission.AppletField ) ) {
-			List aList = (List)((Map)data).get(Submission.AppletField);
-			for (Object sObj : aList) {
-				RemusApplet applet = members.get((String)sObj);
-				if ( applet != null ) {
-					RemusInstance inst = applet.createInstance(key);
-					((Map)data).put(Submission.InstanceField, inst.toString());
-				}
-			}
-		}
-		datastore.add( "/" + getID() + "@submit", 
-				RemusInstance.STATIC_INSTANCE_STR, 
-				(Long)0L, 
-				(Long)0L, 
-				key,
-				data );	}
+	
 
 	public Iterable<KeyValuePair> getSubmits() {
-		return datastore.listKeyPairs( "/" + getID() + "@submit", 
+		return datastore.listKeyPairs( "/" + getID() + "/@submit", 
 				RemusInstance.STATIC_INSTANCE_STR );
 	}
 
@@ -179,11 +170,16 @@ public class RemusPipeline implements BaseNode {
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
-
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
+		System.err.println( "PUTTING:" + name );
 	}
 
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+		
+	}
 	@Override
 	public BaseNode getChild(String name) {
 		return children.get(name);

@@ -49,11 +49,18 @@ public class InstanceListView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
 
 	}
 
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub
