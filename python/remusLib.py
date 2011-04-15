@@ -205,7 +205,7 @@ def getWorker( host, appletPath ):
 	pipeline = tmp[1]
 
 	appletDesc = None
-	for data in httpGetJson( host + pipeline + "@pipeline/" + applet ):
+	for data in httpGetJson( host + pipeline + "/@pipeline/" + applet ):
 		for key in data:
 			appletDesc = data[ key ]
 	print appletDesc

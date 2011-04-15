@@ -1,11 +1,19 @@
 package org.remus;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
@@ -13,6 +21,8 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
+import org.remus.rootapp.StatusApp;
+import org.remus.serverNodes.BaseNode;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
@@ -25,7 +35,7 @@ import org.remus.work.WorkKey;
  *
  */
 
-public class RemusApp {
+public class RemusApp implements BaseNode {
 	/**
 	 * Class name for MPstore interface.
 	 * @see org.mpstore.ThriftStore
@@ -37,11 +47,13 @@ public class RemusApp {
 	//File srcbase;
 	public String baseURL = "";
 	Map<String,RemusPipeline> pipelines;
+	Map<String,BaseNode> children;
+
 	Map params;
 	MPStore rootStore;
 	AttachStore rootAttachStore;
 	private WorkManager workManage;
-	
+
 	public RemusApp( Map params ) throws RemusDatabaseException {
 		this.params = params;
 		//scanSource(srcbase);
@@ -54,6 +66,8 @@ public class RemusApp {
 
 	public void loadPipelines() {
 		try { 
+			children = new HashMap<String,BaseNode>();
+			children.put("@pipeline", new PipelineView(this) );
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
 			Class<?> mpClass = Class.forName(mpStore);			
@@ -79,6 +93,7 @@ public class RemusApp {
 			e.printStackTrace();
 		} 
 		workManage = new WorkManager(this);
+		children.put("@work", workManage );
 	}
 
 	public void loadPipeline(String name, MPStore store, Serializer serializer, AttachStore attachStore) {
@@ -88,8 +103,9 @@ public class RemusApp {
 			pipeline.addApplet(applet);
 		}
 		pipelines.put(pipeline.id, pipeline);	
+		children.put(pipeline.id, pipeline );
 	}
-	
+
 
 	private RemusApplet loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
 		String dbPath = "/" + pipelineName + "@pipeline";
@@ -166,7 +182,7 @@ public class RemusApp {
 				e.printStackTrace();
 			}
 		}
-		
+
 		if ( appletObj.containsKey("output") ) {
 			for ( Object nameObj : (List)appletObj.get("output") ) {
 				applet.addOutput((String)nameObj);
@@ -175,8 +191,8 @@ public class RemusApp {
 		return applet;
 	}
 
-		
-	
+
+
 	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) {		
 		for ( RemusInstance inst : applet.getInstanceList() ) {
 			applet.deleteInstance(inst);
@@ -186,7 +202,7 @@ public class RemusApp {
 		rootStore.delete( applet.getPath() + "@submit" , RemusInstance.STATIC_INSTANCE_STR );
 		loadPipelines();
 	}
-	
+
 	public void deletePipeline(RemusPipeline pipe) {
 		for ( RemusApplet applet : pipe.getMembers() ) {
 			deleteApplet(pipe, applet);
@@ -196,12 +212,12 @@ public class RemusApp {
 
 		loadPipelines();
 	}
-	
+
 	public void putPipeline(String name, Object data) {
 		rootStore.add("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );		
 		loadPipelines();
 	}
-	
+
 	public void putApplet(RemusPipeline pipe, String name, Object data) { 
 		rootStore.add("/" + pipe.getID() + "@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );
 		loadPipelines();
@@ -225,7 +241,7 @@ public class RemusApp {
 	public RemusPipeline getPipeline( String name ) {
 		return pipelines.get(name);
 	}
-	
+
 	public Collection<RemusPipeline> getPipelines() {
 		return pipelines.values();
 	}
@@ -265,6 +281,76 @@ public class RemusApp {
 		}		
 	}
 
+	@Override
+	public void doDelete(Map params) {
+		// TODO Auto-generated method stub
 
+	}
 
+	@Override
+	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
+		System.err.println( name );
+		if ( name.compareTo("") == 0 )
+			name = "status.html";
+		InputStream is = StatusApp.class.getResourceAsStream( name );
+		if ( is == null ) {
+			throw new FileNotFoundException();
+		} else {
+			try {
+				byte [] buffer = new byte[1024];
+				int len;
+				while ( (len = is.read(buffer)) >= 0 ) {
+					os.write( buffer, 0, len );
+				}
+				os.flush();
+				os.close();
+				is.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+	}
+
+	@Override
+	public void doPut(InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public BaseNode getChild(String name) {
+		return children.get(name);
+	}
+
+	public void passGet( RemusPath path, Map parameterMap, String workerID, Serializer serial, OutputStream outputStream) throws FileNotFoundException {
+		String fullPath = (new File(path.getPath())).getAbsolutePath();
+		String [] tmp = fullPath.split("/");
+
+		BaseNode curNode = this;
+		Boolean called = false;
+		for ( int i = 1; i < tmp.length && !called; i++ ) {		
+			BaseNode next = curNode.getChild( tmp[i] );
+			if ( next != null ) {
+				curNode = next;
+			} else {
+				StringBuilder sb = new StringBuilder();
+				for ( int j = i; j < tmp.length; j++) {
+					if ( j != i )
+						sb.append("/");
+					sb.append( tmp[j] );
+				}
+				System.err.println( curNode + " " + sb.toString() );
+				curNode.doGet( sb.toString(), parameterMap, workerID, serial, outputStream );
+				called = true;
+			}
+		}
+		if ( !called ) {
+			curNode.doGet("", parameterMap, workerID, serial, outputStream);
+		}
+	}
 }
+
+
+
+

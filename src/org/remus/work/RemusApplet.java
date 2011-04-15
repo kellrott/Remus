@@ -1,9 +1,11 @@
 package org.remus.work;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,9 +24,10 @@ import org.remus.CodeFragment;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
+import org.remus.serverNodes.BaseNode;
 
 
-public class RemusApplet {
+public class RemusApplet implements BaseNode {
 
 	public static RemusApplet newApplet( String id, CodeFragment code, int type ) {
 		RemusApplet out = new RemusApplet();
@@ -498,6 +501,44 @@ public class RemusApplet {
 			out = obj;
 		}
 		return (String)out;			
+	}
+
+	@Override
+	public void doDelete(Map params) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void doGet(String name, Map params, String workerID, Serializer serial,
+			OutputStream os) throws FileNotFoundException {
+		System.err.println("APPLET_GETTING:" + name );		
+	}
+
+	@Override
+	public void doPut(InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public BaseNode getChild(String name) {
+		
+		if ( name.compareTo("@instance") == 0 ) {
+			return new InstanceListView(this);
+		}
+		
+		if ( datastore.containsKey( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+			return new AppletInstanceView( this, new RemusInstance( name ) );
+		} else if ( datastore.containsKey( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+			for (Object obj : datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+				String instStr = (String)((Map)obj).get("_instance");
+				if ( instStr != null ) {
+					return new AppletInstanceView( this, new RemusInstance( instStr ) );
+				}
+			}
+		}
+		return null;
 	}
 
 }

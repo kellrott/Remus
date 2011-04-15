@@ -1,5 +1,10 @@
 package org.remus.manage;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -9,14 +14,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.mpstore.Serializer;
 import org.remus.RemusApp;
 import org.remus.RemusInstance;
+import org.remus.serverNodes.BaseNode;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.SimpleAppletInstance;
 import org.remus.work.WorkKey;
 
-public class WorkManager {
+public class WorkManager implements BaseNode {
 	public static final int QUEUE_MAX = 10000;
 	Map<AppletInstance,Set<WorkKey>>  workQueue;
 	Map<String,Map<AppletInstance,Set<WorkKey>>> workerSets;
@@ -265,6 +274,43 @@ public class WorkManager {
 
 	public Map<RemusApplet,Integer> getAssignRateMap() {
 		return assignRate;
+	}
+
+	@Override
+	public void doDelete(Map params) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void doGet(String name, Map params, String workerID, Serializer serial,
+			OutputStream os) throws FileNotFoundException {
+
+		if ( workerID != null ) {
+			Object outVal = app.getWorkManager().getWorkMap( workerID, 10 );
+			try {
+				os.write( serial.dumps(outVal).getBytes() );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			throw new FileNotFoundException();
+		}
+
+
+	}
+
+	@Override
+	public void doPut(InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public BaseNode getChild(String name) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 
