@@ -62,9 +62,9 @@ public class RemusPath {
 		this.appletName = ref.appletName;
 		this.appletPortName = ref.appletPortName;
 		this.viewName = ref.viewName;
-		if ( viewName == null ) {
-			viewName = "data";
-		}
+		//if ( viewName == null ) {
+		//	viewName = "data";
+		//}
 		this.input_type = ref.input_type;
 		this.key = ref.key;
 		this.url = getInstancePath(); 

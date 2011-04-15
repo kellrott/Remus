@@ -1,8 +1,10 @@
 package org.remus;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +16,9 @@ import org.remus.work.RemusApplet;
 
 public class PipelineListView implements BaseNode {
 
-	RemusPipeline applet;
+	RemusPipeline pipe;
 	PipelineListView( RemusPipeline applet ) {
-		this.applet = applet;
+		this.pipe = applet;
 	}
 
 	@Override
@@ -30,11 +32,11 @@ public class PipelineListView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 		Map out = new HashMap();
 		if ( name.length() == 0 ) {
-			for ( KeyValuePair kv : applet.getDataStore().listKeyPairs("/" + applet.id + "@pipeline", RemusInstance.STATIC_INSTANCE_STR)) {
+			for ( KeyValuePair kv : pipe.getDataStore().listKeyPairs("/" + pipe.id + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR)) {
 				out.put(kv.getKey(), kv.getValue() );
 			}
 		} else {
-			for ( Object obj : applet.getDataStore().get("/" + applet.id + "@pipeline", RemusInstance.STATIC_INSTANCE_STR, name )) {
+			for ( Object obj : pipe.getDataStore().get("/" + pipe.id + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, name )) {
 				out.put(name, obj );
 			}
 		}
@@ -47,11 +49,32 @@ public class PipelineListView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
-
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
+		if ( pipe != null ) {
+			try {
+				StringBuilder sb = new StringBuilder();
+				byte [] buffer = new byte[1024];
+				int len;
+				while( (len=is.read(buffer)) > 0 ) {
+					sb.append(new String(buffer, 0, len));
+				}
+				System.err.println( sb.toString() );
+				Object data = serial.loads(sb.toString());
+				pipe.getApp().putApplet(pipe, name, data);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	@Override
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub

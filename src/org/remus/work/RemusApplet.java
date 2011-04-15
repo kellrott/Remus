@@ -209,13 +209,13 @@ public class RemusApplet implements BaseNode {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object statObj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object statObj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) ) {
 				found = true;
 			}
 		}
 		if ( found ) {
-			for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+			for ( String key : datastore.listKeys(  getPath() + "/@error", remusInstance.toString() ) ) {
 				found = false;
 			}
 		}
@@ -224,7 +224,7 @@ public class RemusApplet implements BaseNode {
 
 	public boolean isInError(  RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( String key : datastore.listKeys(  getPath() + "@error", remusInstance.toString() ) ) {
+		for ( String key : datastore.listKeys(  getPath() + "/@error", remusInstance.toString() ) ) {
 			found = true;
 		}
 		return found;
@@ -232,15 +232,15 @@ public class RemusApplet implements BaseNode {
 
 	public void setComplete(RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
 		((Map)statObj).put(WORKDONE_OP, true);
-		datastore.add( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
-		datastore.delete( getPath() + "@done", remusInstance.toString() );
+		datastore.add( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
 	public boolean hasInputs() {
@@ -284,23 +284,23 @@ public class RemusApplet implements BaseNode {
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) {
-		datastore.add(getPath() + "@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
+		datastore.add(getPath() + "/@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
 	}
 
 	private void addInstance(RemusInstance instance, String srcPath) {
-		if ( !datastore.containsKey(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), srcPath);
+		if ( !datastore.containsKey(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
+			datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), srcPath);
 		}		
 	}
 
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>( );
-		for ( String key : datastore.listKeys( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		for ( String key : datastore.listKeys( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			out.add( new RemusInstance( key ) );
 		}		
 		for ( RemusPath iRef : getInputs() ) {
 			if ( iRef.getInputType() == RemusPath.AppletInput ) {
-				for ( String key : datastore.listKeys(iRef.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+				for ( String key : datastore.listKeys(iRef.getAppletPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 					RemusInstance inst = new RemusInstance(key);
 					if ( !out.contains( inst ) ) {
 						addInstance(inst, iRef.getPath());
@@ -325,18 +325,18 @@ public class RemusApplet implements BaseNode {
 		Collection<RemusInstance> out = getInstanceList();
 		Collection<RemusInstance> removeList = new HashSet<RemusInstance>();
 		for ( RemusInstance inst : out ) {
-			long timestamp = datastore.getTimeStamp(getPath() + "@done", inst.toString());
+			long timestamp = datastore.getTimeStamp(getPath() + "/@done", inst.toString());
 			boolean invalid = false;
 			for ( RemusPath iRef : getInputs() ) {
 				if ( iRef.getInputType() == RemusPath.AppletInput ) {			
-					long othertime = datastore.getTimeStamp(iRef.getAppletPath() + "@done", inst.toString() );
+					long othertime = datastore.getTimeStamp(iRef.getAppletPath() + "/@done", inst.toString() );
 					if ( othertime > timestamp )
 						invalid = true;
 				}				
 			}
 			if ( !invalid ) {
 				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object val : datastore.get(getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					if ( ((Map)val).containsKey( WORKDONE_OP ) )
 						hasDone = true;
 				}
@@ -351,7 +351,7 @@ public class RemusApplet implements BaseNode {
 
 	public RemusInstance createInstance(String submitKey) {
 		String instStr = null;
-		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			if ( submitKey.compareTo( (String)kv.getValue() ) == 0 ) {
 				instStr = kv.getKey();
 			}
@@ -359,7 +359,7 @@ public class RemusApplet implements BaseNode {
 		RemusInstance inst;
 		if ( instStr == null ) {
 			inst = new RemusInstance();
-			datastore.add(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
+			datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
 		} else {
 			inst = new RemusInstance(instStr);
 		}
@@ -367,29 +367,29 @@ public class RemusApplet implements BaseNode {
 	};
 
 	public void deleteInstance(RemusInstance instance) {
-		datastore.delete(getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+		datastore.delete(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+		datastore.delete(getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		//datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
-		datastore.delete(getPath() + "@done", instance.toString() );		
-		datastore.delete(getPath() + "@data", instance.toString() );		
-		datastore.delete(getPath() + "@error", instance.toString() );
-		attachstore.delete(getPath() + "@attach", instance.toString() );
+		datastore.delete(getPath() + "/@done", instance.toString() );		
+		datastore.delete(getPath() + "/@data", instance.toString() );		
+		datastore.delete(getPath() + "/@error", instance.toString() );
+		attachstore.delete(getPath() + "/@attach", instance.toString() );
 
 		for ( String subname : getOutputs() ) {
-			datastore.delete( getPath() + "." + subname + "@data", instance.toString() );
+			datastore.delete( getPath() + "." + subname + "/@data", instance.toString() );
 		}		
-		datastore.delete( getPath() + "@done", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+		datastore.delete( getPath() + "/@done", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 	}
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {
-		datastore.add( getPath() + "@error", inst.toString(), 0L, 0L, Long.toString(jobID), error);
+		datastore.add( getPath() + "/@error", inst.toString(), 0L, 0L, Long.toString(jobID), error);
 	}
 
 	public void deleteErrors(RemusInstance inst) {
-		datastore.delete(getPath() + "@error", inst.toString() );		
+		datastore.delete(getPath() + "/@error", inst.toString() );		
 	};
 
-
+/*
 	public Set<Integer> formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
 		Set<Integer> outSet = null;
 		if ( type == STORE ) {
@@ -404,7 +404,7 @@ public class RemusApplet implements BaseNode {
 					}
 					Object obj = json.loads(sb.toString());
 					String key = (String) ((Map)obj).get( "_id" );
-					datastore.add(getPath() + "@data", path.getInstance(), 0, 0, key, obj);
+					datastore.add(getPath() + "/@data", path.getInstance(), 0, 0, key, obj);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -420,7 +420,7 @@ public class RemusApplet implements BaseNode {
 					}
 					Map objMap = (Map)json.loads(sb.toString());
 					for ( Object key :objMap.keySet() ) {
-						datastore.add(getPath() + "@data", path.getInstance(), 0, 0, (String)key, objMap.get(key));
+						datastore.add(getPath() + "/@data", path.getInstance(), 0, 0, (String)key, objMap.get(key));
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -451,7 +451,8 @@ public class RemusApplet implements BaseNode {
 		}
 		return outSet;
 	}
-
+ */
+	
 	@Override
 	public int hashCode() { 
 		return getPath().hashCode();
@@ -481,7 +482,7 @@ public class RemusApplet implements BaseNode {
 
 	public String getInstanceSrc(RemusInstance remusInstance) {
 		String out = null;
-		for ( Object obj : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+		for ( Object obj : datastore.get( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
 			out = (String)obj;
 		}
 		return out;
@@ -489,7 +490,7 @@ public class RemusApplet implements BaseNode {
 
 	public Object getStatus(RemusInstance remusInstance) {
 		Object out = null;
-		for ( Object obj : datastore.get( getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+		for ( Object obj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
 			out = obj;
 		}
 		return out;	
@@ -497,7 +498,7 @@ public class RemusApplet implements BaseNode {
 
 	public String getInstanceSubmit(RemusInstance remusInstance) {
 		Object out = null;
-		for ( Object obj : datastore.get( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
+		for ( Object obj : datastore.get( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
 			out = obj;
 		}
 		return (String)out;			
@@ -512,12 +513,34 @@ public class RemusApplet implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial,
 			OutputStream os) throws FileNotFoundException {
-		System.err.println("APPLET_GETTING:" + name );		
+		System.err.println("APPLET_GETTING:" + name );	
+		
+		if ( name.length() == 0 ) {
+			Map out = new HashMap();
+			for ( KeyValuePair kv : getDataStore().listKeyPairs(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR)) {
+				out.put(kv.getKey(), kv.getValue() );
+			}
+			try {
+				os.write( serial.dumps(out).getBytes() );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	@Override
-	public void doPut(InputStream is, OutputStream os) {
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) {
+	
+		
 		
 	}
 
@@ -527,11 +550,13 @@ public class RemusApplet implements BaseNode {
 		if ( name.compareTo("@instance") == 0 ) {
 			return new InstanceListView(this);
 		}
-		
-		if ( datastore.containsKey( getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+		//if ( name.compareTo("@work") == 0 ) {
+		//	return new WorkView(this);
+		//}
+		if ( datastore.containsKey( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
 			return new AppletInstanceView( this, new RemusInstance( name ) );
-		} else if ( datastore.containsKey( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
-			for (Object obj : datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+		} else if ( datastore.containsKey( getPath() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+			for (Object obj : datastore.get( getPath() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
 				String instStr = (String)((Map)obj).get("_instance");
 				if ( instStr != null ) {
 					return new AppletInstanceView( this, new RemusInstance( instStr ) );
