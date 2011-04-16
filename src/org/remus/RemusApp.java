@@ -21,8 +21,8 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
-import org.remus.rootapp.StatusApp;
 import org.remus.serverNodes.BaseNode;
+import org.remus.serverNodes.ManageApp;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;
@@ -288,8 +288,8 @@ public class RemusApp implements BaseNode {
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
 		System.err.println( name );
 		if ( name.compareTo("") == 0 )
-			name = "status.html";
-		InputStream is = StatusApp.class.getResourceAsStream( name );
+			name = "manage.html";
+		InputStream is = ManageApp.class.getResourceAsStream( name );
 		if ( is == null ) {
 			throw new FileNotFoundException();
 		} else {
