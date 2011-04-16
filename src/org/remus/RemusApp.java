@@ -69,6 +69,7 @@ public class RemusApp implements BaseNode {
 			children = new HashMap<String,BaseNode>();
 			children.put("@pipeline", new PipelineView(this) );
 			children.put("@status", new StatusView(this) );
+			children.put("@manage", new ManageApp() );
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
 			Class<?> mpClass = Class.forName(mpStore);			
@@ -286,27 +287,7 @@ public class RemusApp implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
-		System.err.println( name );
-		if ( name.compareTo("") == 0 )
-			name = "manage.html";
-		InputStream is = ManageApp.class.getResourceAsStream( name );
-		if ( is == null ) {
-			throw new FileNotFoundException();
-		} else {
-			try {
-				byte [] buffer = new byte[1024];
-				int len;
-				while ( (len = is.read(buffer)) >= 0 ) {
-					os.write( buffer, 0, len );
-				}
-				os.flush();
-				os.close();
-				is.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}		
+		
 	}
 
 	@Override
@@ -350,7 +331,7 @@ public class RemusApp implements BaseNode {
 						sb.append("/");
 					sb.append( tmp[j] );
 				}
-				System.err.println( curNode + " " + sb.toString() );
+				//System.err.println( curNode + " " + sb.toString() );
 				if ( type == GET_CALL )
 					curNode.doGet( sb.toString(), parameterMap, workerID, serial, outputStream );
 				if ( type == PUT_CALL )
