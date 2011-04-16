@@ -5,26 +5,24 @@
 
 <script type="text/javascript">
 
-var pipelineList = new Array();
-
-function loadPipeline( div ) {
-	pipelineList = new Array();
+function loadPipeline( ) {
+	var d=$("<div>");
 	$.getJSON( "/@pipeline", function(data) {
 		for (var a in data ) {
-			d=$("<div>");
 			d.append( a );
-			pipelineList.push( a );
-			for ( var b in data[a] ){
-				d.append( $("<li/>").append( data[a][b] ) );
-			}
-			$(div).append( d );	
+			$.getJSON( "/" + a + "/@pipeline", function(data) {
+				for ( var b in data ){
+					d.append( $("<li/>").append( b ) );
+				}
+			});
 		}
 	});
+	return d;
 }
 
 
 $(document).ready( function() {
-	loadPipeline( "#data" );
+	$("#data").append( loadPipeline() );
 });
 
 </script>
