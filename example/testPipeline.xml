@@ -31,7 +31,7 @@ def reduce( key, vals ):
 ]]>
 </remus_reduce>
 
-<remus_merge id="testMerge" type="python" left=":testSplit" right="testReduce">
+<remus_merge id="testMerge" type="python" left="testSplit" right="testReduce">
 <![CDATA[
 @remus.merger
 def reduce( lkey, lvals, rkey, rvals ):
