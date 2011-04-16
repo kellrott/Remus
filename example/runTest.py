@@ -17,9 +17,9 @@ conn.close()
 
 call( "../bin/loadPipeline %s testPipeline.xml" % (server), shell=True )
 
-submitData = """{ "testSubmission" : { "_applets" : ["testSplit"]  } }"""
+submitData = """{ "_applets" : ["testSplit"]  }"""
 
-print urlopen( "%s/testPipeline/@submit" % (server), submitData ).read()
+print urlopen( "%s/testPipeline/@submit/testSubmission" % (server), submitData ).read()
 
 call( "../python/runRemusNet.py %s test1" % (server), shell=True )
 

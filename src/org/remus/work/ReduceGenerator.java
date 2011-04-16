@@ -30,8 +30,8 @@ public class ReduceGenerator implements WorkGenerator {
 		int errorCount = 0;
 		for ( String key : iRef.listKeys( applet.datastore  ) ) {
 			if ( keyList.size() < reqCount ) {
-				if ( !applet.datastore.containsKey( applet.getPath() + "@done", instance.toString(), Integer.toString(jobID)) ) {
-					if ( !applet.datastore.containsKey( applet.getPath() + "@error", instance.toString(), Integer.toString(jobID)) ) {
+				if ( !applet.datastore.containsKey( applet.getPath() + "/@done", instance.toString(), Integer.toString(jobID)) ) {
+					if ( !applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
 						WorkKey w =  new WorkKey( instance, jobID );
 						w.key = key;
 						w.pathStr = iRef.getPath();
@@ -49,7 +49,7 @@ public class ReduceGenerator implements WorkGenerator {
 		stat.put("done", doneCount);
 		stat.put("error", errorCount);
 		stat.put("total", jobID);
-		applet.datastore.add( applet.getPath() + "@status", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, instance.toString(), stat );
+		applet.datastore.add( applet.getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, instance.toString(), stat );
 		if ( keyList.size() == 0 && reqCount > 0 )
 			done = true;
 		return keyList;

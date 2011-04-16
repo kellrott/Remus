@@ -555,8 +555,8 @@ public class RemusApplet implements BaseNode {
 		//}
 		if ( datastore.containsKey( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
 			return new AppletInstanceView( this, new RemusInstance( name ) );
-		} else if ( datastore.containsKey( getPath() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
-			for (Object obj : datastore.get( getPath() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+		} else if ( datastore.containsKey( "/" + getPipeline().getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
+			for (Object obj : datastore.get(  "/" + getPipeline().getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR,  name ) ) {
 				String instStr = (String)((Map)obj).get("_instance");
 				if ( instStr != null ) {
 					return new AppletInstanceView( this, new RemusInstance( instStr ) );

@@ -30,11 +30,11 @@ public class InstanceListView implements BaseNode {
 
 		Map out = new HashMap();
 		if ( name.length() == 0 ) {
-			for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR)) {
+			for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR)) {
 				out.put(kv.getKey(), kv.getValue() );
 			}
 		} else {
-			for ( Object obj : applet.getDataStore().get( applet.getPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, name )) {
+			for ( Object obj : applet.getDataStore().get( applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name )) {
 				out.put(name, obj );
 			}
 		}
