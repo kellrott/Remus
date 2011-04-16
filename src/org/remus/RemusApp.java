@@ -68,6 +68,7 @@ public class RemusApp implements BaseNode {
 		try { 
 			children = new HashMap<String,BaseNode>();
 			children.put("@pipeline", new PipelineView(this) );
+			children.put("@status", new StatusView(this) );
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
 			Class<?> mpClass = Class.forName(mpStore);			
