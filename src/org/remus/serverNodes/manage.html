@@ -1,22 +1,76 @@
 <html>
-
+<head>
 <script type="text/javascript" src="mustache.js"></script>
 <script type="text/javascript" src="jquery-1.5.1.min.js"></script>
 <script type="text/javascript" src="jquery-ui-1.8.11.min.js"></script>
 <link href="jquery-ui-1.8.11.css" rel="stylesheet" type="text/css"/>
 
+<style type="text/css"> 
+	
+/* Vertical Tabs
+----------------------------------*/
+.ui-tabs-vertical { width: 55em; }
+.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 12em; }
+.ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
+.ui-tabs-vertical .ui-tabs-nav li a { display:block; }
+.ui-tabs-vertical .ui-tabs-nav li.ui-tabs-selected { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; border-right-width: 1px; }
+.ui-tabs-vertical .ui-tabs-panel { padding: 1em; float: right; width: 40em;}
+	</style> 
+</head>
+<body>
 <script type="text/javascript">
+
+
+function submissionViewer( pipeline, name ) {
+	var viewBase = $("<div>");
+	var ul=$("<ul>");
+	viewBase.append( ul );
+	$.getJSON( "/" + pipeline + "/@pipeline", function(data) {
+		for (var a in data ) {
+			var li = $("<li>");
+			li.append( $("<a href='#'>").append( $("<span>").append( a ) ) );
+			li.append( data[a]["_instance"] ); 
+			ul.append( li ); 
+		}
+	});
+	return viewBase;
+}
+
+
+function pipelineViewer(name) {
+	var viewBase = $("<div>");
+	var ul=$("<ul>");
+	viewBase.append( ul );
+	var instBase = $("<div>");
+	$.getJSON( "/" + name + "/@submit", function(data) {
+		for (var a in data ) {
+			var li = $("<li>");
+			var anchor = $("<a href='#" + name + "-tab-" + a + "'>").append( $("<span>").append( a ) );
+			anchor.bind( 'click', function() {
+				instBase.empty();
+				instBase.append( submissionViewer( name, a ) );
+			});
+			li.append( anchor );
+			li.append( data[a]["_instance"] ); 
+			ul.append( li ); 
+		}
+	});
+	viewBase.append( instBase );
+	return viewBase;
+}
+
 
 function loadPipeline( ) {
 	var d=$("<div>");
+	var ul=$("<ul>");
+	d.append( ul );
 	$.getJSON( "/@pipeline", function(data) {
 		for (var a in data ) {
-			d.append( a );
-			$.getJSON( "/" + a + "/@pipeline", function(data) {
-				for ( var b in data ){
-					d.append( $("<li/>").append( b ) );
-				}
-			});
+			var li = $("<li>");//.removeClass('ui-corner-top').addClass('ui-corner-left');			
+			ul.append( li.append( $("<a href='#tab-" + a + "'>").append( $("<span>").append( a ) ) ) );
+			var sd =  $("<div id='tab-" + a + "'></div>");
+			sd.append( pipelineViewer( a ) );
+			d.append( sd );
 		}
 	});
 	return d;
@@ -24,20 +78,27 @@ function loadPipeline( ) {
 
 
 $(document).ready( function() {
-	$("#data").append( loadPipeline() );
-	$("#tabs").tabs();
+	var pipelines = loadPipeline();
+	pipelines.tabs();//.addClass('ui-tabs-vertical ui-helper-clearfix');
+	$("#controlBase").append(  pipelines );
 });
 
 </script>
+
+<div id="controlBase"></div>
+
+<!-- div id="data"></div>
+
 <div id="tabs">
 	<ul>
 		<li><a href="#tabs-1"><span>Pipelines</span></a></li>
 		<li><a href="#tabs-2"><span>Submissions</span></a></li>
 		<li><a href="#tabs-3"><span>Status</span></a></li>
 	</ul>
-	<div id="tabs-1"><div id="data"></div></div>
+	<div id="tabs-1"></div>
 	<div id="tabs-2"></div>
 	<div id="tabs-3"></div>
-</div>
+</div -->
 
+</body>
 </html>
