@@ -38,28 +38,68 @@ public class AppletInstanceView implements BaseNode {
 	public void doGet(String name, Map params, String workerID, Serializer serial,
 			OutputStream os) throws FileNotFoundException {
 
+		String sliceStr = null;
+		int sliceSize = 0;
+		if ( params.containsKey("slice") ) {
+			sliceStr = ((String [])params.get("slice"))[0];
+			sliceSize = Integer.parseInt(sliceStr);
+		}
+
 		if ( name.length() == 0 ) {
-			for ( KeyValuePair kv : applet.datastore.listKeyPairs( applet.getPath() , inst.toString() ) ) {			
-				Map out = new HashMap();
-				out.put( kv.getKey(), kv.getValue() );	
-				try {
-					os.write( serial.dumps( out ).getBytes() );
-					os.write("\n".getBytes());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if ( sliceStr == null ) {
+				for ( KeyValuePair kv : applet.datastore.listKeyPairs( applet.getPath() , inst.toString() ) ) {			
+					Map out = new HashMap();
+					out.put( kv.getKey(), kv.getValue() );	
+					try {
+						os.write( serial.dumps( out ).getBytes() );
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}		
+			} else {
+				for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
+					for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
+						Map oMap = new HashMap();
+						oMap.put( sliceKey, value);
+						try {
+							os.write( serial.dumps( oMap ).getBytes() );
+							os.write("\n".getBytes());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
-			}			
+
+			}
 		} else {
-			for ( Object obj : applet.datastore.get( applet.getPath() , inst.toString(), name) ) {
-				Map out = new HashMap();
-				out.put(name, obj );				
-				try {
-					os.write( serial.dumps(out).getBytes() );
-					os.write("\n".getBytes());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if ( sliceStr == null ) {
+				for ( Object obj : applet.datastore.get( applet.getPath() , inst.toString(), name) ) {
+					Map out = new HashMap();
+					out.put(name, obj );				
+					try {
+						os.write( serial.dumps(out).getBytes() );
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			} else {
+				for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
+					for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
+						Map oMap = new HashMap();
+						oMap.put( sliceKey, value);
+						try {
+							os.write( serial.dumps( oMap ).getBytes() );
+							os.write("\n".getBytes());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 		}
@@ -75,7 +115,7 @@ public class AppletInstanceView implements BaseNode {
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
-		
+
 		try {
 			Set outSet = new HashSet<Integer>();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
