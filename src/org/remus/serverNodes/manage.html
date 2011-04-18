@@ -24,96 +24,100 @@
 var submissionEditor = function( pipeline ) {
 	return {
 		'pipeline' : pipeline,
-		getTitle : function() { return "Submit"; }, 
+		getTitle : function() { return "Submission Editor"; }, 
 		getDiv : function() {
-
+			var base = $("<div>");
+			base.append( "Add new Submission");
+			return base;
 		} 
 	};	
 };
 
 
 var instanceViewer = function(pipeline) {
-	return {
-		'pipeline' : pipeline,
-		getTitle : function() { return "Instance"; }, 
-		getDiv : function() {
 
-		},
-
-		dataViewer : function( viewIn ) {
-			return {
-				'viewBase' : viewIn,
-				'getData' : function( path ) { 
-					var ul=$("<ul>");
-					$.get( path , function(data) {
-						var lines = data.split("\n");
-						for (var i = 0; i < lines.length; i++) {
-						  ul.append( $("<li>").append( lines[i] ) );
+	var dataViewer = function( viewIn ) {
+		return {
+			'viewBase' : viewIn,
+			'getData' : function( path ) { 
+				var ul=$("<ul>");
+				var i;
+				$.get( path , function(data) {
+					var lines = data.split("\n");
+					for (i = 0; i < lines.length; i++) {
+						if ( lines[i].length > 0 ) {
+							ul.append( $("<li>").append( lines[i] ) );
 						}
-					});
-					return ul;
-				},
-				'viewUpdate' : function( stackPath ) {
-					this.viewBase.empty();
-					this.viewBase.append( $("<div>").append( stackPath ).append( this.getData( stackPath ) ) );
-					//alert( stackPath );
-				}
-			}
-		},
-
-		submissionViewer : function( pipeline, name ) {
-			var data;
-			$.ajax( {
-				url:"/" + pipeline + "/@pipeline",
-			    type: 'GET',
-			    async: false,
-			    cache: false,
-			    timeout: 30000,
-			    dataType: 'json',
-			    error: function(){
-			        return true;
-			    },
-			    success: function(msg){ 
-					data=msg;
-				}
-			}
-			);
-
-			var viewBase = $("<div>");	
-			var dataBase = $("<div>");
-			var ul=$("<ul>");
-			viewBase.append( ul );
-			viewBase.append(dataBase);
-			var dataView = dataViewer( dataBase );
-
-			for (var a in data ) {
-				var li = $("<li>");
-				var appletName = a;
-				var anchor = $("<a href='#'>").append( $("<span>").append( a ) );
-				var stackURL = "/" + pipeline + "/" + appletName + "/" + name;
-				anchor.bind( 'click', stackURL, function(event) {
-						dataView.viewUpdate( event.data );
 					}
-				);
-				li.append( anchor );
-				li.append( data[a]["_instance"] ); 
-				ul.append( li ); 		
-			}	
-			return viewBase;
-		},
-		
-		getDiv : function(name) {
+				});
+				return ul;
+			},
+			'viewUpdate' : function( stackPath ) {
+				this.viewBase.empty();
+				this.viewBase.append( $("<div>").append( stackPath ).append( this.getData( stackPath ) ) );
+				//alert( stackPath );
+			}
+		};
+	};
+
+	var submissionViewer = function( pipeline, name ) {
+		var data;
+		$.ajax( {
+			url:"/" + pipeline + "/@pipeline",
+		    type: 'GET',
+		    async: false,
+		    cache: false,
+		    timeout: 30000,
+		    dataType: 'json',
+		    error: function(){
+		        return true;
+		    },
+		    success: function(msg){ 
+				data=msg;
+			}
+		}
+		);
+	
+		var viewBase = $("<div>");	
+		var dataBase = $("<div>");
+		var ul=$("<ul>");
+		viewBase.append( ul );
+		viewBase.append(dataBase);
+		var dataView = dataViewer( dataBase );
+	
+		for (var a in data ) {
+			var li = $("<li>");
+			var appletName = a;
+			var anchor = $("<a href='#'>").append( $("<span>").append( a ) );
+			var stackURL = "/" + pipeline + "/" + appletName + "/" + name;
+			anchor.bind( 'click', stackURL, function(event) {
+					dataView.viewUpdate( event.data );
+				}
+			);
+			li.append( anchor );
+			li.append( data[a]["_instance"] ); 
+			ul.append( li ); 		
+		}	
+		return viewBase;
+	};
+
+	
+	return {
+		getTitle : function() { return "Instance Viewer"; }, 
+
+		getDiv : function() {
 			var viewBase = $("<div>");
 			var ul=$("<ul>");
 			viewBase.append( ul );
 			var instBase = $("<div>");
-			$.getJSON( "/" + name + "/@submit", function(data) {
-				for (var a in data ) {
+			$.getJSON( "/" + pipeline + "/@submit", function(data) {
+				var a;
+				for (a in data ) {
 					var li = $("<li>");
-					var anchor = $("<a href='#" + name + "-tab-" + a + "'>").append( $("<span>").append( a ) );
+					var anchor = $("<a href='#" + pipeline + "-tab-" + a + "'>").append( $("<span>").append( a ) );
 					anchor.bind( 'click', function() {
 						instBase.empty();
-						instBase.append( submissionViewer( name, a ) );
+						instBase.append( submissionViewer( pipeline, a ) );
 					});
 					li.append( anchor );
 					li.append( data[a]["_instance"] ); 
@@ -126,6 +130,35 @@ var instanceViewer = function(pipeline) {
 	};
 };
 
+
+
+var toolSelector = function( pipeline ) {
+	var tools = [ instanceViewer( pipeline ), submissionEditor( pipeline ) ];
+
+	return {
+		getDiv : function() {
+			var div = $("<div>");
+			var view = $("<div>");
+			var i;
+			for ( i in tools ) {
+				if ( i != 0 ) {
+					div.append( " | " );
+				}
+				var a = $("<a>");
+				a.attr('href', '#');
+				a.append( tools[i].getTitle() );
+				a.bind( 'click', i, function(event) {
+					view.empty();
+					view.append( tools[ event.data ].getDiv() );
+				});
+				div.append( a );
+			}
+			view.append( tools[ 0 ].getDiv() );			
+			div.append( view );
+			return div;
+		}
+	};
+}
 
 var pipelineSelector = function() {
 	return {
@@ -145,24 +178,24 @@ var pipelineSelector = function() {
 		    	    return true;
 		    	},
 		    	success: function(data){ 
-		    		for (var a in data ) {
+			    	var a;
+		    		for (a in data ) {
 		    			var item = $("<option>");
 		    			item.attr( 'value', a );//.removeClass('ui-corner-top').addClass('ui-corner-left');		
 		    			item.append( a );	
 		    			d.append( item );
 		    		}		
 		    	}
-			});
-			
+			});			
 			div.append( d );
 			div.append( child );
-			iViewer = new instanceViewer( d.val() );
-			child.append( iViewer.getDiv(d.val()) );
+			iViewer = new toolSelector( d.val() );
+			child.append( iViewer.getDiv() );
 			d.change( function() {
 				child.empty();
 				var pipeline = d.val();
-				iViewer = instanceViewer( d.val() );
-				child.append( iViewer.getDiv(d.val()) );
+				iViewer = toolSelector( d.val() );
+				child.append( iViewer.getDiv() );
 			});
 			return div;
 		}
@@ -178,19 +211,6 @@ $(document).ready( function() {
 </script>
 
 <div id="controlBase"></div>
-
-<!-- div id="data"></div>
-
-<div id="tabs">
-	<ul>
-		<li><a href="#tabs-1"><span>Pipelines</span></a></li>
-		<li><a href="#tabs-2"><span>Submissions</span></a></li>
-		<li><a href="#tabs-3"><span>Status</span></a></li>
-	</ul>
-	<div id="tabs-1"></div>
-	<div id="tabs-2"></div>
-	<div id="tabs-3"></div>
-</div -->
 
 </body>
 </html>
