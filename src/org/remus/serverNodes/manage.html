@@ -21,18 +21,65 @@
 <script type="text/javascript">
 
 
+var dataViewer = function( viewIn ) {
+	return {
+		'viewBase' : viewIn,
+		'getData' : function( path ) { 
+			var ul=$("<ul>");
+			$.get( path , function(data) {
+				var lines = data.split("\n");
+				for (var i = 0; i < lines.length; i++) {
+				  ul.append( $("<li>").append( lines[i] ) );
+				}
+			});
+			return ul;
+		},
+		'viewUpdate' : function( stackPath ) {
+			this.viewBase.empty();
+			this.viewBase.append( $("<div>").append( stackPath ).append( this.getData( stackPath ) ) );
+			//alert( stackPath );
+		}
+	}
+}
+
 function submissionViewer( pipeline, name ) {
-	var viewBase = $("<div>");
+	var data;
+	$.ajax( {
+		url:"/" + pipeline + "/@pipeline",
+	    type: 'GET',
+	    async: false,
+	    cache: false,
+	    timeout: 30000,
+	    dataType: 'json',
+	    error: function(){
+	        return true;
+	    },
+	    success: function(msg){ 
+			data=msg;
+		}
+	}
+	);
+
+	var viewBase = $("<div>");	
+	var dataBase = $("<div>");
 	var ul=$("<ul>");
 	viewBase.append( ul );
-	$.getJSON( "/" + pipeline + "/@pipeline", function(data) {
-		for (var a in data ) {
-			var li = $("<li>");
-			li.append( $("<a href='#'>").append( $("<span>").append( a ) ) );
-			li.append( data[a]["_instance"] ); 
-			ul.append( li ); 
-		}
-	});
+	viewBase.append(dataBase);
+	var dataView = dataViewer( dataBase );
+
+	for (var a in data ) {
+		var li = $("<li>");
+		var appletName = a;
+		var anchor = $("<a href='#'>").append( $("<span>").append( a ) );
+		var stackURL = "/" + pipeline + "/" + appletName + "/" + name;
+		anchor.bind( 'click', stackURL, function(event) {
+				dataView.viewUpdate( event.data );
+			}
+		);
+		li.append( anchor );
+		li.append( data[a]["_instance"] ); 
+		ul.append( li ); 		
+	}	
 	return viewBase;
 }
 
@@ -61,25 +108,44 @@ function pipelineViewer(name) {
 
 
 function loadPipeline( ) {
-	var d=$("<div>");
-	var ul=$("<ul>");
-	d.append( ul );
-	$.getJSON( "/@pipeline", function(data) {
-		for (var a in data ) {
-			var li = $("<li>");//.removeClass('ui-corner-top').addClass('ui-corner-left');			
-			ul.append( li.append( $("<a href='#tab-" + a + "'>").append( $("<span>").append( a ) ) ) );
-			var sd =  $("<div id='tab-" + a + "'></div>");
-			sd.append( pipelineViewer( a ) );
-			d.append( sd );
-		}
+	var div = $("<div>");
+	var child = $("<div>");
+	var d=$("<select>");
+
+	$.ajax( {
+		url:"/@pipeline",
+    	type: 'GET',
+    	async: false,
+    	cache: false,
+    	timeout: 30000,
+    	dataType: 'json',
+    	error: function(){
+    	    return true;
+    	},
+    	success: function(data){ 
+    		for (var a in data ) {
+    			var item = $("<option>");
+    			item.attr( 'value', a );//.removeClass('ui-corner-top').addClass('ui-corner-left');		
+    			item.append( a );	
+    			d.append( item );
+    		}		
+    	}
 	});
-	return d;
+	
+	div.append( d );
+	div.append( child );
+	child.append( pipelineViewer( d.val() ) );
+	d.change( function() {
+		child.empty();
+		var pipeline = d.val();
+		child.append( pipelineViewer(pipeline) );
+	});
+	return div;
 }
 
 
 $(document).ready( function() {
 	var pipelines = loadPipeline();
-	pipelines.tabs();//.addClass('ui-tabs-vertical ui-helper-clearfix');
 	$("#controlBase").append(  pipelines );
 });
 
