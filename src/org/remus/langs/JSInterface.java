@@ -1,9 +1,8 @@
 package org.remus.langs;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,9 @@ import org.json.JSONException;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.FunctionObject;
 import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
@@ -22,6 +23,7 @@ import org.remus.mapred.ReducerInterface;
 import org.remus.mapred.SplitCallback;
 import org.remus.mapred.SpliterInterface;
 import org.remus.mapred.PipeInterface;
+import org.remus.serverNodes.BaseStackNode;
 
 public class JSInterface implements MapperInterface {
 	Context cx;	
@@ -41,8 +43,20 @@ public class JSInterface implements MapperInterface {
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			}
+			
+			@Override
+			public Scriptable wrapNewObject(Context cx, Scriptable scope,
+					Object obj) {
+				System.err.println( "NEW:" + obj );
+				return super.wrapNewObject(cx, scope, obj);
+			}
+			@Override
+			public Object wrap(Context cx, Scriptable scope, Object obj,Class<?> staticType) {
+				Object out = super.wrap(cx, scope, obj, staticType);
+				//System.err.println( "WRAP:" + obj + " " + staticType + " " + out);
+				return out;
+			}
 		});		
-
 	}
 
 	OutputStream curOUT;
@@ -50,28 +64,25 @@ public class JSInterface implements MapperInterface {
 
 
 	class JSFunction  {
-
 		public Function func;
-		public FakeDOM dom;
-
-		public String call(Object val) {
+		public EmitInterface emit;
+		public void call(String key, Object val) {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
-			func.call(cx, scope, null, new Object [] { val } );
-			return dom.toString();
+			func.call(cx, scope, null, new Object [] { key, val } );
 		}
-
 	}
 
-	public JSFunction compileFunction(String source, String fileName) {
+	private JSFunction compileFunction(String source, String fileName) {
 		try {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
 			JSFunction jfunc = new JSFunction();
-			jfunc.dom = new FakeDOM();
-			prepScope(scope, jfunc.dom);
+			jfunc.emit = new EmitInterface(  );
 			Function out = cx.compileFunction(scope, source, fileName, 1, null);
 			jfunc.func = out;
+			prepScope(scope, jfunc.emit);
+			
 			return jfunc;
 		} catch (EcmaError e) {
 			e.printStackTrace();
@@ -79,10 +90,14 @@ public class JSInterface implements MapperInterface {
 		return null; 
 	}
 
-	FakeDOM prepScope(Scriptable scope, FakeDOM dom) {
-		Object wrappedOut = Context.javaToJS(dom, scope);
-		ScriptableObject.putProperty(scope, "document", wrappedOut);
-		return dom;
+	void prepScope(Scriptable scope, EmitInterface emit) {		
+		try {
+			//Class[] parameters = new Class[] { String.class, Object.class };
+			ScriptableObject.putProperty(scope, "remus", Context.javaToJS(emit, scope));
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void setStdout(OutputStream os) {
@@ -91,25 +106,44 @@ public class JSInterface implements MapperInterface {
 		//ScriptableObject.putProperty(scope, "stdout", wrappedOut);
 	}
 
-	static public class FakeDOM {
-		StringBuilder out;
-		public FakeDOM() {
-			this.out = new StringBuilder();
+	public class EmitInterface {
+		MapCallback cb;
+		public EmitInterface() {
 		}
+		private void setEmit(MapCallback cb) {
+			this.cb = cb;
+		}
+		private Object unwrap(Object in) {
+			Object out = in;
+			if ( in instanceof NativeObject ) {
+				NativeObject n = (NativeObject)in;
+				Map m = new HashMap();
 
-		public void write(String str) {
-			out.append( str );
+				for ( Object key : n.getIds() ) {
+					if ( key instanceof String )
+						m.put(key, n.get((String)key, null));
+					else if ( key instanceof Integer)
+						m.put(key, n.get((Integer)key, null));
+							
+				}
+				out = m;
+			}
+			return out;
 		}
-		@Override
-		public String toString() {
-			return out.toString();
-		}
+		public void emit(String key, Object val) {
+			cb.emit(key, unwrap(val) );
+		}		
 	}
 
 
 	@Override
-	public void map(Serializable val, MapCallback callback) {
-		currentFunction.call( val );
+	public void map(BaseStackNode dataStack, MapCallback callback) {
+		currentFunction.emit.setEmit(callback);
+		for (String key : dataStack.getKeys() ) {
+			for (Object data : dataStack.getData(key)) {
+				currentFunction.call( key, data );
+			}
+		}
 	}
 
 	@Override
