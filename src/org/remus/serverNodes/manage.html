@@ -89,7 +89,7 @@ var instanceViewer = function(pipeline) {
 			var li = $("<li>");
 			var appletName = a;
 			var anchor = $("<a href='#'>").append( $("<span>").append( a ) );
-			var stackURL = "/" + pipeline + "/" + appletName + "/" + name;
+			var stackURL = "/" + pipeline + "/" + name + "/" + appletName;
 			anchor.bind( 'click', stackURL, function(event) {
 					dataView.viewUpdate( event.data );
 				}
