@@ -45,11 +45,8 @@ public class ReduceGenerator implements WorkGenerator {
 			}
 			jobID++;
 		}
-		Map stat = new HashMap();
-		stat.put("done", doneCount);
-		stat.put("error", errorCount);
-		stat.put("total", jobID);
-		applet.datastore.add( applet.getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, instance.toString(), stat );
+		InstanceStatusView stat = new InstanceStatusView(applet);
+		stat.setWorkStat( instance, doneCount, errorCount, jobID);
 		if ( keyList.size() == 0 && reqCount > 0 )
 			done = true;
 		return keyList;

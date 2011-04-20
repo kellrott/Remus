@@ -43,6 +43,10 @@ public class PipeGenerator implements WorkGenerator {
 		WorkKey w =  new WorkKey(instance, 0);
 		outList.add( w );
 		w.pathArray = arrayList;
+		
+		InstanceStatusView stat = new InstanceStatusView(applet);
+		stat.setWorkStat( instance, 0, 0, 1);
+
 		return outList;		
 	}
 
