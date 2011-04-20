@@ -31,9 +31,9 @@ public class PipelineStatusView implements BaseNode {
 		
 		if ( name.length() == 0 ) {
 			for ( RemusApplet applet : pipeline.getMembers() ) {
-				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR) ) {
+				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 					Map out = new HashMap();
-					out.put( kv.getKey(), kv.getValue() );	
+					out.put( kv.getKey() + "/" + applet.getID(), kv.getValue() );	
 					try {
 						os.write( serial.dumps( out ).getBytes() );
 						os.write("\n".getBytes());
