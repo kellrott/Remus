@@ -71,7 +71,10 @@ public class SubmitView implements BaseNode {
 				Object data = serial.loads(sb.toString());
 
 				if ( ((Map)data).containsKey( Submission.AppletField ) ) {
-					List aList = (List)((Map)data).get(Submission.AppletField);
+					List<String> aList = (List)((Map)data).get(Submission.AppletField);
+					RemusInstance inst = pipe.setupInstance( name, aList );
+					((Map)data).put(Submission.InstanceField, inst.toString());
+					/*
 					for (Object sObj : aList) {
 						RemusApplet applet = pipe.getApplet((String)sObj);
 						if ( applet != null ) {
@@ -79,6 +82,7 @@ public class SubmitView implements BaseNode {
 							((Map)data).put(Submission.InstanceField, inst.toString());
 						}
 					}
+					*/
 				}
 				pipe.getDataStore().add( "/" + pipe.getID() + "/@submit", 
 						RemusInstance.STATIC_INSTANCE_STR, 
