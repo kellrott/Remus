@@ -13,10 +13,10 @@ import org.mpstore.Serializer;
 import org.remus.serverNodes.BaseNode;
 import org.remus.work.RemusApplet;
 
-public class StatusView implements BaseNode {
+public class ServerStatusView implements BaseNode {
 
 	RemusApp app;
-	public StatusView(RemusApp app) {
+	public ServerStatusView(RemusApp app) {
 		this.app = app;
 	}
 

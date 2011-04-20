@@ -134,6 +134,7 @@ public class MasterServlet extends HttpServlet {
 	}
 */
 
+	/*
 	private void doGet_work(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		PrintWriter out = resp.getWriter();
 		int count = 10;
@@ -192,7 +193,7 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 
-
+/*
 	private void doGet_submit(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {	
 		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 		if ( applet != null ) {		
@@ -217,7 +218,9 @@ public class MasterServlet extends HttpServlet {
 			}
 		}
 	}
-
+*/
+	
+	/*
 	private void doGet_keys(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		PrintWriter out = resp.getWriter();
 		resp.setBufferSize(2048);
@@ -288,6 +291,7 @@ public class MasterServlet extends HttpServlet {
 			out.println( serializer.dumps( oSet ) );
 		}
 	}
+	*/
 
 	/*
 	private void doGet_attach(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -346,6 +350,8 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 */
+	
+	/*
 	private void doGet_status(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		if ( reqInfo.getApplet() != null ) {
@@ -417,7 +423,8 @@ public class MasterServlet extends HttpServlet {
 		}
 
 	}
-
+*/
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
@@ -444,6 +451,8 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 */
+	
+	/*
 	private void doPost_work(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
 		String workerID = getWorkerID(req);
@@ -538,6 +547,7 @@ public class MasterServlet extends HttpServlet {
 		}
 	}
 */
+	/*
 	private void doPost_instance(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusApplet applet = app.getApplet(reqInfo.getAppletPath());
 		if ( applet != null ) {
@@ -557,7 +567,7 @@ public class MasterServlet extends HttpServlet {
 					reqInfo.getInstance(), reqInfo.getKey(), reqInfo.getAttachment(), req.getInputStream() );
 		}
 	}
-
+	 */
 
 
 	@Override
