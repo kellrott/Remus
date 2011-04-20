@@ -79,7 +79,7 @@ public class RemusApplet implements BaseNode {
 	public static final int STORE = 7;
 	public static final int ADAPTOR = 8;
 
-	public static final String WORKDONE_OP = "/@workdone";	
+	public static final String WORKDONE_OP = "_workdone";	
 
 	public static final int INIT_OP_CODE = 0;
 	public static final int WORKDONE_OP_CODE = 1;
@@ -287,12 +287,14 @@ public class RemusApplet implements BaseNode {
 		datastore.add(getPath() + "/@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
 	}
 
+	
 	private void addInstance(RemusInstance instance, String srcPath) {
 		if ( !datastore.containsKey(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
 			datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), srcPath);
 		}		
 	}
-
+	 
+	
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>( );
 		for ( String key : datastore.listKeys( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
@@ -363,6 +365,17 @@ public class RemusApplet implements BaseNode {
 		} else {
 			inst = new RemusInstance(instStr);
 		}
+		
+		Map baseMap = null;
+		for ( Object i : datastore.get( "/" + pipeline.getID() + "/@pipeline" , RemusInstance.STATIC_INSTANCE_STR, getID() ) ) {
+			baseMap = (Map)i;
+		}
+		if ( baseMap == null )	
+			baseMap = new HashMap();
+		baseMap.put("_instance", inst.toString());
+		baseMap.put("_submitKey", submitKey);
+		InstanceStatusView stat = new InstanceStatusView(this);
+		stat.updateStatus(inst, baseMap);
 		return inst;
 	};
 
