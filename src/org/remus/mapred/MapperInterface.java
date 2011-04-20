@@ -1,10 +1,8 @@
 package org.remus.mapred;
 
-import java.io.Serializable;
-
+import org.remus.serverNodes.BaseStackNode;
 
 public interface MapperInterface extends InterfaceBase {
-
 	void initMapper(String config);
-	void map( Serializable val, MapCallback callback );
+	public void map(BaseStackNode dataStack, MapCallback callback);
 }
