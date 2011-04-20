@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ import org.remus.work.WorkKey;
 public class RemusPipeline implements BaseNode {
 
 	HashMap<String,BaseNode> children;
-	
+
 	private HashMap<String,RemusApplet> members;
 	Map<RemusPath, RemusApplet> inputs;
 	String id;
@@ -37,7 +38,8 @@ public class RemusPipeline implements BaseNode {
 		children = new HashMap<String, BaseNode>();
 		children.put("@pipeline", new PipelineListView(this) );
 		children.put("@submit", new SubmitView(this) );
-		
+		children.put("@status", new PipelineStatusView(this) );
+
 		inputs = new HashMap<RemusPath, RemusApplet >();
 		this.id = id;
 		this.datastore = datastore;
@@ -48,7 +50,7 @@ public class RemusPipeline implements BaseNode {
 	public RemusApp getApp() {
 		return app;
 	}
-	
+
 	public void addApplet(RemusApplet applet) {		
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
@@ -141,7 +143,7 @@ public class RemusPipeline implements BaseNode {
 		return attachStore;
 	}
 
-	
+
 
 	public Iterable<KeyValuePair> getSubmits() {
 		return datastore.listKeyPairs( "/" + getID() + "/@submit", 
@@ -183,11 +185,43 @@ public class RemusPipeline implements BaseNode {
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public BaseNode getChild(String name) {
 		return children.get(name);
+	}
+
+	public RemusInstance setupInstance(String name, List<String> appletList) {
+		Set<RemusApplet> activeSet = new HashSet<RemusApplet>();
+		RemusInstance inst = new RemusInstance();
+		for (String sObj : appletList) {
+			RemusApplet applet = getApplet((String)sObj);
+			if ( applet != null ) {
+				activeSet.add(applet);
+				applet.createInstance(name, inst);
+			}
+		}
+
+		boolean added = false;
+		do {
+			added = false;
+			for ( RemusApplet applet : getMembers() ) {
+				if ( !activeSet.contains(applet) ) {
+					for ( RemusPath iRef : applet.getInputs() ) {
+						if ( iRef.getInputType() == RemusPath.AppletInput ) {
+							RemusApplet srcApplet = getApplet(iRef.getApplet());
+							if (activeSet.contains(srcApplet) ) {
+								if ( applet.createInstance(name, inst) ) 
+									added = true;
+								activeSet.add(applet);
+							}
+						}
+					}
+				} 
+			}
+		} while (added);
+		return inst;		
 	}
 
 
