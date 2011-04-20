@@ -480,6 +480,7 @@ public class RemusApplet implements BaseNode {
 		return workValue;
 	}
 
+	/*
 	public String getInstanceSrc(RemusInstance remusInstance) {
 		String out = null;
 		for ( Object obj : datastore.get( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
@@ -487,7 +488,7 @@ public class RemusApplet implements BaseNode {
 		}
 		return out;
 	}
-
+	
 	public Object getStatus(RemusInstance remusInstance) {
 		Object out = null;
 		for ( Object obj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
@@ -496,6 +497,7 @@ public class RemusApplet implements BaseNode {
 		return out;	
 	}
 
+	
 	public String getInstanceSubmit(RemusInstance remusInstance) {
 		Object out = null;
 		for ( Object obj : datastore.get( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
@@ -503,7 +505,8 @@ public class RemusApplet implements BaseNode {
 		}
 		return (String)out;			
 	}
-
+ */
+	
 	@Override
 	public void doDelete(Map params) {
 		// TODO Auto-generated method stub
@@ -550,6 +553,14 @@ public class RemusApplet implements BaseNode {
 		if ( name.compareTo("@instance") == 0 ) {
 			return new InstanceListView(this);
 		}
+		if ( name.compareTo("@error") == 0 ) {
+			return new InstanceErrorView(this);
+		}
+		if ( name.compareTo("@status") == 0 ) {
+			return new InstanceStatusView(this);
+		}
+		
+		
 		//if ( name.compareTo("@work") == 0 ) {
 		//	return new WorkView(this);
 		//}

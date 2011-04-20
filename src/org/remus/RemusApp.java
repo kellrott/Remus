@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -68,7 +70,7 @@ public class RemusApp implements BaseNode {
 		try { 
 			children = new HashMap<String,BaseNode>();
 			children.put("@pipeline", new PipelineView(this) );
-			children.put("@status", new StatusView(this) );
+			children.put("@status", new ServerStatusView(this) );
 			children.put("@manage", new ManageApp() );
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
@@ -287,7 +289,18 @@ public class RemusApp implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
-		
+		Map out = new HashMap();
+		List<String> oList = new ArrayList<String>();
+		for ( Object pipeObj : getPipelines() ) {
+			oList.add( ((RemusPipeline)pipeObj).id );
+		}
+		out.put("@", oList);
+		try {
+			os.write( serial.dumps(out).getBytes() );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

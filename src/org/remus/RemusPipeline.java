@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -159,7 +160,11 @@ public class RemusPipeline implements BaseNode {
 
 		Map out = new HashMap();
 		for ( String aName : members.keySet() ) {
-			out.put(aName, members.get(aName).toString() );
+			List<String> instList = new LinkedList<String>();
+			for ( RemusInstance inst : members.get(aName).getInstanceList() ) {
+				instList.add(inst.toString());
+			}
+			out.put(aName, instList );
 		}
 		try {
 			os.write( serial.dumps(out).getBytes() );

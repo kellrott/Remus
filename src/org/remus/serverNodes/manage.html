@@ -40,13 +40,13 @@ var instanceViewer = function(pipeline) {
 		return {
 			'viewBase' : viewIn,
 			'getData' : function( path ) { 
-				var ul=$("<ul>");
+				var ul=$("<select size=10>");
 				var i;
 				$.get( path , function(data) {
 					var lines = data.split("\n");
 					for (i = 0; i < lines.length; i++) {
 						if ( lines[i].length > 0 ) {
-							ul.append( $("<li>").append( lines[i] ) );
+							ul.append( $("<option>").append( lines[i] ) );
 						}
 					}
 				});
@@ -54,7 +54,7 @@ var instanceViewer = function(pipeline) {
 			},
 			'viewUpdate' : function( stackPath ) {
 				this.viewBase.empty();
-				this.viewBase.append( $("<div>").append( stackPath ).append( this.getData( stackPath ) ) );
+				this.viewBase.append( $("<div>").append( stackPath ).append( $('<div>').append( this.getData( stackPath ) ) ));
 				//alert( stackPath );
 			}
 		};
