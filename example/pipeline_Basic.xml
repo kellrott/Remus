@@ -1,0 +1,77 @@
+<remus_pipeline id="testPipeline">
+<include path="test.file"/>
+<remus_split id="testSplit" type="python" input="?">
+<![CDATA[
+@remus.splitter
+def split( info ):
+	handle = open( "test.file" )
+	for line in handle:
+		tmp = line.rstrip().split("\t")
+		print tmp
+		remus.emit( tmp[0], tmp[1] )
+	handle.close()
+]]>
+</remus_split>
+
+<remus_map id="testMap" type="python" input="testSplit">
+<![CDATA[
+@remus.mapper
+def map( key, val ):
+	for i in range(int(val)):
+		remus.emit( key, i )
+]]>
+</remus_map>
+
+
+<remus_reduce id="testReduce" type="python" input="testMap">
+<![CDATA[
+@remus.reducer
+def reduce( key, vals ):
+	remus.emit( key, len(list(vals)) )
+]]>
+</remus_reduce>
+
+<remus_merge id="testMerge" type="python" left="testSplit" right="testReduce">
+<![CDATA[
+@remus.merger
+def reduce( lkey, lvals, rkey, rvals ):
+	word = None
+	for val in lvals:
+		word = val
+	count = None
+	for val in rvals:
+		count = val
+	remus.emit( "%s_%s" % (lkey,rkey), [word] * count )
+]]>
+
+</remus_merge>
+
+<remus_pipe id="testPipe" type="python" input="testReduce">
+<![CDATA[
+@remus.pipe
+def reduce( handles ):
+	for key, value in handles[0]:
+		remus.emit( "%s_%s" % (key, key), value * value )
+]]>
+</remus_pipe>
+
+
+<remus_match id="testMatch" type="python" left="testMerge" right="testPipe">
+<![CDATA[
+@remus.matcher
+def reduce( key, lvals, rvals ):
+	sum = 0
+	for valList in lvals:
+		for val in valList:
+			sum += int(val)
+	square = None
+	for val in rvals:
+		square = val
+	if sum == square:
+		remus.emit( key, "GOOD" )
+	else:
+		remus.emit( key, "BAD" )
+]]>
+</remus_match>
+
+</remus_pipeline>
