@@ -27,7 +27,7 @@ import org.remus.RemusPipeline;
 import org.remus.serverNodes.BaseNode;
 
 
-public class RemusApplet implements BaseNode {
+public class RemusApplet {
 
 	public static RemusApplet newApplet( String id, CodeFragment code, int type ) {
 		RemusApplet out = new RemusApplet();
@@ -209,7 +209,7 @@ public class RemusApplet implements BaseNode {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object statObj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object statObj : datastore.get( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) ) {
 				found = true;
 			}
@@ -232,14 +232,14 @@ public class RemusApplet implements BaseNode {
 
 	public void setComplete(RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : datastore.get( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
 		((Map)statObj).put(WORKDONE_OP, true);
-		datastore.add( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		datastore.add( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
@@ -297,7 +297,7 @@ public class RemusApplet implements BaseNode {
 	
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>( );
-		for ( String key : datastore.listKeys( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		for ( String key : datastore.listKeys( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR ) ) {
 			out.add( new RemusInstance( key ) );
 		}
 		/*
@@ -340,7 +340,7 @@ public class RemusApplet implements BaseNode {
 			}
 			if ( !invalid ) {
 				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object val : datastore.get(getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					if ( ((Map)val).containsKey( WORKDONE_OP ) )
 						hasDone = true;
 				}
@@ -355,11 +355,9 @@ public class RemusApplet implements BaseNode {
 
 	public boolean createInstance(String submitKey, RemusInstance inst) {
 		
-		if ( datastore.containsKey( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+		if ( datastore.containsKey( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
 			return false;
 		}
-		
-		datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
 	
 		/*
 		String instStr = null;
@@ -391,9 +389,7 @@ public class RemusApplet implements BaseNode {
 	};
 
 	public void deleteInstance(RemusInstance instance) {
-		datastore.delete(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		//datastore.delete(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );
+		datastore.delete(getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "/@done", instance.toString() );		
 		datastore.delete(getPath() + "/@data", instance.toString() );		
 		datastore.delete(getPath() + "/@error", instance.toString() );
@@ -530,12 +526,14 @@ public class RemusApplet implements BaseNode {
 		return (String)out;			
 	}
  */
-	
+
+	/*
 	@Override
 	public void doDelete(Map params) {
 		// TODO Auto-generated method stub
 		
 	}
+
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial,
@@ -600,5 +598,6 @@ public class RemusApplet implements BaseNode {
 		}
 		return null;
 	}
+	 */
 
 }

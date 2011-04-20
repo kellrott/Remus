@@ -48,10 +48,10 @@ class WorkerBase:
 		exec self.code in self.module.__dict__
 
 	def setupOutput(self, instance, jobID):
-		outUrl = self.host + self.pipeline + "/" + self.applet + "/%s" %(instance) 
+		outUrl = self.host + self.pipeline + "/" + instance + "/" + self.applet    
 		self.outmap = { None: remusLib.http_write( outUrl, jobID ) }
 		for outname in self.output:
-			outUrl = self.host + self.applet + "." + outname + "/%s" % (instance)
+			outUrl = self.host + "/" + self.pipeline + "/" + instance + self.applet + "." + outname
 			self.outmap[ outname ] = http_write( outUrl, jobID )
 		self.callback.setoutput( self.outmap )
 	
@@ -64,6 +64,7 @@ class SplitWorker(WorkerBase):
 	def doWork(self, instance, workDesc):
 		func = self.callback.getFunction( self.applet )
 		doneIDs = []
+		errorIDs = {}
 		remusLib.log( "Starting Split %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
 		for jobID in workDesc['input']:
 			self.setupOutput(instance, jobID)
@@ -73,10 +74,20 @@ class SplitWorker(WorkerBase):
 				iHandle = remusLib.httpStreamer( [inputURL] )
 			else:
 				iHandle = None
-			func( iHandle )	
-			doneIDs.append( jobID )
+			try:
+				func( iHandle )	
+				doneIDs.append( jobID )
+			except Exception:
+				exc_type, exc_value, exc_traceback = sys.exc_info()
+				e = StringIO()
+				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
+				errorIDs[jobID ] = e.getvalue()
+			
 			self.closeOutput()
 		remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
+		if ( len( errorIDs ) ):
+			remusLib.log( "ERROR: " + str(errorIDs) )
+			remusLib.httpPostJson( self.host + self.pipeline + "/" + instance + "/@error/" + self.applet , [ errorIDs  ] )
 		
 
 class MapWorker(WorkerBase):	
@@ -104,7 +115,7 @@ class MapWorker(WorkerBase):
 		remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 		if ( len( errorIDs ) ):
 			remusLib.log( "ERROR: " + str(errorIDs) )
-			remusLib.httpPostJson( self.host + self.pipeline + "/" + self.applet + "/@error", { instance : errorIDs  } )
+			remusLib.httpPostJson( self.host + self.pipeline + "/" + instance + "/@error/" + self.applet , [ errorIDs  ] )
 
 
 class ReduceWorker(WorkerBase):	

@@ -14,6 +14,8 @@ import org.remus.serverNodes.BaseNode;
 
 public class InstanceStatusView implements BaseNode {
 
+	public static final String InstanceStatusName = "/@instance";
+	
 	RemusApplet applet;
 	public InstanceStatusView(RemusApplet applet) {
 		this.applet = applet;
@@ -29,7 +31,7 @@ public class InstanceStatusView implements BaseNode {
 
 	public void updateStatus( RemusInstance inst, Map update ) {
 		Object statObj = null;
-		for ( Object obj : applet.datastore.get( applet.getPath() + "/@status" , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+		for ( Object obj : applet.datastore.get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
 			statObj = obj;
 		}
 		if ( statObj == null ) {
@@ -38,7 +40,7 @@ public class InstanceStatusView implements BaseNode {
 		for ( Object key : update.keySet() ) {
 			((Map)statObj).put(key, update.get(key));
 		}
-		applet.datastore.add( applet.getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
+		applet.datastore.add( applet.getPath() + InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
 	}
 	
 	@Override
@@ -52,7 +54,7 @@ public class InstanceStatusView implements BaseNode {
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 
 		if ( name.length() == 0 ) {
-			for ( KeyValuePair kv : applet.datastore.listKeyPairs( applet.getPath() + "/@status" , RemusInstance.STATIC_INSTANCE_STR ) ) {			
+			for ( KeyValuePair kv : applet.datastore.listKeyPairs( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR ) ) {			
 				Map out = new HashMap();
 				out.put( kv.getKey(), kv.getValue() );	
 				try {
@@ -64,7 +66,7 @@ public class InstanceStatusView implements BaseNode {
 				}
 			}		
 		} else {
-			for ( Object obj : applet.datastore.get( applet.getPath() , RemusInstance.STATIC_INSTANCE_STR, name) ) {
+			for ( Object obj : applet.datastore.get( applet.getPath() + InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, name) ) {
 				Map out = new HashMap();
 				out.put(name, obj );				
 				try {

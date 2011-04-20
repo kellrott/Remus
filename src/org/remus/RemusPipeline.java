@@ -55,7 +55,7 @@ public class RemusPipeline implements BaseNode {
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
 		members.put(applet.getID(), applet);
-		children.put(applet.getID(), applet);
+		//children.put(applet.getID(), applet);
 	}
 
 	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxCount) {
@@ -160,19 +160,17 @@ public class RemusPipeline implements BaseNode {
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
 	throws FileNotFoundException {
 
-		Map out = new HashMap();
-		for ( String aName : members.keySet() ) {
-			List<String> instList = new LinkedList<String>();
-			for ( RemusInstance inst : members.get(aName).getInstanceList() ) {
-				instList.add(inst.toString());
+		
+		for ( KeyValuePair kv : datastore.listKeyPairs( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
+			Map out = new HashMap();
+			out.put(kv.getKey(), kv.getValue() );
+			try {
+				os.write( serial.dumps(out).getBytes() );
+				os.write("\n".getBytes());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			out.put(aName, instList );
-		}
-		try {
-			os.write( serial.dumps(out).getBytes() );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
@@ -189,7 +187,20 @@ public class RemusPipeline implements BaseNode {
 	}
 	@Override
 	public BaseNode getChild(String name) {
-		return children.get(name);
+		if ( children.containsKey(name) )
+			return children.get(name);
+		
+		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
+			RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
+			return new PipelineInstanceViewer( this, inst  );
+		}
+		
+		
+		for ( Object subObject : datastore.get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {
+			RemusInstance inst = new RemusInstance( name );
+			return new PipelineInstanceViewer( this, inst  );
+		}
+		return null;
 	}
 
 	public RemusInstance setupInstance(String name, List<String> appletList) {

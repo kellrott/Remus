@@ -699,6 +699,7 @@ public class MasterServlet extends HttpServlet {
 	}	
 */
 
+	/*
 	private void doDelete_pipeline(RemusPath reqInfo, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		RemusPipeline pipe = app.pipelines.get(reqInfo.getPipeline());
 		if ( pipe != null ) {
@@ -725,7 +726,8 @@ public class MasterServlet extends HttpServlet {
 			}
 		}
 	}
-
+*/
+	
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
