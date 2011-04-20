@@ -46,14 +46,9 @@ public class RemusPath {
 		if ( ref.getInputType() == DynamicInput ) {
 			String submitKey = null;
 			MPStore ds = ref.parent.getApplet( ref.getAppletPath() ).getDataStore();
-			for ( Object path : ds.get( ref.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-				submitKey = (String)path;
-			}
-			if ( submitKey != null ) {
+			for ( Object instObj : ds.get( ref.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
 				String submitPath = null;				
-				for ( Object submitObj : ds.get( "/" + ref.getPipeline() + "@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey ) ) {
-					submitPath = (String)((Map)submitObj).get(Submission.InputField);
-				}				
+				submitPath = (String)((Map)instObj).get(Submission.InputField);
 				ref = new RemusPath(ref.parent, submitPath);
 			}
 			this.instance = ref.instance;
@@ -178,7 +173,15 @@ public class RemusPath {
 	}
 
 	public String getInstancePath() {
-		return getViewPath() + "/" + instance;
+		if ( appletPortName != null ) {
+			if ( viewName != null )
+				return "/" + pipelineName + "/" + instance + "/" + appletName + "." + appletPortName + "@" + viewName;
+			return "/" + pipelineName + "/" + instance + "/"+ appletName + "." + appletPortName;
+		}
+		if ( viewName != null )
+			return "/" + pipelineName + "/" + instance + "/" + appletName + "@" + viewName;
+		return "/" + pipelineName + "/" + instance + "/" + appletName;
+		
 	}
 
 	public boolean isPortName() {
@@ -196,37 +199,8 @@ public class RemusPath {
 		return "/" + pipelineName + "/" + appletName;
 	}
 
-
-	public String getView() {
-		return viewName;
-	}
-
-	public String getPortName() {
-		return appletPortName;
-	}
-
-
-	public String getInstance() {
-		return instance;
-	}
-
-
-	public String getKey() {
-		return key;
-	}
-
 	public String getApplet() {
 		return appletName;
 	}
-
-	public String getPipeline() {
-		return pipelineName;
-	}
-
-	public String getAttachment() {
-		// TODO Auto-generated method stub
-		return attachName;
-	}
-
-
+	
 }
