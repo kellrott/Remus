@@ -12,6 +12,6 @@ public interface BaseNode {
 	public void doGet( String name, Map params, String workerID, Serializer serial, OutputStream os ) throws FileNotFoundException;
 	public void doPut( String name, String workerID, Serializer serial, InputStream is, OutputStream os );
 	public void doSubmit( String name, String workerID, Serializer serial, InputStream is, OutputStream os );
-	public void doDelete( Map params );
+	public void doDelete( String name, Map params, String workerID );
 	
 }

@@ -389,9 +389,9 @@ public class RemusApplet {
 	};
 
 	public void deleteInstance(RemusInstance instance) {
+		datastore.delete(getPath(), instance.toString() );		
 		datastore.delete(getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "/@done", instance.toString() );		
-		datastore.delete(getPath() + "/@data", instance.toString() );		
 		datastore.delete(getPath() + "/@error", instance.toString() );
 		attachstore.delete(getPath() + "/@attach", instance.toString() );
 

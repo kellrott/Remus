@@ -22,7 +22,7 @@ public class PipelineListView implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(Map params) {
+	public void doDelete(String name, Map params, String workerID) {
 		// TODO Auto-generated method stub
 
 	}

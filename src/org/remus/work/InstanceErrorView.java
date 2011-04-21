@@ -26,7 +26,7 @@ public class InstanceErrorView implements BaseNode {
 			this.inst = inst;			
 		}
 		@Override
-		public void doDelete(Map params) {
+		public void doDelete(String name, Map params, String workerID) {
 			// TODO Auto-generated method stub
 
 		}
@@ -89,7 +89,7 @@ public class InstanceErrorView implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(Map params) {
+	public void doDelete(String name, Map params, String workerID) {
 		// TODO Auto-generated method stub
 
 	}

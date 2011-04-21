@@ -21,13 +21,14 @@
 <script type="text/javascript">
 
 
-var submissionEditor = function( pipeline ) {
+var statusScan = function( pipeline ) {
 	return {
 		'pipeline' : pipeline,
-		getTitle : function() { return "Submission Editor"; }, 
+		getTitle : function() { return "Status Scan"; }, 
 		getDiv : function() {
 			var base = $("<div>");
 			var text = $("<textarea id='submitScanText' rows='5' cols='50'>");
+			text.append( "function(key,val) { remus.emit( key,val ); }" );
 			var submit = $("<button>");
 			var output = $("<div>");
 			submit.append("Scan");
@@ -37,10 +38,22 @@ var submissionEditor = function( pipeline ) {
 					output.append( data );					
 				});
 			});
-			base.append( "Scan Submit");
+			base.append( $("<div>").append( "Scan Submit" ) );
 			base.append( text );
 			base.append( submit );
 			base.append( output );
+			return base;
+		} 
+	};	
+};
+
+var submissionEditor = function( pipeline ) {
+	return {
+		'pipeline' : pipeline,
+		getTitle : function() { return "Submission Editor"; }, 
+		getDiv : function() {
+			var base = $("<div>");			
+			base.append( "Submission");
 			return base;
 		} 
 	};	
@@ -146,7 +159,7 @@ var instanceViewer = function(pipeline) {
 
 
 var toolSelector = function( pipeline ) {
-	var tools = [ instanceViewer( pipeline ), submissionEditor( pipeline ) ];
+	var tools = [ instanceViewer( pipeline ), submissionEditor( pipeline ), statusScan( pipeline ) ];
 
 	return {
 		getDiv : function() {
