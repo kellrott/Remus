@@ -27,7 +27,20 @@ var submissionEditor = function( pipeline ) {
 		getTitle : function() { return "Submission Editor"; }, 
 		getDiv : function() {
 			var base = $("<div>");
-			base.append( "Add new Submission");
+			var text = $("<textarea id='submitScanText' rows='5' cols='50'>");
+			var submit = $("<button>");
+			var output = $("<div>");
+			submit.append("Scan");
+			submit.bind( "click", function() {
+				output.empty();
+				$.post( "/" + pipeline + "/@status", text.val(), function(data) {
+					output.append( data );					
+				});
+			});
+			base.append( "Scan Submit");
+			base.append( text );
+			base.append( submit );
+			base.append( output );
 			return base;
 		} 
 	};	
