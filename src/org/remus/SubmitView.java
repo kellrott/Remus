@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +74,9 @@ public class SubmitView implements BaseNode {
 				if ( ((Map)data).containsKey( Submission.AppletField ) ) {
 					List<String> aList = (List)((Map)data).get(Submission.AppletField);
 					inst = pipe.setupInstance( name, aList );					
+				} else {
+					inst = pipe.setupInstance( name, new LinkedList() );					
+
 				}
 				
 				((Map)data).put(Submission.InstanceField, inst.toString());

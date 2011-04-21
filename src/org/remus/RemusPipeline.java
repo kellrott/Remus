@@ -126,7 +126,7 @@ public class RemusPipeline implements BaseNode {
 		if ( submitKey != null ) {
 			datastore.delete("/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey );
 		}
-		
+
 	}
 
 	public boolean isComplete(RemusInstance inst) {
@@ -175,7 +175,7 @@ public class RemusPipeline implements BaseNode {
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
 	throws FileNotFoundException {
 
-		
+
 		for ( KeyValuePair kv : datastore.listKeyPairs( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			Map out = new HashMap();
 			out.put(kv.getKey(), kv.getValue() );
@@ -204,13 +204,13 @@ public class RemusPipeline implements BaseNode {
 	public BaseNode getChild(String name) {
 		if ( children.containsKey(name) )
 			return children.get(name);
-		
+
 		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
 			RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
 			return new PipelineInstanceViewer( this, inst  );
 		}
-		
-		
+
+
 		for ( Object subObject : datastore.get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {
 			RemusInstance inst = new RemusInstance( name );
 			return new PipelineInstanceViewer( this, inst  );
@@ -234,13 +234,19 @@ public class RemusPipeline implements BaseNode {
 			added = false;
 			for ( RemusApplet applet : getMembers() ) {
 				if ( !activeSet.contains(applet) ) {
-					for ( RemusPath iRef : applet.getInputs() ) {
-						if ( iRef.getInputType() == RemusPath.AppletInput ) {
-							RemusApplet srcApplet = getApplet(iRef.getApplet());
-							if (activeSet.contains(srcApplet) ) {
-								if ( applet.createInstance(name, inst) ) 
-									added = true;
-								activeSet.add(applet);
+					if ( applet.getType() == RemusApplet.STORE) {
+						if ( applet.createInstance(name, inst) ) 
+							added = true;
+						activeSet.add(applet);
+					} else {
+						for ( RemusPath iRef : applet.getInputs() ) {
+							if ( iRef.getInputType() == RemusPath.AppletInput ) {
+								RemusApplet srcApplet = getApplet(iRef.getApplet());
+								if (activeSet.contains(srcApplet) ) {
+									if ( applet.createInstance(name, inst) ) 
+										added = true;
+									activeSet.add(applet);
+								}
 							}
 						}
 					}
