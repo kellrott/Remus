@@ -108,8 +108,22 @@ public class AppletInstanceView implements BaseNode {
 
 	@Override
 	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
+		try {
+			StringBuilder sb = new StringBuilder();
+			byte [] buffer = new byte[1024];
+			int len;			while( (len=is.read(buffer)) > 0 ) {
+				sb.append(new String(buffer, 0, len));
+			}
+			Object data = serial.loads(sb.toString());
 
+			applet.datastore.add( applet.getPath(), 
+					inst.toString(),
+					0L, 0L,
+					name, data);		
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

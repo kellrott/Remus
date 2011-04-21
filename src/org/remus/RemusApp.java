@@ -324,7 +324,7 @@ public class RemusApp implements BaseNode {
 	public static final int GET_CALL = 1;
 	public static final int DELETE_CALL = 2;
 	public static final int PUT_CALL = 3;
-	public static final int SUBMIT_CALL = 3;
+	public static final int SUBMIT_CALL = 4;
 
 	
 	public void passCall( int type, RemusPath path, Map parameterMap, String workerID, Serializer serial, InputStream inputStream, OutputStream outputStream) throws FileNotFoundException {

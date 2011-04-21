@@ -10,4 +10,8 @@ def adapt( in ):
 ]]>
 </remus_adapter>
 
+
+<remus_store id="dataStack" _test="test"/>
+
+
 </remus_pipeline>
