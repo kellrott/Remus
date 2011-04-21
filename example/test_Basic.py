@@ -17,7 +17,7 @@ host=urlparse( server )
 class BasicPipeline( unittest.TestCase ):
 	def setUp(self):
 		conn = httplib.HTTPConnection(host.netloc)
-		conn.request( "DELETE", "/testPipeline@pipeline" )
+		conn.request( "DELETE", "/@pipeline/testPipeline" )
 		print conn.getresponse().read()
 		conn.close()
 		call( "../bin/loadPipeline %s testPipeline.xml" % (server), shell=True )
@@ -29,6 +29,11 @@ class BasicPipeline( unittest.TestCase ):
 		call( "../python/runRemusNet.py %s test1" % (server), shell=True )
 
 
+	def tearDown(self):		
+		conn = httplib.HTTPConnection(host.netloc)
+		conn.request( "DELETE", "/@pipeline/testPipeline" )
+		print conn.getresponse().read()
+		conn.close()
 
 if __name__ == '__main__':
     unittest.main()

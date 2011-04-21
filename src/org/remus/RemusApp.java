@@ -282,7 +282,7 @@ public class RemusApp implements BaseNode {
 	}
 	
 	@Override
-	public void doDelete(Map params) {
+	public void doDelete(String name, Map params, String workerID) {
 		// TODO Auto-generated method stub
 
 	}
@@ -352,7 +352,7 @@ public class RemusApp implements BaseNode {
 				if ( type == SUBMIT_CALL )
 					curNode.doSubmit( sb.toString(), workerID, serial, inputStream, outputStream );
 				if ( type == DELETE_CALL )
-					curNode.doGet( sb.toString(), parameterMap, workerID, serial, outputStream );
+					curNode.doDelete( sb.toString(), parameterMap, workerID );
 				called = true;
 			}
 		}
@@ -364,7 +364,7 @@ public class RemusApp implements BaseNode {
 			if ( type == SUBMIT_CALL )
 				curNode.doSubmit( "", workerID, serial, inputStream, outputStream );
 			if ( type == DELETE_CALL )
-				curNode.doGet( "", parameterMap, workerID, serial, outputStream );
+				curNode.doDelete( "", parameterMap, workerID );
 		}
 	}
 

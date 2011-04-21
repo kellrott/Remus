@@ -39,6 +39,7 @@ public class RemusPipeline implements BaseNode {
 		children.put("@pipeline", new PipelineListView(this) );
 		children.put("@submit", new SubmitView(this) );
 		children.put("@status", new PipelineStatusView(this) );
+		children.put("@instance", new PipelineInstanceListViewer(this) );
 
 		inputs = new HashMap<RemusPath, RemusApplet >();
 		this.id = id;
@@ -112,6 +113,20 @@ public class RemusPipeline implements BaseNode {
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
 		}
+
+		datastore.delete("/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString());
+
+		String submitKey = null;
+		for ( KeyValuePair kv : datastore.listKeyPairs("/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR)) {
+			String subinst = (String)((Map)kv.getValue()).get(Submission.InstanceField);
+			if ( subinst != null && subinst.compareTo(instance.toString()) == 0 ) {
+				submitKey = kv.getKey();
+			}
+		}
+		if ( submitKey != null ) {
+			datastore.delete("/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey );
+		}
+		
 	}
 
 	public boolean isComplete(RemusInstance inst) {
@@ -151,7 +166,7 @@ public class RemusPipeline implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(Map params) {
+	public void doDelete(String name, Map params, String workerID) {
 		// TODO Auto-generated method stub
 
 	}

@@ -18,8 +18,11 @@ public class PipelineView implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(Map params) {
-		// TODO Auto-generated method stub
+	public void doDelete(String name, Map params, String workerID) {
+		RemusPipeline pipeline = app.getPipeline(name);
+		if ( pipeline != null ) {
+			app.deletePipeline( pipeline );
+		}
 	}
 
 	@Override
@@ -60,9 +63,9 @@ public class PipelineView implements BaseNode {
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public BaseNode getChild(String name) {
 		return null;
