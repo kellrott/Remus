@@ -40,7 +40,7 @@ public class MapGenerator implements WorkGenerator {
 			jobID++;							
 		}
 		
-		InstanceStatusView stat = new InstanceStatusView(applet);
+		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
 		stat.setWorkStat( instance, doneCount, errorCount, jobID);
 		
 		if ( outList.size() == 0 && reqCount > 0 )

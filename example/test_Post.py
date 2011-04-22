@@ -73,8 +73,19 @@ class BasicPipeline( unittest.TestCase ):
 			print conn.getresponse().read()
 		conn.close()
 		
+		for key in datatest:
+			data = json.loads( urlopen( "%s/testPipeline/dataTest/dataStack/%s" % (server, key) ).read() )
+			for k in data:
+				self.assertEqual( k, key )
+				for e in datatest[key]:
+					self.assertTrue( data[k].has_key( e ) )
+
+		
 	def tearDown(self):
-		pass
+		conn = httplib.HTTPConnection(host.netloc)
+		conn.request( "DELETE", "/@pipeline/testPipeline" )
+		print conn.getresponse().read()
+		conn.close()
 
 
 if __name__ == '__main__':

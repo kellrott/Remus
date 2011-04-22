@@ -8,8 +8,9 @@ import os
 import copy
 
 class PipeFileBuffer:
-	def __init__(self, path):
-		self.path = path
+	def __init__(self, key, name):
+		self.key = key
+		self.name = name
 		self.isOpen = True
 		self.buff = tempfile.NamedTemporaryFile(delete=False)
 		
@@ -42,14 +43,15 @@ class RemusCallback:
 		self.applet = applet
 		self.remus_functions = {}
 		self.out_handle_map = {}
+		self.out_file_list = []
 		self.remus_functions = {}
 		self.out_handle = sys.stdout
 		self.remus_server = server
 
-	def open(self, key, mode="r"):
+	def open(self, key, name, mode="r"):
 		if mode=="w":
-			o = PipeFileBuffer(key)
-			self.out_file_map[ key ] = o
+			o = PipeFileBuffer(key, name)
+			self.out_file_list.append( [key, name, o] )
 			return o
 		return urlopen( self.remus_server + self.pipeline + "/" + key )
 		
@@ -82,10 +84,10 @@ class RemusCallback:
 
 	def setoutput( self, outmap ):
 		self.out_handle_map = outmap
-		self.out_file_map = {}
+		self.out_file_list = []
 	
 	def getoutput(self):
-		return self.out_file_map
+		return self.out_file_list
 	
 	def getFunction(self, name):
 		return self.remus_functions[name]

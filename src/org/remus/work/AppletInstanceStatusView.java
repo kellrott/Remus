@@ -10,16 +10,18 @@ import java.util.Map;
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
+import org.remus.RemusPipeline;
 import org.remus.serverNodes.BaseNode;
 
-public class InstanceStatusView implements BaseNode {
+public class AppletInstanceStatusView implements BaseNode {
 
 	public static final String InstanceStatusName = "/@instance";
 	
 	RemusApplet applet;
-	public InstanceStatusView(RemusApplet applet) {
+	public AppletInstanceStatusView(RemusApplet applet) {
 		this.applet = applet;
 	}
+
 
 	public void setWorkStat(RemusInstance inst, int doneCount, int errorCount, int totalCount) {
 		Map u = new HashMap();

@@ -52,6 +52,13 @@ public class InstanceErrorView implements BaseNode {
 		@Override
 		public void doPut(String name, String workerID, Serializer serial,
 				InputStream is, OutputStream os) {
+		}
+
+		@Override
+		public void doSubmit(String name, String workerID, Serializer serial,
+				InputStream is, OutputStream os) {
+
+
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			String curline = null;
@@ -59,18 +66,19 @@ public class InstanceErrorView implements BaseNode {
 				while ((curline = br.readLine()) != null  ) {
 					sb.append(curline);
 				}
-				applet.getPipeline().getApp().getWorkManager().errorWork( workerID, applet, inst, Integer.parseInt(name), sb.toString() );
+				
+				Object data = serial.loads( sb.toString() );
+				for (Object key : ((Map)data).keySet() ) {
+					applet.getPipeline().getApp().getWorkManager().errorWork( 
+							workerID, applet, inst, Integer.parseInt(key.toString()), 
+							((Map)data).get(key).toString() );
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
-
-		@Override
-		public void doSubmit(String name, String workerID, Serializer serial,
-				InputStream is, OutputStream os) {
-			// TODO Auto-generated method stub
-
+		
+			
 		}
 
 		@Override

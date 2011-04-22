@@ -7,7 +7,7 @@ import callback
 import sys
 from cStringIO import StringIO
 import traceback
-
+import os
 
 def pythonWorker( mode ):
 	if mode == 'split':
@@ -55,10 +55,24 @@ class WorkerBase:
 			self.outmap[ outname ] = http_write( outUrl, jobID )
 		self.callback.setoutput( self.outmap )
 	
-	def closeOutput(self):
+	def closeOutput(self, instance):
 		for name in self.outmap:
 			self.outmap[name].close()
 		self.outmap = []
+
+		fileMap = self.callback.getoutput()
+		for key, name, handle in fileMap:
+			postURL = self.host + self.pipeline + "/" + instance + "/%s/%s/%s" % (self.applet, key, name)
+			print "ATTACHMENT:", postURL
+			#print urlopen( postURL, fileMap[path].mem_map() ).read()
+			#TODO, figure out streaming post in python
+			handle.close()
+			cmd = "curl --data-binary @%s %s" % ( handle.getPath(), postURL )
+			remusLib.log( "OS: " + cmd )
+			os.system( cmd )
+			handle.unlink()
+			#fileMap[path].unlink()
+
 
 class SplitWorker(WorkerBase):	
 	def doWork(self, instance, workDesc):
@@ -66,16 +80,12 @@ class SplitWorker(WorkerBase):
 		doneIDs = []
 		errorIDs = {}
 		remusLib.log( "Starting Split %s %s" % (self.applet, ",".join(workDesc['input'].keys()) ) )
+		
+		statusInfo = json.loads( remusLib.urlopen( self.host + self.pipeline + "/" + instance + "/@status/" + self.applet ).read() )
 		for jobID in workDesc['input']:
 			self.setupOutput(instance, jobID)
-			if ( workDesc[ 'input' ][jobID] is not None ):
-				inputURL = self.host + workDesc[ 'input' ][jobID]
-				print "Desc",  workDesc[ 'input' ][jobID]
-				iHandle = remusLib.httpStreamer( [inputURL] )
-			else:
-				iHandle = None
 			try:
-				func( iHandle )	
+				func( statusInfo[ self.applet ] )	
 				doneIDs.append( jobID )
 			except Exception:
 				exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -83,11 +93,11 @@ class SplitWorker(WorkerBase):
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
 			
-			self.closeOutput()
+			self.closeOutput(instance)
 		remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 		if ( len( errorIDs ) ):
 			remusLib.log( "ERROR: " + str(errorIDs) )
-			remusLib.httpPostJson( self.host + self.pipeline + "/" + instance + "/@error/" + self.applet , [ errorIDs  ] )
+			remusLib.httpPostJson( self.host + self.pipeline + "/" + instance + "/@error/" + self.applet ,  errorIDs  )
 		
 
 class MapWorker(WorkerBase):	
@@ -111,7 +121,7 @@ class MapWorker(WorkerBase):
 				e = StringIO()
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
-			self.closeOutput()
+			self.closeOutput(instance)
 		remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 		if ( len( errorIDs ) ):
 			remusLib.log( "ERROR: " + str(errorIDs) )
@@ -137,7 +147,7 @@ class ReduceWorker(WorkerBase):
 				e = StringIO()
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()				
-			self.closeOutput()
+			self.closeOutput(instance)
 		if len( doneIDs ):
 			remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 		if ( len( errorIDs ) ):
@@ -165,18 +175,8 @@ class PipeWorker(WorkerBase):
 				e = StringIO()
 				traceback.print_exception(exc_type, exc_value, exc_traceback, file=e)				
 				errorIDs[jobID ] = e.getvalue()
-			self.closeOutput()		
-			fileMap = self.callback.getoutput()
-			for path in fileMap:
-				postURL = self.host + self.pipeline + "/" + self.applet + "/@attach/%s/%s" % (instance, path)
-				print postURL
-				#print urlopen( postURL, fileMap[path].mem_map() ).read()
-				#TODO, figure out streaming post in python
-				fileMap[ path ].close()
-				cmd = "curl --data-binary @%s %s" % (fileMap[ path ].getPath(), postURL )
-				remusLib.log( "OS: " + cmd )
-				os.system( cmd )
-				#fileMap[path].unlink()
+			self.closeOutput(instance)		
+
 			doneIDs = [ jobID ]
 			remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 		if ( len( errorIDs ) ):
@@ -212,7 +212,7 @@ class MergeWorker(WorkerBase):
 					rightSet.append( { key : data[key] } )
 			if len( rightSet):
 				func( leftKey, remusLib.valueIter(leftSet), rightKey, remusLib.valueIter(rightSet) )
-			self.closeOutput()					
+			self.closeOutput(instance)					
 			doneIDs = [ jobID ]
 			remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )
 
@@ -233,5 +233,5 @@ class MatchWorker(WorkerBase):
 			rightSet = remusLib.httpGetJson( rightValURL )
 			func( wKey, remusLib.valueIter(leftSet), remusLib.valueIter(rightSet) )
 			doneIDs.append( jobID )
-			self.closeOutput()
+			self.closeOutput(instance)
 		remusLib.httpPostJson( self.host + "/@work", { instance : { "/" + self.pipeline + "/" + self.applet : doneIDs }  } )

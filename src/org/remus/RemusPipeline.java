@@ -207,25 +207,25 @@ public class RemusPipeline implements BaseNode {
 
 		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
 			RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
-			return new PipelineInstanceViewer( this, inst  );
+			return new PipelineInstanceView( this, inst  );
 		}
 
 
 		for ( Object subObject : datastore.get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {
 			RemusInstance inst = new RemusInstance( name );
-			return new PipelineInstanceViewer( this, inst  );
+			return new PipelineInstanceView( this, inst  );
 		}
 		return null;
 	}
 
-	public RemusInstance setupInstance(String name, List<String> appletList) {
+	public RemusInstance setupInstance(String name, Map params, List<String> appletList) {
 		Set<RemusApplet> activeSet = new HashSet<RemusApplet>();
 		RemusInstance inst = new RemusInstance();
 		for (String sObj : appletList) {
 			RemusApplet applet = getApplet((String)sObj);
 			if ( applet != null ) {
 				activeSet.add(applet);
-				applet.createInstance(name, inst);
+				applet.createInstance(name, params, inst);
 			}
 		}
 
@@ -235,7 +235,7 @@ public class RemusPipeline implements BaseNode {
 			for ( RemusApplet applet : getMembers() ) {
 				if ( !activeSet.contains(applet) ) {
 					if ( applet.getType() == RemusApplet.STORE) {
-						if ( applet.createInstance(name, inst) ) 
+						if ( applet.createInstance(name, params, inst) ) 
 							added = true;
 						activeSet.add(applet);
 					} else {
@@ -243,7 +243,7 @@ public class RemusPipeline implements BaseNode {
 							if ( iRef.getInputType() == RemusPath.AppletInput ) {
 								RemusApplet srcApplet = getApplet(iRef.getApplet());
 								if (activeSet.contains(srcApplet) ) {
-									if ( applet.createInstance(name, inst) ) 
+									if ( applet.createInstance(name, params, inst) ) 
 										added = true;
 									activeSet.add(applet);
 								}

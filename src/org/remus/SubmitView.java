@@ -73,9 +73,9 @@ public class SubmitView implements BaseNode {
 				RemusInstance inst = new RemusInstance();
 				if ( ((Map)data).containsKey( Submission.AppletField ) ) {
 					List<String> aList = (List)((Map)data).get(Submission.AppletField);
-					inst = pipe.setupInstance( name, aList );					
+					inst = pipe.setupInstance( name, (Map)data, aList );					
 				} else {
-					inst = pipe.setupInstance( name, new LinkedList() );					
+					inst = pipe.setupInstance( name, (Map)data, new LinkedList() );					
 
 				}
 				

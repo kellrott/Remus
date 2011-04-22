@@ -44,7 +44,7 @@ public class PipeGenerator implements WorkGenerator {
 		outList.add( w );
 		w.pathArray = arrayList;
 		
-		InstanceStatusView stat = new InstanceStatusView(applet);
+		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
 		stat.setWorkStat( instance, 0, 0, 1);
 
 		return outList;		
