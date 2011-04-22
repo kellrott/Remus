@@ -45,7 +45,7 @@ public class ReduceGenerator implements WorkGenerator {
 			}
 			jobID++;
 		}
-		InstanceStatusView stat = new InstanceStatusView(applet);
+		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
 		stat.setWorkStat( instance, doneCount, errorCount, jobID);
 		if ( keyList.size() == 0 && reqCount > 0 )
 			done = true;

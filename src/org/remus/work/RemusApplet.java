@@ -209,7 +209,7 @@ public class RemusApplet {
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object statObj : datastore.get( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object statObj : datastore.get( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) ) {
 				found = true;
 			}
@@ -232,14 +232,14 @@ public class RemusApplet {
 
 	public void setComplete(RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : datastore.get( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : datastore.get( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
 		((Map)statObj).put(WORKDONE_OP, true);
-		datastore.add( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		datastore.add( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
@@ -293,11 +293,11 @@ public class RemusApplet {
 			datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, INIT_OP_CODE, 0, instance.toString(), srcPath);
 		}		
 	}
-	*/
-	
+	 */
+
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>( );
-		for ( String key : datastore.listKeys( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR ) ) {
+		for ( String key : datastore.listKeys( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR ) ) {
 			out.add( new RemusInstance( key ) );
 		}
 		/*
@@ -312,7 +312,7 @@ public class RemusApplet {
 				}
 			} 
 		}
-		*/
+		 */
 		/*
 		for ( KeyValuePair kv : datastore.listKeyPairs(getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
 			RemusInstance inst = new RemusInstance((String)kv.getValue());
@@ -340,7 +340,7 @@ public class RemusApplet {
 			}
 			if ( !invalid ) {
 				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object val : datastore.get(getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					if ( ((Map)val).containsKey( WORKDONE_OP ) )
 						hasDone = true;
 				}
@@ -353,44 +353,37 @@ public class RemusApplet {
 	}
 
 
-	public boolean createInstance(String submitKey, RemusInstance inst) {
-		
-		if ( datastore.containsKey( getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+	public boolean createInstance(String submitKey, Map params, RemusInstance inst) {
+
+		if ( datastore.containsKey( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
 			return false;
 		}
-	
-		/*
-		String instStr = null;
-		for ( KeyValuePair kv : datastore.listKeyPairs( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR ) ) {
-			if ( submitKey.compareTo( (String)kv.getValue() ) == 0 ) {
-				instStr = kv.getKey();
+
+		Map baseMap = new HashMap();
+
+		if ( params != null ) {
+			for ( Object key : params.keySet() ) {
+				baseMap.put(key, params.get(key) );
 			}
 		}
-		RemusInstance inst;
-		if ( instStr == null ) {
-			inst = new RemusInstance();
-			datastore.add(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), submitKey);
-		} else {
-			inst = new RemusInstance(instStr);
-		}
-		*/
-		
-		Map baseMap = null;
+
 		for ( Object i : datastore.get( "/" + pipeline.getID() + "/@pipeline" , RemusInstance.STATIC_INSTANCE_STR, getID() ) ) {
-			baseMap = (Map)i;
+			for ( Object key : ((Map)i).keySet() ) {
+				baseMap.put(key, ((Map)i).get(key) );
+			}
 		}
 		if ( baseMap == null )	
 			baseMap = new HashMap();
 		baseMap.put("_instance", inst.toString());
 		baseMap.put("_submitKey", submitKey);
-		InstanceStatusView stat = new InstanceStatusView(this);
+		AppletInstanceStatusView stat = new AppletInstanceStatusView(this);
 		stat.updateStatus(inst, baseMap);
 		return true;
 	};
 
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath(), instance.toString() );		
-		datastore.delete(getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
+		datastore.delete(getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "/@done", instance.toString() );		
 		datastore.delete(getPath() + "/@error", instance.toString() );
 		attachstore.delete(getPath() + "/@attach", instance.toString() );
@@ -409,7 +402,7 @@ public class RemusApplet {
 		datastore.delete(getPath() + "/@error", inst.toString() );		
 	};
 
-/*
+	/*
 	public Set<Integer> formatInput(RemusPath path, InputStream inputStream, Serializer serializer ) {
 		Set<Integer> outSet = null;
 		if ( type == STORE ) {
@@ -471,8 +464,8 @@ public class RemusApplet {
 		}
 		return outSet;
 	}
- */
-	
+	 */
+
 	@Override
 	public int hashCode() { 
 		return getPath().hashCode();
@@ -508,7 +501,7 @@ public class RemusApplet {
 		}
 		return out;
 	}
-	
+
 	public Object getStatus(RemusInstance remusInstance) {
 		Object out = null;
 		for ( Object obj : datastore.get( getPath() + "/@status", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
@@ -517,7 +510,7 @@ public class RemusApplet {
 		return out;	
 	}
 
-	
+
 	public String getInstanceSubmit(RemusInstance remusInstance) {
 		Object out = null;
 		for ( Object obj : datastore.get( getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString()) ) {
@@ -525,13 +518,13 @@ public class RemusApplet {
 		}
 		return (String)out;			
 	}
- */
+	 */
 
 	/*
 	@Override
 	public void doDelete(Map params) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 
@@ -539,7 +532,7 @@ public class RemusApplet {
 	public void doGet(String name, Map params, String workerID, Serializer serial,
 			OutputStream os) throws FileNotFoundException {
 		System.err.println("APPLET_GETTING:" + name );	
-		
+
 		if ( name.length() == 0 ) {
 			Map out = new HashMap();
 			for ( KeyValuePair kv : getDataStore().listKeyPairs(getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR)) {
@@ -552,26 +545,26 @@ public class RemusApplet {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	@Override
 	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
-	
-		
-		
+
+
+
 	}
 
 	@Override
 	public BaseNode getChild(String name) {
-		
+
 		if ( name.compareTo("@instance") == 0 ) {
 			return new InstanceListView(this);
 		}
@@ -581,8 +574,8 @@ public class RemusApplet {
 		if ( name.compareTo("@status") == 0 ) {
 			return new InstanceStatusView(this);
 		}
-		
-		
+
+
 		//if ( name.compareTo("@work") == 0 ) {
 		//	return new WorkView(this);
 		//}

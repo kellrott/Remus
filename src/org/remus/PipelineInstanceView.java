@@ -11,15 +11,15 @@ import org.mpstore.Serializer;
 import org.remus.serverNodes.BaseNode;
 import org.remus.work.AppletInstanceView;
 import org.remus.work.InstanceErrorView;
-import org.remus.work.InstanceStatusView;
+import org.remus.work.AppletInstanceStatusView;
 import org.remus.work.RemusApplet;
 
-public class PipelineInstanceViewer implements BaseNode {
+public class PipelineInstanceView implements BaseNode {
 
 	RemusPipeline pipeline;
 	RemusInstance inst;
 
-	public PipelineInstanceViewer( RemusPipeline pipeline, RemusInstance inst ) {
+	public PipelineInstanceView( RemusPipeline pipeline, RemusInstance inst ) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 	}
@@ -35,7 +35,7 @@ public class PipelineInstanceViewer implements BaseNode {
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0)  {
 			for ( RemusApplet applet : pipeline.getMembers() ) {
-				for ( Object instObj : applet.getDataStore().get(applet.getPath() + InstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
+				for ( Object instObj : applet.getDataStore().get(applet.getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					Map out = new HashMap();
 					out.put( applet.getID(), instObj );	
 					try {
@@ -75,7 +75,9 @@ public class PipelineInstanceViewer implements BaseNode {
 		if ( name.compareTo("@error") == 0 ) {
 			return new InstanceErrorView(pipeline, inst);
 		}
-		
+		if ( name.compareTo("@status") == 0 ) {
+			return new PipelineInstanceStatusView(pipeline, inst);
+		}
 		return null;		
 	}
 

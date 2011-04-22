@@ -42,7 +42,7 @@ public class SplitGenerator implements WorkGenerator {
 		} else {
 			outList.add( new WorkKey( instance, 0) );	
 		}
-		InstanceStatusView stat = new InstanceStatusView(applet);
+		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
 		stat.setWorkStat( instance, 0, 0, 1);
 
 		return outList;
