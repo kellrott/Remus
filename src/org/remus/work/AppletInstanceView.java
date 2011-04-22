@@ -75,31 +75,46 @@ public class AppletInstanceView implements BaseNode {
 
 			}
 		} else {
-			if ( sliceStr == null ) {
-				for ( Object obj : applet.datastore.get( applet.getPath() , inst.toString(), name) ) {
-					Map out = new HashMap();
-					out.put(name, obj );				
-					try {
-						os.write( serial.dumps(out).getBytes() );
-						os.write("\n".getBytes());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			} else {
-				for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
-					for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
-						Map oMap = new HashMap();
-						oMap.put( sliceKey, value);
+			String [] tmp = name.split("/");
+			if ( tmp.length == 1) {
+				if ( sliceStr == null ) {
+					for ( Object obj : applet.datastore.get( applet.getPath() , inst.toString(), name) ) {
+						Map out = new HashMap();
+						out.put(name, obj );				
 						try {
-							os.write( serial.dumps( oMap ).getBytes() );
+							os.write( serial.dumps(out).getBytes() );
 							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
+				} else {
+					for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
+						for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
+							Map oMap = new HashMap();
+							oMap.put( sliceKey, value);
+							try {
+								os.write( serial.dumps( oMap ).getBytes() );
+								os.write("\n".getBytes());
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+			} else {				
+				try {
+					InputStream is = applet.getAttachStore().readAttachement(applet.getPath(), inst.toString(), tmp[0], tmp[1] );
+					byte buffer[] = new byte[1024];
+					int len;
+					while ((len=is.read(buffer)) > 0 ) {
+						os.write(buffer, 0, len);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
@@ -109,17 +124,24 @@ public class AppletInstanceView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
 		try {
-			StringBuilder sb = new StringBuilder();
-			byte [] buffer = new byte[1024];
-			int len;			while( (len=is.read(buffer)) > 0 ) {
-				sb.append(new String(buffer, 0, len));
-			}
-			Object data = serial.loads(sb.toString());
+			if ( name.length() > 0 ) {
+				String [] tmp = name.split("/");
+				if ( tmp.length == 1) {
+					StringBuilder sb = new StringBuilder();
+					byte [] buffer = new byte[1024];
+					int len;			while( (len=is.read(buffer)) > 0 ) {
+						sb.append(new String(buffer, 0, len));
+					}
+					Object data = serial.loads(sb.toString());
 
-			applet.datastore.add( applet.getPath(), 
-					inst.toString(),
-					0L, 0L,
-					name, data);		
+					applet.datastore.add( applet.getPath(), 
+							inst.toString(),
+							0L, 0L,
+							name, data);		
+				} else {
+					applet.getAttachStore().writeAttachment( applet.getPath() , inst.toString(), tmp[0], tmp[1], is );
+				}
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

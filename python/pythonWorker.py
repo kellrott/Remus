@@ -67,7 +67,7 @@ class WorkerBase:
 			#print urlopen( postURL, fileMap[path].mem_map() ).read()
 			#TODO, figure out streaming post in python
 			handle.close()
-			cmd = "curl --data-binary @%s %s" % ( handle.getPath(), postURL )
+			cmd = "curl -X PUT --data-binary @%s %s" % ( handle.getPath(), postURL )
 			remusLib.log( "OS: " + cmd )
 			os.system( cmd )
 			handle.unlink()
