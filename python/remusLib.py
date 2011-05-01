@@ -142,6 +142,43 @@ class jsonPairSplitter:
 	def close(self):
 		pass
 
+class getDataStack:
+	def __init__(self, url, key=None, reduce=False, dataOnly=False):
+		self.key = key
+		self.url = url
+		self.reduce = reduce
+		self.dataOnly = dataOnly
+		if key is not None:
+			self.handle = urlopen( "%s/%s" % (url, key) )
+		else:
+			self.handle = urlopen( url )
+
+	def __iter__(self):
+		collect = []
+		curKey = None
+		for line in self.handle:
+			data  = json.loads( line )
+			for key in data:
+				if self.reduce:
+					if curKey is not None and key != curKey:
+						if self.dataOnly:
+							yield collect						
+						else:
+							yield curKey, collect
+						collect = []
+					curKey = key
+					collect.append( data[key] )
+				else:
+					if self.dataOnly:
+						yield data[key]					
+					else:
+						yield key, data[key]
+		if self.reduce and curKey is not None:
+			if self.dataOnly:
+				yield collect
+			else:
+				yield curKey, collect
+
 
 class http_write:
 	def __init__(self, url, jobID):
@@ -194,18 +231,15 @@ def addWorker( type, callback ):
 	workerDict[ type ] = callback
 
 
-def getWorker( host, appletPath ):
+def getWorker( host, pipeline, instance, applet ):
 	global workerDict
 	
+	appletPath = instance + "/" + pipeline + "/" + applet 
 	if workerDict.has_key( appletPath ):
 		return workerDict[ appletPath ]
 
-	tmp = appletPath.split('/')
-	applet = tmp[2]
-	pipeline = tmp[1]
-
 	appletDesc = None
-	for data in httpGetJson( host + pipeline + "/@pipeline/" + applet ):
+	for data in httpGetJson( host + pipeline + "/" + instance + "/@status/" + applet ):
 		for key in data:
 			appletDesc = data[ key ]
 	print appletDesc
@@ -213,8 +247,7 @@ def getWorker( host, appletPath ):
 	if not workerDict.has_key( workerType ):
 		raise Exception("Unknown code type: %s" % (workerType) )
 
-	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, pipeline, applet)	
-	worker.compileCode( appletDesc['code'] )
+	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, pipeline, instance, applet, appletDesc)	
 
 	if ( appletDesc.has_key( "output" ) ):
 		worker.output = appletDesc[ "output" ]

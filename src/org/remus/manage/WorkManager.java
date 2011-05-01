@@ -70,7 +70,7 @@ public class WorkManager implements BaseNode {
 		}		
 		//scan applets for new work 
 		if ( workQueue.size() == 0 ) {
-			int retry = 2;
+			int retry = 3;
 			do {
 				Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
 				if ( newwork.size() == 0 )
@@ -211,11 +211,20 @@ public class WorkManager implements BaseNode {
 	public Object getWorkMap(String workerID, int count) {
 		Map<AppletInstance,Set<WorkKey>> workList = getWorkList( workerID, count );						
 		int i = 0;
-		Map<String,Map<String,List>> out = new HashMap();
+		Map out = new HashMap();
 		for ( AppletInstance ai : workList.keySet() ) {
 			assert ai != null;
 			assert ai.applet != null;
-			String appletStr = ai.applet.getPath();
+			
+			String pipelineID = ai.applet.getPipeline().getID();
+			Map pipeMap = null;
+			if (out.containsKey(pipelineID)) {
+				pipeMap = (Map) out.get(pipelineID);
+			} else {
+				pipeMap = new HashMap();
+			}
+			
+			String appletID = ai.applet.getID();
 			String instStr = ai.inst.toString();
 			if ( i < count ) {
 				Set<WorkKey> addSet = new HashSet<WorkKey>();
@@ -228,14 +237,20 @@ public class WorkManager implements BaseNode {
 				//Map instMap = new HashMap();
 				//instMap.put(instStr, ai.formatWork(addSet) );
 				if ( addSet.size() > 0 ) {
-					if ( ! out.containsKey(instStr) ) {
-						out.put( instStr, new HashMap() );
+					if ( ! pipeMap.containsKey(instStr) ) {
+						pipeMap.put( instStr, new HashMap() );
 					}
-					if ( ! out.get( instStr ).containsKey( appletStr ) ) {
-						out.get( instStr ).put( appletStr, new ArrayList());
+					if ( ! ((Map)pipeMap.get( instStr )).containsKey( appletID ) ) {
+						((Map)pipeMap.get( instStr )).put( appletID, new HashMap());
 					}
-					out.get( instStr ).get( appletStr ).add( ai.formatWork(addSet) );
+					Map workMap = (Map)ai.formatWork(addSet);
+					for ( Object key : workMap.keySet() ) {
+						((HashMap)((Map)pipeMap.get( instStr )).get( appletID )).put( key, workMap.get(key) );
+					}
 				}
+			}
+			if ( !pipeMap.isEmpty() ) {
+				out.put(pipelineID, pipeMap);
 			}
 		}
 		return out;

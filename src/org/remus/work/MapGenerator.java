@@ -59,14 +59,9 @@ public class MapGenerator implements WorkGenerator {
 			@Override
 			public Object formatWork(Set<WorkKey> keys) {
 				Map out = new HashMap();		
-				Map keyMap = new HashMap();
-				String pathStr = null;
 				for ( WorkKey key : keys ) {
-					pathStr = key.pathStr;
-					keyMap.put(key.jobID, key.key);
+					out.put(key.jobID, key.key);
 				}
-				out.put( "input" , pathStr );
-				out.put( "key", keyMap );
 				return out;
 			}
 		};
