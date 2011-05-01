@@ -98,8 +98,9 @@ public class InstanceErrorView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) {
-		// TODO Auto-generated method stub
-
+		for ( RemusApplet applet : pipeline.getMembers() ) {
+			applet.deleteErrors(inst);
+		}
 	}
 
 	@Override

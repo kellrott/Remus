@@ -56,11 +56,9 @@ public class PipeGenerator implements WorkGenerator {
 			@Override
 			public Object formatWork(Set<WorkKey> keys) {
 				Map out = new HashMap();
-				Map inMap = new HashMap();
 				for (WorkKey wk : keys) {
-					inMap.put( "0", wk.pathArray );
+					out.put( "0", wk.pathArray );
 				}
-				out.put( "input", inMap );	
 				return out;
 			}
 		};		

@@ -38,10 +38,10 @@ def statusPulse():
 workerList = {}
 
 
-def doWork( host, applet, instance, workDesc ): 
-	worker = remusLib.getWorker( host, applet )
+def doWork( host, pipeline, instance, applet, jobID, jobKey ): 
+	worker = remusLib.getWorker( host, pipeline, instance, applet )
 	if worker is not None:
-		worker.doWork(instance, workDesc)
+		worker.doWork(jobID, jobKey)
 	
 if __name__=="__main__":
 	host = sys.argv[1]
@@ -65,10 +65,11 @@ if __name__=="__main__":
 				time.sleep(10)
 			else: 
 				retryCount = 3
-				for instance in workList:
-					for node in workList[instance]:
-						for workDesc in workList[instance][node]:
-							doWork( host, node, instance, workDesc )
+				for pipeline in workList:
+					for instance in workList[pipeline]:
+						for applet in workList[pipeline][instance]:
+							for jobID in workList[pipeline][instance][applet]:
+								doWork( host, pipeline, instance, applet, jobID, [workList[pipeline][instance][applet][jobID]] )
 		shutil.rmtree( tmpDir ) 
 	except:
 		statusTimer.cancel()

@@ -65,17 +65,9 @@ public class MergeGenerator implements WorkGenerator {
 			@Override
 			public Object formatWork(Set<WorkKey> keys) {
 				Map map = new HashMap();
-				Map keyMap = new HashMap();
-				String lPathStr = null;
-				String rPathStr = null;
 				for ( WorkKey key : keys ) {
-					lPathStr = key.lPathStr;
-					rPathStr = key.rPathStr;
-					keyMap.put(key.jobID, key.key);
+					map.put(key.jobID, key.key);
 				}
-				map.put("left_key", keyMap);
-				map.put("left_input", lPathStr );
-				map.put("right_input", rPathStr );
 				return map;
 			}
 		};

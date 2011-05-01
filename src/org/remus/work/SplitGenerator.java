@@ -54,6 +54,7 @@ public class SplitGenerator implements WorkGenerator {
 		return new AppletInstance(applet,inst) {		
 			@Override
 			public Object formatWork(Set<WorkKey> keys) {
+				/*
 				Map obj = new HashMap();
 				Map pathMap = new HashMap();
 				for ( WorkKey wk : keys ) {
@@ -61,6 +62,12 @@ public class SplitGenerator implements WorkGenerator {
 				}
 				obj.put("input", pathMap );
 				return obj;
+				*/
+				Map obj = new HashMap();
+				for ( WorkKey wk : keys ) {
+					obj.put(wk.jobID, wk.pathStr);
+				}
+				return obj;				
 			}
 		};
 	}
