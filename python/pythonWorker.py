@@ -49,7 +49,7 @@ class WorkerBase:
 	def compileCode(self, code):
 		remusLib.log("COMPILE:" + self.applet + "/" + self.instance )
 		self.code = code
-		self.callback = callback.RemusCallback( self.host, self.pipeline, self.applet )
+		self.callback = callback.RemusCallback( self.host, self.pipeline, self.applet, self.appletDesc )
 		self.module = imp.new_module( self.applet )	
 		self.module.__dict__["__name__"] = self.applet
 		self.module.__dict__["remus"] = self.callback
@@ -70,7 +70,7 @@ class WorkerBase:
 
 		fileMap = self.callback.getoutput()
 		for key, name, handle in fileMap:
-			postURL = self.host + self.pipeline + "/" + instance + "/%s/%s/%s" % (self.applet, key, name)
+			postURL = self.getAttachOutputPath( self.appletDesc, key, name ) 
 			print "ATTACHMENT:", postURL
 			#print urlopen( postURL, fileMap[path].mem_map() ).read()
 			#TODO, figure out streaming post in python
@@ -122,7 +122,13 @@ class WorkerBase:
 			return self.host + "/" + self.pipeline + "/" + desc['_input'][axis]['_instance'] + "/" + desc['_input'][axis]['_applet']
 		return self.host + "/" + self.pipeline + "/" + desc['_input']['_instance'] + "/" + desc['_input']['_applet']
 
+	def getAttachInputPath( self, desc, key, name ):
+			return self.host + "/" + self.pipeline + "/" + desc['_input']['_instance'] + \
+				"/%s/%s/%s" % ( desc['_input']['_applet'], key, name)
 
+	def getAttachOutputPath( self, desc, key, name ):
+			return self.host + "/" + self.pipeline + "/" + self.instance + \
+				"/%s/%s/%s" % ( self.applet, key, name)
 class SplitWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		func( appletDesc )
