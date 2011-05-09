@@ -37,10 +37,11 @@ class PipeFileBuffer:
 
 
 class RemusCallback:
-	def __init__(self, server, pipeline, applet):
+	def __init__(self, server, pipeline, applet, appletDesc):
 		self.server = server
 		self.pipeline = pipeline
 		self.applet = applet
+		self.appletDesc = appletDesc
 		self.remus_functions = {}
 		self.out_handle_map = {}
 		self.out_file_list = []
@@ -53,7 +54,7 @@ class RemusCallback:
 			o = PipeFileBuffer(key, name)
 			self.out_file_list.append( [key, name, o] )
 			return o
-		return urlopen( self.remus_server + self.pipeline + "/" + key )
+		return urlopen( "%s/%s/%s/%s/%s" % (self.remus_server, self.pipeline, self.appletDesc['_input']['_instance'], key, name ) ) 
 		
 		
 	def mapper(self, f):
