@@ -54,7 +54,9 @@ class RemusCallback:
 			o = PipeFileBuffer(key, name)
 			self.out_file_list.append( [key, name, o] )
 			return o
-		return urlopen( "%s/%s/%s/%s/%s" % (self.remus_server, self.pipeline, self.appletDesc['_input']['_instance'], key, name ) ) 
+		attachPath = "%s/%s/%s/%s/%s/%s" % (self.remus_server, self.pipeline, self.appletDesc['_input']['_instance'], self.appletDesc['_input']['_applet'], key, name )
+		print "GETTING: " + attachPath
+		return urlopen( attachPath ) 
 		
 		
 	def mapper(self, f):
