@@ -129,7 +129,8 @@ public class AppletInstanceView implements BaseNode {
 				if ( tmp.length == 1) {
 					StringBuilder sb = new StringBuilder();
 					byte [] buffer = new byte[1024];
-					int len;			while( (len=is.read(buffer)) > 0 ) {
+					int len;			
+					while( (len=is.read(buffer)) > 0 ) {
 						sb.append(new String(buffer, 0, len));
 					}
 					Object data = serial.loads(sb.toString());
@@ -141,6 +142,22 @@ public class AppletInstanceView implements BaseNode {
 				} else {
 					applet.getAttachStore().writeAttachment( applet.getPath() , inst.toString(), tmp[0], tmp[1], is );
 				}
+			} else {
+				StringBuilder sb = new StringBuilder();
+				byte [] buffer = new byte[1024];
+				int len;			
+				while( (len=is.read(buffer)) > 0 ) {
+					sb.append(new String(buffer, 0, len));
+				}
+				Map data = (Map) serial.loads(sb.toString());
+				
+				for ( Object key : data.keySet() ) {
+					applet.datastore.add( applet.getPath(), 
+							inst.toString(),
+							0L, 0L,
+							(String)key, data.get(key) );		
+				}
+				
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -7,6 +7,7 @@ import os
 import httplib
 from urlparse import urlparse
 from cStringIO import StringIO
+from urllib import urlopen
 
 def getText(nodelist):
     rc = []
@@ -43,6 +44,8 @@ def parseRemus(server, path):
 	data = json.dumps( { "id" : pipelineName, "description" : desc } )
 	print url
 	print putData( url, data ).read()
+	initData = {}
+	
 	for node in dom.childNodes[0].childNodes:
 		if node.nodeType == node.ELEMENT_NODE:
 			if node.localName.startswith( "remus_" ):
@@ -69,12 +72,25 @@ def parseRemus(server, path):
 					os.path.walk( includePath, addFiles, [ path, includeFiles ] )
 				else:
 					includeFiles.append( includePath )
+			if node.localName == "init_store":
+				applet = node.getAttribute('_applet')
+				subKey = node.getAttribute('_submitKey')
+				if not initData.has_key( subKey ):
+					initData[ subKey ] = {}
+				initData[ subKey ][ applet ] = getText( node.childNodes )				
 	for file in includeFiles:
 		url = server + "/" + pipelineName + "/@attach/" + file.replace('/', '%2F')
 		print url
 		handle = open( file )
 		print putData( url, handle.read() ).read()
 		handle.close()
+	
+	for subKey in initData:
+		submitData = "{}"
+		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), submitData ).read()
+		for applet in initData[ subKey ]:
+			print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
+	
 if __name__ == "__main__":
 	for path in sys.argv[2:]:
 		parseRemus( sys.argv[1], path )
