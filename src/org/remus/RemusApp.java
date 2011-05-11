@@ -104,7 +104,8 @@ public class RemusApp implements BaseNode {
 		RemusPipeline pipeline = new RemusPipeline(this, name, store, attachStore);		
 		for ( KeyValuePair kv : store.listKeyPairs( "/" + name + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
 			RemusApplet applet = loadApplet( name, kv.getKey(), store, serializer );
-			pipeline.addApplet(applet);
+			if ( applet != null )
+				pipeline.addApplet(applet);
 		}
 		pipelines.put(pipeline.id, pipeline);	
 		children.put(pipeline.id, pipeline );
@@ -124,7 +125,7 @@ public class RemusApp implements BaseNode {
 		String codeType = (String)appletObj.get("codeType");
 
 		CodeFragment cf =  new CodeFragment(codeType, code);
-		int appletType = RemusApplet.MAPPER;
+		Integer appletType = null;
 		if ( type.compareTo("map") == 0 ) {
 			appletType = RemusApplet.MAPPER;
 		}
@@ -149,6 +150,8 @@ public class RemusApp implements BaseNode {
 		if ( type.compareTo("adapt") == 0 ) {
 			appletType = RemusApplet.ADAPTOR;
 		}
+		if (appletType == null)
+			return null;
 		RemusApplet applet = RemusApplet.newApplet(name, cf, appletType);
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
@@ -186,7 +189,6 @@ public class RemusApp implements BaseNode {
 				e.printStackTrace();
 			}
 		}
-
 		if ( appletObj.containsKey("output") ) {
 			for ( Object nameObj : (List)appletObj.get("output") ) {
 				applet.addOutput((String)nameObj);
