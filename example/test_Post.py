@@ -24,13 +24,8 @@ class BasicPipeline( unittest.TestCase ):
 
 	def test_submit(self):
 		
-		for key in datatest:
-			data = json.loads( urlopen( "%s/testPipeline/dataTest/dataStack/%s" % (server, key) ).read() )
-			for k in data:
-				self.assertEqual( k, key )
-				for e in datatest[key]:
-					self.assertTrue( data[k].has_key( e ) )
-
+		
+		
 		
 	def tearDown(self):
 		return

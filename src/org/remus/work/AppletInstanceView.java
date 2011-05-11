@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -150,14 +152,14 @@ public class AppletInstanceView implements BaseNode {
 					sb.append(new String(buffer, 0, len));
 				}
 				Map data = (Map) serial.loads(sb.toString());
-				
+
 				for ( Object key : data.keySet() ) {
 					applet.datastore.add( applet.getPath(), 
 							inst.toString(),
 							0L, 0L,
 							(String)key, data.get(key) );		
 				}
-				
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -165,35 +167,66 @@ public class AppletInstanceView implements BaseNode {
 		}
 	}
 
+	private Map postStr2Map(String iStr) throws UnsupportedEncodingException {
+		Map out = new HashMap<String, String>();
+		for ( String el : iStr.split("&") ) {
+			String [] tmp = el.split("=");
+			if ( tmp.length > 1) {
+				out.put( URLDecoder.decode(tmp[0], "UTF-8"), URLDecoder.decode(tmp[1], "UTF-8"));
+			} else {
+				out.put( URLDecoder.decode(el, "UTF-8"), null);
+			}
+		}		
+		return out;
+	}
+	
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
 
-		try {
-			Set outSet = new HashSet<Integer>();
-			BufferedReader br = new BufferedReader(new InputStreamReader(is));
-			String curline = null;
-			List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
-			while ( (curline = br.readLine() ) != null ) {
-				Map inObj = (Map)serial.loads(curline);	
-				long jobID = Long.parseLong( inObj.get("id").toString() );
-				outSet.add((int)jobID);
-				inputList.add( new KeyValuePair( jobID, 
-						(Long)inObj.get("order"), (String)inObj.get("key") , 
-						inObj.get("value") ) );
+		if ( applet.getType() == RemusApplet.ADAPTOR || applet.getType() == RemusApplet.STORE ) {
+			try {
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				StringBuilder sb = new StringBuilder();
+				String curline;
+				while ( (curline = br.readLine() ) != null ) {
+					sb.append(curline);
+				}
+				Map inData = postStr2Map(sb.toString()) ;
+				applet.datastore.add( applet.getPath(), 
+						inst.toString(),
+						0L, 0L,
+						(new RemusInstance()).toString(), inData );		
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		} else {
+			try {
+				Set outSet = new HashSet<Integer>();
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				String curline = null;
+				List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
+				while ( (curline = br.readLine() ) != null ) {
+					Map inObj = (Map)serial.loads(curline);	
+					long jobID = Long.parseLong( inObj.get("id").toString() );
+					outSet.add((int)jobID);
+					inputList.add( new KeyValuePair( jobID, 
+							(Long)inObj.get("order"), (String)inObj.get("key") , 
+							inObj.get("value") ) );
+				}
+				applet.datastore.add( applet.getPath(), 
+						inst.toString(),
+						inputList );		
+
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			applet.datastore.add( applet.getPath(), 
-					inst.toString(),
-					inputList );		
-
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-
 	}
 	@Override
 	public BaseNode getChild(String name) {

@@ -44,16 +44,30 @@
 ]]>
 </init_store>
 
-<remus_adapter id="submitApplet">
+<remus_adapt id="submitApplet" input="?" type="python">
 <![CDATA[
+import datetime
 @remus.adapter
 def adapt( in ):
-	remus.emit( in['jobname'], in )
+	dateStr = datetime.date.today().isoformat()	
+	subKey = "test-" + dateStr
+	in[ '_input' ] = { "_instance" : "dataTest", "_applet" : "dataStack" }
+	in[ '_applet' ] = [ "homeFilter" ] 
+	remus.emit( subKey, in )
 ]]>
-</remus_adapter>
+</remus_adapt>
 
 
-<remus_store id="dataStack" _test="test"/>
+<remus_store id="dataStack"/>
+
+<remus_mapper id="homeFilter" input="?" type="python">
+<![CDATA[
+@remus.mapper
+def homeFilter( key, value ):
+	if value[ 'home' ].startswith( "/home" ):
+		remus.emit( key, value )
+]]>
+</remus_mapper> 
 
 
 </remus_pipeline>
