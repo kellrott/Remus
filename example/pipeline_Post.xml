@@ -2,6 +2,48 @@
 
 <include path="pipelineSubmit.html"/>
 
+<init_store _submitKey="dataTest" _applet="dataStack">
+<![CDATA[
+{
+	"root" : { "id" : 0, "home": "/root", "title":"root" },
+	"daemon" : { "id" : 1, "home": "/usr/sbin", "title":"daemon" },
+	"bin" : { "id" : 2, "home": "/bin", "title":"bin" },
+	"sys" : { "id" : 3, "home": "/dev", "title":"sys" },
+	"sync" : { "id" : 4, "home": "/bin", "title":"sync" },
+	"games" : { "id" : 5, "home": "/usr/games", "title":"games" },
+	"man" : { "id" : 6, "home": "/var/cache/man", "title":"man" },
+	"lp" : { "id" : 7, "home": "/var/spool/lpd", "title":"lp" },
+	"mail" : { "id" : 8, "home": "/var/mail", "title":"mail" },
+	"news" : { "id" : 9, "home": "/var/spool/news", "title":"news" },
+	"uucp" : { "id" : 10, "home": "/var/spool/uucp", "title":"uucp" },
+	"proxy" : { "id" : 13, "home": "/bin", "title":"proxy" },
+	"www-data" : { "id" : 33, "home": "/var/www", "title":"www-data" },
+	"backup" : { "id" : 34, "home": "/var/backups", "title":"backup" },
+	"list" : { "id" : 38, "home": "/var/list", "title":"Mailing List Manager" },
+	"irc" : { "id" : 39, "home": "/var/run/ircd", "title":"ircd" },
+	"gnats" : { "id" : 41, "home": "/var/lib/gnats", "title":"Gnats Bug-Reporting System (admin)" },
+	"nobody" : { "id" : 65534, "home": "/nonexistent", "title":"nobody" },
+	"libuuid" : { "id" : 100, "home": "/var/lib/libuuid", "title":"" },
+	"syslog" : { "id" : 101, "home": "/home/syslog", "title":"" },
+	"messagebus" : { "id" : 102, "home": "/var/run/dbus", "title":"" },
+	"avahi-autoipd" : { "id" : 103, "home": "/var/lib/avahi-autoipd", "title":"Avahi autoip daemon,,," },
+	"avahi" : { "id" : 104, "home": "/var/run/avahi-daemon", "title":"Avahi mDNS daemon,,," },
+	"couchdb" : { "id" : 105, "home": "/var/lib/couchdb", "title":"CouchDB Administrator,,," },
+	"usbmux" : { "id" : 106, "home": "/home/usbmux", "title":"usbmux daemon,,," },
+	"speech-dispatcher" : { "id" : 107, "home": "/var/run/speech-dispatcher", "title":"Speech Dispatcher,,," },
+	"kernoops" : { "id" : 108, "home": "/", "title":"Kernel Oops Tracking Daemon,,," },
+	"pulse" : { "id" : 109, "home": "/var/run/pulse", "title":"PulseAudio daemon,,," },
+	"rtkit" : { "id" : 110, "home": "/proc", "title":"RealtimeKit,,," },
+	"saned" : { "id" : 111, "home": "/home/saned", "title":"" },
+	"hplip" : { "id" : 112, "home": "/var/run/hplip", "title":"HPLIP system user,,," },
+	"gdm" : { "id" : 113, "home": "/var/lib/gdm", "title":"Gnome Display Manager" },
+	"sshd" : { "id" : 114, "home": "/var/run/sshd", "title":"" },
+	"tomcat6" : { "id" : 115, "home": "/usr/share/tomcat6", "title":"" },
+	"mysql" : { "id" : 116, "home": "/nonexistent", "title":"MySQL Server,,," },
+}
+]]>
+</init_store>
+
 <remus_adapter id="submitApplet">
 <![CDATA[
 @remus.adapter
