@@ -260,11 +260,12 @@ public class RemusApplet {
 							System.err.println("GENERATING WORK: " + getPath() + " " + inst.toString() );
 							WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 							Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
-							AppletInstance ai =  gen.getAppletInstance();
-							assert ai != null;
-							out.put( ai, workSet );
 							if ( gen.isDone() ) {
 								setComplete(inst);
+							} else {
+								AppletInstance ai =  gen.getAppletInstance();
+								assert ai != null;
+								out.put( ai, workSet );								
 							}
 						} catch (InstantiationException e1) {
 							// TODO Auto-generated catch block
