@@ -45,8 +45,10 @@ public class ReduceGenerator implements WorkGenerator {
 			}
 			jobID++;
 		}
+
+		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );
 		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
-		stat.setWorkStat( instance, doneCount, errorCount, jobID);
+		stat.setWorkStat( instance, doneCount, errorCount, jobID, t);
 		if ( keyList.size() == 0 && reqCount > 0 )
 			done = true;
 		return keyList;

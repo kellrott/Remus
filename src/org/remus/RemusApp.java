@@ -147,8 +147,8 @@ public class RemusApp implements BaseNode {
 		if ( type.compareTo("store") == 0 ) {
 			appletType = RemusApplet.STORE;
 		}
-		if ( type.compareTo("adapt") == 0 ) {
-			appletType = RemusApplet.ADAPTOR;
+		if ( type.compareTo("agent") == 0 ) {
+			appletType = RemusApplet.AGENT;
 		}
 		if (appletType == null)
 			return null;

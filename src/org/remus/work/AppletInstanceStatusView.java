@@ -23,12 +23,22 @@ public class AppletInstanceStatusView implements BaseNode {
 	}
 
 
-	public void setWorkStat(RemusInstance inst, int doneCount, int errorCount, int totalCount) {
+	public void setWorkStat(RemusInstance inst, int doneCount, int errorCount, int totalCount, long timestamp) {
 		Map u = new HashMap();
 		u.put("_doneCount", doneCount);
 		u.put("_errorCount", errorCount);
 		u.put("_totalCount", totalCount);
+		u.put("_timestamp", timestamp);
+		
 		updateStatus(inst, u);
+	}
+	
+	public Object getStatus(RemusInstance inst) {
+		Object statObj = null;
+		for ( Object obj : applet.datastore.get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+			statObj = obj;
+		}
+		return statObj;
 	}
 
 	public void updateStatus( RemusInstance inst, Map update ) {
@@ -103,6 +113,8 @@ public class AppletInstanceStatusView implements BaseNode {
 		return null;
 	}
 
+
+	
 
 
 }

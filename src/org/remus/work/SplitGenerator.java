@@ -24,27 +24,28 @@ public class SplitGenerator implements WorkGenerator {
 		}
 		if ( applet.datastore.containsKey(applet.getPath() + "/@done", instance.toString(), "0" ) ) {
 			done = true;
-			return outList;
 		}
-		if ( applet.hasInputs() ) {
-			RemusPath iRef = applet.getInput();		
-			String pathStr = null;
-			if ( iRef.getInputType() == RemusPath.AppletInput )
-				pathStr = iRef.getInstancePath();
-			if ( iRef.getInputType() == RemusPath.AttachInput )
-				pathStr = iRef.getPath();
+		if ( !done ) {
+			if ( applet.hasInputs() ) {
+				RemusPath iRef = applet.getInput();		
+				String pathStr = null;
+				if ( iRef.getInputType() == RemusPath.AppletInput )
+					pathStr = iRef.getInstancePath();
+				if ( iRef.getInputType() == RemusPath.AttachInput )
+					pathStr = iRef.getPath();
 
-			WorkKey w =  new WorkKey(instance, 0);
-			outList.add( w );
-			w.pathStr = pathStr;
-			//}
-			//}
-		} else {
-			outList.add( new WorkKey( instance, 0) );	
+				WorkKey w =  new WorkKey(instance, 0);
+				outList.add( w );
+				w.pathStr = pathStr;
+				//}
+				//}
+			} else {
+				outList.add( new WorkKey( instance, 0) );	
+			}
 		}
+		long t = applet.datastore.getTimeStamp(applet.getPath() + "/@done", instance.toString() );
 		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
-		stat.setWorkStat( instance, 0, 0, 1);
-
+		stat.setWorkStat( instance, 0, 0, 1, t);
 		return outList;
 	}
 
@@ -62,7 +63,7 @@ public class SplitGenerator implements WorkGenerator {
 				}
 				obj.put("input", pathMap );
 				return obj;
-				*/
+				 */
 				Map obj = new HashMap();
 				for ( WorkKey wk : keys ) {
 					obj.put(wk.jobID, wk.pathStr);

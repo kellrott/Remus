@@ -33,19 +33,21 @@ public class PipeGenerator implements WorkGenerator {
 		}
 		if ( applet.datastore.containsKey(applet.getPath() + "/@done", instance.toString(), "0" ) ) {
 			done = true;
-			return outList;
 		}		
-		List<String> arrayList = new ArrayList();
-		for ( RemusPath ref : applet.getInputs() ) {
-			RemusPath iRef = new RemusPath(ref, instance);
-			arrayList.add( iRef.getPath() );
+		if ( !done ) {
+			List<String> arrayList = new ArrayList();
+			for ( RemusPath ref : applet.getInputs() ) {
+				RemusPath iRef = new RemusPath(ref, instance);
+				arrayList.add( iRef.getPath() );
+			}
+			WorkKey w =  new WorkKey(instance, 0);
+			outList.add( w );
+			w.pathArray = arrayList;
 		}
-		WorkKey w =  new WorkKey(instance, 0);
-		outList.add( w );
-		w.pathArray = arrayList;
-		
+
+		long t = applet.datastore.getTimeStamp(applet.getPath() + "/@done", instance.toString() );
 		AppletInstanceStatusView stat = new AppletInstanceStatusView(applet);
-		stat.setWorkStat( instance, 0, 0, 1);
+		stat.setWorkStat( instance, 0, 0, 1, t);
 
 		return outList;		
 	}

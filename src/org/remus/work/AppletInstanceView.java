@@ -151,15 +151,18 @@ public class AppletInstanceView implements BaseNode {
 				while( (len=is.read(buffer)) > 0 ) {
 					sb.append(new String(buffer, 0, len));
 				}
-				Map data = (Map) serial.loads(sb.toString());
-
-				for ( Object key : data.keySet() ) {
-					applet.datastore.add( applet.getPath(), 
-							inst.toString(),
-							0L, 0L,
-							(String)key, data.get(key) );		
+				String iStr = sb.toString();
+				if ( iStr.length() > 0 ) {
+					Map data = (Map) serial.loads( iStr );
+					if ( data != null ) {
+						for ( Object key : data.keySet() ) {
+							applet.datastore.add( applet.getPath(), 
+									inst.toString(),
+									0L, 0L,
+									(String)key, data.get(key) );		
+						}
+					}
 				}
-
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -179,12 +182,12 @@ public class AppletInstanceView implements BaseNode {
 		}		
 		return out;
 	}
-	
+
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) {
 
-		if ( applet.getType() == RemusApplet.ADAPTOR || applet.getType() == RemusApplet.STORE ) {
+		if ( applet.getType() == RemusApplet.STORE ) {
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();

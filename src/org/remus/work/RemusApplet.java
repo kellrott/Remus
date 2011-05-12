@@ -75,7 +75,7 @@ public class RemusApplet {
 	public static final int REDUCER = 5;
 	public static final int PIPE = 6;
 	public static final int STORE = 7;
-	public static final int ADAPTOR = 8;
+	public static final int AGENT = 8;
 
 	public static final String WORKDONE_OP = "_workdone";	
 
@@ -237,7 +237,7 @@ public class RemusApplet {
 		}
 		((Map)statObj).put(WORKDONE_OP, true);
 		datastore.add( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
-		datastore.delete( getPath() + "/@done", remusInstance.toString() );
+		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
 	public boolean hasInputs() {
@@ -251,6 +251,7 @@ public class RemusApplet {
 	}
 
 	public Map<AppletInstance,Set<WorkKey>> getWorkList(int maxListSize) {
+		AppletInstanceStatusView thisStat = new AppletInstanceStatusView(this);
 		HashMap<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();		
 		for ( RemusInstance inst : getActiveInstanceList() ) {
 			if ( out.size() < maxListSize ) {
@@ -275,6 +276,9 @@ public class RemusApplet {
 							e1.printStackTrace();
 						}					
 					}
+				} else {
+					thisStat.getStatus(inst);
+					
 				}
 			}
 		}

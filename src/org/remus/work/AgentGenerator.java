@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.remus.RemusPath;
 import org.remus.RemusInstance;
+import org.remus.RemusPath;
 
-public class MapGenerator implements WorkGenerator {
+public class AgentGenerator  implements WorkGenerator {
 	RemusApplet applet;
 	RemusInstance inst;
 	boolean done;
@@ -18,26 +18,17 @@ public class MapGenerator implements WorkGenerator {
 		this.applet = applet;
 		this.inst = instance;
 		Set<WorkKey> outList = new HashSet<WorkKey>();
-		RemusPath iRef = new RemusPath( applet.getInput(), instance );
 		int jobID = 0;
 		int errorCount = 0;
 		int doneCount = 0;
-		for ( String key : iRef.listKeys( applet.datastore ) ) {
-			if ( outList.size() < reqCount ) {
-				if ( !applet.datastore.containsKey( applet.getPath() + "/@done", instance.toString(), Integer.toString(jobID)) ) {
-					if (!applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
-						WorkKey w = new WorkKey(instance, jobID);
-						w.key = key;
-						w.pathStr = iRef.getPath();
-						outList.add( w );					
-					} else {
-						errorCount++;
-					}
-				} else {
-					doneCount++;
-				}
-			}
-			jobID++;							
+		System.out.println("AGENT WORK");
+		for ( RemusPath input : applet.getInputs() ) {
+			//RemusPath iRef = new RemusPath( input, instance );			
+			WorkKey w = new WorkKey(instance, jobID);
+			w.jobID = jobID;
+			w.key = instance.toString() + "/" + input.getApplet();			
+			outList.add( w );	
+			jobID++;
 		}
 		
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );
