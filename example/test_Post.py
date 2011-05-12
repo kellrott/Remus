@@ -23,8 +23,9 @@ class BasicPipeline( unittest.TestCase ):
 
 
 	def test_submit(self):
-		
-		
+		print urlopen( server + "/testPipeline/dataRoot/submission", "test=howdy" ).read()
+		call( "../python/runRemusNet.py %s test1" % (server), shell=True )
+
 		
 		
 	def tearDown(self):

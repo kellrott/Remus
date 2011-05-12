@@ -2,7 +2,7 @@
 
 <include path="pipelineSubmit.html"/>
 
-<init_store _submitKey="dataTest" _applet="dataStack">
+<init_store _submitKey="dataRoot" _applet="dataStack">
 <![CDATA[
 {
 	"root" : { "id" : 0, "home": "/root", "title":"root" },
@@ -44,19 +44,20 @@
 ]]>
 </init_store>
 
-<remus_adapt id="submitApplet" input="?" type="python">
+<remus_agent id="submitApplet" input="submission" type="python">
 <![CDATA[
 import datetime
-@remus.adapter
-def adapt( in ):
+@remus.agent
+def subwatch( key, value ):
 	dateStr = datetime.date.today().isoformat()	
 	subKey = "test-" + dateStr
-	in[ '_input' ] = { "_instance" : "dataTest", "_applet" : "dataStack" }
-	in[ '_applet' ] = [ "homeFilter" ] 
-	remus.emit( subKey, in )
+	value[ '_input' ] = { "_instance" : "dataTest", "_applet" : "dataStack" }
+	value[ '_applet' ] = [ "homeFilter" ] 
+	remus.emit( subKey, value )
 ]]>
-</remus_adapt>
+</remus_agent>
 
+<remus_store id="submission"/>
 
 <remus_store id="dataStack"/>
 
