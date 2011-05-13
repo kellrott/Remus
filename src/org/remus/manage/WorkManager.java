@@ -333,7 +333,7 @@ public class WorkManager implements BaseNode {
 			String curline = null;
 			while ((curline=br.readLine())!= null ) {
 				Map m = (Map)serial.loads( curline );
-				System.out.println( curline );
+				//System.out.println( curline );
 				for ( Object instObj : m.keySet() ) {
 					RemusInstance inst=new RemusInstance((String)instObj);
 					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {

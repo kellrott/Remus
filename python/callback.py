@@ -73,6 +73,9 @@ class RemusCallback:
 	
 	def matcher(self, f):
 		return self.addFunction(f)
+
+	def agent(self, f):
+		return self.addFunction(f)
 	
 	def splitter(self, f):
 		return self.addFunction(f)

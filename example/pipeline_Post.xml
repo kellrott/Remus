@@ -44,7 +44,7 @@
 ]]>
 </init_store>
 
-<remus_agent id="submitApplet" input="submission" type="python">
+<remus_agent id="submitAgent" input="submission" type="python">
 <![CDATA[
 import datetime
 @remus.agent
@@ -52,7 +52,7 @@ def subwatch( key, value ):
 	dateStr = datetime.date.today().isoformat()	
 	subKey = "test-" + dateStr
 	value[ '_input' ] = { "_instance" : "dataTest", "_applet" : "dataStack" }
-	value[ '_applet' ] = [ "homeFilter" ] 
+	value[ '_applets' ] = [ "homeFilter" ] 
 	remus.emit( subKey, value )
 ]]>
 </remus_agent>
@@ -61,14 +61,14 @@ def subwatch( key, value ):
 
 <remus_store id="dataStack"/>
 
-<remus_mapper id="homeFilter" input="?" type="python">
+<remus_map id="homeFilter" input="?" type="python">
 <![CDATA[
 @remus.mapper
 def homeFilter( key, value ):
 	if value[ 'home' ].startswith( "/home" ):
 		remus.emit( key, value )
 ]]>
-</remus_mapper> 
+</remus_map> 
 
 
 </remus_pipeline>

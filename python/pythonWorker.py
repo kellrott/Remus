@@ -22,6 +22,8 @@ def pythonWorker( mode ):
 		return MergeWorker
 	if mode == 'match':
 		return MatchWorker
+	if mode == 'agent':
+		return AgentWorker		
 	return None
 
 
@@ -189,3 +191,13 @@ class MatchWorker(WorkerBase):
 				else:
 					func( key, minor[0], major[0] )
 				
+
+
+class AgentWorker(WorkerBase):	
+	def work( self, func, appletDesc, keys ):
+		print appletDesc
+		for key in keys:
+			for dkey, data in remusLib.getDataStack( self.getInputPath( appletDesc), key=key ):
+				func( dkey, data )
+				
+
