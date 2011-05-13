@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -188,6 +189,8 @@ public class AppletInstanceView implements BaseNode {
 			InputStream is, OutputStream os) {
 
 		if ( applet.getType() == RemusApplet.STORE ) {
+			//A submit to an agent is translated from URL encoding to JSON and stored with a
+			//UUID as the key
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();
@@ -204,7 +207,50 @@ public class AppletInstanceView implements BaseNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		} else {
+		} else if ( applet.getType() == RemusApplet.AGENT  ) {
+			//A submit to an agent is stored and a new instance is created
+			try {
+				BufferedReader br = new BufferedReader(new InputStreamReader(is));
+				String curline = null;
+				while ( (curline = br.readLine() ) != null ) {
+					Map inObj = (Map)serial.loads(curline);	
+					long jobID = Long.parseLong( inObj.get("id").toString() );
+					long emitID = (Long)inObj.get("order");
+					String key = (String)inObj.get("key");
+					Map value = (Map)inObj.get("value");					
+					RemusInstance inst = new RemusInstance();
+
+					//do some validation of the input work description
+					value.remove(RemusApplet.WORKDONE_OP);
+
+					System.err.println("AGENT SUBMISSION:" + key );
+					if ( ((Map)value).containsKey( Submission.AppletField ) ) {
+						List<String> aList = (List)((Map)value).get(Submission.AppletField);
+						inst = applet.getPipeline().setupInstance( key, (Map)value, aList );					
+					} else {
+						inst = applet.getPipeline().setupInstance( key, (Map)value, new LinkedList() );	
+					}					
+					((Map)value).put(Submission.InstanceField, inst.toString());	
+					applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@submit", 
+							RemusInstance.STATIC_INSTANCE_STR, 
+							(Long)0L, 
+							(Long)0L, 
+							key,
+							value );		
+					applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@instance", 
+						RemusInstance.STATIC_INSTANCE_STR, 
+						0L, 0L,
+						inst.toString(),
+						key);			
+				}				
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}		
+		} else {		
 			try {
 				Set outSet = new HashSet<Integer>();
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -220,8 +266,7 @@ public class AppletInstanceView implements BaseNode {
 				}
 				applet.datastore.add( applet.getPath(), 
 						inst.toString(),
-						inputList );		
-
+						inputList );
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

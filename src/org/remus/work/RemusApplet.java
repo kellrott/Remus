@@ -57,6 +57,10 @@ public class RemusApplet {
 			out.workGenerator = PipeGenerator.class;	
 			break;
 		}
+		case AGENT: {
+			out.workGenerator = AgentGenerator.class;	
+			break;			
+		}
 		}
 		if ( out != null ) {
 			out.code = code;
@@ -79,8 +83,6 @@ public class RemusApplet {
 
 	public static final String WORKDONE_OP = "_workdone";	
 
-	public static final int INIT_OP_CODE = 0;
-	public static final int WORKDONE_OP_CODE = 1;
 
 	Class workGenerator = null;
 	private String id;
@@ -174,7 +176,7 @@ public class RemusApplet {
 
 	public boolean isReady( RemusInstance remusInstance ) {
 		if ( type==STORE )
-			return false;
+			return true;
 		if ( hasInputs() ) {
 			boolean allReady = true;
 			for ( RemusPath iRef : inputs ) {
@@ -203,11 +205,28 @@ public class RemusApplet {
 		return true;
 	}
 
+	public long inputTimeStamp( RemusInstance remusInstance ) {
+		long out = 0;
+		for ( RemusPath iRef : inputs ) {
+			if ( iRef.getInputType() == RemusPath.AppletInput ) {
+				RemusApplet iApplet = getPipeline().getApplet( iRef.getApplet() );
+				if ( iApplet != null ) {
+					AppletInstanceStatusView status = new AppletInstanceStatusView( iApplet );
+					long val = status.getTimeStamp( remusInstance );
+					if ( out < val ) {
+						out = val;
+					}
+				}
+			}			
+		}
+		return out;
+	}
+
 
 	public boolean isComplete( RemusInstance remusInstance ) {
 		boolean found = false;
 		for ( Object statObj : datastore.get( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
-			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) ) {
+			if ( statObj != null && ((Map)statObj).containsKey( WORKDONE_OP ) && (Boolean)((Map)statObj).get(WORKDONE_OP) == true ) {
 				found = true;
 			}
 		}
@@ -235,7 +254,22 @@ public class RemusApplet {
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
+		System.err.println("SET COMPLETE: " + getPath() );
 		((Map)statObj).put(WORKDONE_OP, true);
+		datastore.add( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
+	}
+	
+	public void unsetComplete(RemusInstance remusInstance) {
+		Object statObj = null;
+		for ( Object curObj : datastore.get( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			statObj = curObj;
+		}
+		if ( statObj == null ) {
+			statObj = new HashMap();
+		}
+		System.err.println("UNSET COMPLETE: " + getPath() );
+		((Map)statObj).put(WORKDONE_OP, false);
 		datastore.add( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
@@ -253,32 +287,43 @@ public class RemusApplet {
 	public Map<AppletInstance,Set<WorkKey>> getWorkList(int maxListSize) {
 		AppletInstanceStatusView thisStat = new AppletInstanceStatusView(this);
 		HashMap<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();		
-		for ( RemusInstance inst : getActiveInstanceList() ) {
+		//for ( RemusInstance inst : getActiveInstanceList() ) {
+		for ( RemusInstance inst : getInstanceList() ) {
+			//System.err.println( "APPLET SCAN:" + getPath() + " " + inst.toString() );
 			if ( out.size() < maxListSize ) {
 				if ( !isComplete(inst) ) {
 					if ( isReady(inst)) {
-						try {
-							System.err.println("GENERATING WORK: " + getPath() + " " + inst.toString() );
-							WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
-							Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
-							if ( gen.isDone() ) {
-								setComplete(inst);
-							} else {
-								AppletInstance ai =  gen.getAppletInstance();
-								assert ai != null;
-								out.put( ai, workSet );								
-							}
-						} catch (InstantiationException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (IllegalAccessException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}					
+						if ( workGenerator != null ) {
+							try {
+								System.err.println("GENERATING WORK: " + getPath() + " " + inst.toString() );
+								WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
+								Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
+								if ( gen.isDone() ) {
+									setComplete(inst);
+								} else {
+									AppletInstance ai =  gen.getAppletInstance();
+									assert ai != null;
+									out.put( ai, workSet );								
+								}
+							} catch (InstantiationException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (IllegalAccessException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}	
+						}
 					}
 				} else {
-					thisStat.getStatus(inst);
-					
+					if ( hasInputs() ) {
+						long thisTime = thisStat.getTimeStamp(inst);
+						long inTime = inputTimeStamp(inst);
+						//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
+						if ( inTime > thisTime ) {
+							System.err.println( "YOUNG INPUT:" + getPath() );
+							unsetComplete(inst);
+						}
+					}
 				}
 			}
 		}
@@ -298,7 +343,7 @@ public class RemusApplet {
 		return out;
 	}
 
-
+	/*
 	public Collection<RemusInstance> getActiveInstanceList() {
 		Collection<RemusInstance> out = getInstanceList();
 		Collection<RemusInstance> removeList = new HashSet<RemusInstance>();
@@ -325,7 +370,7 @@ public class RemusApplet {
 		out.removeAll(removeList);		
 		return out;
 	}
-
+	 */
 
 	public boolean createInstance(String submitKey, Map params, RemusInstance inst) {
 
@@ -362,12 +407,20 @@ public class RemusApplet {
 				inMap.put("_left", lMap);
 				inMap.put("_right", rMap);				
 				inMap.put("_axis", "_left");
-			} else {
+			} else if ( getType() == AGENT ) {
+				inMap.put("_instance", inst.toString());
+				inMap.put("_applet", "@status" );
+			} else {			
 				inMap.put("_instance", inst.toString());
 				inMap.put("_applet",getInput().getApplet() );
 			}
 			baseMap.put("_input", inMap);
 		}
+
+		if ( getType() == STORE || getType() == AGENT ) {
+			baseMap.put(WORKDONE_OP, true);
+		}
+
 		AppletInstanceStatusView stat = new AppletInstanceStatusView(this);
 		stat.updateStatus(inst, baseMap);
 		return true;

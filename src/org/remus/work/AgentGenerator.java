@@ -22,13 +22,20 @@ public class AgentGenerator  implements WorkGenerator {
 		int errorCount = 0;
 		int doneCount = 0;
 		System.out.println("AGENT WORK");
-		for ( RemusPath input : applet.getInputs() ) {
-			//RemusPath iRef = new RemusPath( input, instance );			
-			WorkKey w = new WorkKey(instance, jobID);
-			w.jobID = jobID;
-			w.key = instance.toString() + "/" + input.getApplet();			
-			outList.add( w );	
-			jobID++;
+		for ( RemusPath input : applet.getInputs() ) {			
+			if ( outList.size() < reqCount ) {
+				if ( !applet.datastore.containsKey( applet.getPath() + "/@done", instance.toString(), Integer.toString(jobID)) ) {
+					if (!applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
+						WorkKey w = new WorkKey(instance, jobID);
+						w.key = input.getApplet();
+						outList.add( w );					
+					} else {
+						errorCount++;
+					}
+				} else {
+					doneCount++;
+				}
+			}			
 		}
 		
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );

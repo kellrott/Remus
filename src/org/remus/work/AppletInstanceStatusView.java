@@ -114,6 +114,13 @@ public class AppletInstanceStatusView implements BaseNode {
 	}
 
 
+	public long getTimeStamp(RemusInstance remusInstance) {
+		long val1 = applet.datastore.getTimeStamp( applet.getPath(), remusInstance.toString());
+		long val2 = applet.datastore.getTimeStamp( applet.getPath() + "/@done" , remusInstance.toString());
+		return Math.max(val1, val2);
+	}
+
+
 	
 
 

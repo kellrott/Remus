@@ -50,6 +50,36 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 					}
 				}
 			}
+		} else {
+			String [] tmp = name.split("/");
+			if ( tmp.length == 1 ) {
+				for ( RemusApplet applet : pipeline.getMembers() ) {
+					for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, tmp[0]) ) {
+						Map out = new HashMap();
+						out.put( applet.getID(), obj );	
+						try {
+							os.write( serial.dumps( out ).getBytes() );
+							os.write("\n".getBytes());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+			} else if ( tmp.length == 2 ) {
+				RemusApplet applet = pipeline.getApplet( tmp[1] );
+				for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, tmp[0]) ) {
+					Map out = new HashMap();
+					out.put( applet.getID(), obj );	
+					try {
+						os.write( serial.dumps( out ).getBytes() );
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 
 	}
