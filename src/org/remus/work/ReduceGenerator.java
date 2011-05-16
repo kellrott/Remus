@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.remus.DataStackRef;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
 
@@ -23,7 +24,7 @@ public class ReduceGenerator implements WorkGenerator {
 		this.applet = applet;
 		this.inst = instance;
 		done = false;
-		RemusPath iRef = new RemusPath(applet.getInput(), instance);
+		DataStackRef iRef = DataStackRef.fromSubmission(applet, applet.getInput(), instance);
 		Set<WorkKey> keyList = new HashSet<WorkKey>();
 		int jobID = 0;
 		int doneCount = 0;
@@ -34,7 +35,7 @@ public class ReduceGenerator implements WorkGenerator {
 					if ( !applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
 						WorkKey w =  new WorkKey( instance, jobID );
 						w.key = key;
-						w.pathStr = iRef.getPath();
+						//w.pathStr = iRef.getPath();
 						keyList.add( w );				
 					} else {
 						errorCount += 1;

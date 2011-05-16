@@ -86,7 +86,7 @@ public class RemusApplet {
 
 	Class workGenerator = null;
 	private String id;
-	List<RemusPath> inputs = null, lInputs = null, rInputs = null;
+	List<String> inputs = null, lInputs = null, rInputs = null;
 	List<String> outputs = null;
 	CodeFragment code;
 	MPStore datastore;
@@ -96,22 +96,22 @@ public class RemusApplet {
 	private AttachStore attachstore;
 
 
-	public void addInput( RemusPath in ) {
+	public void addInput( String in ) {
 		if ( inputs == null )
-			inputs = new ArrayList<RemusPath>();
+			inputs = new ArrayList<String>();
 		inputs.add(in);
 	}	
 
-	public void addLeftInput( RemusPath in ) {
+	public void addLeftInput( String in ) {
 		if ( lInputs == null )
-			lInputs = new LinkedList<RemusPath>();
+			lInputs = new LinkedList<String>();
 		lInputs.add(in);
 		addInput(in);
 	}
 
-	public void addRightInput( RemusPath in ) {
+	public void addRightInput( String in ) {
 		if ( rInputs == null )
-			rInputs = new LinkedList<RemusPath>();
+			rInputs = new LinkedList<String>();
 		rInputs.add(in);
 		addInput(in);
 	}
@@ -122,15 +122,15 @@ public class RemusApplet {
 		outputs.add(name);
 	}
 
-	public RemusPath getInput() {
+	public String getInput() {
 		return inputs.get(0);
 	}
 
-	public RemusPath getLeftInput() {
+	public String getLeftInput() {
 		return lInputs.get(0);
 	}
 
-	public RemusPath getRightInput() {
+	public String getRightInput() {
 		return rInputs.get(0);
 	}
 
@@ -138,10 +138,10 @@ public class RemusApplet {
 		return code;
 	}
 
-	public List<RemusPath> getInputs() {
+	public List<String> getInputs() {
 		if ( inputs != null )
 			return inputs;
-		return new ArrayList<RemusPath>();
+		return new ArrayList<String>();
 	}
 
 	public String [] getOutputs() {
@@ -179,9 +179,9 @@ public class RemusApplet {
 			return true;
 		if ( hasInputs() ) {
 			boolean allReady = true;
-			for ( RemusPath iRef : inputs ) {
-				if ( iRef.getInputType() == RemusPath.AppletInput ) {
-					RemusApplet iApplet = getPipeline().getApplet( iRef.getApplet() );
+			for ( String iRef : inputs ) {
+				if ( iRef.compareTo("?") != 0 ) {
+					RemusApplet iApplet = getPipeline().getApplet( iRef );
 					if ( iApplet != null ) {
 						if ( !iApplet.isComplete(remusInstance) ) {
 							allReady = false;
@@ -189,15 +189,8 @@ public class RemusApplet {
 					} else {
 						allReady = false;
 					}
-				} else if ( iRef.getInputType() == RemusPath.DynamicInput ) {
-					/*
-					if ( datastore.get( getPath() + "@submit", RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) == null ) {
-						allReady = false;
-					}
-					 */
-				} else if (  iRef.getInputType() == RemusPath.AttachInput ) {
 				} else {				
-					allReady = false;
+					allReady = true;
 				}
 			}
 			return allReady;
@@ -207,9 +200,9 @@ public class RemusApplet {
 
 	public long inputTimeStamp( RemusInstance remusInstance ) {
 		long out = 0;
-		for ( RemusPath iRef : inputs ) {
-			if ( iRef.getInputType() == RemusPath.AppletInput ) {
-				RemusApplet iApplet = getPipeline().getApplet( iRef.getApplet() );
+		for ( String iRef : inputs ) {
+			if ( iRef.compareTo("?") != 0 ) {
+				RemusApplet iApplet = getPipeline().getApplet( iRef );
 				if ( iApplet != null ) {
 					AppletInstanceStatusView status = new AppletInstanceStatusView( iApplet );
 					long val = status.getTimeStamp( remusInstance );
@@ -295,9 +288,9 @@ public class RemusApplet {
 					if ( isReady(inst)) {
 						if ( workGenerator != null ) {
 							try {
-								System.err.println("GENERATING WORK: " + getPath() + " " + inst.toString() );
 								WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 								Set<WorkKey> workSet =  gen.getActiveKeys(this, inst, maxListSize - out.size());
+								System.err.println("GENERATE WORK: " + getPath() + " " + inst.toString() + " COUNT:" + workSet.size());
 								if ( gen.isDone() ) {
 									setComplete(inst);
 								} else {
@@ -401,9 +394,9 @@ public class RemusApplet {
 				Map lMap = new HashMap();
 				Map rMap = new HashMap();
 				lMap.put("_instance", inst.toString());
-				lMap.put("_applet",getLeftInput().getApplet() );
+				lMap.put("_applet",getLeftInput() );
 				rMap.put("_instance", inst.toString());
-				rMap.put("_applet",getRightInput().getApplet() );
+				rMap.put("_applet",getRightInput() );
 				inMap.put("_left", lMap);
 				inMap.put("_right", rMap);				
 				inMap.put("_axis", "_left");
@@ -412,7 +405,7 @@ public class RemusApplet {
 				inMap.put("_applet", "@status" );
 			} else {			
 				inMap.put("_instance", inst.toString());
-				inMap.put("_applet",getInput().getApplet() );
+				inMap.put("_applet", getInput() );
 			}
 			baseMap.put("_input", inMap);
 		}

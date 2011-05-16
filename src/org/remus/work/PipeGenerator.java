@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.remus.DataStackRef;
 import org.remus.RemusInstance;
 import org.remus.RemusPath;
 
@@ -36,9 +37,9 @@ public class PipeGenerator implements WorkGenerator {
 		}		
 		if ( !done ) {
 			List<String> arrayList = new ArrayList();
-			for ( RemusPath ref : applet.getInputs() ) {
-				RemusPath iRef = new RemusPath(ref, instance);
-				arrayList.add( iRef.getPath() );
+			for ( String ref : applet.getInputs() ) {
+				String iRef = DataStackRef.pathFromSubmission( applet, ref, instance );
+				arrayList.add( iRef );
 			}
 			WorkKey w =  new WorkKey(instance, 0);
 			outList.add( w );

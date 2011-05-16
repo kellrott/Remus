@@ -39,32 +39,7 @@ public class RemusPath {
 	//static final Pattern instancePat = Pattern.compile("^([^/]*)/([^/]*)$");
 	//static final Pattern instanceKeyPat = Pattern.compile("^([^/]*)/([^/]*)/(.*)$");
 
-
-	public RemusPath(RemusPath ref, RemusInstance instance) {
-		this.parent = ref.parent;
-		this.instance = instance.toString();
-		if ( ref.getInputType() == DynamicInput ) {
-			String submitKey = null;
-			MPStore ds = ref.parent.getApplet( ref.getAppletPath() ).getDataStore();
-			for ( Object instObj : ds.get( ref.getAppletPath() + "@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
-				String submitPath = null;				
-				submitPath = (String)((Map)instObj).get(Submission.InputField);
-				ref = new RemusPath(ref.parent, submitPath);
-			}
-			this.instance = ref.instance;
-		}
-		this.pipelineName = ref.pipelineName;
-		this.appletName = ref.appletName;
-		this.appletPortName = ref.appletPortName;
-		this.viewName = ref.viewName;
-		//if ( viewName == null ) {
-		//	viewName = "data";
-		//}
-		this.input_type = ref.input_type;
-		this.key = ref.key;
-		this.url = getInstancePath(); 
-	}
-
+	
 	public RemusPath( RemusApp parent, String pathinfo ) {
 		this.parent = parent;
 		readPath( pathinfo );
@@ -124,7 +99,6 @@ public class RemusPath {
 	}
 
 
-
 	public RemusPath(RemusApp parent, String inputStr, String pipelineName, String appletName) throws FileNotFoundException {
 		this.parent = parent;
 		if ( inputStr.compareTo("?") == 0) {
@@ -137,18 +111,6 @@ public class RemusPath {
 		}
 	}
 
-	public long getKeyCount( MPStore ds, int maxCount ) {
-		if ( key != null )
-			return 1;
-		return ds.keyCount( getViewPath(), instance, maxCount );			
-	}
-
-	public Iterable<String> listKeys( MPStore ds ) {
-		if ( key != null ) {
-			return Arrays.asList(key);
-		}
-		return ds.listKeys(getViewPath(), instance);
-	}
 
 
 	public int getInputType() {
