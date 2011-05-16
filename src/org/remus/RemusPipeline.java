@@ -99,14 +99,15 @@ public class RemusPipeline implements BaseNode {
 		}
 		return inputs.keySet();
 	}
-
+/*
 	public RemusApplet getInputApplet( RemusPath ref ) {
 		if ( inputs == null ) {
 			setupInputs();
 		}
 		return inputs.get(ref);
 	}	
-
+*/
+	
 	public void deleteInstance(RemusInstance instance) {
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
