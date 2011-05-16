@@ -23,7 +23,6 @@ import org.mpstore.Serializer;
 import org.remus.RemusApp;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusInstance;
-import org.remus.RemusPath;
 import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
 

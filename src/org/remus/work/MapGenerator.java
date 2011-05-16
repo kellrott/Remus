@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.remus.DataStackRef;
-import org.remus.RemusPath;
 import org.remus.RemusInstance;
 
 public class MapGenerator implements WorkGenerator {

@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.remus.DataStackRef;
 import org.remus.RemusInstance;
-import org.remus.RemusPath;
 
 public class PipeGenerator implements WorkGenerator {
 	int curPos;

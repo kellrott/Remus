@@ -21,7 +21,6 @@ import org.mpstore.MPStore;
 import org.mpstore.Serializer;
 import org.mpstore.AttachStore;
 import org.remus.CodeFragment;
-import org.remus.RemusPath;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.serverNodes.BaseNode;
