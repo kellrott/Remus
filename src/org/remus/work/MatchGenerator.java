@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.remus.DataStackRef;
 import org.remus.RemusPath;
 import org.remus.RemusInstance;
 
@@ -25,16 +26,16 @@ public class MatchGenerator implements WorkGenerator {
 		int errorCount = 0;
 		int doneCount = 0;
 
-		RemusPath lRef = new RemusPath( applet.getLeftInput(), instance );
-		RemusPath rRef = new RemusPath( applet.getRightInput(), instance );
+		DataStackRef lRef = DataStackRef.fromSubmission(applet, applet.getLeftInput(), instance );
+		DataStackRef rRef = DataStackRef.fromSubmission(applet, applet.getRightInput(), instance );
 		for ( String key : lRef.listKeys( applet.datastore ) ) {
 			if ( outList.size() < reqCount ) {		
 				if ( !applet.datastore.containsKey( applet.getPath() + "/@done", instance.toString(), Integer.toString(jobID)) ) {
 					if (!applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
 						WorkKey w = new WorkKey( instance, jobID ) ;
 						w.key = key;
-						w.lPathStr = lRef.getPath();
-						w.rPathStr = rRef.getPath();
+						//w.lPathStr = lRef.getPath();
+						//w.rPathStr = rRef.getPath();
 						outList.add( w );
 						jobID++;
 					} else {

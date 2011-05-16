@@ -155,39 +155,39 @@ public class RemusApp implements BaseNode {
 		RemusApplet applet = RemusApplet.newApplet(name, cf, appletType);
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
-			try {
-				String input = (String) appletObj.get("left");
-				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-				applet.addLeftInput(path);
-			} catch (FileNotFoundException e) {
+			//try {
+				String lInput = (String) appletObj.get("left");
+				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+				applet.addLeftInput( lInput );
+			//} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				String input = (String) appletObj.get("right");
-				RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-				applet.addRightInput(path);
-			} catch (FileNotFoundException e) {
+			//	e.printStackTrace();
+			//}
+			//try {
+				String rInput = (String) appletObj.get("right");
+				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+				applet.addRightInput(rInput);
+		    //} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			//	e.printStackTrace();
+			//}
 		} else {
-			try {
+			//try {
 				if ( appletObj.get("input") instanceof String ) {
 					String input = (String) appletObj.get("input");
-					RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-					applet.addInput(path);
+					//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
+					applet.addInput(input);
 				}
 				if ( appletObj.get("input") instanceof List ) {
 					for ( Object obj : (List)  appletObj.get("input") )	{
-						RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
-						applet.addInput(path);
+						//RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
+						applet.addInput((String)obj);
 					}
 				}
-			} catch (FileNotFoundException e) {
+			//} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			//	e.printStackTrace();
+			//}
 		}
 		if ( appletObj.containsKey("output") ) {
 			for ( Object nameObj : (List)appletObj.get("output") ) {
@@ -329,9 +329,8 @@ public class RemusApp implements BaseNode {
 	public static final int SUBMIT_CALL = 4;
 
 	
-	public void passCall( int type, RemusPath path, Map parameterMap, String workerID, Serializer serial, InputStream inputStream, OutputStream outputStream) throws FileNotFoundException {
-		String fullPath = (new File(path.getPath())).getAbsolutePath();
-		String [] tmp = fullPath.split("/");
+	public void passCall( int type, String path, Map parameterMap, String workerID, Serializer serial, InputStream inputStream, OutputStream outputStream) throws FileNotFoundException {
+		String [] tmp = path.split("/");
 
 		BaseNode curNode = this;
 		Boolean called = false;

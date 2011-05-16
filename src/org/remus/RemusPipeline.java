@@ -27,7 +27,7 @@ public class RemusPipeline implements BaseNode {
 	HashMap<String,BaseNode> children;
 
 	private HashMap<String,RemusApplet> members;
-	Map<RemusPath, RemusApplet> inputs;
+	Map<String, RemusApplet> inputs;
 	String id;
 	MPStore datastore;
 	AttachStore attachStore;
@@ -41,7 +41,7 @@ public class RemusPipeline implements BaseNode {
 		children.put("@status", new PipelineStatusView(this) );
 		children.put("@instance", new PipelineInstanceListViewer(this) );
 
-		inputs = new HashMap<RemusPath, RemusApplet >();
+		inputs = new HashMap<String, RemusApplet >();
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
@@ -73,13 +73,11 @@ public class RemusPipeline implements BaseNode {
 	}
 
 	private void setupInputs() {
-		inputs = new HashMap<RemusPath, RemusApplet>();
+		inputs = new HashMap<String, RemusApplet>();
 		for ( RemusApplet applet : members.values() ) {
 			if ( applet.hasInputs() ) {
-				for ( RemusPath iref : applet.getInputs() ) {
-					if ( iref.getInputType() == RemusPath.DynamicInput 
-							|| iref.getInputType() == RemusPath.AppletInput 
-					) { //|| !parent.containsKey( iref.getPortPath() )) {
+				for ( String iref : applet.getInputs() ) {
+					if ( iref.compareTo("?") != 0 ) {
 						inputs.put(iref, applet);
 					}
 				}
@@ -95,7 +93,7 @@ public class RemusPipeline implements BaseNode {
 		return members.get(path);
 	}
 
-	public Set<RemusPath> getInputs() {
+	public Set<String> getInputs() {
 		if ( inputs == null ) {
 			setupInputs();
 		}
@@ -239,9 +237,9 @@ public class RemusPipeline implements BaseNode {
 							added = true;
 						activeSet.add(applet);
 					} else {
-						for ( RemusPath iRef : applet.getInputs() ) {
-							if ( iRef.getInputType() == RemusPath.AppletInput ) {
-								RemusApplet srcApplet = getApplet(iRef.getApplet());
+						for ( String iRef : applet.getInputs() ) {
+							if ( iRef.compareTo("?") != 0 ) {
+								RemusApplet srcApplet = getApplet( iRef );
 								if (activeSet.contains(srcApplet) ) {
 									if ( applet.createInstance(name, params, inst) ) 
 										added = true;

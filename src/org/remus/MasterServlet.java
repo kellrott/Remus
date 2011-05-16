@@ -1,5 +1,6 @@
 package org.remus;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,7 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
-		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
 			if ( workerID != null ) {
@@ -77,7 +78,7 @@ public class MasterServlet extends HttpServlet {
 			}
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
-			app.passCall( RemusApp.GET_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.GET_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -89,7 +90,7 @@ public class MasterServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 		
-		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
 			//TODO: make sure correct worker is returning assigned results before putting them in the database....
@@ -98,7 +99,7 @@ public class MasterServlet extends HttpServlet {
 			}			
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.SUBMIT_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}	
@@ -111,12 +112,12 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
-		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.PUT_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.PUT_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -126,14 +127,13 @@ public class MasterServlet extends HttpServlet {
 	
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
-		
-		RemusPath reqInfo = new RemusPath( app, req.getRequestURI() );		
+	throws ServletException, IOException {		
+		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.DELETE_CALL, reqInfo, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.DELETE_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}					
