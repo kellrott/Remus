@@ -160,10 +160,15 @@ var instanceViewer = function(pipeline) {
 		getDiv : instanceSelector( pipeline, function(instance) {
 			return function(applet) {
 				return appletSelector( pipeline, instance, function( applet ) {					
-					var base = $("<div>");
+					var base = $("<div>").css('position', 'relative');
 					var ul=$("<select size='20' style='width:300px'>");
+					ul.css( 'width', '25%');
+					ul.css( 'position', 'absolute');
 					base.append( ul );
-					var valueDiv = $("<span>");
+					var valueDiv = $("<div>");
+					valueDiv.css( 'width', '70%');
+					valueDiv.css( 'position', 'absolute');
+					valueDiv.css('right', '0');
 					base.append(valueDiv); 
 					var i;
 					var path = "/" + pipeline + "/" + instance + "/" + applet;
