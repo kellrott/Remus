@@ -14,14 +14,27 @@ import org.remus.RemusApp;
 
 public class FileAttachStore implements AttachStore {
 
-	
+
 	File basePath = null;
 	@Override
 	public void initAttachStore(Map paramMap) {
 		this.basePath = new File( (String)paramMap.get(RemusApp.configWork) );
 	}
 
-	
+
+
+	@Override
+	public boolean hasAttachment(String path, String instance, String key,
+			String name) {
+		File attachFile = NameFlatten.flatten(basePath, path, instance, key, name);
+		if ( attachFile.exists() ) {
+			return true;
+		}
+		return false;
+	}
+
+
+
 	@Override
 	public InputStream readAttachement(String path, String instance, String key, String attachment) {
 		try {
@@ -73,7 +86,7 @@ public class FileAttachStore implements AttachStore {
 		return out;
 	}
 
-	
+
 	@Override
 	public List<String> listAttachment(String path, String instance, String key) {
 		File attachDir = NameFlatten.flatten(basePath, path, instance, key, null).getParentFile();
@@ -86,17 +99,17 @@ public class FileAttachStore implements AttachStore {
 		return out;
 	}
 
-	
+
 	public static boolean deleteDir(File dir) {
-	    if (dir.isDirectory()) {
-	        for (File child:dir.listFiles() ) {
-	            boolean success = deleteDir(child);
-	            if (!success) {
-	                return false;
-	            }
-	        }
-	    }
-	    return dir.delete();
+		if (dir.isDirectory()) {
+			for (File child:dir.listFiles() ) {
+				boolean success = deleteDir(child);
+				if (!success) {
+					return false;
+				}
+			}
+		}
+		return dir.delete();
 	}
 
 	@Override
@@ -107,5 +120,7 @@ public class FileAttachStore implements AttachStore {
 
 
 
-	
+
+
+
 }

@@ -17,4 +17,6 @@ public interface AttachStore {
 
 	public void delete(String path, String instance);
 
+	public boolean hasAttachment(String path, String instance, String key, String name);
+
 }
