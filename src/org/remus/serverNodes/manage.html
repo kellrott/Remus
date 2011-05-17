@@ -170,6 +170,12 @@ var instanceViewer = function(pipeline) {
 					valueDiv.css( 'position', 'absolute');
 					valueDiv.css('right', '0');
 					base.append(valueDiv); 
+					var attachDiv = $("<div>");
+					attachDiv.css('position', 'absolute');
+					attachDiv.css('top', '600px');
+					
+					base.append( attachDiv );
+					
 					var i;
 					var path = "/" + pipeline + "/" + instance + "/" + applet;
 					$.get( path , function(data) {
@@ -188,6 +194,22 @@ var instanceViewer = function(pipeline) {
 						$.get( "/" + pipeline + "/" + instance + "/" + applet + "/" + ul.val(),
 							function(data) {
 								valueDiv.append( data );								
+							}
+						);
+						var attachListURL = "/" + pipeline + "/" + instance + "/@attach/" + applet + "/" + ul.val();
+						$.get( attachListURL,
+							function(data) {
+								attachDiv.empty();
+								var lines = data.split("\n");
+								for ( a in lines ) {	
+									var link = $("<a>");
+									var name = $.parseJSON( lines[a] );
+									link.append( name );
+									link.attr( "href", attachListURL + "/" + name );	
+									link.attr( "target", "_blank" );	
+									attachDiv.append( link );
+									attachDiv.append( "<br/>" );
+								}
 							}
 						);
 					});					

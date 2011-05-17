@@ -163,9 +163,7 @@ class getDataStack:
 		for reqKey in self.keyList:
 			reqHandle = urlopen( "%s/%s" % (self.url, reqKey) )
 			for reqLine in reqHandle:
-				print "DATA:", reqLine
 				data = json.loads( reqLine )
-				print "DATA:", data
 				for key in data:
 					if self.reduce:
 						if curKey is not None and key != curKey:

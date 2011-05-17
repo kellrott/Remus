@@ -252,7 +252,7 @@ public class RemusApplet {
 		datastore.add( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
-	
+
 	public void unsetComplete(RemusInstance remusInstance) {
 		Object statObj = null;
 		for ( Object curObj : datastore.get( getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
@@ -388,26 +388,31 @@ public class RemusApplet {
 			baseMap = new HashMap();
 		baseMap.put("_instance", inst.toString());
 		baseMap.put("_submitKey", submitKey);
-		if (!baseMap.containsKey("_input")) {
+
+		if ( getType() == MERGER || getType() == MATCHER ) {
 			Map inMap = new HashMap();
-			if ( getType() == MERGER || getType() == MATCHER ) {
-				Map lMap = new HashMap();
-				Map rMap = new HashMap();
-				lMap.put("_instance", inst.toString());
-				lMap.put("_applet",getLeftInput() );
-				rMap.put("_instance", inst.toString());
-				rMap.put("_applet",getRightInput() );
-				inMap.put("_left", lMap);
-				inMap.put("_right", rMap);				
-				inMap.put("_axis", "_left");
-			} else if ( getType() == AGENT ) {
-				inMap.put("_instance", inst.toString());
-				inMap.put("_applet", "@status" );
-			} else {			
+			Map lMap = new HashMap();
+			Map rMap = new HashMap();
+			lMap.put("_instance", inst.toString());
+			lMap.put("_applet",getLeftInput() );
+			rMap.put("_instance", inst.toString());
+			rMap.put("_applet",getRightInput() );
+			inMap.put("_left", lMap);
+			inMap.put("_right", rMap);				
+			inMap.put("_axis", "_left");
+			baseMap.put("_input", inMap);
+		} else if ( getType() == AGENT ) {			
+			Map inMap = new HashMap();
+			inMap.put("_instance", inst.toString());
+			inMap.put("_applet", "@status" );
+			baseMap.put("_input", inMap);
+		} else {			
+			if ( getInput().compareTo("?") != 0 ) {
+				Map inMap = new HashMap();
 				inMap.put("_instance", inst.toString());
 				inMap.put("_applet", getInput() );
+				baseMap.put("_input", inMap);
 			}
-			baseMap.put("_input", inMap);
 		}
 
 		if ( getType() == STORE || getType() == AGENT ) {

@@ -18,7 +18,7 @@ public class PipelineView implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(String name, Map params, String workerID) {
+	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		RemusPipeline pipeline = app.getPipeline(name);
 		if ( pipeline != null ) {
 			app.deletePipeline( pipeline );
@@ -42,7 +42,7 @@ public class PipelineView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
 			StringBuilder sb = new StringBuilder();
 			byte [] buffer = new byte[1024];
@@ -61,7 +61,7 @@ public class PipelineView implements BaseNode {
 
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) {
+			InputStream is, OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import remus
 import sys
 import json
 from urllib2 import urlopen
@@ -8,6 +7,8 @@ from urllib  import quote
 import remus
 import imp
 from cStringIO import StringIO
+import callback
+import remusLib
 
 class stdout_write:
 	def __init__(self):
@@ -54,39 +55,54 @@ def httpGetJson( url, useCache=False ):
 		handle = urlopen( url )
 	return jsonIter( handle )
 
+class dummy:
+	def __init__(self):
+		pass
+	
+	def write(self, data):
+		pass
+	
+	def close(self):
+		pass
+
+class miniCallback:
+	def __init__(self):
+		pass
+	
+	def open( self, key, name, mode ):
+		print "WRITING", key, name
+		return dummy()
+
 
 if __name__=="__main__":
-	host = sys.argv[1]
-	run = sys.argv[2]
-	codePath = sys.argv[3]
-	inPath = sys.argv[4]
+	mode = sys.argv[1]
+	codePath = sys.argv[2]
+	inPath = sys.argv[3]
 	
-	remus.init(host)
 	
 	code = open( codePath).read()
 	module = imp.new_module( "test_func" )	
 	module.__dict__["__name__"] = "test_func"
+	callback = callback.RemusCallback( miniCallback() )
+	module.__dict__["remus"] = callback
 	exec code in module.__dict__
-	func = remus.getFunction( "test_func" )	
+	func = callback.getFunction( "test_func" )	
 	
 	outmap = { None: stdout_write(  ) }
-	remus.setoutput( outmap )
+	callback.setoutput( outmap )
 
-	if ( run == "map" ):
-		kpURL = host + inPath 
-		kpData = httpGetJson( kpURL )
-		for data in kpData:
-			for key in data:
-				func( key, data[key] )
-
-	if ( run == "reduce" ):
-		kpURL = host + inPath 	
+	if ( mode == "map" ):
+		for dkey, data in remusLib.getDataStack( inPath ):
+			func( dkey, data )
+				
+	if ( mode == "reduce" ):
+		kpURL = inPath 	
 		kpData = httpGetJson( kpURL )
 		for data in kpData:
 			for key in data:
 				func( key, data[key] )
 	
-	if ( run == "pipe" ):
+	if ( mode == "pipe" ):
 		inList = []
 		for inFile in inPath.split(','):
 			kpURL = host + inFile

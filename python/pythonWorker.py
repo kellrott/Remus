@@ -8,6 +8,12 @@ import sys
 from cStringIO import StringIO
 import traceback
 import os
+import mmap
+import tempfile
+import os
+import copy
+import urllib
+
 
 def pythonWorker( mode ):
 	if mode == 'split':
@@ -25,6 +31,37 @@ def pythonWorker( mode ):
 	if mode == 'agent':
 		return AgentWorker		
 	return None
+
+
+class PipeFileBuffer:
+	def __init__(self, key, name):
+		self.key = key
+		self.name = name
+		self.isOpen = True
+		self.buff = tempfile.NamedTemporaryFile(delete=False)
+		
+	def write(self, data):
+		self.buff.write( data )
+	
+	def mem_map(self):
+		mFile = mmap.mmap( self.buff.fileno(), 0, access=mmap.ACCESS_READ )
+		return mFile
+		
+	def close(self):
+		if self.isOpen:
+			self.buff.close()
+		self.isOpen = False
+	
+	def getPath(self):
+		return self.buff.name
+	
+	def fileno(self):
+		return self.buff.fileno()
+	
+	def unlink(self):
+		os.unlink( self.buff.name )
+
+
 
 
 remusLib.addWorker( "python", pythonWorker )
@@ -51,7 +88,7 @@ class WorkerBase:
 	def compileCode(self, code):
 		remusLib.log("COMPILE:" + self.applet + "/" + self.instance )
 		self.code = code
-		self.callback = callback.RemusCallback( self.host, self.pipeline, self.applet, self.appletDesc )
+		self.callback = callback.RemusCallback( self )
 		self.module = imp.new_module( self.applet )	
 		self.module.__dict__["__name__"] = self.applet
 		self.module.__dict__["remus"] = self.callback
@@ -64,14 +101,14 @@ class WorkerBase:
 			outUrl = self.host + "/" + self.pipeline + "/" + self.instance + self.applet + "." + outname
 			self.outmap[ outname ] = http_write( outUrl, jobID )
 		self.callback.setoutput( self.outmap )
-	
+		self.out_file_list = []
+		
 	def closeOutput(self):
 		for name in self.outmap:
 			self.outmap[name].close()
 		self.outmap = []
 
-		fileMap = self.callback.getoutput()
-		for key, name, handle in fileMap:
+		for key, name, handle in self.out_file_list:
 			postURL = self.getAttachOutputPath( self.appletDesc, key, name ) 
 			print "ATTACHMENT:", postURL
 			#print urlopen( postURL, fileMap[path].mem_map() ).read()
@@ -131,6 +168,16 @@ class WorkerBase:
 	def getAttachOutputPath( self, desc, key, name ):
 			return self.host + "/" + self.pipeline + "/" + self.instance + \
 				"/%s/%s/%s" % ( self.applet, key, name)
+	
+	def open(self, key, name, mode="r"):
+		if mode=="w":
+			o = PipeFileBuffer(key, name)
+			self.out_file_list.append( [key, name, o] )
+			return o
+		attachPath = "%s/%s/%s/%s/%s/%s" % (self.host, self.pipeline, self.appletDesc['_input']['_instance'], self.appletDesc['_input']['_applet'], key, name )
+		print "GETTING: " + attachPath
+		return urllib.urlopen( attachPath ) 
+		
 class SplitWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		func( appletDesc )

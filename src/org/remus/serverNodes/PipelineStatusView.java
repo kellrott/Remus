@@ -27,7 +27,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	}
 
 	@Override
-	public void doDelete(String name, Map params, String workerID) {
+	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -86,14 +86,14 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 
 	@Override
 	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) {
+			InputStream is, OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void doSubmit(String name, String workerID, final Serializer serial,
-			InputStream is, final OutputStream os) {		
+			InputStream is, final OutputStream os) throws FileNotFoundException {		
 		try {
 			char [] buffer = new char[1024];
 			int len;
