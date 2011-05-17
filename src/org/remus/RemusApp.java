@@ -285,13 +285,17 @@ public class RemusApp implements BaseNode {
 	}
 	
 	@Override
-	public void doDelete(String name, Map params, String workerID) {
-		// TODO Auto-generated method stub
-
+	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
+		throw new FileNotFoundException(name);
 	}
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
+		
+		if ( name.length() != 0 ) {
+			throw new FileNotFoundException(name);
+		}
+		
 		Map out = new HashMap();
 		List<String> oList = new ArrayList<String>();
 		for ( Object pipeObj : getPipelines() ) {
@@ -307,16 +311,14 @@ public class RemusApp implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
-
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+		throw new FileNotFoundException(name);
 	}
 
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) {
-		// TODO Auto-generated method stub
-		
+			InputStream is, OutputStream os) throws FileNotFoundException {
+		throw new FileNotFoundException(name);		
 	}
 	
 	@Override

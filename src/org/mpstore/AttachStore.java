@@ -19,4 +19,6 @@ public interface AttachStore {
 
 	public boolean hasAttachment(String path, String instance, String key, String name);
 
+	public boolean hasKey(String path, String instance, String key);
+
 }

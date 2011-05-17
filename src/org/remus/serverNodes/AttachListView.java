@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.ServletOutputStream;
-
 import org.mpstore.AttachStore;
 import org.mpstore.Serializer;
 
@@ -24,7 +21,7 @@ public class AttachListView implements BaseNode {
 	}
 
 	@Override
-	public void doDelete(String name, Map params, String workerID) {
+	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -35,8 +32,10 @@ public class AttachListView implements BaseNode {
 
 		if ( name.length() == 0 ) {
 			try {
-				List<String> alist = attach.listAttachment(path, instance, key);
-				os.write( serial.dumps(alist).getBytes() );
+				for ( String fileName : attach.listAttachment(path, instance, key) ) {
+					os.write( serial.dumps(fileName).getBytes() );
+					os.write("\n".getBytes());
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -64,7 +63,7 @@ public class AttachListView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) {
+	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
 		if ( name.length() != 0 ) {			
 			attach.writeAttachment( path, instance, key, name, is );
 		}
@@ -72,7 +71,7 @@ public class AttachListView implements BaseNode {
 	
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) {
+			InputStream is, OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}

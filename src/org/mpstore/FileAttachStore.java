@@ -22,6 +22,15 @@ public class FileAttachStore implements AttachStore {
 	}
 
 
+	@Override
+	public boolean hasKey(String path, String instance, String key) {
+		File attachFile = NameFlatten.flatten(basePath, path, instance, key, null);
+		if ( attachFile.getParentFile().exists() ) {
+			return true;
+		}
+		return false;
+	}
+
 
 	@Override
 	public boolean hasAttachment(String path, String instance, String key,
@@ -118,6 +127,9 @@ public class FileAttachStore implements AttachStore {
 		deleteDir( attachDir );
 	}
 
+
+
+	
 
 
 
