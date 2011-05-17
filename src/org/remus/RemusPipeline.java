@@ -45,7 +45,7 @@ public class RemusPipeline implements BaseNode {
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
-		children.put("@attach", new AttachListView(this.attachStore, "/" + id + "/@attach", RemusInstance.STATIC_INSTANCE_STR, null ) );
+		children.put("@attach", new AttachListView(this.attachStore, "/" + id , RemusInstance.STATIC_INSTANCE_STR, null ) );
 	}
 
 	public RemusApp getApp() {
@@ -99,15 +99,15 @@ public class RemusPipeline implements BaseNode {
 		}
 		return inputs.keySet();
 	}
-/*
+	/*
 	public RemusApplet getInputApplet( RemusPath ref ) {
 		if ( inputs == null ) {
 			setupInputs();
 		}
 		return inputs.get(ref);
 	}	
-*/
-	
+	 */
+
 	public void deleteInstance(RemusInstance instance) {
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
@@ -199,6 +199,56 @@ public class RemusPipeline implements BaseNode {
 		// TODO Auto-generated method stub
 
 	}
+
+	class PipelineAttachment implements BaseNode {
+
+		String fileName;
+		PipelineAttachment(String fileName) {
+			this.fileName = fileName;
+		}
+		
+		@Override
+		public void doDelete(String name, Map params, String workerID) { }
+
+		@Override
+		public void doGet(String name, Map params, String workerID,
+				Serializer serial, OutputStream os)
+		throws FileNotFoundException {
+			InputStream fis = attachStore.readAttachement("/" + getID(), RemusInstance.STATIC_INSTANCE_STR, null, fileName);
+			if ( fis != null ) {
+				byte [] buffer = new byte[1024];
+				int len;
+				try {
+					while ( (len = fis.read(buffer)) >= 0 ) {
+						os.write( buffer, 0, len );
+					}
+					os.close();
+					fis.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}			
+			} else {
+				throw new FileNotFoundException();
+			}			
+		}
+
+		@Override
+		public void doPut(String name, String workerID, Serializer serial,
+				InputStream is, OutputStream os) {}
+
+		@Override
+		public void doSubmit(String name, String workerID, Serializer serial,
+				InputStream is, OutputStream os) {}
+
+		@Override
+		public BaseNode getChild(String name) {
+			return null;
+		}
+
+	}
+
+
 	@Override
 	public BaseNode getChild(String name) {
 		if ( children.containsKey(name) )
@@ -214,6 +264,11 @@ public class RemusPipeline implements BaseNode {
 			RemusInstance inst = new RemusInstance( name );
 			return new PipelineInstanceView( this, inst  );
 		}
+
+		if ( attachStore.hasAttachment( "/" + getID(), RemusInstance.STATIC_INSTANCE_STR, null, name ) ) {
+			return new PipelineAttachment( name );
+		}
+
 		return null;
 	}
 
