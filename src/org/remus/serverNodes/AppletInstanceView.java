@@ -1,4 +1,4 @@
-package org.remus.work;
+package org.remus.serverNodes;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,7 +19,8 @@ import java.util.Set;
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
-import org.remus.serverNodes.BaseNode;
+import org.remus.work.RemusApplet;
+import org.remus.work.Submission;
 
 public class AppletInstanceView implements BaseNode {
 
@@ -50,7 +51,7 @@ public class AppletInstanceView implements BaseNode {
 
 		if ( name.length() == 0 ) {
 			if ( sliceStr == null ) {
-				for ( KeyValuePair kv : applet.datastore.listKeyPairs( applet.getPath() , inst.toString() ) ) {			
+				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs( applet.getPath() , inst.toString() ) ) {			
 					Map out = new HashMap();
 					out.put( kv.getKey(), kv.getValue() );	
 					try {
@@ -62,8 +63,8 @@ public class AppletInstanceView implements BaseNode {
 					}
 				}		
 			} else {
-				for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
-					for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
+				for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
+					for ( Object value : applet.getDataStore().get(  applet.getPath(), inst.toString(), sliceKey ) ) {
 						Map oMap = new HashMap();
 						oMap.put( sliceKey, value);
 						try {
@@ -81,7 +82,7 @@ public class AppletInstanceView implements BaseNode {
 			String [] tmp = name.split("/");
 			if ( tmp.length == 1) {
 				if ( sliceStr == null ) {
-					for ( Object obj : applet.datastore.get( applet.getPath() , inst.toString(), name) ) {
+					for ( Object obj : applet.getDataStore().get( applet.getPath() , inst.toString(), name) ) {
 						Map out = new HashMap();
 						out.put(name, obj );				
 						try {
@@ -93,8 +94,8 @@ public class AppletInstanceView implements BaseNode {
 						}
 					}
 				} else {
-					for ( String sliceKey : applet.datastore.keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
-						for ( Object value : applet.datastore.get(  applet.getPath(), inst.toString(), sliceKey ) ) {
+					for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
+						for ( Object value : applet.getDataStore().get(  applet.getPath(), inst.toString(), sliceKey ) ) {
 							Map oMap = new HashMap();
 							oMap.put( sliceKey, value);
 							try {
@@ -138,7 +139,7 @@ public class AppletInstanceView implements BaseNode {
 					}
 					Object data = serial.loads(sb.toString());
 
-					applet.datastore.add( applet.getPath(), 
+					applet.getDataStore().add( applet.getPath(), 
 							inst.toString(),
 							0L, 0L,
 							name, data);		
@@ -157,7 +158,7 @@ public class AppletInstanceView implements BaseNode {
 					Map data = (Map) serial.loads( iStr );
 					if ( data != null ) {
 						for ( Object key : data.keySet() ) {
-							applet.datastore.add( applet.getPath(), 
+							applet.getDataStore().add( applet.getPath(), 
 									inst.toString(),
 									0L, 0L,
 									(String)key, data.get(key) );		
@@ -199,7 +200,7 @@ public class AppletInstanceView implements BaseNode {
 					sb.append(curline);
 				}
 				Map inData = postStr2Map(sb.toString()) ;
-				applet.datastore.add( applet.getPath(), 
+				applet.getDataStore().add( applet.getPath(), 
 						inst.toString(),
 						0L, 0L,
 						(new RemusInstance()).toString(), inData );		
@@ -264,7 +265,7 @@ public class AppletInstanceView implements BaseNode {
 							(Long)inObj.get("order"), (String)inObj.get("key") , 
 							inObj.get("value") ) );
 				}
-				applet.datastore.add( applet.getPath(), 
+				applet.getDataStore().add( applet.getPath(), 
 						inst.toString(),
 						inputList );
 			} catch (NumberFormatException e) {

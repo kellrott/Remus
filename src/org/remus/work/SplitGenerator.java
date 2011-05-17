@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.remus.DataStackRef;
 import org.remus.RemusInstance;
+import org.remus.serverNodes.AppletInstanceStatusView;
 
 public class SplitGenerator implements WorkGenerator {
 	RemusApplet applet;

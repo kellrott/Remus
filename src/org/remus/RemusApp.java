@@ -25,6 +25,7 @@ import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
 import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.ManageApp;
+import org.remus.serverNodes.ServerStatusView;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.WorkKey;

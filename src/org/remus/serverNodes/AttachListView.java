@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.serverNodes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +11,6 @@ import javax.servlet.ServletOutputStream;
 
 import org.mpstore.AttachStore;
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
 
 public class AttachListView implements BaseNode {
 

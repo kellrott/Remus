@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.remus.RemusInstance;
+import org.remus.serverNodes.AppletInstanceStatusView;
 
 public class AgentGenerator  implements WorkGenerator {
 	RemusApplet applet;
