@@ -160,18 +160,33 @@ var instanceViewer = function(pipeline) {
 		getDiv : instanceSelector( pipeline, function(instance) {
 			return function(applet) {
 				return appletSelector( pipeline, instance, function( applet ) {					
-					var ul=$("<select size=10>");
+					var base = $("<div>");
+					var ul=$("<select size='20' style='width:300px'>");
+					base.append( ul );
+					var valueDiv = $("<span>");
+					base.append(valueDiv); 
 					var i;
 					var path = "/" + pipeline + "/" + instance + "/" + applet;
 					$.get( path , function(data) {
 						var lines = data.split("\n");
 						for (i = 0; i < lines.length; i++) {
 							if ( lines[i].length > 0 ) {
-								ul.append( $("<option>").append( lines[i] ) );
+								var keyStr = $.parseJSON( lines[i] );
+								var opt = $("<option>").append( keyStr );
+								ul.append( opt );
 							}
 						}
 					});
-					return ul;
+					ul.bind( 'change', function() {
+						valueDiv.empty();
+						//BUG: need to do URL encode
+						$.get( "/" + pipeline + "/" + instance + "/" + applet + "/" + ul.val(),
+							function(data) {
+								valueDiv.append( data );								
+							}
+						);
+					});					
+					return base;
 				});
 				};
 		})

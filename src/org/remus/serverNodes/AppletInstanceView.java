@@ -51,6 +51,16 @@ public class AppletInstanceView implements BaseNode {
 
 		if ( name.length() == 0 ) {
 			if ( sliceStr == null ) {
+				for( String key : applet.getDataStore().listKeys( applet.getPath() , inst.toString() ) ) {
+					try {
+						os.write( serial.dumps( key ).getBytes() );
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				/*
 				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs( applet.getPath() , inst.toString() ) ) {			
 					Map out = new HashMap();
 					out.put( kv.getKey(), kv.getValue() );	
@@ -61,8 +71,19 @@ public class AppletInstanceView implements BaseNode {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				}		
+				}
+				 */		
 			} else {
+				for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
+					try {
+						os.write( serial.dumps( sliceKey ).getBytes() );
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				/*
 				for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
 					for ( Object value : applet.getDataStore().get(  applet.getPath(), inst.toString(), sliceKey ) ) {
 						Map oMap = new HashMap();
@@ -76,7 +97,7 @@ public class AppletInstanceView implements BaseNode {
 						}
 					}
 				}
-
+				 */
 			}
 		} else {
 			String [] tmp = name.split("/");
@@ -239,10 +260,10 @@ public class AppletInstanceView implements BaseNode {
 							key,
 							value );		
 					applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@instance", 
-						RemusInstance.STATIC_INSTANCE_STR, 
-						0L, 0L,
-						inst.toString(),
-						key);			
+							RemusInstance.STATIC_INSTANCE_STR, 
+							0L, 0L,
+							inst.toString(),
+							key);			
 				}				
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
