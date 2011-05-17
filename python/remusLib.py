@@ -144,41 +144,48 @@ class jsonPairSplitter:
 
 class getDataStack:
 	def __init__(self, url, key=None, reduce=False, dataOnly=False):
-		self.key = key
+		self.keyList = []
+		if ( key is not None ):
+			self.keyList.append( key )
+		else:
+			handle = urlopen( url )
+			for line in handle:
+				self.keyList.append( json.loads( line ) )
+			handle.close()
+
 		self.url = url
 		self.reduce = reduce
 		self.dataOnly = dataOnly
-		if key is not None:
-			self.handle = urlopen( "%s/%s" % (url, key) )
-		else:
-			self.handle = urlopen( url )
 
 	def __iter__(self):
 		collect = []
 		curKey = None
-		for line in self.handle:
-			data  = json.loads( line )
-			for key in data:
-				if self.reduce:
-					if curKey is not None and key != curKey:
-						if self.dataOnly:
-							yield collect						
-						else:
-							yield curKey, collect
-						collect = []
-					curKey = key
-					collect.append( data[key] )
-				else:
-					if self.dataOnly:
-						yield data[key]					
+		for reqKey in self.keyList:
+			reqHandle = urlopen( "%s/%s" % (self.url, reqKey) )
+			for reqLine in reqHandle:
+				print "DATA:", reqLine
+				data = json.loads( reqLine )
+				print "DATA:", data
+				for key in data:
+					if self.reduce:
+						if curKey is not None and key != curKey:
+							if self.dataOnly:
+								yield collect						
+							else:
+								yield curKey, collect
+							collect = []
+						curKey = key
+						collect.append( data[key] )
 					else:
-						yield key, data[key]
+						if self.dataOnly:
+							yield data[key]					
+						else:
+							yield key, data[key]
 		if self.reduce and curKey is not None:
 			if self.dataOnly:
 				yield collect
 			else:
 				yield curKey, collect
-
 
 class http_write:
 	def __init__(self, url, jobID):
