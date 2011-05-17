@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.serverNodes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +11,8 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.RemusInstance;
+import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
 import org.remus.work.Submission;
 
@@ -34,11 +35,11 @@ public class SubmitView implements BaseNode {
 
 		Map out = new HashMap();
 		if ( name.length() == 0 ) {
-			for ( KeyValuePair kv : pipe.getDataStore().listKeyPairs("/" + pipe.id + "/@submit", RemusInstance.STATIC_INSTANCE_STR)) {
+			for ( KeyValuePair kv : pipe.getDataStore().listKeyPairs("/" + pipe.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR)) {
 				out.put(kv.getKey(), kv.getValue() );
 			}
 		} else {
-			for ( Object obj : pipe.getDataStore().get("/" + pipe.id + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name )) {
+			for ( Object obj : pipe.getDataStore().get("/" + pipe.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name )) {
 				out.put(name, obj );
 			}
 		}

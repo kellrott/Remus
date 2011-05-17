@@ -23,6 +23,7 @@ import org.mpstore.AttachStore;
 import org.remus.CodeFragment;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
+import org.remus.serverNodes.AppletInstanceStatusView;
 import org.remus.serverNodes.BaseNode;
 
 

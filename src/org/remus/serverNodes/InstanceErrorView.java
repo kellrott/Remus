@@ -1,4 +1,4 @@
-package org.remus.work;
+package org.remus.serverNodes;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -13,7 +13,7 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
-import org.remus.serverNodes.BaseNode;
+import org.remus.work.RemusApplet;
 
 public class InstanceErrorView implements BaseNode {
 

@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.serverNodes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,10 +13,10 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.RemusInstance;
+import org.remus.RemusPipeline;
 import org.remus.langs.JSInterface;
 import org.remus.mapred.MapCallback;
-import org.remus.serverNodes.BaseNode;
-import org.remus.serverNodes.BaseStackNode;
 import org.remus.work.RemusApplet;
 
 public class PipelineStatusView implements BaseNode, BaseStackNode {

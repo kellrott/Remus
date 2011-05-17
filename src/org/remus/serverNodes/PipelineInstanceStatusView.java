@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.serverNodes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.RemusInstance;
+import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
 
 public class PipelineInstanceStatusView implements BaseNode {
