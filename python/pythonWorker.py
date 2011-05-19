@@ -74,10 +74,11 @@ class WorkerBase:
 		self.instance = instance
 		self.pipeline = pipeline
 
-		fileList = json.loads( remusLib.urlopen( self.host + self.pipeline + "/@attach" ).read() )
-		for file in fileList:
-			oHandle = open( file, "w" )
-			fileURL =  self.host + self.pipeline + "/@attach/" + file
+		handle = remusLib.urlopen( self.host + self.pipeline + "/@attach" )
+		for line in handle:
+			fileName = json.loads( line ) 
+			oHandle = open( fileName, "w" )
+			fileURL =  self.host + self.pipeline + "/@attach/" + fileName
 			oHandle.write( remusLib.urlopen( fileURL ).read() )
 			oHandle.close()	
 
