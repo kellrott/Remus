@@ -403,8 +403,8 @@ public class RemusApplet {
 			baseMap.put("_input", inMap);
 		} else if ( getType() == AGENT ) {			
 			Map inMap = new HashMap();
-			inMap.put("_instance", inst.toString());
-			inMap.put("_applet", "@status" );
+			inMap.put("_instance", "@agent");
+			inMap.put("_applet", getInput() );
 			baseMap.put("_input", inMap);
 		} else {			
 			if ( getInput().compareTo("?") != 0 ) {

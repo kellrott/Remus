@@ -42,6 +42,16 @@ public class AppletInstanceView implements BaseNode {
 	public void doGet(String name, Map params, String workerID, Serializer serial,
 			OutputStream os) throws FileNotFoundException {
 
+		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
+			try {
+				os.write( serial.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", applet.getPipeline() ) ).getBytes() );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		
 		String sliceStr = null;
 		int sliceSize = 0;
 		if ( params.containsKey("slice") ) {

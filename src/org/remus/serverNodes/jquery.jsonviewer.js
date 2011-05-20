@@ -1,5 +1,8 @@
 ﻿(function($) {
-
+/*
+ * http://code.google.com/p/jquery-jsonviewer-plugin/
+ * 
+ */
     $.fn.jsonviewer = function(settings) {
 
         var config =

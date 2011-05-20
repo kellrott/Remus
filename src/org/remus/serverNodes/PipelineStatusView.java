@@ -38,7 +38,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		
 		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
 			try {
-				os.write( serial.dumps( DataStackInfo.formatInfo("status", pipeline ) ).getBytes() );
+				os.write( serial.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline ) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

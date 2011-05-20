@@ -13,14 +13,14 @@ import org.remus.work.RemusApplet;
 public class PipelineAgentView implements BaseNode {
 
 	RemusPipeline pipe;
-	
+
 	public PipelineAgentView(RemusPipeline remusPipeline) {
 		this.pipe = remusPipeline;
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -28,14 +28,18 @@ public class PipelineAgentView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
-		for ( RemusApplet applet : pipe.getMembers() ) {
-			try {
-				os.write( serial.dumps( applet.getID() ).getBytes() );
-				os.write( "\n".getBytes() );
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
+		if ( name.length() == 0 ) {
+			for ( RemusApplet applet : pipe.getMembers() ) {
+				try {
+					os.write( serial.dumps( applet.getID() ).getBytes() );
+					os.write( "\n".getBytes() );
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}			
+			}
+		} else {
+			throw new FileNotFoundException();
 		}
 	}
 

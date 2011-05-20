@@ -29,7 +29,10 @@ def urlopen(url,data=None,retry=1):
 			return StringIO( curConn.getresponse().read() )
 		else:
 			headers = {"Cookie":  'remusWorker=%s' % (workerID) }
-			curConn.request("GET", u.path, None, headers)
+			path = u.path
+			if len(u.query):
+				path += "?" + u.query
+			curConn.request("GET", path, None, headers)
 			return StringIO( curConn.getresponse().read() )
 	except httplib.BadStatusLine:
 		if retry > 0:

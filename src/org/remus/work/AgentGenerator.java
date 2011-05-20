@@ -27,7 +27,7 @@ public class AgentGenerator  implements WorkGenerator {
 				if ( !applet.datastore.containsKey( applet.getPath() + "/@done", instance.toString(), Integer.toString(jobID)) ) {
 					if (!applet.datastore.containsKey( applet.getPath() + "/@error", instance.toString(), Integer.toString(jobID)) ) {
 						WorkKey w = new WorkKey(instance, jobID);
-						w.key = input;
+						w.key = instance.toString() + ":" + input;
 						outList.add( w );					
 					} else {
 						errorCount++;

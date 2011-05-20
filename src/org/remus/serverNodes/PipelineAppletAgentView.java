@@ -31,7 +31,7 @@ public class PipelineAppletAgentView implements BaseNode {
 		
 		if ( params.containsKey(DataStackInfo.PARAM_FLAG) ) {
 			try {
-				os.write( serial.dumps( DataStackInfo.formatInfo("status", applet.getPipeline()) ).getBytes() );
+				os.write( serial.dumps( DataStackInfo.formatInfo(PipelineAppletAgentView.class, "status", applet.getPipeline()) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -63,6 +63,8 @@ public class PipelineAppletAgentView implements BaseNode {
 						e.printStackTrace();
 					}
 				}
+			} else {
+				throw new FileNotFoundException();
 			}
 		}
 	}

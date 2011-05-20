@@ -248,4 +248,23 @@ class AgentWorker(WorkerBase):
 			for dkey, data in remusLib.getDataStack( self.getInputPath( appletDesc), key=key ):
 				func( dkey, data )
 				
+	def keylist( self, applet ):
+		url = self.host + self.pipeline + "/" + self.instance + "/" + self.applet
+		print "stack", url + "?info"
+		infoData = remusLib.urlopen( url + "?info" ).read()
+		print "DATA:", infoData
+		info = json.loads( infoData )
+		keyURL = self.host + info["_pipeline"] + "/" + applet.replace(":", "/")
+		handle = remusLib.urlopen( keyURL )
+		for line in handle:
+			yield json.loads( line )
+
+	def get( self, applet, key ):
+		url = self.host + self.pipeline + "/" + self.instance + "/" + self.applet
+		print "stack", url + "?info"
+		info = json.loads( remusLib.urlopen( url + "?info" ).read() )
+		keyURL = self.host + info["_pipeline"] + "/" + applet.replace(":", "/") + "/" + key
+		handle = remusLib.urlopen( keyURL )
+		for line in handle:
+			yield json.loads( line )[ key ]
 
