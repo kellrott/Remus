@@ -48,6 +48,11 @@ class RemusCallback:
 		self.out_handle_map = outmap
 		self.out_file_list = []
 
+	def keylist( self, instance ):
+		return self.parent.keylist( instance )
+
+	def get( self, instance, key ):
+		return self.parent.get( instance, key )
 
 	def getFunction(self, name):
 		return self.remus_functions[name]

@@ -35,10 +35,10 @@ public class ServerStatusView implements BaseNode {
 			for ( String wID : app.getWorkManager().getWorkers()) {
 				//TODO: put in more methods to access work manager statistics
 				Map curMap = new HashMap();
-				curMap.put("activeCount", app.getWorkManager().getWorkerActiveCount(wID) );
+				curMap.put("_activeCount", app.getWorkManager().getWorkerActiveCount(wID) );
 				Date lastDate = app.getWorkManager().getLastAccess(wID);
 				if ( lastDate != null )
-					curMap.put("lastContact", System.currentTimeMillis() - lastDate.getTime()  );
+					curMap.put("_lastContact", System.currentTimeMillis() - lastDate.getTime()  );
 				workerMap.put(wID, curMap );	
 			}
 			Map<RemusApplet, Integer> assignMap = app.getWorkManager().getAssignRateMap();
@@ -46,9 +46,9 @@ public class ServerStatusView implements BaseNode {
 			for ( RemusApplet applet : assignMap.keySet() ) {
 				aMap.put(applet.getPath(), assignMap.get(applet) );
 			}
-			outMap.put( "assignRate", aMap );
-			outMap.put( "workers", workerMap );
-			outMap.put( "workBufferSize", app.getWorkManager().getWorkBufferSize() );
+			outMap.put( "_assignRate", aMap );
+			outMap.put( "_workers", workerMap );
+			outMap.put( "_workBufferSize", app.getWorkManager().getWorkBufferSize() );
 			//outMap.put("finishRate", workManage.getFinishRate() );
 			os.write( serial.dumps(outMap).getBytes() );
 		} catch (IOException e) {

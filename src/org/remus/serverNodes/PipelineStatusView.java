@@ -36,11 +36,21 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 		
+		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
+			try {
+				os.write( serial.dumps( DataStackInfo.formatInfo("status", pipeline ) ).getBytes() );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		
 		if ( name.length() == 0 ) {
 			for ( RemusApplet applet : pipeline.getMembers() ) {
 				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
 					Map out = new HashMap();
-					out.put( kv.getKey() + "/" + applet.getID(), kv.getValue() );	
+					out.put( kv.getKey() + ":" + applet.getID(), kv.getValue() );	
 					try {
 						os.write( serial.dumps( out ).getBytes() );
 						os.write("\n".getBytes());
@@ -51,7 +61,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				}
 			}
 		} else {
-			String [] tmp = name.split("/");
+			String [] tmp = name.split(":");
 			if ( tmp.length == 1 ) {
 				for ( RemusApplet applet : pipeline.getMembers() ) {
 					for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, tmp[0]) ) {
@@ -141,7 +151,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 
 	@Override
 	public Iterable<Object> getData(String key) {
-		String [] tmp = key.split("/");
+		String [] tmp = key.split(":");
 		if ( tmp.length == 2 ) {
 			RemusInstance inst = new RemusInstance(tmp[0]);
 			RemusApplet applet = pipeline.getApplet( tmp[1] );
@@ -159,7 +169,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		LinkedList<String> list = new LinkedList<String>();
 		for ( RemusApplet applet : pipeline.getMembers() ) {
 			for ( String key : applet.getDataStore().listKeys(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
-				list.add( key + "/" + applet.getID() );	
+				list.add( key + ":" + applet.getID() );	
 			}
 		}
 		return list;

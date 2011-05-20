@@ -4,6 +4,7 @@ import sys
 import json
 from urllib2 import urlopen
 from urllib  import quote
+from urlparse import urlparse
 import remus
 import imp
 from cStringIO import StringIO
@@ -66,13 +67,30 @@ class dummy:
 		pass
 
 class miniCallback:
-	def __init__(self):
-		pass
-	
+	def __init__(self, path):
+		a = urlparse( path )
+		self.server = a.scheme + "://" + a.netloc + "/"
+		self.url = path
+		
 	def open( self, key, name, mode ):
 		print "WRITING", key, name
 		return dummy()
+	
+	def keylist( self, applet ):
+		print "stack", self.url + "?info"
+		info = json.loads( urlopen( self.url + "?info" ).read() )
+		keyURL = self.server + info["_pipeline"] + "/" + applet.replace(":", "/")
+		handle = urlopen( keyURL )
+		for line in handle:
+			yield json.loads( line )
 
+	def get( self, applet, key ):
+		print "stack", self.url + "?info"
+		info = json.loads( urlopen( self.url + "?info" ).read() )
+		keyURL = self.server + info["_pipeline"] + "/" + applet.replace(":", "/") + "/" + key
+		handle = urlopen( keyURL )
+		for line in handle:
+			yield json.loads( line )[ key ]
 
 if __name__=="__main__":
 	mode = sys.argv[1]
@@ -83,7 +101,7 @@ if __name__=="__main__":
 	code = open( codePath).read()
 	module = imp.new_module( "test_func" )	
 	module.__dict__["__name__"] = "test_func"
-	callback = callback.RemusCallback( miniCallback() )
+	callback = callback.RemusCallback( miniCallback(inPath) )
 	module.__dict__["remus"] = callback
 	exec code in module.__dict__
 	func = callback.getFunction( "test_func" )	

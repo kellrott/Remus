@@ -18,6 +18,7 @@ import org.mpstore.MPStore;
 import org.mpstore.Serializer;
 import org.remus.serverNodes.AttachListView;
 import org.remus.serverNodes.BaseNode;
+import org.remus.serverNodes.PipelineAgentView;
 import org.remus.serverNodes.PipelineInstanceListViewer;
 import org.remus.serverNodes.PipelineInstanceView;
 import org.remus.serverNodes.PipelineListView;
@@ -46,6 +47,7 @@ public class RemusPipeline implements BaseNode {
 		children.put("@submit", new SubmitView(this) );
 		children.put("@status", new PipelineStatusView(this) );
 		children.put("@instance", new PipelineInstanceListViewer(this) );
+		children.put("@agent", new PipelineAgentView(this) );
 
 		inputs = new HashMap<String, RemusApplet >();
 		this.id = id;
