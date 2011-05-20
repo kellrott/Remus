@@ -158,6 +158,32 @@ var appletSelector = function( pipeline, instance, callback ) {
 };
 
 
+
+var htmlHideBar = function(title, html) {
+	 var container = $('<div/>');
+     $(container).addClass('ui-widget').css({'padding': "4px", 'padding-left': "12px" });
+     var header = $('<div/>');
+     $(header).appendTo(container);
+     $(header).addClass('ui-widget-header ui-corner-all')
+         .css({ 'cursor': 'hand', //'float': 'left',
+             'text-align': 'left', 'white-space': 'nowrap',
+             'overflow': 'hidden'
+         });
+     $(header).click(function(event) {
+	     $(container).children('.ui-widget-content').toggleClass('ui-helper-hidden');
+         return false;
+     });
+
+     $(header).text( title );
+    var content = $('<div/>');
+    $(content).appendTo(container);
+    $(content).addClass('ui-widget-content ui-corner-all')
+    .css({ 'overflow': 'hidden', 'white-space': 'nowrap' });
+    $(content).append( html );
+	return container;
+}
+
+
 var instanceViewer = function(pipeline) {
 	return {
 		getTitle : function() { return "Instance Viewer"; }, 
@@ -169,16 +195,19 @@ var instanceViewer = function(pipeline) {
 					ul.css( 'width', '25%');
 					ul.css( 'position', 'absolute');
 					base.append( ul );
-					var valueDiv = $("<div>");
-					valueDiv.css( 'width', '70%');
-					valueDiv.css( 'position', 'absolute');
-					valueDiv.css('right', '0');
-					base.append(valueDiv); 
-					var attachDiv = $("<div>");
-					attachDiv.css('position', 'absolute');
-					attachDiv.css('top', '600px');
 					
-					base.append( attachDiv );
+					var rightDiv = $("<div>");
+					rightDiv.css( 'width', '70%');
+					rightDiv.css( 'position', 'absolute');
+					rightDiv.css('right', '0');
+					base.append(rightDiv); 
+
+					var attachDiv = $("<div>");						
+					rightDiv.append( attachDiv );
+					
+					var valueDiv = $("<div>");
+					rightDiv.append( valueDiv );
+					
 					
 					var i;
 					var path = "/" + pipeline + "/" + instance + "/" + applet;
@@ -213,15 +242,17 @@ var instanceViewer = function(pipeline) {
 							function(data) {
 								attachDiv.empty();
 								var lines = data.split("\n");
+								var htmlDiv = $("<div>");
 								for ( a in lines ) {	
 									var link = $("<a>");
 									var name = $.parseJSON( lines[a] );
 									link.append( name );
 									link.attr( "href", attachListURL + "/" + name );	
 									link.attr( "target", "_blank" );	
-									attachDiv.append( link );
-									attachDiv.append( "<br/>" );
+									htmlDiv.append( link );
+									htmlDiv.append( "<br/>" );
 								}
+								attachDiv.append( htmlHideBar( "Attachments", htmlDiv ) );
 							}
 						);
 					});					
