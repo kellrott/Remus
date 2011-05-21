@@ -21,7 +21,12 @@ public class PipelineView implements BaseNode {
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		RemusPipeline pipeline = app.getPipeline(name);
 		if ( pipeline != null ) {
-			app.deletePipeline( pipeline );
+			try {
+				app.deletePipeline( pipeline );
+			} catch (RemusDatabaseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -54,6 +59,9 @@ public class PipelineView implements BaseNode {
 			Object data = serial.loads(sb.toString());
 			app.putPipeline( name, data );					
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -17,7 +17,7 @@ import java.util.Map;
 
 public interface MPStore {
 	
-	public void initMPStore(Serializer serializer, Map paramMap);
+	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException;
 	
 	public void add(String path, String instance, long jobid, long emitID, String key, Object data);
 	public void add(String path, String instance, List<KeyValuePair> inputList); 

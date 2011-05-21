@@ -21,6 +21,7 @@ import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
+import org.mpstore.MPStoreConnectException;
 import org.mpstore.Serializer;
 import org.remus.manage.WorkManager;
 import org.remus.serverNodes.BaseNode;
@@ -67,7 +68,7 @@ public class RemusApp implements BaseNode {
 		this.baseURL = baseURL;
 	}
 
-	public void loadPipelines() {
+	public void loadPipelines() throws RemusDatabaseException {
 		try { 
 			children = new HashMap<String,BaseNode>();
 			children.put("@pipeline", new PipelineView(this) );
@@ -96,6 +97,8 @@ public class RemusApp implements BaseNode {
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (MPStoreConnectException e) {
+			throw new RemusDatabaseException( e.toString() );
 		} 
 		workManage = new WorkManager(this);
 		children.put("@work", workManage );
@@ -200,7 +203,7 @@ public class RemusApp implements BaseNode {
 
 
 
-	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) {		
+	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) throws RemusDatabaseException {		
 		for ( RemusInstance inst : applet.getInstanceList() ) {
 			applet.deleteInstance(inst);
 		}
@@ -210,7 +213,7 @@ public class RemusApp implements BaseNode {
 		loadPipelines();
 	}
 
-	public void deletePipeline(RemusPipeline pipe) {
+	public void deletePipeline(RemusPipeline pipe) throws RemusDatabaseException {
 		for ( RemusApplet applet : pipe.getMembers() ) {
 			deleteApplet(pipe, applet);
 		}
@@ -220,12 +223,12 @@ public class RemusApp implements BaseNode {
 		loadPipelines();
 	}
 
-	public void putPipeline(String name, Object data) {
+	public void putPipeline(String name, Object data) throws RemusDatabaseException {
 		rootStore.add("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );		
 		loadPipelines();
 	}
 
-	public void putApplet(RemusPipeline pipe, String name, Object data) { 
+	public void putApplet(RemusPipeline pipe, String name, Object data) throws RemusDatabaseException { 
 		rootStore.add("/" + pipe.getID() + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );
 		loadPipelines();
 	}	

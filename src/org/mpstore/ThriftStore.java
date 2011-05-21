@@ -8,12 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
@@ -48,7 +50,7 @@ public class ThriftStore implements MPStore {
 	public static final String PORT = "org.mpstore.ThriftStore.port";
 
 	@Override
-	public void initMPStore(Serializer serializer, Map paramMap) {
+	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException {
 		this.serializer = serializer;
 		this.basePath = (String)paramMap.get(RemusApp.configWork);
 		clientPool = new SoftReferenceObjectPool( new ClientFactory() );
@@ -60,6 +62,57 @@ public class ThriftStore implements MPStore {
 		serverPort = 9160;
 		if ( paramMap.containsKey(PORT) )
 			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
+
+		try {
+			//Check db schema		
+			TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
+			TFramedTransport tf = new TFramedTransport(tr);	 
+			TProtocol proto = new TBinaryProtocol(tf);	 
+			tf.open();
+			Client client = new Client(proto);
+			KsDef ksDesc = null;
+			try {
+				ksDesc = client.describe_keyspace(keySpace);				
+			} catch ( NotFoundException e ) {
+				String strategy = "org.apache.cassandra.locator.SimpleStrategy";				
+				ksDesc = new KsDef(keySpace, strategy, 1, new ArrayList<CfDef>() );				
+				try {
+					client.system_add_keyspace( ksDesc  );
+				} catch ( Exception e2 ) {
+					throw new MPStoreConnectException( "Unable to connect or create keyspace " + keySpace + "\n" + e2.toString() );
+				}
+				//throw new MPStoreConnectException( "Keyspace " + keySpace + " not found" );				
+			}			
+			
+			Boolean found = false;
+			for ( CfDef cfdef : ksDesc.getCf_defs() ) {
+				if ( cfdef.name.compareTo( columnFamily ) == 0 ) {
+					found = true;
+				}
+			}
+			if ( !found ) {				
+				CfDef cfDesc = new CfDef(keySpace, columnFamily);
+				cfDesc.comparator_type =  "UTF8Type";
+				cfDesc.column_type = "Super";
+				//ksDesc.addToCf_defs(cfDesc);
+				try { 
+					client.set_keyspace(keySpace);
+					client.system_add_column_family(cfDesc);
+				} catch ( Exception e2 ) {
+					throw new MPStoreConnectException( "Unable to find or create columnFamily " + columnFamily + "\n" + e2.toString() );
+				}
+			}
+			tf.close();
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	class ClientFactory extends BasePoolableObjectFactory {

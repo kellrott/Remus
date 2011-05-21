@@ -13,13 +13,14 @@ import java.util.Properties;
 
 import org.junit.*;
 import org.remus.RemusApp;
+import org.remus.RemusDatabaseException;
 
 public class MPStoreTest {
 
 	MPStore ds;
 
 
-	@Before public void setUp() throws FileNotFoundException, IOException {
+	@Before public void setUp() throws FileNotFoundException, IOException, MPStoreConnectException {
 		Properties prop = new Properties();
 		prop.load( new FileInputStream( new File( "cassandra.prop" ) ) );
 		ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );

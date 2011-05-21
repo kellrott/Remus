@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.RemusDatabaseException;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
@@ -63,6 +64,9 @@ public class PipelineListView implements BaseNode {
 				Object data = serial.loads(sb.toString());
 				pipe.getApp().putApplet(pipe, name, data);
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (RemusDatabaseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

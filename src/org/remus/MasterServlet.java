@@ -45,8 +45,7 @@ public class MasterServlet extends HttpServlet {
 			serializer = new JsonSerializer();
 			app = new RemusApp(configMap);
 		} catch (RemusDatabaseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ServletException(e.toString());
 		}		
 	}
 	/**
