@@ -66,7 +66,11 @@ var statusScan = function( pipeline ) {
 			submit.bind( "click", function() {
 				output.empty();
 				$.post( "/" + pipeline + "/@status", text.val(), function(data) {
-					output.append( data );					
+					var lines = data.split("\n");
+					for ( a in lines) {
+						var valData = JSON.parse(lines[a]);		
+						output.append( $("<div>").jsonviewer( { "json_name" : "status", "json_data" : valData } )  );				
+					}
 				});
 			});
 			base.append( $("<div>").append( "Scan Submit" ) );
@@ -95,7 +99,7 @@ var instanceSelector = function(pipeline, callback) {
 	return function () {
 		var viewBase = $("<div>");
 		var ul=$("<ul>");
-		viewBase.append( ul );
+		viewBase.append( htmlHideBar( "Instances", ul ) );
 		var instBase = $("<div>");
 		$.getJSON( "/" + pipeline + "/@submit", function(data) {
 			var a;
@@ -229,10 +233,8 @@ var instanceViewer = function(pipeline) {
 								var lines = data.split("\n");
 								for ( a in lines ) {
 									if ( lines[a].length > 0 ) {
-										//valueDiv.append( JSON.stringify( JSON.parse(data), null, '\t' ) );					
 										var valData = JSON.parse(lines[a]);		
 										valueDiv.append( $("<div>").jsonviewer( { "json_name" : ul.val(), "json_data" : valData[ul.val()] } )  );
-										//valueDiv.append( lines[a] );
 									}
 								}
 							}

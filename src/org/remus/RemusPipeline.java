@@ -7,7 +7,6 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +18,7 @@ import org.mpstore.Serializer;
 import org.remus.serverNodes.AttachListView;
 import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.PipelineAgentView;
+import org.remus.serverNodes.PipelineErrorView;
 import org.remus.serverNodes.PipelineInstanceListViewer;
 import org.remus.serverNodes.PipelineInstanceView;
 import org.remus.serverNodes.PipelineListView;
@@ -48,6 +48,8 @@ public class RemusPipeline implements BaseNode {
 		children.put("@status", new PipelineStatusView(this) );
 		children.put("@instance", new PipelineInstanceListViewer(this) );
 		children.put("@agent", new PipelineAgentView(this) );
+
+		children.put("@error", new PipelineErrorView(this) );
 
 		inputs = new HashMap<String, RemusApplet >();
 		this.id = id;

@@ -382,6 +382,12 @@ public class RemusApplet {
 			}
 		}
 
+		//remove fields that will be added in automatically later
+		baseMap.remove("_timestamp");
+		baseMap.remove("_totalCount");
+		baseMap.remove("_errorCount");
+		baseMap.remove("_workdone");
+
 		if ( getType() == STORE || getType() == AGENT ) {
 			baseMap.put(WORKDONE_OP, true);
 		}
