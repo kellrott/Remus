@@ -251,14 +251,14 @@ def getWorker( host, pipeline, instance, applet ):
 		for key in data:
 			appletDesc = data[ key ]
 	print appletDesc
-	workerType = appletDesc[ 'codeType' ]
+	workerType = appletDesc[ '_type' ]
 	if not workerDict.has_key( workerType ):
 		raise Exception("Unknown code type: %s" % (workerType) )
 
-	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, pipeline, instance, applet, appletDesc)	
+	worker = workerDict[ workerType ]( appletDesc['_mode'] )(host, pipeline, instance, applet, appletDesc)	
 	
 	if worker is not None:
-		workerDict[ applet ] = worker
+		workerDict[ appletPath ] = worker
 	return worker
 
 

@@ -1,0 +1,19 @@
+{
+"_id" : "testPipeline",
+"_include" : [ "test.file" ],
+
+"testSplit" : {
+	"_mode" : "split",
+	"_src" : "?",
+	"_type" : "python",
+	"_code" : "codeAttach_split.py"
+},
+	
+"testMap" : {
+	"_mode" : "map",
+	"_src"  : "testSplit",
+	"_type" : "python",
+	"_code" : "codeAttach_map.py"
+}
+
+}

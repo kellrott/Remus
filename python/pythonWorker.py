@@ -82,15 +82,21 @@ class WorkerBase:
 			oHandle.write( remusLib.urlopen( fileURL ).read() )
 			oHandle.close()	
 
-		self.compileCode( self.appletDesc['code'] )
+		self.compileCode( self.appletDesc['_code'] )
 		self.func = self.callback.getFunction( self.applet )
 
 		
-	def compileCode(self, code):
+	def compileCode(self, codePath):
+		
+		cHandle = open( codePath )
+		code = cHandle.read()
+		cHandle.close()
+		
 		remusLib.log("COMPILE:" + self.applet + "/" + self.instance )
 		self.code = code
 		self.callback = callback.RemusCallback( self )
 		self.module = imp.new_module( self.applet )	
+		self.module.__dict__["__file__"] = codePath		
 		self.module.__dict__["__name__"] = self.applet
 		self.module.__dict__["remus"] = self.callback
 		exec self.code in self.module.__dict__
@@ -98,8 +104,8 @@ class WorkerBase:
 	def setupOutput(self, jobID):
 		outUrl = self.host + self.pipeline + "/" + self.instance + "/" + self.applet    
 		self.outmap = { None: remusLib.http_write_emit( outUrl, jobID ) }
-		if self.appletDesc.has_key( 'output' ):
-			self.output = self.appletDesc[ "output" ]
+		if self.appletDesc.has_key( '_output' ):
+			self.output = self.appletDesc[ "_output" ]
 		else:
 			self.output = []
 
@@ -126,7 +132,7 @@ class WorkerBase:
 			#fileMap[path].unlink()
 
 	def doWork(self, jobID, jobKeys):
-		mode = self.appletDesc[ 'mode' ]		
+		mode = self.appletDesc[ '_mode' ]		
 
 		doneIDs = []
 		errorIDs = {}

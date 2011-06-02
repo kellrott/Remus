@@ -1,0 +1,49 @@
+{
+"_id" : "testPipeline",
+"_include" : [ "test.file" ],
+
+"testSplit" : {
+	"_src" : "?",
+	"_mode" : "split",
+	"_type" : "python",
+	"_code" : "codeBasic_testSplit.py"
+},
+
+"testMap" : {
+	"_src" : "testSplit",
+	"_mode" : "map",
+	"_type" : "python",
+	"_code" : "codeBasic_testMap.py"
+},
+
+"testReduce" : {
+	"_src" : "testMap",
+	"_mode" : "reduce",
+	"_type" : "python",
+	"_code" : "codeBasic_testReduce.py"
+},
+
+"testMerge" : {
+	"_srcLeft"  : "testSplit",
+	"_srcRight" : "testReduce",
+	"_mode" : "merge",
+	"_type" : "python",
+	"_code" : "codeBasic_testMerge.py"
+},
+
+"testPipe" : {
+	"_src" : "testReduce",
+	"_mode" : "pipe",
+	"_type" : "python",
+	"_code" : "codeBasic_testPipe.py"
+},
+
+
+"testMatch" : {
+	"_srcLeft" : "testMerge",
+	"_srcRight" : "testPipe",
+	"_type" : "python",
+	"_mode" : "match",
+	"_code" : "codeBasic_testMatch.py"
+}
+}

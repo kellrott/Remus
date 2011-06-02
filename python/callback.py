@@ -15,25 +15,25 @@ class RemusCallback:
 	def open(self, key, name, mode="r"):
 		return self.parent.open( key, name, mode )		
 		
-	def mapper(self, f):
+	def map(self, f):
 		return self.addFunction(f)
 	
-	def reducer(self, f):
+	def reduce(self, f):
 		return self.addFunction(f)
 	
 	def pipe(self, f):
 		return self.addFunction(f)
 	
-	def merger(self, f):
+	def merge(self, f):
 		return self.addFunction(f)
 	
-	def matcher(self, f):
+	def match(self, f):
 		return self.addFunction(f)
 
 	def agent(self, f):
 		return self.addFunction(f)
 	
-	def splitter(self, f):
+	def split(self, f):
 		return self.addFunction(f)
 	
 	def addFunction(self, f):

@@ -2,6 +2,7 @@
 
 import json
 import sys
+from copy import copy
 from xml.dom.minidom import parseString
 import os
 import httplib
@@ -32,7 +33,10 @@ def putData( url, data ):
 	curConn.close()
 	return outStr
 	
-def parseRemus(server, path):
+def parseRemusXML(server, path):
+	"""
+	XML loader is depreciated
+	"""
 	dir = os.path.dirname( path )
 	handle = open( path )
 	dom = parseString( handle.read() )
@@ -50,10 +54,10 @@ def parseRemus(server, path):
 		if node.nodeType == node.ELEMENT_NODE:
 			if node.localName.startswith( "remus_" ):
 				remusNode = {}
-				remusNode['mode'] = node.localName.replace("remus_", "")
-				remusNode['id'] = node.getAttribute('id')
-				remusNode['input'] = node.getAttribute('input').split(',')
-				remusNode['codeType'] = node.getAttribute('type' )
+				remusNode['_mode'] = node.localName.replace("remus_", "")
+				remusNode['_id'] = node.getAttribute('id')
+				remusNode['_src'] = node.getAttribute('input').split(',')
+				remusNode['_type'] = node.getAttribute('type' )
 				if node.hasAttribute('output'):
 					remusNode[ 'output' ] = node.getAttribute( 'output' ).split(',')
 				for i in range(node.attributes.length):
@@ -90,8 +94,63 @@ def parseRemus(server, path):
 		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), submitData ).read()
 		for applet in initData[ subKey ]:
 			print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
+
+
+def parseRemusJSON(server, path):
+	baseDir = os.path.dirname( path )
+	handle = open( path )
+	pipelineData = json.loads( handle.read() )
+	
+	pipelineName = pipelineData[ "_id" ]
+
+	url = server + "/@pipeline/" + pipelineName 
+	data = json.dumps( { "id" : pipelineName } )
+
+	print url
+	print putData( url, data ).read()
+
+	fileList = copy( pipelineData['_include'] )
+
+	initData = {}
+	
+	for name in pipelineData:
+		if name not in [ "_id", "_include" ]:
+			node = pipelineData[ name ]
+			if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
+				if node.has_key( "_code" ):
+					fileList.append( node[ "_code" ] )				
+				
+				if node.has_key( "_init" ):					
+					if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
+						initData[ node[ "_init" ][ "_submitKey" ] ] = {}
+					initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data", {}) )
+					del node[ "_init" ]
+				
+				url = server + "/" + pipelineName + "/@pipeline/" + name  				
+				print url
+				data = json.dumps( node )
+				print putData( url, data ).read()
+				
+	for file in fileList:
+		srcPath = os.path.join( baseDir, file ) 
+		url = server + "/" + pipelineName + "/@attach/" + file.replace('/', '%2F')
+		print "LOADING", url
+		handle = open( srcPath )
+		print putData( url, handle.read() ).read()
+		handle.close()
+
+	for subKey in initData:
+		submitData = "{}"
+		print "INIT: ", subKey, initData[ subKey ].keys()
+		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), submitData ).read()
+		for applet in initData[ subKey ]:
+			print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
+
 	
 if __name__ == "__main__":
 	for path in sys.argv[2:]:
-		parseRemus( sys.argv[1], path )
-	
+		if path.endswith(".xml"):
+			parseRemusXML( sys.argv[1], path )
+		if path.endswith(".json"):
+			parseRemusJSON( sys.argv[1], path )
+		

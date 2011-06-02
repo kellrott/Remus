@@ -20,7 +20,7 @@ class BasicPipeline( unittest.TestCase ):
 		conn.request( "DELETE", "/@pipeline/testPipeline" )
 		print conn.getresponse().read()
 		conn.close()
-		call( "../bin/loadPipeline %s pipeline_Multioutput.xml" % (server), shell=True )
+		call( "../bin/loadPipeline %s pipeline_Multioutput.json" % (server), shell=True )
 
 
 	def test_submit(self):

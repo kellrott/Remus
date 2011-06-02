@@ -22,8 +22,7 @@ public class AttachListView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override
@@ -66,14 +65,15 @@ public class AttachListView implements BaseNode {
 	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
 		if ( name.length() != 0 ) {			
 			attach.writeAttachment( path, instance, key, name, is );
+		} else {
+			throw new FileNotFoundException();
 		}
 	}
 	
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-		
+		throw new FileNotFoundException();
 	}
 
 	@Override

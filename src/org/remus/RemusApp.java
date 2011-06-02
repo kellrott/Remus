@@ -128,9 +128,9 @@ public class RemusApp implements BaseNode {
 			appletObj = (Map)obj;		
 		}
 
-		String code = (String)appletObj.get("code");
-		String type = (String)appletObj.get("mode");
-		String codeType = (String)appletObj.get("codeType");
+		String code = (String)appletObj.get( RemusApplet.CODE_FIELD );
+		String type = (String)appletObj.get( RemusApplet.MODE_FIELD );
+		String codeType = (String)appletObj.get( RemusApplet.TYPE_FIELD);
 
 		CodeFragment cf =  new CodeFragment(codeType, code);
 		Integer appletType = null;
@@ -164,7 +164,7 @@ public class RemusApp implements BaseNode {
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
 			//try {
-			String lInput = (String) appletObj.get("left");
+			String lInput = (String) appletObj.get( RemusApplet.LEFT_SRC );
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 			applet.addLeftInput( lInput );
 			//} catch (FileNotFoundException e) {
@@ -172,7 +172,7 @@ public class RemusApp implements BaseNode {
 			//	e.printStackTrace();
 			//}
 			//try {
-			String rInput = (String) appletObj.get("right");
+			String rInput = (String) appletObj.get( RemusApplet.RIGHT_SRC );
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 			applet.addRightInput(rInput);
 			//} catch (FileNotFoundException e) {
@@ -181,13 +181,13 @@ public class RemusApp implements BaseNode {
 			//}
 		} else {
 			//try {
-			if ( appletObj.get("input") instanceof String ) {
-				String input = (String) appletObj.get("input");
+			if ( appletObj.get( RemusApplet.SRC ) instanceof String ) {
+				String input = (String) appletObj.get(RemusApplet.SRC );
 				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 				applet.addInput(input);
 			}
-			if ( appletObj.get("input") instanceof List ) {
-				for ( Object obj : (List)  appletObj.get("input") )	{
+			if ( appletObj.get( RemusApplet.SRC ) instanceof List ) {
+				for ( Object obj : (List)  appletObj.get( RemusApplet.SRC ) )	{
 					//RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
 					applet.addInput((String)obj);
 				}
@@ -197,9 +197,9 @@ public class RemusApp implements BaseNode {
 			//	e.printStackTrace();
 			//}
 		}
-		if ( appletObj.containsKey("output") ) {
-			for ( Object nameObj : (List)appletObj.get("output") ) {
-				RemusApplet outApplet = RemusApplet.newApplet(name + "." + (String)nameObj, null, RemusApplet.OUTPUT);
+		if ( appletObj.containsKey( RemusApplet.OUTPUT_FIELD ) ) {
+			for ( Object nameObj : (List)appletObj.get(  RemusApplet.OUTPUT_FIELD  ) ) {
+				RemusApplet outApplet = RemusApplet.newApplet(name + "." + (String)nameObj, null, RemusApplet.OUTPUT );
 				for (String input : applet.getInputs() ) {
 					outApplet.addInput(input);
 				}

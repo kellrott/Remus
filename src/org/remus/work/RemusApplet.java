@@ -72,8 +72,14 @@ public class RemusApplet {
 	public static final int OUTPUT = 8;
 	public static final int AGENT = 9;
 
-	public static final String WORKDONE_OP = "_workdone";	
-
+	public static final String WORKDONE_OP = "_workdone";
+	public static final String CODE_FIELD = "_code";
+	public static final String MODE_FIELD = "_mode";
+	public static final String TYPE_FIELD = "_type";
+	public static final String LEFT_SRC = "_srcLeft";	
+	public static final String RIGHT_SRC = "_srcRight";
+	public static final String SRC = "_src";	
+	public static final String OUTPUT_FIELD = "_output";
 
 	@SuppressWarnings("unchecked")
 	Class workGenerator = null;
@@ -362,7 +368,7 @@ public class RemusApplet {
 			inMap.put("_applet", getInput() );
 			baseMap.put("_input", inMap);
 		} else {			
-			if ( getInput().compareTo("?") != 0 ) {
+			if ( hasInputs() && getInput().compareTo("?") != 0 ) {
 				Map inMap = new HashMap();
 				inMap.put("_instance", inst.toString());
 				inMap.put("_applet", getInput() );

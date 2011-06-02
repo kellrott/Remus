@@ -31,6 +31,8 @@ import org.remus.work.WorkKey;
 
 public class RemusPipeline implements BaseNode {
 
+	public static final String CODE_FIELD = "_code";
+
 	HashMap<String,BaseNode> children;
 
 	private HashMap<String,RemusApplet> members;

@@ -19,7 +19,7 @@ class BasicPipeline( unittest.TestCase ):
 		conn.request( "DELETE", "/@pipeline/testPipeline" )
 		print conn.getresponse().read()
 		conn.close()
-		call( "../bin/loadPipeline %s pipeline_Attach.xml" % (server), shell=True )
+		call( "../bin/loadPipeline %s pipeline_Attach.json" % (server), shell=True )
 
 
 	def test_submit(self):
