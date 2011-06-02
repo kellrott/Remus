@@ -106,7 +106,7 @@ var instanceSelector = function(pipeline, callback) {
 			for (a in data ) {
 				var li = $("<li>");
 				var anchor = $("<a href='#" + pipeline + "-tab-" + a + "'>").append( $("<span>").append( a ) );
-				anchor.bind( 'click', a, function(event) {
+				anchor.bind( 'click', data[a]["_instance"], function(event) {
 					instBase.empty();
 					instBase.append( callback( event.data ) );
 				});
@@ -123,13 +123,14 @@ var instanceSelector = function(pipeline, callback) {
 
 var appletSelector = function( pipeline, instance, callback ) {
 	var data;
+	var selectStr = "function(key,val) { if (key.indexOf('" + instance + "')==0) {remus.emit( key, { '_name' : key.split(':')[1], '_instance' : val['_instance'] } );} }";	
 	$.ajax( {
-		url:"/" + pipeline + "/@pipeline",
-	    type: 'GET',
+		url:"/" + pipeline + "/@status",
+	    type: 'POST',
 	    async: false,
 	    cache: false,
+	    data: selectStr,
 	    timeout: 30000,
-	    dataType: 'json',
 	    error: function(){
 	        return true;
 	    },
@@ -145,18 +146,22 @@ var appletSelector = function( pipeline, instance, callback ) {
 	viewBase.append( ul );
 	viewBase.append(dataBase);
 
-	for (var a in data ) {
+	var lines = data.split("\n");
+	for (var curLine in lines ) {
 		var li = $("<li>");
-		var appletName = a;
-		var anchor = $("<a href='#'>").append( $("<span>").append( a ) );
-		anchor.bind( 'click', appletName, function(event) {
-				dataBase.empty();
-				dataBase.append( callback( event.data ) );
-			}
-		);
-		li.append( anchor );
-		li.append( data[a]["_instance"] ); 
-		ul.append( li ); 		
+		var d = $.parseJSON( lines[curLine] );
+		for ( var a in d ) {
+			var appletName = d[a];
+			var anchor = $("<a href='#'>").append( $("<span>").append( appletName ) );
+			anchor.bind( 'click', appletName, function(event) {
+					dataBase.empty();
+					dataBase.append( callback( event.data ) );
+				}
+			);
+			li.append( anchor );
+			li.append( data[a]["_instance"] ); 
+			ul.append( li ); 	
+		}	
 	}	
 	return viewBase;
 };

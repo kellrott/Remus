@@ -1,6 +1,7 @@
 package org.remus;
 
-
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public class DataStackRef {
 
 	RemusInstance instance;
 	String viewPath;
-	List keys = null;
+	List<String> keys = null;
 	MPStore ds;
 	
 	private DataStackRef() {
@@ -32,7 +33,10 @@ public class DataStackRef {
 					instanceStr = (String)((Map)subObj).get(Submission.InstanceField);
 				}
 				if ( inputInfo.containsKey( Submission.KeysField ) ) {
-					out.keys = (List) inputInfo.get( Submission.KeysField );
+					out.keys = new ArrayList<String>();
+					for ( Object key : (List)inputInfo.get( "_keys" ) ) {
+						out.keys.add( (String) key);
+					}
 				}
 				out.instance = new RemusInstance(instanceStr);
 				out.viewPath = "/" + applet.getPipeline().id + "/" + appletStr;

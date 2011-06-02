@@ -41,12 +41,7 @@ class RemusCallback:
 		return f
 
 	def emit(self, key, val, output=None):
-		#print key, val, output, out_handle_map
-		self.out_handle_map[ output ].emit( key, val )
-
-	def setoutput( self, outmap ):
-		self.out_handle_map = outmap
-		self.out_file_list = []
+		self.parent.emit( key, val, output )
 
 	def keylist( self, instance ):
 		return self.parent.keylist( instance )

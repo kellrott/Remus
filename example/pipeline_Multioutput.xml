@@ -1,0 +1,28 @@
+<remus_pipeline id="testPipeline">
+<include path="test.file"/>
+<remus_split id="testSplit" type="python" input="?">
+<![CDATA[
+@remus.splitter
+def split( info ):
+	handle = open( "test.file" )
+	for line in handle:
+		tmp = line.rstrip().split("\t")
+		print tmp
+		remus.emit( tmp[0], tmp[1] )
+	handle.close()
+]]>
+</remus_split>
+
+<remus_map id="testMap" type="python" input="testSplit" output="val,key">
+<![CDATA[
+@remus.mapper
+def map( key, val ):
+	for i in range(int(val)):
+		remus.emit( val, i, "val" )
+	for i in range(len(key)):
+		remus.emit( key, i, "key" )
+	remus.emit( key, val )
+]]>
+</remus_map>
+
+</remus_pipeline>
