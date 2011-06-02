@@ -21,7 +21,48 @@ and return results.
 INSTALLATION
 
 
+1) Download and Install Cassandra
+Download Page
+http://cassandra.apache.org/download/
+
+Getting Started Page:
+http://wiki.apache.org/cassandra/GettingStarted
+
+After configuration, run ./bin/cassandra to start the Cassandra database.
+
+2)Download Remus
+Remus can be downloaded at https://github.com/kellrott/Remus 
+
+REMUS_DIR is the downloaded directory, and should have a ‘README’ file, a ‘bin’ folder, and an ‘etc’ folder. 
+
+3) Server properties file:
+
+Edit the ‘etc/remus.prop’ file to setup your custom parameters. 
+
+Example Server Properties:
+
+org.remus.port = 16017
+org.remus.mpstore = org.mpstore.ThriftStore
+org.remus.attachstore = org.mpstore.FileAttachStore
+org.remus.workdir = /var/lib/remusWork
+org.mpstore.ThriftStore.columnFamily = remusTable
+org.mpstore.ThriftStore.keySpace = remus
 
 
+Properties Definitions:
+
+org.remus.port	Define the Internet Port Remus should live on
+org.remus.mpstore	Define the driver Remus should use to store Map/Reduce related key-pair values  
+org.remus.attachstore	Define the driver Remus should use to store File attachments
+org.remus.workdir	Define common directory for Remus files
+org.mpstore.ThriftStore.server	The host where the Cassandra instance lives (default: localhost)
+org.mpstore.ThriftStore.port	The port to contact the Cassandra server (default: 9160)
+org.mpstore.ThriftStore.keySpace	The Cassandra keyspace to be used by the ThriftStore driver
+org.mpstore.ThriftStore.columnFamily	The Cassandra column family to be used by the ThriftStore driver
 
 
+4) Server Startup
+To start the master server, in REMUS_DIR run ./bin/remusMaster
+
+5)Load site
+Point your web browser to the server, for example: http://localhost:16017/@manage/
