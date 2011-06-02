@@ -14,7 +14,7 @@ public class AttachAppletView implements BaseNode {
 
 	RemusApplet applet;
 	RemusInstance inst;
-	
+
 	public AttachAppletView(RemusApplet applet, RemusInstance inst) {
 		this.applet = applet;
 		this.inst = inst;
@@ -22,7 +22,7 @@ public class AttachAppletView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -30,14 +30,18 @@ public class AttachAppletView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
-		for ( String key : applet.getAttachStore().listKeys(applet.getPath(), inst.toString() ) ) {
-			try {
-				os.write( serial.dumps( key ).getBytes() );
-				os.write("\n".getBytes());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if ( name.length() == 0 ) {
+			for ( String key : applet.getAttachStore().listKeys(applet.getPath(), inst.toString() ) ) {
+				try {
+					os.write( serial.dumps( key ).getBytes() );
+					os.write("\n".getBytes());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+		} else {
+			throw new FileNotFoundException();
 		}
 	}
 

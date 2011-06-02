@@ -151,7 +151,7 @@ var appletSelector = function( pipeline, instance, callback ) {
 		var li = $("<li>");
 		var d = $.parseJSON( lines[curLine] );
 		for ( var a in d ) {
-			var appletName = d[a];
+			var appletName = d[a]["_name"];
 			var anchor = $("<a href='#'>").append( $("<span>").append( appletName ) );
 			anchor.bind( 'click', appletName, function(event) {
 					dataBase.empty();
@@ -159,7 +159,7 @@ var appletSelector = function( pipeline, instance, callback ) {
 				}
 			);
 			li.append( anchor );
-			li.append( data[a]["_instance"] ); 
+			li.append( d[a]["_instance"] ); 
 			ul.append( li ); 	
 		}	
 	}	
@@ -200,10 +200,15 @@ var instanceViewer = function(pipeline) {
 			return function(applet) {
 				return appletSelector( pipeline, instance, function( applet ) {					
 					var base = $("<div>").css('position', 'relative');
+
+					var spinner = $("<img src='ajax-loader.gif'/>");
+					base.append( spinner );
 					var ul=$("<select size='20' style='width:300px'>");
 					ul.css( 'width', '25%');
 					ul.css( 'position', 'absolute');
 					base.append( ul );
+
+					
 					
 					var rightDiv = $("<div>");
 					rightDiv.css( 'width', '70%');
@@ -221,6 +226,7 @@ var instanceViewer = function(pipeline) {
 					var i;
 					var path = "/" + pipeline + "/" + instance + "/" + applet;
 					$.get( path , function(data) {
+						spinner.remove();
 						var lines = data.split("\n");
 						for (i = 0; i < lines.length; i++) {
 							if ( lines[i].length > 0 ) {
