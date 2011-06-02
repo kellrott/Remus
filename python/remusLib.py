@@ -188,7 +188,7 @@ class getDataStack:
 			else:
 				yield curKey, collect
 
-class http_write:
+class http_write_emit:
 	def __init__(self, url, jobID):
 		self.url = url
 		self.order = 0
@@ -256,14 +256,6 @@ def getWorker( host, pipeline, instance, applet ):
 		raise Exception("Unknown code type: %s" % (workerType) )
 
 	worker = workerDict[ workerType ]( appletDesc['mode'] )(host, pipeline, instance, applet, appletDesc)	
-
-	if ( appletDesc.has_key( "output" ) ):
-		worker.output = appletDesc[ "output" ]
-	else:
-		worker.output = []
-		
-	if ( appletDesc.has_key( "output" ) ):
-		worker.setOutput( appletDesc[ "output" ] )
 	
 	if worker is not None:
 		workerDict[ applet ] = worker

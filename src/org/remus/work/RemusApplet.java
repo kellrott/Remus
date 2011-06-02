@@ -1,11 +1,5 @@
 package org.remus.work;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,16 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mpstore.JsonSerializer;
-import org.mpstore.KeyValuePair;
-import org.mpstore.MPStore;
-import org.mpstore.Serializer;
 import org.mpstore.AttachStore;
+import org.mpstore.MPStore;
 import org.remus.CodeFragment;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.serverNodes.AppletInstanceStatusView;
-import org.remus.serverNodes.BaseNode;
 
 
 public class RemusApplet {
@@ -79,7 +69,8 @@ public class RemusApplet {
 	public static final int REDUCER = 5;
 	public static final int PIPE = 6;
 	public static final int STORE = 7;
-	public static final int AGENT = 8;
+	public static final int OUTPUT = 8;
+	public static final int AGENT = 9;
 
 	public static final String WORKDONE_OP = "_workdone";	
 
@@ -87,7 +78,6 @@ public class RemusApplet {
 	Class workGenerator = null;
 	private String id;
 	List<String> inputs = null, lInputs = null, rInputs = null;
-	List<String> outputs = null;
 	CodeFragment code;
 	MPStore datastore;
 	int type;
@@ -116,12 +106,6 @@ public class RemusApplet {
 		addInput(in);
 	}
 
-	public void addOutput( String name ) {
-		if ( outputs == null ) 
-			outputs = new LinkedList<String>();
-		outputs.add(name);
-	}
-
 	public String getInput() {
 		return inputs.get(0);
 	}
@@ -144,11 +128,6 @@ public class RemusApplet {
 		return new ArrayList<String>();
 	}
 
-	public String [] getOutputs() {
-		if ( outputs != null  )
-			return outputs.toArray( new String[0] );
-		return new String[0];
-	}
 
 	public String getPath() {
 		return "/" + pipeline.getID() + "/" + id;
@@ -335,35 +314,7 @@ public class RemusApplet {
 		}
 		return out;
 	}
-
-	/*
-	public Collection<RemusInstance> getActiveInstanceList() {
-		Collection<RemusInstance> out = getInstanceList();
-		Collection<RemusInstance> removeList = new HashSet<RemusInstance>();
-		for ( RemusInstance inst : out ) {
-			long timestamp = datastore.getTimeStamp(getPath() + "/@done", inst.toString());
-			boolean invalid = false;
-			for ( RemusPath iRef : getInputs() ) {
-				if ( iRef.getInputType() == RemusPath.AppletInput ) {			
-					long othertime = datastore.getTimeStamp(iRef.getAppletPath() + "/@done", inst.toString() );
-					if ( othertime > timestamp )
-						invalid = true;
-				}				
-			}
-			if ( !invalid ) {
-				boolean hasDone = false;
-				for ( Object val : datastore.get(getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
-					if ( ((Map)val).containsKey( WORKDONE_OP ) )
-						hasDone = true;
-				}
-				if ( hasDone )		
-					removeList.add(inst);
-			}
-		}		
-		out.removeAll(removeList);		
-		return out;
-	}
-	 */
+	
 
 	public boolean createInstance(String submitKey, Map params, RemusInstance inst) {
 
@@ -429,11 +380,7 @@ public class RemusApplet {
 		datastore.delete(getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 		datastore.delete(getPath() + "/@done", instance.toString() );		
 		datastore.delete(getPath() + "/@error", instance.toString() );
-		attachstore.delete(getPath() + "/@attach", instance.toString() );
-
-		for ( String subname : getOutputs() ) {
-			datastore.delete( getPath() + "." + subname + "/@data", instance.toString() );
-		}		
+		attachstore.delete(getPath(), instance.toString() );
 		datastore.delete( getPath() + "/@done", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 	}
 

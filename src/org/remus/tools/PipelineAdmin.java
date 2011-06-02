@@ -85,6 +85,7 @@ public class PipelineAdmin {
 							m.put(kv.getKey(), kv.getValue() );
 							System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
 						}
+						/*
 						for ( String outpath : applet.getOutputs() ) {
 							System.out.println( "===" + applet.getPath() + "." + outpath + "@data" );
 							for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "." + outpath + "@data", instance.toString() ) ) {
@@ -93,6 +94,7 @@ public class PipelineAdmin {
 								System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
 							}
 						}
+						*/
 					}
 
 				} else if ( cmd.compareTo("load") == 0 && args.length > 2) {

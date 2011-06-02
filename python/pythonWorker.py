@@ -97,11 +97,15 @@ class WorkerBase:
 
 	def setupOutput(self, jobID):
 		outUrl = self.host + self.pipeline + "/" + self.instance + "/" + self.applet    
-		self.outmap = { None: remusLib.http_write( outUrl, jobID ) }
+		self.outmap = { None: remusLib.http_write_emit( outUrl, jobID ) }
+		if self.appletDesc.has_key( 'output' ):
+			self.output = self.appletDesc[ "output" ]
+		else:
+			self.output = []
+
 		for outname in self.output:
-			outUrl = self.host + "/" + self.pipeline + "/" + self.instance + self.applet + "." + outname
-			self.outmap[ outname ] = http_write( outUrl, jobID )
-		self.callback.setoutput( self.outmap )
+			outUrl = self.host + "/" + self.pipeline + "/" + self.instance + "/" + self.applet + "." + outname
+			self.outmap[ outname ] = remusLib.http_write_emit( outUrl, jobID )
 		self.out_file_list = []
 		
 	def closeOutput(self):
@@ -169,6 +173,9 @@ class WorkerBase:
 	def getAttachOutputPath( self, desc, key, name ):
 			return self.host + "/" + self.pipeline + "/" + self.instance + \
 				"/%s/%s/%s" % ( self.applet, key, name)
+	
+	def emit(self, key, value, name ):
+		self.outmap[ name ].emit( key, value )
 	
 	def open(self, key, name, mode="r"):
 		if mode=="w":
