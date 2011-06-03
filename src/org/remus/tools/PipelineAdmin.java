@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,13 @@ public class PipelineAdmin {
 		Properties prop = new Properties();
 		prop.load( new FileInputStream( new File( args[0] ) ) );
 
+		
+		String outDirPath = "out";
+		File outDir = new File(outDirPath);
+		if ( !outDir.exists() ) {
+			outDir.mkdir();			
+		}
+		
 		try {
 			Serializer serializer = new JsonSerializer();
 			RemusApp app = new RemusApp( prop );
@@ -77,14 +85,23 @@ public class PipelineAdmin {
 					RemusPipeline pipe = app.getPipeline(pipeline);
 					RemusInstance instance = new RemusInstance(inst);
 
+					System.err.println( "PIPELINE" + pipe.getID() );
 					for ( RemusApplet applet : pipe.getMembers() ) {
-						System.out.println( "===" + applet.getPath() + "@data" );
+						System.err.println( "Dumping: " + applet.getID() );
+						File outFile = new File(outDir, applet.getID() );
+						FileOutputStream fos = new FileOutputStream(outFile);
 						MPStore ds = applet.getDataStore();
-						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "@data", instance.toString() ) ) {
-							Map m = new HashMap();
-							m.put(kv.getKey(), kv.getValue() );
-							System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
+						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath(), instance.toString() ) ) {
+							Map<String,Object> m = new HashMap<String,Object>();
+							m.put(kv.getKey(), kv.getValue() );							
+							fos.write( Long.toString(kv.getJobID()).getBytes() );
+							fos.write( "\t".getBytes() );
+							fos.write( Long.toString(kv.getEmitID()).getBytes() );
+							fos.write( "\t".getBytes() );
+							fos.write( serializer.dumps( m ).getBytes() );							
+							fos.write( "\n".getBytes() );
 						}
+						fos.close();
 						/*
 						for ( String outpath : applet.getOutputs() ) {
 							System.out.println( "===" + applet.getPath() + "." + outpath + "@data" );
