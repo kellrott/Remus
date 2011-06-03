@@ -51,3 +51,6 @@ class RemusCallback:
 
 	def getFunction(self, name):
 		return self.remus_functions[name]
+	
+	def getInfo(self, name):
+		return self.parent.getInfo( name )

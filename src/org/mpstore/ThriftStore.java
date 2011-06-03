@@ -2,11 +2,14 @@ package org.mpstore;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
@@ -31,6 +34,7 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.remus.RemusApp;
 
 
@@ -41,6 +45,8 @@ public class ThriftStore implements MPStore {
 	String basePath;
 	ObjectPool clientPool;
 
+	Boolean instanceColumns = false;
+
 	String columnFamily,keySpace,serverName;
 	int serverPort;
 
@@ -48,6 +54,9 @@ public class ThriftStore implements MPStore {
 	public static final String KEY_SPACE = "org.mpstore.ThriftStore.keySpace";
 	public static final String SERVER = "org.mpstore.ThriftStore.server";
 	public static final String PORT = "org.mpstore.ThriftStore.port";
+	public static final String INST_COLUMNS = "org.mpstore.ThriftStore.instColumns";
+
+	Map<String,String> columns = new HashMap<String,String>();
 
 	@Override
 	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException {
@@ -62,6 +71,10 @@ public class ThriftStore implements MPStore {
 		serverPort = 9160;
 		if ( paramMap.containsKey(PORT) )
 			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
+
+		if ( paramMap.containsKey( INST_COLUMNS ) ) {
+			instanceColumns = Boolean.valueOf((String)paramMap.get(INST_COLUMNS) );
+		}
 
 		try {
 			//Check db schema		
@@ -83,26 +96,8 @@ public class ThriftStore implements MPStore {
 				}
 				//throw new MPStoreConnectException( "Keyspace " + keySpace + " not found" );				
 			}			
-			
-			Boolean found = false;
-			for ( CfDef cfdef : ksDesc.getCf_defs() ) {
-				if ( cfdef.name.compareTo( columnFamily ) == 0 ) {
-					found = true;
-				}
-			}
-			if ( !found ) {				
-				CfDef cfDesc = new CfDef(keySpace, columnFamily);
-				cfDesc.comparator_type =  "UTF8Type";
-				cfDesc.column_type = "Super";
-				//ksDesc.addToCf_defs(cfDesc);
-				try { 
-					client.set_keyspace(keySpace);
-					client.system_add_column_family(cfDesc);
-				} catch ( Exception e2 ) {
-					throw new MPStoreConnectException( "Unable to find or create columnFamily " + columnFamily + "\n" + e2.toString() );
-				}
-			}
 			tf.close();
+
 		} catch (NoSuchElementException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -113,6 +108,64 @@ public class ThriftStore implements MPStore {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+	private String getColumnFamily( String inst ) throws MPStoreConnectException {
+		if ( columns.containsKey(inst) ) 
+			return columns.get(inst);		
+
+		String cfName;
+		if ( instanceColumns )
+			cfName = columnFamily + "_" + inst.replaceAll("-", "" );		
+		else
+			cfName = columnFamily;
+		
+		TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
+		TFramedTransport tf = new TFramedTransport(tr);	 
+		try {
+			TProtocol proto = new TBinaryProtocol(tf);	 
+			tf.open();
+			Client client = new Client(proto);
+			KsDef ksDesc = client.describe_keyspace(keySpace);				
+			Boolean found = false;
+			for ( CfDef cfdef : ksDesc.getCf_defs() ) {
+				if ( cfdef.name.compareTo( cfName ) == 0 ) {
+					found = true;
+				}
+			}
+			if ( !found ) {				
+				CfDef cfDesc = new CfDef(keySpace, cfName);
+				cfDesc.comparator_type =  "UTF8Type";
+				cfDesc.column_type = "Super";
+				//ksDesc.addToCf_defs(cfDesc);
+				try { 
+					client.set_keyspace(keySpace);
+					client.system_add_column_family(cfDesc);
+				} catch ( Exception e2 ) {
+					throw new MPStoreConnectException( "Unable to find or create columnFamily " + cfName + "\n" + e2.toString() );
+				}
+			}
+			columns.put(inst, cfName);
+		} catch (NoSuchElementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TTransportException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			tf.close();
+		}		
+		return columns.get(inst);
 	}
 
 	class ClientFactory extends BasePoolableObjectFactory {
@@ -210,12 +263,19 @@ public class ThriftStore implements MPStore {
 		final String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap( serializer.dumps(data).getBytes());
 
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnParent cp = new ColumnParent( curCF );
+		
 		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>()  {
 			@Override
 			protected Boolean request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
-				ColumnParent cp = new ColumnParent( columnFamily );
 				cp.setSuper_column( superColumn );
 				long clock = System.currentTimeMillis() * 1000;				
 				Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
@@ -252,7 +312,15 @@ public class ThriftStore implements MPStore {
 	@Override
 	public boolean containsKey(String path, String instance, String key)  {		
 		final String superColumn = instance + path;
-		final ColumnPath cp = new ColumnPath( columnFamily );
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnPath cp = new ColumnPath( curCF );
+		
+		
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
 
 		ThriftCaller<Boolean> containsCall = new ThriftCaller<Boolean>() {
@@ -282,8 +350,14 @@ public class ThriftStore implements MPStore {
 	public void delete(String path, String instance) {
 
 		final String column = instance + path;
-		final ColumnPath cp = new ColumnPath( columnFamily );
-
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnPath cp = new ColumnPath( curCF );		
+		
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
 			@Override
 			protected Boolean request(Client client)
@@ -307,9 +381,15 @@ public class ThriftStore implements MPStore {
 
 	@Override
 	public void delete(String path, String instance, String key) {
-
-		final String column = instance + path;
-		final ColumnPath cp = new ColumnPath( columnFamily );
+		final String column = instance + path;		
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnPath cp = new ColumnPath( curCF );
+		
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
@@ -335,7 +415,14 @@ public class ThriftStore implements MPStore {
 	public Iterable<Object> get(String path, String instance, String key) {
 
 		final String superColumn = instance + path;
-		final ColumnPath cp = new ColumnPath( columnFamily );
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnPath cp = new ColumnPath( curCF );
+		
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
 		ThriftCaller<Iterable<Object>> getCall = new ThriftCaller<Iterable<Object>>() {
 
@@ -450,7 +537,13 @@ public class ThriftStore implements MPStore {
 	@Override
 	public Iterable<KeyValuePair> listKeyPairs(String path, String instance) {
 		String superColumn = instance + path;
-		SliceIterator<KeyValuePair> out = new SliceIterator<KeyValuePair>(superColumn, columnFamily, "","") {				
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		SliceIterator<KeyValuePair> out = new SliceIterator<KeyValuePair>(superColumn, curCF, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
 				String key = new String( scol.getSuper_column().getName() );
@@ -470,7 +563,13 @@ public class ThriftStore implements MPStore {
 	@Override
 	public Iterable<String> listKeys(String path, String instance) {
 		String superColumn = instance + path;
-		SliceIterator<String> out = new SliceIterator<String>(superColumn, columnFamily, "","") {				
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}		
+		SliceIterator<String> out = new SliceIterator<String>(superColumn, curCF, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn col) {
 				addElement( new String(col.getSuper_column().getName()) );
@@ -483,8 +582,14 @@ public class ThriftStore implements MPStore {
 	@Override
 	public long keyCount(String path, String instance, final int maxCount) {
 		final String superColumn = instance + path;
-		final ColumnParent cp = new ColumnParent(columnFamily);
-
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnParent cp = new ColumnParent( curCF );
+		
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>() {
 			@Override
 			protected Long request(Client client)
@@ -511,7 +616,14 @@ public class ThriftStore implements MPStore {
 	@Override
 	public long getTimeStamp(String path, String instance) {
 		String superColumn = instance + path;
-		SliceIterator<Long> out = new SliceIterator<Long>(superColumn, columnFamily, "","") {				
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		
+		SliceIterator<Long> out = new SliceIterator<Long>(superColumn, curCF, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
 				for ( Column col : scol.getSuper_column().getColumns() ) {
@@ -532,6 +644,14 @@ public class ThriftStore implements MPStore {
 	@Override
 	public Iterable<String> keySlice(String path, String instance, final String startKey, final int count) {
 		final String superColumn = instance + path;
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnParent cp = new ColumnParent( curCF );
+		
 		ThriftCaller<Iterable<String>> keySliceCall = new ThriftCaller<Iterable<String>>() {
 
 			@Override
@@ -542,7 +662,6 @@ public class ThriftStore implements MPStore {
 				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
 				SlicePredicate slice = new SlicePredicate();	 
 				slice.setSlice_range(sRange);
-				ColumnParent cp = new ColumnParent(columnFamily);
 				List<ColumnOrSuperColumn> res = client.get_slice( ByteBuffer.wrap( superColumn.getBytes() ), cp, slice, CL);
 				for ( ColumnOrSuperColumn col : res ) {		
 					String curKey = new String( col.getSuper_column().getName() );

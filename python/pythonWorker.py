@@ -191,7 +191,10 @@ class WorkerBase:
 		attachPath = "%s/%s/%s/%s/%s/%s" % (self.host, self.pipeline, self.appletDesc['_input']['_instance'], self.appletDesc['_input']['_applet'], key, name )
 		print "GETTING: " + attachPath
 		return urllib.urlopen( attachPath ) 
-		
+	
+	def getInfo( self, name ):
+		return self.appletDesc.get( name, None )
+	
 class SplitWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		func( appletDesc )

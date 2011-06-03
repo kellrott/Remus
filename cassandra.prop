@@ -4,3 +4,4 @@ org.remus.attachstore = org.mpstore.FileAttachStore
 org.remus.workdir = /opt/webapps/remusWork
 org.mpstore.ThriftStore.columnFamily = remusTable
 org.mpstore.ThriftStore.keySpace = remus
+org.mpstore.ThriftStore.instColumns = true
