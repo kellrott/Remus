@@ -348,14 +348,27 @@ var pipelineSelector = function() {
 	};	
 };
 
+var statusClock = function(div) {
+	$.get( "/@status", dataType="json", function(msg) {
+		var data = $.parseJSON( msg );
+		$(div).empty();
+		$(div).append( "Work Pending:" + data[ '_workBufferSize' ] );
+	});
+};	
+
+var statusWatcher = function(div) {
+	var inter = setInterval( "statusClock(" + div.attr('id') + ")", 10000 );
+};
+
 
 $(document).ready( function() {
+	statusWatcher( $("#statusBase") );
 	var pipelines = pipelineSelector();
 	$("#controlBase").append(  pipelines.getDiv() );
 });
 
 </script>
-
+<div id="statusBase"></div>
 <div id="controlBase"></div>
 
 </body>
