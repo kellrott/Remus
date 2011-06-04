@@ -67,8 +67,9 @@ class PipeFileBuffer:
 remusLib.addWorker( "python", pythonWorker )
 
 class WorkerBase:
-	def __init__(self, host, pipeline, instance, applet, appletDesc):
+	def __init__(self, host, workerID, pipeline, instance, applet, appletDesc):
 		self.host = host
+		self.workerID = workerID
 		self.appletDesc = appletDesc
 		self.applet = applet
 		self.instance = instance
@@ -102,21 +103,34 @@ class WorkerBase:
 		exec self.code in self.module.__dict__
 
 	def setupOutput(self, jobID):
-		outUrl = self.host + self.pipeline + "/" + self.instance + "/" + self.applet    
-		self.outmap = { None: remusLib.http_write_emit( outUrl, jobID ) }
+		outUrl = self.host + self.pipeline + "/" + self.instance + "/" + self.applet
+		self.outputSet = { None : remusLib.getStackDB( self.host, self.workerID, self.pipeline, self.instance, self.applet, jobID ) }
 		if self.appletDesc.has_key( '_output' ):
 			self.output = self.appletDesc[ "_output" ]
 		else:
 			self.output = []
 
 		for outname in self.output:
-			outUrl = self.host + "/" + self.pipeline + "/" + self.instance + "/" + self.applet + "." + outname
-			self.outmap[ outname ] = remusLib.http_write_emit( outUrl, jobID )
+			self.outputSet[ outname ] = remusLib.getStackDB( self.host, self.workerID, self.pipeline, self.instance, "%s.%s" % (self.applet, outname), jobID ) 
 		self.out_file_list = []
-		
+	
+	def getStackDB( self, desc, major=True, applet=None, instance=None  ):
+		if applet is not None and instance is not None:
+			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, instance, applet )
+			
+		if desc['_input'].has_key( '_axis' ):
+			axis = desc['_input'][ '_axis' ]
+			if not major:
+				if axis == "_left":
+					axis = "_right"
+				else:
+					axis = "_left"
+			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, desc['_input'][axis]['_instance'], desc['_input'][axis]['_applet'] )
+		return remusLib.getStackDB( self.host, self.workerID, self.pipeline, desc['_input']['_instance'], desc['_input']['_applet'] )
+	
 	def closeOutput(self):
-		for name in self.outmap:
-			self.outmap[name].close()
+		for name in self.outputSet:
+			self.outputSet[name].close()
 		self.outmap = []
 
 		for key, name, handle in self.out_file_list:
@@ -181,7 +195,7 @@ class WorkerBase:
 				"/%s/%s/%s" % ( self.applet, key, name)
 	
 	def emit(self, key, value, name ):
-		self.outmap[ name ].emit( key, value )
+		self.outputSet[ name ].put( key, value )
 	
 	def open(self, key, name, mode="r"):
 		if mode=="w":
@@ -204,7 +218,7 @@ class MapWorker(WorkerBase):
 	def work( self, func, appletDesc, keys ):
 		print appletDesc
 		for key in keys:
-			for dkey, data in remusLib.getDataStack( self.getInputPath( appletDesc), key=key ):
+			for dkey, data in remusLib.getDataStack( self.getStackDB( appletDesc), key=key ):
 				func( dkey, data )
 
 
@@ -212,7 +226,7 @@ class ReduceWorker(WorkerBase):
 	def work( self, func, appletDesc, keys ):
 		print appletDesc
 		for key in keys:
-			for dkey, data in remusLib.getDataStack( self.getInputPath( appletDesc ), key=key, reduce=True ):
+			for dkey, data in remusLib.getDataStack( self.getStackDB( appletDesc ), key=key, reduce=True ):
 				print "REDUCING", dkey, data
 				func(  dkey, data )
 		
@@ -220,10 +234,9 @@ class ReduceWorker(WorkerBase):
 class PipeWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		inList = []
-		for inFile in keys[0]: #appletDesc['input']:
-			kpURL = self.host + inFile
-			remusLib.log( "piping: " + kpURL )
-			iHandle = remusLib.getDataStack( kpURL ) 
+		for inFile in appletDesc['_input']:
+			remusLib.log( "piping: " + inFile["_instance"] + " " + inFile["_applet"] )
+			iHandle = remusLib.getDataStack( self.getStackDB( appletDesc, applet=inFile['_applet'], instance=inFile['_instance'] ) ) 
 			inList.append( iHandle )
 		func( inList )
 
@@ -231,8 +244,8 @@ class PipeWorker(WorkerBase):
 class MergeWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		for key in keys:
-			majorURL = self.getInputPath( appletDesc )
-			minorURL = self.getInputPath( appletDesc, False )				
+			majorURL = self.getStackDB( appletDesc )
+			minorURL = self.getStackDB( appletDesc, False )				
 			major = list( remusLib.getDataStack( majorURL, key=key, reduce=True, dataOnly=True ) )
 			for mkey, mdata in remusLib.getDataStack( minorURL, reduce=True ):
 				if appletDesc[ '_input' ][ '_axis' ] == '_left':			
@@ -244,8 +257,8 @@ class MergeWorker(WorkerBase):
 class MatchWorker(WorkerBase):	
 	def work( self, func, appletDesc, keys ):
 		for key in keys:
-			majorURL = self.getInputPath( appletDesc )
-			minorURL = self.getInputPath( appletDesc, False )	
+			majorURL = self.getStackDB( appletDesc )
+			minorURL = self.getStackDB( appletDesc, False )	
 			
 			major = list( remusLib.getDataStack( majorURL, key=key, reduce=True, dataOnly=True ) )
 			minor = list( remusLib.getDataStack( minorURL, key=key, reduce=True, dataOnly=True ) )
@@ -261,7 +274,7 @@ class AgentWorker(WorkerBase):
 	def work( self, func, appletDesc, keys ):
 		print appletDesc
 		for key in keys:
-			for dkey, data in remusLib.getDataStack( self.getInputPath( appletDesc), key=key ):
+			for dkey, data in remusLib.getDataStack( self.getStackDB( appletDesc ), key=key ):
 				func( dkey, data )
 				
 	def keylist( self, applet ):

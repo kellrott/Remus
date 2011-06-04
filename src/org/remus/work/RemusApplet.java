@@ -323,7 +323,7 @@ public class RemusApplet {
 		}
 		return out;
 	}
-	
+
 
 	@SuppressWarnings("unchecked")
 	public boolean createInstance(String submitKey, Map params, RemusInstance inst) {
@@ -367,13 +367,20 @@ public class RemusApplet {
 			inMap.put("_instance", "@agent");
 			inMap.put("_applet", getInput() );
 			baseMap.put("_input", inMap);
-		} else {			
-			if ( hasInputs() && getInput().compareTo("?") != 0 ) {
+		} else if ( getType() == PIPE ) {
+			List outList = new ArrayList();
+			for ( String input : getInputs() ) {
 				Map inMap = new HashMap();
 				inMap.put("_instance", inst.toString());
-				inMap.put("_applet", getInput() );
-				baseMap.put("_input", inMap);
+				inMap.put("_applet", input );
+				outList.add( inMap );
 			}
+			baseMap.put("_input", outList);			
+		} else if ( hasInputs() && getInput().compareTo("?") != 0 ) {
+			Map inMap = new HashMap();
+			inMap.put("_instance", inst.toString());
+			inMap.put("_applet", getInput() );
+			baseMap.put("_input", inMap);			
 		}
 
 		//remove fields that will be added in automatically later

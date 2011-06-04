@@ -36,7 +36,7 @@ def statusPulse():
 
 	
 workerList = {}
-
+workerID = str(uuid.uuid4())
 
 def doWork( host, pipeline, instance, applet, jobID, jobKey ): 
 	worker = remusLib.getWorker( host, pipeline, instance, applet )
@@ -50,10 +50,10 @@ if __name__=="__main__":
 	remusLib.log( "TMPDIR: " + tmpDir )
 	os.chdir( tmpDir )
 	sys.path.append( tmpDir )
+	
 	if ( len(sys.argv) >= 3 ):
-		remusLib.setWorkerID( sys.argv[2] )
-	else:
-		remusLib.setWorkerID( str(uuid.uuid4()) )
+		workerID = sys.argv[2]  
+	remusLib.setWorkerID( workerID )
 
 	statusPulse()
 	try:

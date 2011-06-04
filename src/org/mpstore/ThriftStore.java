@@ -3,13 +3,11 @@ package org.mpstore;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
@@ -58,6 +56,7 @@ public class ThriftStore implements MPStore {
 
 	Map<String,String> columns = new HashMap<String,String>();
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException {
 		this.serializer = serializer;
