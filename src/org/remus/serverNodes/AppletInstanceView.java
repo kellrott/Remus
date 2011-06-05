@@ -147,6 +147,8 @@ public class AppletInstanceView implements BaseNode {
 					while ((len=is.read(buffer)) > 0 ) {
 						os.write(buffer, 0, len);
 					}
+					is.close();		
+					os.close();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
