@@ -10,11 +10,13 @@ class AbstractStack:
 	def get(self, key):
 		raise Exception()
 		
-	def put(self, key, value):
+	def put(self, key, jobID, emitID, value):
 		raise Exception()
 
 	def listKVPairs(self):
 		raise Exception()
 
+	def close(self):
+		raise Exception()
 
 

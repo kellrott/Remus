@@ -1,0 +1,56 @@
+package org.remus.work;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+
+import org.mpstore.MPStore;
+import org.mpstore.Serializer;
+import org.remus.RemusApp;
+import org.remus.serverNodes.BaseNode;
+
+@SuppressWarnings("unchecked")
+public class StoreInfoView implements BaseNode {
+
+	RemusApp app;
+	public StoreInfoView(RemusApp app) {
+		this.app = app;
+	}
+
+	@Override
+	public void doDelete(String name, Map params, String workerID)
+	throws FileNotFoundException {
+		throw new FileNotFoundException();
+	}
+
+	@Override
+	public void doGet(String name, Map params, String workerID,
+			Serializer serial, OutputStream os) throws FileNotFoundException {
+
+		try {
+			os.write( serial.dumps( app.getRootDatastore().getConfig() ).getBytes() );
+		} catch ( IOException e ) {
+
+		}
+	}
+
+	@Override
+	public void doPut(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) throws FileNotFoundException {
+		throw new FileNotFoundException();
+	}
+
+	@Override
+	public void doSubmit(String name, String workerID, Serializer serial,
+			InputStream is, OutputStream os) throws FileNotFoundException {
+		throw new FileNotFoundException();
+	}
+
+	@Override
+	public BaseNode getChild(String name) {
+		return null;
+	}
+
+}

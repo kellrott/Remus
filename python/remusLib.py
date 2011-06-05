@@ -4,6 +4,7 @@ import sys
 from urlparse import urlparse
 import httplib
 from cStringIO import StringIO
+import remusDB
 verbose = True
 global workerID
 import copy
@@ -15,7 +16,7 @@ curConn = None
 workerID= None
 
 def urlopen(url,data=None,retry=1):
-	print "getting", url
+	#print "getting", url
 	u = urlparse( url )
 	global curConn
 	global curServer
@@ -136,6 +137,8 @@ def setWorkerID(id):
 
 global defaultStackInterface
 defaultStackInterface = None
+global interfaceDict
+interfaceDict = {}
 global workerDict
 workerDict = {}
 
@@ -143,9 +146,11 @@ def addWorker( type, callback ):
 	global workerDict
 	workerDict[ type ] = callback
 
-def setStackDB( stackDB ):
+def setStackDB( name, stackDB ):
 	global defaultStackInterface
-	defaultStackInterface = stackDB
+	global interfaceDict
+	defaultStackInterface = name
+	interfaceDict[ name ] = stackDB
 
 def getWorker( host, pipeline, instance, applet ):
 	global workerDict
@@ -170,9 +175,34 @@ def getWorker( host, pipeline, instance, applet ):
 		workerDict[ appletPath ] = worker
 	return worker
 
-def getStackDB( host, workerID, pipeline, instance, applet, jobID=None ):
-	global defaultStackInterface
-	return defaultStackInterface( host, workerID, pipeline, instance, applet, jobID )
+
+class StackWrapper:
+	def __init__(self, host, workerID, pipeline, instance, applet, useHTTP=False ):
+		global defaultStackInterface
+		global interfaceDict	
+		self.stack = None
+		if not useHTTP:
+			try:
+				self.stack = interfaceDict[defaultStackInterface]( host, workerID, pipeline, instance, applet )
+			except Exception:
+				pass
+		
+		if self.stack is None:
+			self.stack = interfaceDict['http']( host, workerID, pipeline, instance, applet )
+		
+	def get(self, key):
+		return self.stack.get( key )
+		
+	def put(self, key, jobID, emitID, value):
+		return self.stack.put( key, jobID, emitID, value )
+
+	def listKVPairs(self):
+		return self.stack.listKVPairs()
+
+	def close(self):
+		return self.stack.close()
+
 
 import remusDB_http
+import remusDB_pycassa
 import pythonWorker

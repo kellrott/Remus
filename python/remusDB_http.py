@@ -8,18 +8,17 @@ import httplib
 from cStringIO import StringIO
 
 class HTTP_Stack( AbstractStack ):
-	def __init__(self, server, workerID, pipeline, instance, applet, jobID=None ):
+	def __init__(self, server, workerID, pipeline, instance, applet ):
 		AbstractStack.__init__(self, server, workerID, pipeline, instance, applet)
 		self.curServer = None
 		self.curConn = None
 		self.workerID= workerID
 
-		self.jobID = jobID
 		self.cache = []
 		self.cacheMax = 10000
-		self.order = 0
 
 	def urlopen(self, url,data=None,retry=1):
+		print "get", url
 		u = urlparse( url )
 		if self.curConn is None or self.curServer != u.netloc:
 			self.curConn = httplib.HTTPConnection(u.netloc)
@@ -49,8 +48,8 @@ class HTTP_Stack( AbstractStack ):
 			for key in data:
 				yield data[ key ]
 		
-	def put(self, key, value):
-		self.cache.append( [ copy.deepcopy(key), copy.deepcopy(value)] )
+	def put(self, key, jobID, emitID, value):
+		self.cache.append( [ jobID, emitID, copy.deepcopy(key), copy.deepcopy(value)] )
 		if ( len(self.cache) > self.cacheMax ):
 			self.flush()
 	
@@ -64,9 +63,8 @@ class HTTP_Stack( AbstractStack ):
 		log("posting results: " + url)
 		data = ""
 		for out in self.cache:
-			line = json.dumps( { 'id' : self.jobID, 'order' : self.order, 'key' : out[0] , 'value' : out[1] }  ) + "\n"
+			line = json.dumps( { 'id' : out[0], 'order' : out[1], 'key' : out[2] , 'value' : out[3] }  ) + "\n"
 			data += line
-			self.order += 1
 			
 		if (len(data)):
 			self.urlopen( url , data ).read()
@@ -87,4 +85,4 @@ class HTTP_Stack( AbstractStack ):
 				for key in data:
 					yield key, data[key]
 
-setStackDB( HTTP_Stack )
+setStackDB( 'http', HTTP_Stack )

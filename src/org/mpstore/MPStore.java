@@ -44,4 +44,6 @@ public interface MPStore {
 
 	public void close();
 
+	public Map<String,String> getConfig();
+
 }

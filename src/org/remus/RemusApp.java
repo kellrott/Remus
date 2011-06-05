@@ -1,21 +1,16 @@
 package org.remus;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
 import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
@@ -29,6 +24,7 @@ import org.remus.serverNodes.ManageApp;
 import org.remus.serverNodes.ServerStatusView;
 import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
+import org.remus.work.StoreInfoView;
 import org.remus.work.WorkKey;
 
 /**
@@ -74,6 +70,9 @@ public class RemusApp implements BaseNode {
 			children.put("@pipeline", new PipelineView(this) );
 			children.put("@status", new ServerStatusView(this) );
 			children.put("@manage", new ManageApp() );
+			
+			children.put("@db", new StoreInfoView( this ) );
+			
 			pipelines = new HashMap<String, RemusPipeline>();
 			String mpStore = (String)params.get(RemusApp.configStore);
 			Class<?> mpClass = Class.forName(mpStore);			

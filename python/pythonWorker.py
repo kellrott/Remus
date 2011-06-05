@@ -74,6 +74,7 @@ class WorkerBase:
 		self.applet = applet
 		self.instance = instance
 		self.pipeline = pipeline
+		self.useHTTP = False
 
 		handle = remusLib.urlopen( self.host + self.pipeline + "/@attach" )
 		for line in handle:
@@ -103,20 +104,22 @@ class WorkerBase:
 		exec self.code in self.module.__dict__
 
 	def setupOutput(self, jobID):
+		self.jobID = jobID
+		self.emitID = 0
 		outUrl = self.host + self.pipeline + "/" + self.instance + "/" + self.applet
-		self.outputSet = { None : remusLib.getStackDB( self.host, self.workerID, self.pipeline, self.instance, self.applet, jobID ) }
+		self.outputSet = { None : remusLib.StackWrapper( self.host, self.workerID, self.pipeline, self.instance, self.applet, useHTTP=self.useHTTP ) }
 		if self.appletDesc.has_key( '_output' ):
 			self.output = self.appletDesc[ "_output" ]
 		else:
 			self.output = []
 
 		for outname in self.output:
-			self.outputSet[ outname ] = remusLib.getStackDB( self.host, self.workerID, self.pipeline, self.instance, "%s.%s" % (self.applet, outname), jobID ) 
+			self.outputSet[ outname ] = remusLib.StackWrapper( self.host, self.workerID, self.pipeline, self.instance, "%s.%s" % (self.applet, outname), useHTTP=self.useHTTP ) 
 		self.out_file_list = []
 	
-	def getStackDB( self, desc, major=True, applet=None, instance=None  ):
+	def getStackDB( self, desc, major=True, applet=None, instance=None ):
 		if applet is not None and instance is not None:
-			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, instance, applet )
+			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, instance, applet, useHTTP=self.useHTTP )
 			
 		if desc['_input'].has_key( '_axis' ):
 			axis = desc['_input'][ '_axis' ]
@@ -125,8 +128,8 @@ class WorkerBase:
 					axis = "_right"
 				else:
 					axis = "_left"
-			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, desc['_input'][axis]['_instance'], desc['_input'][axis]['_applet'] )
-		return remusLib.getStackDB( self.host, self.workerID, self.pipeline, desc['_input']['_instance'], desc['_input']['_applet'] )
+			return remusLib.StackWrapper( self.host, self.workerID, self.pipeline, desc['_input'][axis]['_instance'], desc['_input'][axis]['_applet'] )
+		return remusLib.StackWrapper( self.host, self.workerID, self.pipeline, desc['_input']['_instance'], desc['_input']['_applet'] )
 	
 	def closeOutput(self):
 		for name in self.outputSet:
@@ -195,7 +198,8 @@ class WorkerBase:
 				"/%s/%s/%s" % ( self.applet, key, name)
 	
 	def emit(self, key, value, name ):
-		self.outputSet[ name ].put( key, value )
+		self.outputSet[ name ].put( key, self.jobID, self.emitID, value )
+		self.emitID += 1
 	
 	def open(self, key, name, mode="r"):
 		if mode=="w":
@@ -271,6 +275,11 @@ class MatchWorker(WorkerBase):
 
 
 class AgentWorker(WorkerBase):	
+	
+	def __init__(self, host, workerID, pipeline, instance, applet, appletDesc):
+		WorkerBase.__init__(self, host, workerID, pipeline, instance, applet, appletDesc)
+		self.useHTTP = True
+		
 	def work( self, func, appletDesc, keys ):
 		print appletDesc
 		for key in keys:

@@ -244,6 +244,12 @@ public class HectorStore implements MPStore {
 		return null;
 	}
 
+	@Override
+	public Map<String, String> getConfig() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	
 
 
