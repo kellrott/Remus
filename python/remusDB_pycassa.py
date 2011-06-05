@@ -30,6 +30,10 @@ try:
             self.col_fam = pycassa.ColumnFamily( pool, self.col_fam_str )
             self.row_str = "%s/%s/%s" % ( instance, pipeline, applet )
             
+            self.cache = {}
+            self.cacheMax = 10000
+            self.cacheCount = 0
+            
         def get(self, key):
             try:
                 vals = self.col_fam.get( self.row_str, super_column=key )
@@ -39,8 +43,17 @@ try:
                 pass
             
         def put(self, key, jobID, emitID, value):
-            data = { key : {'%s_%s' % (jobID, emitID) : json.dumps( value ) } }
-            self.col_fam.insert( self.row_str, data )
+            if not self.cache.has_key( key ):
+                self.cache[ key ] = {}            
+            self.cache[ key ][ '%s_%s' % (jobID, emitID) ] = json.dumps( value )
+            self.cacheCount += 1
+            if ( self.cacheCount > self.cacheMax ):
+                self.flush()
+
+        def flush(self):
+            self.col_fam.batch_insert( { self.row_str : self.cache } )
+            self.cache = {}
+            self.cacheCount = 0
             
         def listKVPairs(self):
             data = self.col_fam.get(  self.row_str )
@@ -48,8 +61,9 @@ try:
                 for item in data[ key ]:
                     #print "PYCASSA LIST: ",  self.row_str, key, json.loads( data[key][ item ] )
                     yield key, json.loads( data[key][ item ] )
+                    
         def close(self):
-            pass
+            self.flush()
     
     remusLib.setStackDB( 'pycassa', PyCassaStack )
     
