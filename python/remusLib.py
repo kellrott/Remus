@@ -197,7 +197,8 @@ class StackWrapper:
 		if not useHTTP:
 			try:
 				self.stack = interfaceDict[defaultStackInterface]( host, workerID, pipeline, instance, applet )
-			except Exception:
+			except Exception, e:
+				log( 'INIT FAIL:' + str(defaultStackInterface) + str(e) )
 				pass
 		
 		if self.stack is None:

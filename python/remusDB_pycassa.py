@@ -13,8 +13,8 @@ try:
     config = None
     
     class PyCassaStack( AbstractStack ):
-        def __init__(self, server, workerID, pipeline, instance, applet, jobID=None ):
-            AbstractStack.__init__(self, server, workerID, pipeline, instance, applet, jobID )            
+        def __init__(self, server, workerID, pipeline, instance, applet ):
+            AbstractStack.__init__(self, server, workerID, pipeline, instance, applet )            
             global pool
             global config
     
@@ -36,9 +36,15 @@ try:
             
         def get(self, key):
             try:
-                vals = self.col_fam.get( self.row_str, super_column=key )
-                for key in vals:
-                    yield json.loads( vals[ key ] )
+				curStart = ""
+				while 1:
+					vals = self.col_fam.get( self.row_str, column_start=curStart, super_column=key )
+					for key in vals:
+						if curStart != key:
+							yield json.loads( vals[ key ] )
+						curStart = key
+					if len(vals) != 100:
+						break
             except pycassa.NotFoundException:
                 pass
             
@@ -56,12 +62,17 @@ try:
             self.cacheCount = 0
             
         def listKVPairs(self):
-            data = self.col_fam.get(  self.row_str )
-            for key in data:
-                for item in data[ key ]:
-                    #print "PYCASSA LIST: ",  self.row_str, key, json.loads( data[key][ item ] )
-                    yield key, json.loads( data[key][ item ] )
-                    
+			curStart = ""
+			while 1:
+				data = self.col_fam.get( self.row_str, column_start=curStart, column_count=100 )
+				for elem in data:
+					if elem != curStart:
+						for key in data[ elem ]:
+							yield elem, json.loads( data[ elem ][ key ] )
+					curStart = elem
+				if len(data) != 100:
+					break
+
         def close(self):
             self.flush()
     

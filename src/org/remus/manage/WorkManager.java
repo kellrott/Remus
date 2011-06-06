@@ -144,15 +144,17 @@ public class WorkManager implements BaseNode {
 	}
 
 	private void emptyQueues() {
-		Set<AppletInstance> rmSet = new HashSet<AppletInstance>();
-		for ( AppletInstance ai : workQueue.keySet() ) {	
-			Set<WorkKey> wqSet = workQueue.get(ai);
-			if ( wqSet.size() == 0)
-				rmSet.add(ai);
+		synchronized (workQueue) {
+			Set<AppletInstance> rmSet = new HashSet<AppletInstance>();
+			for ( AppletInstance ai : workQueue.keySet() ) {	
+				Set<WorkKey> wqSet = workQueue.get(ai);
+				if ( wqSet.size() == 0)
+					rmSet.add(ai);
+			}
+			for (AppletInstance ai : rmSet){
+				workQueue.remove(ai);			
+			}				
 		}
-		for (AppletInstance ai : rmSet){
-			workQueue.remove(ai);			
-		}	
 	}
 
 	public void errorWork( String workerID, RemusApplet applet, RemusInstance inst, int jobID, String error )	 {

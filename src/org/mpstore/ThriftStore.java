@@ -130,7 +130,7 @@ public class ThriftStore implements MPStore {
 			cfName = columnFamily + "_" + inst.replaceAll("-", "" );		
 		else
 			cfName = columnFamily;
-		
+
 		TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
 		TFramedTransport tf = new TFramedTransport(tr);	 
 		try {
@@ -181,7 +181,7 @@ public class ThriftStore implements MPStore {
 	class ClientFactory extends BasePoolableObjectFactory {
 		@Override
 		public Object makeObject() throws Exception {
-			TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
+			TTransport tr = new TSocket(serverName, serverPort);
 			TFramedTransport tf = new TFramedTransport(tr);	 
 			TProtocol proto = new TBinaryProtocol(tf);	 
 			tf.open();
@@ -233,8 +233,6 @@ public class ThriftStore implements MPStore {
 						Thread.sleep(4000);
 					} catch (InterruptedException e1) {						
 					}
-				} catch (TException e) {					
-					outE = e;
 				} catch (NoSuchElementException e) {
 					outE = e;
 					done = true;
@@ -242,7 +240,15 @@ public class ThriftStore implements MPStore {
 					outE = e;
 				} catch (Exception e) {
 					outE = e;
-					retryCount=0;
+					try {
+						clientPool.invalidateObject(client);
+					} catch (Exception e2) {						
+					}
+					client = null;					
+					try {
+						Thread.sleep(4000);
+					} catch (InterruptedException e1) {						
+					}				
 				} finally {
 					try {
 						if ( client != null )
@@ -280,7 +286,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
-		
+
 		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>()  {
 			@Override
 			protected Boolean request(Client client)
@@ -329,8 +335,8 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
-		
-		
+
+
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
 
 		ThriftCaller<Boolean> containsCall = new ThriftCaller<Boolean>() {
@@ -367,7 +373,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );		
-		
+
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
 			@Override
 			protected Boolean request(Client client)
@@ -399,7 +405,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
-		
+
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>() {
@@ -432,7 +438,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
-		
+
 		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
 		ThriftCaller<Iterable<Object>> getCall = new ThriftCaller<Iterable<Object>>() {
 
@@ -599,7 +605,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
-		
+
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>() {
 			@Override
 			protected Long request(Client client)
@@ -632,7 +638,7 @@ public class ThriftStore implements MPStore {
 		} catch (MPStoreConnectException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		SliceIterator<Long> out = new SliceIterator<Long>(superColumn, curCF, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
@@ -661,7 +667,7 @@ public class ThriftStore implements MPStore {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
-		
+
 		ThriftCaller<Iterable<String>> keySliceCall = new ThriftCaller<Iterable<String>>() {
 
 			@Override

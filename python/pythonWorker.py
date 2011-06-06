@@ -86,7 +86,7 @@ class WorkerBase:
 			self.outputSet[ outname ] = remusLib.StackWrapper( self.host, self.workerID, self.pipeline, self.instance, "%s.%s" % (self.applet, outname), useHTTP=self.useHTTP ) 
 		self.out_file_list = []
 		
-		if self.appletDesc.has_key( '_input' ):
+		if self.appletDesc.has_key( '_input' ) and isinstance( self.appletDesc['_input'], dict ) and self.appletDesc[ '_input' ].has_key('_applet'):
 			self.inAttachReader = remusLib.AttachWrapper( self.host, self.workerID, self.pipeline, 
 													self.appletDesc[ '_input' ]['_instance'],
 													self.appletDesc[ '_input' ]['_applet'] )

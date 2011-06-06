@@ -106,42 +106,48 @@ if __name__=="__main__":
 	applet   = sys.argv[2]
 	instPath = sys.argv[3]
 
-	pipeline = json.loads( open( pipePath ).read() )[ applet ]
+
+	h = urlparse( instPath )
+	
+	server = "%s://%s" % ( h.scheme, h.netloc )
+	tmp = h.path.split("/")
+	pipeline = tmp[1]
+	instance = tmp[2]
+
+	print server, pipeline, instance
+
+	appletDesc = json.loads( open( pipePath ).read() )[ applet ]
 
 	for arg in sys.argv[4:]:
 		tmp = arg.split( '=' )
-		pipeline[ tmp[0] ] = tmp[1]
+		appletDesc[ tmp[0] ] = tmp[1]
 	
 
-	code = open( pipeline['_code'] ).read()
+	code = open( appletDesc['_code'] ).read()
 	module = imp.new_module( "test_func" )	
 	module.__dict__["__name__"] = "test_func"
-	callback = callback.RemusCallback( miniCallback(instPath, pipeline) )
+	callback = callback.RemusCallback( miniCallback(instPath, appletDesc) )
 	module.__dict__["remus"] = callback
 	exec code in module.__dict__
 	func = callback.getFunction( "test_func" )	
 
-	if ( pipeline['_mode'] == "map" ):
+	if ( appletDesc['_mode'] == "map" ):
 		for dkey, data in remusLib.getDataStack( inPath ):
 			func( dkey, data )
 				
-	if ( pipeline['_mode'] == "reduce" ):
+	if ( appletDesc['_mode'] == "reduce" ):
 		kpURL = inPath 	
 		kpData = httpGetJson( kpURL )
 		for data in kpData:
 			for key in data:
 				func( key, data[key] )
 	
-	if ( pipeline['_mode'] == "pipe" ):
+	if ( appletDesc['_mode'] == "pipe" ):
 		inList = []
-		for inFile in pipeline['_src'].split(','):
-			kpURL = instPath + "/" + inFile
-			sys.stderr.write( "fetching: " + kpURL + "\n" )
-			iHandle = remusLib.getDataStack( kpURL )
+		for inFile in appletDesc['_src'].split(','):			
+			dStack = remusLib.StackWrapper( server, "DEBUG", pipeline, instance, inFile )			
+			iHandle = remusLib.getDataStack( dStack )
 			inList.append( iHandle )
 		func( inList )
-		fileMap = remus.getoutput()
-		for path in fileMap:
-			print str(fileMap[path])
 
 		
