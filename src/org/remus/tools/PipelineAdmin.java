@@ -44,7 +44,7 @@ public class PipelineAdmin {
 
 	public static void tableDump( RemusPipeline pipe, Serializer serializer, String instance, File instDir ) throws IOException  {
 		System.err.println( "PIPELINE: " + pipe.getID() );
-		
+
 		File submitFile = new File(instDir, "@submit");
 		FileOutputStream fsOS = new FileOutputStream(submitFile);
 		for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( "/" + pipe.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
@@ -61,7 +61,7 @@ public class PipelineAdmin {
 			}
 		}
 		fsOS.close();
-		
+
 		File globalInstFile = new File(instDir, "@instance");
 		FileOutputStream giOS = new FileOutputStream(globalInstFile);
 		for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( "/" + pipe.getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
@@ -77,10 +77,10 @@ public class PipelineAdmin {
 			}
 		}
 		giOS.close();
-		
+
 		for ( RemusApplet applet : pipe.getMembers() ) {
 			System.err.println( "Dumping: " + applet.getID() );
-			
+
 			File instanceFile = new File(instDir, applet.getID() + "@instance");
 			FileOutputStream insOS = new FileOutputStream(instanceFile);
 			for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
@@ -96,8 +96,8 @@ public class PipelineAdmin {
 				}
 			}
 			insOS.close();	
-			
-			
+
+
 			File outFile = new File(instDir, applet.getID() + "@data" );
 			FileOutputStream fos = new FileOutputStream(outFile);
 			MPStore ds = applet.getDataStore();
@@ -137,6 +137,42 @@ public class PipelineAdmin {
 		}
 	}
 
+
+
+	public static void loadTableFile( MPStore store, Serializer serializer, File storeFile, String tablePath, String instance ) throws IOException {
+		System.err.println("LOADING: " + storeFile.toString() );
+		BufferedReader br = new BufferedReader( new FileReader( storeFile ) );
+		String curline = null;
+		while ((curline=br.readLine()) != null) {
+			String [] tmp = curline.split("\t");
+			long jobID = Long.parseLong( tmp[0] );
+			long emitID = Long.parseLong( tmp[1] );
+			Map m = (Map)serializer.loads( tmp[2] );
+			for ( Object keyObj : m.keySet() ) {
+				String key = (String)keyObj;
+				store.add(tablePath, instance, jobID, emitID, key, m.get(key) );
+			}
+		}
+		br.close();
+	}
+
+
+
+
+	public static void loadTable( RemusPipeline pipe, Serializer serializer, RemusInstance instance, File loadDir ) throws IOException {
+		for ( File stackFile : loadDir.listFiles() ) {
+			if ( !stackFile.isDirectory() ) {
+				if ( stackFile.getName().compareTo("@submit") == 0 ) {
+					loadTableFile( pipe.getDataStore(), serializer, stackFile, "/@submit", RemusInstance.STATIC_INSTANCE_STR );
+				} else if ( stackFile.getName().compareTo("@instance") == 0 ) {
+					loadTableFile( pipe.getDataStore(), serializer, stackFile, "/@instance", RemusInstance.STATIC_INSTANCE_STR );
+				} else if ( stackFile.getName().endsWith("@data") ) {
+					String appletName = stackFile.getName().replace("@data", "");
+					loadTableFile( pipe.getDataStore(), serializer, stackFile, "/" + pipe.getID() + "/" + appletName, instance.toString() );
+				}
+			}
+		}
+	}
 
 	public static void main(String []args) throws FileNotFoundException, IOException, RemusDatabaseException {
 		Properties prop = new Properties();
@@ -201,55 +237,14 @@ public class PipelineAdmin {
 					}
 
 				} else if ( cmd.compareTo("load") == 0 && args.length > 2) {
-					/*
-					BufferedReader br = new BufferedReader( new FileReader(args[2]));
-					RemusPath curPath = null;
-					String curline = null;
-					while ((curline=br.readLine()) != null) {
-						if (curline.startsWith("==")) {
-							curPath = new RemusPath( app, curline.substring(2) );
-							System.out.println( curPath.getViewPath() + "\t" + curPath.getInstance() );
-						} else {
-							String [] tmp = curline.split("\t");
-							long jobID = Long.parseLong( tmp[0] );
-							long emitID = Long.parseLong( tmp[1] );
-							if ( tmp[2].compareTo("===") == 0) {
-								String key = tmp[3];
-								StringBuilder sb = new StringBuilder();
-								boolean reading = true;
-								do {
-									String iLine = br.readLine();
-									if ( iLine == null || iLine.compareTo("===") == 0) {
-										reading = false;
-									} else {
-										sb.append( iLine );
-									}
-								} while (reading);
-								ByteArrayInputStream bis = new ByteArrayInputStream( sb.toString().getBytes() );
-								Base64InputStream is = new Base64InputStream(bis);
-								//store.writeAttachment(curPath.getViewPath(), curPath.getInstance(), key, is);
-								is.close();
-							} else {
-								Map m = (Map)serializer.loads( tmp[2] );
-								for ( Object keyObj : m.keySet() ) {
-									String key = (String)keyObj;
-									store.add(curPath.getViewPath(), curPath.getInstance(), jobID, emitID, key, m.get(key) );
-								}
-							}
-						}
-					}
-				} else if ( cmd.compareTo("del") == 0 && args.length > 2 ) {
-					String inst = args[2];
-					for (Object pathObj : store.get("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst) ) {
-						String path = (String)pathObj;
-						for (String view : allViews ) {
-							store.delete(path, inst);
-						}
-						store.delete( path + "@instance", RemusInstance.STATIC_INSTANCE_STR, inst);
-					}
-					store.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, inst);
-				}
-					 */
+					String pipeline = args[2];
+					String srcDirPath = args[3];
+
+					RemusPipeline pipe = app.getPipeline(pipeline);
+
+					File srcDir = new File( srcDirPath );
+					RemusInstance instance = new RemusInstance( srcDir.getName() );
+					loadTable( pipe, serializer, instance, srcDir );
 				}
 			}
 		} finally {
