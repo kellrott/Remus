@@ -404,7 +404,6 @@ public class RemusApplet {
 		datastore.delete(getPath() + "/@done", instance.toString() );		
 		datastore.delete(getPath() + "/@error", instance.toString() );
 		attachstore.delete(getPath(), instance.toString() );
-		datastore.delete( getPath() + "/@done", RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
 	}
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {

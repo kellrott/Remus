@@ -44,8 +44,60 @@ public class PipelineAdmin {
 
 	public static void tableDump( RemusPipeline pipe, Serializer serializer, String instance, File instDir ) throws IOException  {
 		System.err.println( "PIPELINE: " + pipe.getID() );
+		
+		File submitFile = new File(instDir, "@submit");
+		FileOutputStream fsOS = new FileOutputStream(submitFile);
+		for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( "/" + pipe.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR) ) {
+			Map subObj = (Map)kv.getValue();
+			if ( instance.compareTo( (String)subObj.get("_instance")) == 0 ) {
+				Map<String,Object> m = new HashMap<String,Object>();
+				m.put(kv.getKey(), kv.getValue() );							
+				fsOS.write( Long.toString(kv.getJobID()).getBytes() );
+				fsOS.write( "\t".getBytes() );
+				fsOS.write( Long.toString(kv.getEmitID()).getBytes() );
+				fsOS.write( "\t".getBytes() );
+				fsOS.write( serializer.dumps( m ).getBytes() );							
+				fsOS.write( "\n".getBytes() );
+			}
+		}
+		fsOS.close();
+		
+		File globalInstFile = new File(instDir, "@instance");
+		FileOutputStream giOS = new FileOutputStream(globalInstFile);
+		for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( "/" + pipe.getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+			if ( instance.compareTo( kv.getKey() )  == 0 ) {
+				Map<String,Object> m = new HashMap<String,Object>();
+				m.put(kv.getKey(), kv.getValue() );							
+				giOS.write( Long.toString(kv.getJobID()).getBytes() );
+				giOS.write( "\t".getBytes() );
+				giOS.write( Long.toString(kv.getEmitID()).getBytes() );
+				giOS.write( "\t".getBytes() );
+				giOS.write( serializer.dumps( m ).getBytes() );							
+				giOS.write( "\n".getBytes() );
+			}
+		}
+		giOS.close();
+		
 		for ( RemusApplet applet : pipe.getMembers() ) {
 			System.err.println( "Dumping: " + applet.getID() );
+			
+			File instanceFile = new File(instDir, applet.getID() + "@instance");
+			FileOutputStream insOS = new FileOutputStream(instanceFile);
+			for ( KeyValuePair kv : pipe.getApp().getRootDatastore().listKeyPairs( applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+				if ( instance.compareTo( kv.getKey() )  == 0 ) {
+					Map<String,Object> m = new HashMap<String,Object>();
+					m.put(kv.getKey(), kv.getValue() );							
+					insOS.write( Long.toString(kv.getJobID()).getBytes() );
+					insOS.write( "\t".getBytes() );
+					insOS.write( Long.toString(kv.getEmitID()).getBytes() );
+					insOS.write( "\t".getBytes() );
+					insOS.write( serializer.dumps( m ).getBytes() );							
+					insOS.write( "\n".getBytes() );
+				}
+			}
+			insOS.close();	
+			
+			
 			File outFile = new File(instDir, applet.getID() + "@data" );
 			FileOutputStream fos = new FileOutputStream(outFile);
 			MPStore ds = applet.getDataStore();

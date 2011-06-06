@@ -218,7 +218,6 @@ public class RemusApp implements BaseNode {
 		}
 		String dbPath = "/" + pipeline.getID() + "/@pipeline";
 		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, applet.getID() );
-		rootStore.delete( applet.getPath() + "@submit" , RemusInstance.STATIC_INSTANCE_STR );
 		loadPipelines();
 	}
 
