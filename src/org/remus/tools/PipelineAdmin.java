@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
@@ -41,17 +42,61 @@ public class PipelineAdmin {
 
 	static public String [] allViews = { "@data", "@done", "@instance" }; 
 
+	public static void tableDump( RemusPipeline pipe, Serializer serializer, String instance, File instDir ) throws IOException  {
+		System.err.println( "PIPELINE: " + pipe.getID() );
+		for ( RemusApplet applet : pipe.getMembers() ) {
+			System.err.println( "Dumping: " + applet.getID() );
+			File outFile = new File(instDir, applet.getID() + "@data" );
+			FileOutputStream fos = new FileOutputStream(outFile);
+			MPStore ds = applet.getDataStore();
+			String curKey = null;
+			for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath(), instance.toString() ) ) {
+				Map<String,Object> m = new HashMap<String,Object>();
+				m.put(kv.getKey(), kv.getValue() );							
+				fos.write( Long.toString(kv.getJobID()).getBytes() );
+				fos.write( "\t".getBytes() );
+				fos.write( Long.toString(kv.getEmitID()).getBytes() );
+				fos.write( "\t".getBytes() );
+				fos.write( serializer.dumps( m ).getBytes() );							
+				fos.write( "\n".getBytes() );
+
+				if ( curKey == null || kv.getKey().compareTo( curKey ) != 0 ) {
+					curKey = kv.getKey();
+					AttachStore att = applet.getAttachStore();
+					for ( String name : att.listAttachment( applet.getPath(), instance.toString(), curKey) ) {
+						File appletDir = new File( instDir, applet.getID() );
+						File keyDir = new File( appletDir, curKey );
+						if ( !keyDir.exists() ) {
+							keyDir.mkdirs();
+						}
+						FileOutputStream attOS = new FileOutputStream( new File(keyDir, name ) );
+						InputStream is = att.readAttachement( applet.getPath(), instance.toString(), curKey, name);
+						byte [] buffer = new byte[4048];
+						int len;
+						while ( ((len=is.read(buffer)) > 0 ) ) {
+							attOS.write(buffer, 0, len);
+						}
+						attOS.close();
+						is.close();
+					}
+				}
+			}			
+			fos.close();	
+		}
+	}
+
+
 	public static void main(String []args) throws FileNotFoundException, IOException, RemusDatabaseException {
 		Properties prop = new Properties();
 		prop.load( new FileInputStream( new File( args[0] ) ) );
 
-		
+
 		String outDirPath = "out";
 		File outDir = new File(outDirPath);
 		if ( !outDir.exists() ) {
 			outDir.mkdir();			
 		}
-		
+
 		try {
 			Serializer serializer = new JsonSerializer();
 			RemusApp app = new RemusApp( prop );
@@ -83,35 +128,24 @@ public class PipelineAdmin {
 					String pipeline = args[2];
 					String inst = args[3];
 					RemusPipeline pipe = app.getPipeline(pipeline);
-					RemusInstance instance = new RemusInstance(inst);
 
-					System.err.println( "PIPELINE" + pipe.getID() );
-					for ( RemusApplet applet : pipe.getMembers() ) {
-						System.err.println( "Dumping: " + applet.getID() );
-						File outFile = new File(outDir, applet.getID() );
-						FileOutputStream fos = new FileOutputStream(outFile);
-						MPStore ds = applet.getDataStore();
-						for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath(), instance.toString() ) ) {
-							Map<String,Object> m = new HashMap<String,Object>();
-							m.put(kv.getKey(), kv.getValue() );							
-							fos.write( Long.toString(kv.getJobID()).getBytes() );
-							fos.write( "\t".getBytes() );
-							fos.write( Long.toString(kv.getEmitID()).getBytes() );
-							fos.write( "\t".getBytes() );
-							fos.write( serializer.dumps( m ).getBytes() );							
-							fos.write( "\n".getBytes() );
+					if ( inst.compareTo("--all") == 0 ) {
+						Set<RemusInstance> instSet = new HashSet<RemusInstance>();
+						for ( RemusApplet applet : pipe.getMembers() ) {
+							instSet.addAll( applet.getInstanceList() );
 						}
-						fos.close();
-						/*
-						for ( String outpath : applet.getOutputs() ) {
-							System.out.println( "===" + applet.getPath() + "." + outpath + "@data" );
-							for ( KeyValuePair kv : ds.listKeyPairs(applet.getPath() + "." + outpath + "@data", instance.toString() ) ) {
-								Map m = new HashMap();
-								m.put(kv.getKey(), kv.getValue() );
-								System.out.println( Long.toString(kv.getJobID()) + "\t" + Long.toString(kv.getEmitID()) + "\t" + serializer.dumps( m ) );							
-							}
+						for ( RemusInstance instance : instSet ) {
+							File instDir = new File( outDir, instance.toString() );
+							if (!instDir.exists())
+								instDir.mkdirs();					
+							tableDump( pipe, serializer, instance.toString(), instDir );							
 						}
-						*/
+					} else {					
+						RemusInstance instance = new RemusInstance(inst);
+						File instDir = new File( outDir, inst );
+						if (!instDir.exists())
+							instDir.mkdirs();					
+						tableDump( pipe, serializer, instance.toString(), instDir );
 					}
 
 				} else if ( cmd.compareTo("load") == 0 && args.length > 2) {
