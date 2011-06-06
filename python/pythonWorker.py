@@ -33,37 +33,6 @@ def pythonWorker( mode ):
 	return None
 
 
-class PipeFileBuffer:
-	def __init__(self, key, name):
-		self.key = key
-		self.name = name
-		self.isOpen = True
-		self.buff = tempfile.NamedTemporaryFile(delete=False)
-		
-	def write(self, data):
-		self.buff.write( data )
-	
-	def mem_map(self):
-		mFile = mmap.mmap( self.buff.fileno(), 0, access=mmap.ACCESS_READ )
-		return mFile
-		
-	def close(self):
-		if self.isOpen:
-			self.buff.close()
-		self.isOpen = False
-	
-	def getPath(self):
-		return self.buff.name
-	
-	def fileno(self):
-		return self.buff.fileno()
-	
-	def unlink(self):
-		os.unlink( self.buff.name )
-
-
-
-
 remusLib.addWorker( "python", pythonWorker )
 
 class WorkerBase:
@@ -116,6 +85,14 @@ class WorkerBase:
 		for outname in self.output:
 			self.outputSet[ outname ] = remusLib.StackWrapper( self.host, self.workerID, self.pipeline, self.instance, "%s.%s" % (self.applet, outname), useHTTP=self.useHTTP ) 
 		self.out_file_list = []
+		
+		if self.appletDesc.has_key( '_input' ):
+			self.inAttachReader = remusLib.AttachWrapper( self.host, self.workerID, self.pipeline, 
+													self.appletDesc[ '_input' ]['_instance'],
+													self.appletDesc[ '_input' ]['_applet'] )
+		
+		self.outAttachReader = remusLib.AttachWrapper( self.host, self.workerID, self.pipeline, 
+													 self.instance, self.applet )
 	
 	def getStackDB( self, desc, major=True, applet=None, instance=None ):
 		if applet is not None and instance is not None:
@@ -136,6 +113,7 @@ class WorkerBase:
 			self.outputSet[name].close()
 		self.outmap = []
 
+		"""
 		for key, name, handle in self.out_file_list:
 			postURL = self.getAttachOutputPath( self.appletDesc, key, name ) 
 			print "ATTACHMENT:", postURL
@@ -147,7 +125,8 @@ class WorkerBase:
 			os.system( cmd )
 			handle.unlink()
 			#fileMap[path].unlink()
-
+		"""
+		
 	def doWork(self, jobID, jobKeys):
 		mode = self.appletDesc[ '_mode' ]		
 
@@ -178,16 +157,6 @@ class WorkerBase:
 			remusLib.log( "ERROR: " + str(errorIDs) )
 			remusLib.httpPostJson( self.host + self.pipeline + "/" + self.instance + "/@error/" + self.applet ,  errorIDs  )
 
-	def getInputPath( self, desc, major=True ):
-		if desc['_input'].has_key( '_axis' ):
-			axis = desc['_input'][ '_axis' ]
-			if not major:
-				if axis == "_left":
-					axis = "_right"
-				else:
-					axis = "_left"
-			return self.host + "/" + self.pipeline + "/" + desc['_input'][axis]['_instance'] + "/" + desc['_input'][axis]['_applet']
-		return self.host + "/" + self.pipeline + "/" + desc['_input']['_instance'] + "/" + desc['_input']['_applet']
 
 	def getAttachInputPath( self, desc, key, name ):
 			return self.host + "/" + self.pipeline + "/" + desc['_input']['_instance'] + \
@@ -201,15 +170,12 @@ class WorkerBase:
 		self.outputSet[ name ].put( key, self.jobID, self.emitID, value )
 		self.emitID += 1
 	
-	def open(self, key, name, mode="r"):
+	def open(self, key, name, mode="r"):		
+		if mode == 'r':
+			return self.inAttachReader.open( key, name, mode )		
 		if mode=="w":
-			o = PipeFileBuffer(key, name)
-			self.out_file_list.append( [key, name, o] )
-			return o
-		attachPath = "%s/%s/%s/%s/%s/%s" % (self.host, self.pipeline, self.appletDesc['_input']['_instance'], self.appletDesc['_input']['_applet'], key, name )
-		print "GETTING: " + attachPath
-		return urllib.urlopen( attachPath ) 
-	
+			return self.outAttachReader.open( key, name, mode )
+
 	def getInfo( self, name ):
 		return self.appletDesc.get( name, None )
 	

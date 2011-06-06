@@ -139,6 +139,12 @@ global defaultStackInterface
 defaultStackInterface = None
 global interfaceDict
 interfaceDict = {}
+
+global defaultAttachInterface
+defaultAttachInterface = None
+global attachDict
+attachDict = {}
+
 global workerDict
 workerDict = {}
 
@@ -151,6 +157,13 @@ def setStackDB( name, stackDB ):
 	global interfaceDict
 	defaultStackInterface = name
 	interfaceDict[ name ] = stackDB
+
+def setAttachDB( name, attachDB ):
+	global defaultAttachInterface
+	global attachDict
+	defaultAttachInterface = name
+	attachDict[ name ] = attachDB
+
 
 def getWorker( host, pipeline, instance, applet ):
 	global workerDict
@@ -202,7 +215,21 @@ class StackWrapper:
 	def close(self):
 		return self.stack.close()
 
+class AttachWrapper:
+	def __init__(self, server, workerID, pipeline, instance, applet ):
+		global defaultAttachInterface
+		global attachDict
+		self.attach = None
+		try:
+			self.attach = attachDict[ defaultAttachInterface ]( server, workerID, pipeline, instance, applet )
+		except Exception, e:
+			print e
+			self.attach = attachDict[ 'http' ]( server, workerID, pipeline, instance, applet )
+	
+	def open(self, key, name, mode="r" ):
+		return self.attach.open(key, name, mode)
 
 import remusDB_http
 import remusDB_pycassa
+import remusDB_file
 import pythonWorker

@@ -1,7 +1,7 @@
 
 
 class AbstractStack:
-	def __init__(self, server, workerID, pipeline, instance, applet, jobID=None ):
+	def __init__(self, server, workerID, pipeline, instance, applet ):
 		self.server = server
 		self.pipeline = pipeline
 		self.instance = instance
@@ -20,3 +20,13 @@ class AbstractStack:
 		raise Exception()
 
 
+class AbstractAttach:
+	def __init__(self, server, workerID, pipeline, instance, applet ):
+		self.server = server
+		self.pipeline = pipeline
+		self.instance = instance
+		self.applet = applet
+	
+	def open(self, key, name, mode):
+		raise Exception()
+		

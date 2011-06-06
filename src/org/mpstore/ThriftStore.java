@@ -112,6 +112,7 @@ public class ThriftStore implements MPStore {
 	@Override
 	public Map<String, String> getConfig() {
 		Map<String,String> out = new HashMap<String, String>();		
+		out.put("type", "cassandra");
 		out.put("server", serverName);
 		out.put("serverPort", Integer.toString(serverPort) );
 		out.put("columnFamily", columnFamily );

@@ -22,11 +22,11 @@ try:
                 confTxt = remusLib.urlopen( server + "/@db" ).read()
                 config = json.loads( confTxt )
             if pool is None:
-                pool = pycassa.connect( config['keyspace'], [ '%s:%s' % (config['server'], config['serverPort'] ) ] )
+                pool = pycassa.connect( config['dataStore']['keyspace'], [ '%s:%s' % (config['dataStore']['server'], config['dataStore']['serverPort'] ) ] )
             
-            self.col_fam_str = config[ 'columnFamily' ]
-            if config[ 'instColumns' ] == 'true':
-                self.col_fam_str = config[ 'columnFamily' ] + "_" + instance.replace("-", "")
+            self.col_fam_str = config['dataStore'][ 'columnFamily' ]
+            if config['dataStore'][ 'instColumns' ] == 'true':
+                self.col_fam_str = config['dataStore'][ 'columnFamily' ] + "_" + instance.replace("-", "")
             self.col_fam = pycassa.ColumnFamily( pool, self.col_fam_str )
             self.row_str = "%s/%s/%s" % ( instance, pipeline, applet )
             

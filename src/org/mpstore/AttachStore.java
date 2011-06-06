@@ -21,4 +21,6 @@ public interface AttachStore {
 
 	public boolean hasKey(String path, String instance, String key);
 
+	public Map<String,String> getConfig();
+
 }

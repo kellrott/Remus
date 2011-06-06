@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 import org.mpstore.AttachStore;
 import org.mpstore.Serializer;
@@ -20,11 +19,13 @@ public class AttachListView implements BaseNode {
 		this.key = key;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {

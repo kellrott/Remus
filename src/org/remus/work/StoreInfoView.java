@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.MPStore;
@@ -30,7 +31,11 @@ public class StoreInfoView implements BaseNode {
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 
 		try {
-			os.write( serial.dumps( app.getRootDatastore().getConfig() ).getBytes() );
+			Map out = new HashMap();
+			out.put( "dataStore", app.getRootDatastore().getConfig()  );
+			out.put( "attachStore", app.getRootAttachStore().getConfig()  );
+			
+			os.write( serial.dumps( out ).getBytes() );
 		} catch ( IOException e ) {
 
 		}

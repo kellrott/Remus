@@ -6,21 +6,34 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.remus.RemusApp;
 
 public class FileAttachStore implements AttachStore {
 
+	public final static String DIR_NAME    = "org.mpstore.FileAttachStore.dir";
+	public final static String DIR_SHARED  = "org.mpstore.FileAttachStore.shared";
 
 	File basePath = null;
+	Boolean dirShared = false;
+
 	@Override
 	public void initAttachStore(Map paramMap) {
-		this.basePath = new File( (String)paramMap.get(RemusApp.configWork) );
+		this.basePath = new File( (String)paramMap.get( DIR_NAME ) );
+		this.dirShared = Boolean.valueOf( (String) paramMap.get( DIR_SHARED ) ); 
 	}
 
+	@Override
+	public Map<String, String> getConfig() {
+		Map<String,String> out = new HashMap<String, String>();
+		out.put( "baseDir", basePath.getAbsolutePath() );
+		out.put("shared", Boolean.toString( dirShared ) );
+		out.put( "type", "fileSystem" );
+		return out;
+	}
 
 	@Override
 	public boolean hasKey(String path, String instance, String key) {
@@ -126,13 +139,5 @@ public class FileAttachStore implements AttachStore {
 		File attachDir = NameFlatten.flatten(basePath, path, instance, null, null).getParentFile().getParentFile();
 		deleteDir( attachDir );
 	}
-
-
-
-	
-
-
-
-
 
 }

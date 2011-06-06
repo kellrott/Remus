@@ -1,11 +1,14 @@
 
 from urlparse import urlparse
-from remusDB import AbstractStack
-from remusLib import setStackDB, log
+from remusDB import AbstractStack, AbstractAttach
+from remusLib import setStackDB, setAttachDB, log
+import tempfile
 import copy
+from urllib2 import urlopen
 import json
 import httplib
 from cStringIO import StringIO
+import os
 
 class HTTP_Stack( AbstractStack ):
 	def __init__(self, server, workerID, pipeline, instance, applet ):
@@ -85,4 +88,46 @@ class HTTP_Stack( AbstractStack ):
 				for key in data:
 					yield key, data[key]
 
+
+
+
+class OutFileBuffer:
+	def __init__(self, url):
+		self.url = url
+		self.isOpen = True
+		self.buff = tempfile.NamedTemporaryFile(delete=False)
+		
+	def write(self, data):
+		self.buff.write( data )
+		
+	def close(self):
+		if self.isOpen:
+			self.buff.close()
+			self.isOpen = False
+			cmd = "curl -X PUT --data-binary @%s %s" % ( self.getPath(), self.url )
+			print cmd
+			os.system( cmd )
+			self.unlink()
+	
+	def getPath(self):
+		return self.buff.name
+	
+	def fileno(self):
+		return self.buff.fileno()
+	
+	def unlink(self):
+		os.unlink( self.buff.name )
+
+
+class HTTP_Attach( AbstractAttach ):
+	def open(self, key, name, mode = "r"):		
+		url = self.server + "/" + self.pipeline + "/" + self.instance + \
+				"/%s/%s/%s" % ( self.applet, key, name)				
+		if mode == "r":
+			return urlopen( url )
+		elif mode == "w":				
+			return OutFileBuffer( url )			
+
+	
 setStackDB( 'http', HTTP_Stack )
+setAttachDB( 'http', HTTP_Attach )
