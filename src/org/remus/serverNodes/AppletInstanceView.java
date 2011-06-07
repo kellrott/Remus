@@ -51,7 +51,7 @@ public class AppletInstanceView implements BaseNode {
 			}
 			return;
 		}
-		
+
 		String sliceStr = null;
 		int sliceSize = 0;
 		if ( params.containsKey("slice") ) {
@@ -251,12 +251,13 @@ public class AppletInstanceView implements BaseNode {
 					long jobID = Long.parseLong( inObj.get("id").toString() );
 					long emitID = (Long)inObj.get("order");
 					String key = (String)inObj.get("key");
-					Map value = (Map)inObj.get("value");					
+					Map value = (Map)inObj.get("value");
 					RemusInstance inst = new RemusInstance();
 
 					//do some validation of the input work description
 					value.remove(RemusApplet.WORKDONE_OP);
 
+					//instance requested applets
 					System.err.println("AGENT SUBMISSION:" + key );
 					if ( ((Map)value).containsKey( Submission.AppletField ) ) {
 						List<String> aList = (List)((Map)value).get(Submission.AppletField);
@@ -264,18 +265,26 @@ public class AppletInstanceView implements BaseNode {
 					} else {
 						inst = applet.getPipeline().setupInstance( key, (Map)value, new LinkedList() );	
 					}					
-					((Map)value).put(Submission.InstanceField, inst.toString());	
-					applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@submit", 
-							RemusInstance.STATIC_INSTANCE_STR, 
-							(Long)0L, 
-							(Long)0L, 
-							key,
-							value );		
-					applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@instance", 
-							RemusInstance.STATIC_INSTANCE_STR, 
-							0L, 0L,
-							inst.toString(),
-							key);			
+					
+					//only add the main submission/instance records if they don't already exist
+					//we've already fired off the setupInstance requests to the applets, so if new applets are
+					//to be instanced in an exisiting pipeline instance, they will be, but the original submisison 
+					//will remain
+					if ( !applet.getPipeline().getDataStore().containsKey( "/" + applet.getPipeline().getID() + "/@submit",
+							RemusInstance.STATIC_INSTANCE_STR, key) ) {
+						((Map)value).put(Submission.InstanceField, inst.toString());	
+						applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@submit", 
+								RemusInstance.STATIC_INSTANCE_STR, 
+								(Long)0L, 
+								(Long)0L, 
+								key,
+								value );		
+						applet.getPipeline().getDataStore().add( "/" + applet.getPipeline().getID() + "/@instance", 
+								RemusInstance.STATIC_INSTANCE_STR, 
+								0L, 0L,
+								inst.toString(),
+								key);			
+					}
 				}				
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block

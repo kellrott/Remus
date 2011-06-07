@@ -98,6 +98,9 @@ class miniCallback:
 		for line in handle:
 			yield json.loads( line )[ key ]
 
+	def emit(self, key, value, port):
+		print port, key, value
+
 	def getInfo( self, name ):
 		return self.appletDesc.get( name, None ) 
 
@@ -105,8 +108,7 @@ if __name__=="__main__":
 	pipePath = sys.argv[1]
 	applet   = sys.argv[2]
 	instPath = sys.argv[3]
-
-
+	
 	h = urlparse( instPath )
 	
 	server = "%s://%s" % ( h.scheme, h.netloc )
@@ -132,7 +134,7 @@ if __name__=="__main__":
 	func = callback.getFunction( "test_func" )	
 
 	if ( appletDesc['_mode'] == "map" ):
-		for dkey, data in remusLib.getDataStack( inPath ):
+		for dkey, data in remusLib.getDataStack( remusLib.StackWrapper( server, "DEBUG", pipeline, instance, appletDesc["_src"] ) ):
 			func( dkey, data )
 				
 	if ( appletDesc['_mode'] == "reduce" ):
