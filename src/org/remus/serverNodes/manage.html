@@ -28,31 +28,48 @@
 <body>
 <script type="text/javascript">
 
+
+function makeErrorUL( dict ) {
+	var ul = $("<ul>");	
+	for ( e in dict ) {
+		if ( dict[e] == null || typeof dict[e] == "string" ) {
+			var a = e + " " + dict[e];
+			ul.append( $("<li>").append( $("<span class='file'>").append(a) ) );
+		} else {
+			var li = $("<li class='closed'>").append( $("<span class='folder'>").append(e) );
+			li.append( makeErrorUL( dict[e] ) );
+			ul.append( li );
+		}
+	}
+	return ul;
+}
+
+
 var errorView = function( pipeline ) {
 
 	return {
 		'pipeline' : pipeline,
 		getTitle : function() { return "Error View"; }, 
-		getDiv : instanceSelector(pipeline, function(instance) {
-			return appletSelector(pipeline, instance, function( applet ) {
-				
-				var ul=$("<select size=10>");
-				var i;
-				var path = "/" + pipeline + "/" + instance + "/@error/" + applet;
-				$.get( path , function(data) {
-					var lines = data.split("\n");
-					for (i = 0; i < lines.length; i++) {
-						if ( lines[i].length > 0 ) {
-							ul.append( $("<option>").append( lines[i] ) );
-						}
+		getDiv : function() {
+			var ul=$("<div>");
+			var i;
+			var path = "/" + pipeline + "/@error/";			
+			$.get( path , function(data) {
+				var paths = {};
+				var lines = data.split("\n");
+				for (i = 0; i < lines.length; i++) {
+					var d = $.parseJSON( lines[i] );
+					for ( e in d ) {
+						paths[ e.replace(":", "/") ] = d[e];
 					}
-				});
-				return ul;
-
+				}
+				var dirSet = dirDecomp( paths );
+				ul.append( makeErrorUL( dirSet ).attr('class', 'filetree' ).treeview() );
 				
-			})
-		})
-
+			});
+			
+			return ul;
+		}
 	};
 };
 
@@ -380,16 +397,16 @@ function dirDecomp( array ) {
 		if ( count > 0 ) {
 			base[dir] = dirDecomp( cur );
 		} else {
-			base[dir] = null; //array[dir];
+			base[dir] = array[dir];
 		}
 	}
 	return base
 }
 
-function makeUL( dict, pipeline ) {
+function makeStackViewUL( dict, pipeline ) {
 	var ul = $("<ul>");	
 	for ( e in dict ) {
-		if ( dict[e] == null ) {
+		if ( dict[e] == null || typeof dict[e] == "string" ) {
 			//var a = $("<a href='#'>").bind( 'click', {func : callback, sel : e}, function(msg) { 
 			//	msg.data.func(msg.data.sel); 
 			//} );
@@ -400,7 +417,7 @@ function makeUL( dict, pipeline ) {
 			ul.append( $("<li>").append( $("<span class='file'>").append(a) ) );
 		} else {
 			var li = $("<li class='closed'>").append( $("<span class='folder'>").append(e) );
-			li.append( makeUL( dict[e], pipeline ) );
+			li.append( makeStackViewUL( dict[e], pipeline ) );
 			ul.append( li );
 		}
 	}
@@ -449,7 +466,7 @@ var instanceTree = function( pipeline ) {
 				}
 			}
 			var dirSet = dirDecomp( dirList );			
-			div.append( makeUL( dirSet, pipeline ).attr('class', 'filetree' ).treeview() );
+			div.append( makeStackViewUL( dirSet, pipeline ).attr('class', 'filetree' ).treeview() );
 			div.append( selectDiv );
 			return div;
 		}
