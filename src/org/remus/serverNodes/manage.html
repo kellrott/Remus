@@ -9,6 +9,7 @@
 
 <script src="jquery.jsonviewer.js" type="text/javascript"></script> 
 <script src="jquery.treeview.js" type="text/javascript"></script> 
+<script src="jquery.popupwindow.js" type="text/javascript"></script> 
 
 <style type="text/css"> 
 	
@@ -385,18 +386,21 @@ function dirDecomp( array ) {
 	return base
 }
 
-function makeUL( dict, callback ) {
+function makeUL( dict, pipeline ) {
 	var ul = $("<ul>");	
 	for ( e in dict ) {
 		if ( dict[e] == null ) {
-			var a = $("<a href='#'>").bind( 'click', {func : callback, sel : e}, function(msg) { 
-				msg.data.func(msg.data.sel); 
-			} );
+			//var a = $("<a href='#'>").bind( 'click', {func : callback, sel : e}, function(msg) { 
+			//	msg.data.func(msg.data.sel); 
+			//} );
+			var tmp = e.split(':');
+			var a = $("<a target='_blank'>").attr( 'href', "stackViewer.html?pipeline=" + pipeline + "&instance=" + tmp[0] + "&applet=" + tmp[1] );
+			a.popupwindow();
 			a.append(e);
 			ul.append( $("<li>").append( $("<span class='file'>").append(a) ) );
 		} else {
 			var li = $("<li class='closed'>").append( $("<span class='folder'>").append(e) );
-			li.append( makeUL( dict[e], callback ) );
+			li.append( makeUL( dict[e], pipeline ) );
 			ul.append( li );
 		}
 	}
@@ -445,7 +449,7 @@ var instanceTree = function( pipeline ) {
 				}
 			}
 			var dirSet = dirDecomp( dirList );			
-			div.append( makeUL( dirSet, setDiv ).attr('class', 'filetree' ).treeview() );
+			div.append( makeUL( dirSet, pipeline ).attr('class', 'filetree' ).treeview() );
 			div.append( selectDiv );
 			return div;
 		}
