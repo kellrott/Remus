@@ -7,4 +7,4 @@ org.mpstore.FileAttachStore.shared = true
 
 org.mpstore.ThriftStore.columnFamily = remusTable
 org.mpstore.ThriftStore.keySpace = remus
-org.mpstore.ThriftStore.instColumns = true
+org.mpstore.ThriftStore.instColumns = false
