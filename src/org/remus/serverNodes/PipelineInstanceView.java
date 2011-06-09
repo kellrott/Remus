@@ -75,6 +75,7 @@ public class PipelineInstanceView implements BaseNode {
 		if ( name.compareTo("@error") == 0 ) {
 			return new InstanceErrorView(pipeline, inst);
 		}
+		
 		if ( name.compareTo("@status") == 0 ) {
 			return new PipelineInstanceStatusView(pipeline, inst);
 		}
@@ -82,7 +83,7 @@ public class PipelineInstanceView implements BaseNode {
 		if ( name.compareTo("@attach") == 0 ) {
 			return new AttachInstanceView(pipeline, inst);			
 		}
-			
+				
 		return null;		
 	}
 

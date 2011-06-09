@@ -70,29 +70,8 @@ public class SubmitView implements BaseNode {
 				while( (len=is.read(buffer)) > 0 ) {
 					sb.append(new String(buffer, 0, len));
 				}
-				Object data = serial.loads(sb.toString());
-				RemusInstance inst = new RemusInstance();
-				if ( ((Map)data).containsKey( Submission.AppletField ) ) {
-					List<String> aList = (List)((Map)data).get(Submission.AppletField);
-					inst = pipe.setupInstance( name, (Map)data, aList );					
-				} else {
-					inst = pipe.setupInstance( name, (Map)data, new LinkedList() );					
-
-				}
-				
-				((Map)data).put(Submission.InstanceField, inst.toString());
-				pipe.getDataStore().add( "/" + pipe.getID() + "/@submit", 
-						RemusInstance.STATIC_INSTANCE_STR, 
-						(Long)0L, 
-						(Long)0L, 
-						name,
-						data );		
-				pipe.getDataStore().add( "/" + pipe.getID() + "/@instance", 
-						RemusInstance.STATIC_INSTANCE_STR, 
-						0L, 0L,
-						inst.toString(),
-						name);
-				
+				Object data = serial.loads(sb.toString());				
+				pipe.handleSubmission(name, (Map)data);						
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
