@@ -30,8 +30,11 @@ class FileAttach( AbstractAttach ):
         path.append( quote(name) )        
         #print "OPEN", path
         pathStr = os.path.join( *path ) 
-        if ( mode == 'w' and os.path.dirname( pathStr )):
-            os.makedirs( os.path.dirname(pathStr) )
+        if ( mode == 'w' and not os.path.exists( os.path.dirname( pathStr ) )):
+            try:   
+                os.makedirs( os.path.dirname(pathStr) )
+            except OSError:
+                pass
         return open( pathStr, mode )
 
 remusLib.setAttachDB( 'file', FileAttach )
