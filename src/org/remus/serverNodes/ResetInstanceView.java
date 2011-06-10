@@ -10,6 +10,7 @@ import java.util.Map;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
+import org.remus.work.RemusApplet;
 import org.remus.work.Submission;
 
 public class ResetInstanceView implements BaseNode {
@@ -42,37 +43,37 @@ public class ResetInstanceView implements BaseNode {
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
 		if ( name.length() > 0 ) {
-			String subKey = null;
-			RemusInstance inst = null;
-			Map subMap = null;
-			for ( Object subObject : pipeline.getDataStore().get( "/" + pipeline.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-				subMap = (Map) subObject;
-				inst = new RemusInstance( (String)subMap.get( Submission.InstanceField ) );
-				subKey = name;
-			}
-			for ( Object instObject : pipeline.getDataStore().get( "/" + pipeline.getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-				subKey = (String) instObject;
-				inst = new RemusInstance( name );				
-				for ( Object subObject : pipeline.getDataStore().get( "/" + pipeline.getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, subKey) ) {
-					subMap = (Map)subObject;
+			String [] tmp = name.split(":");
+			if ( tmp.length == 1 ) {
+				
+				RemusInstance inst = pipeline.getInstance( name );
+				String subKey = pipeline.getSubKey(inst);
+				Map subMap = pipeline.getSubmitData(subKey);
+				if ( inst == null || subKey == null || subMap == null ) {
+					throw new FileNotFoundException();	
+				}			
+				subMap.remove( Submission.WorkDoneField );			
+				pipeline.deleteInstance(inst);
+				pipeline.handleSubmission( subKey , subMap );
+
+				try {
+					os.write( inst.toString().getBytes() );
+					os.write( " Restarted as ".getBytes() );
+					os.write( subKey.getBytes() );
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				RemusInstance inst = pipeline.getInstance( tmp[0] );
+				RemusApplet applet = pipeline.getApplet(tmp[1]);
+				if ( inst != null && applet != null ) {
+					applet.deleteInstance( inst );
+					String subKey = pipeline.getSubKey( inst );
+					Map params = pipeline.getSubmitData( subKey );
+					applet.createInstance( subKey, params, inst);
 				}
 			}
-			if ( inst == null || subKey == null) {
-				throw new FileNotFoundException();	
-			}			
-			subMap.remove( Submission.WorkDoneField );			
-			pipeline.deleteInstance(inst);
-			pipeline.handleSubmission( subKey , subMap );
-			
-			try {
-				os.write( inst.toString().getBytes() );
-				os.write( " Restarted as ".getBytes() );
-				os.write( subKey.getBytes() );
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
 		}
 	}
 

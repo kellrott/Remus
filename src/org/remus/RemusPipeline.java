@@ -124,6 +124,32 @@ public class RemusPipeline implements BaseNode {
 	}	
 	 */
 
+	public RemusInstance getInstance(String name) {
+		for ( Object subObject : getDataStore().get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
+			Map subMap = (Map) subObject;
+			return new RemusInstance( (String)subMap.get( Submission.InstanceField ) );
+		}
+		for ( Object instObject : getDataStore().get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {			
+			return  new RemusInstance( name );				
+		}
+		return null;
+	}
+
+	public String getSubKey(RemusInstance inst) {
+		for ( Object instObject : getDataStore().get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {			
+			return (String)instObject;
+		}
+		return null;
+	}
+
+	public Map getSubmitData(String subKey) {
+		for ( Object subObject : getDataStore().get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, subKey) ) {
+			Map subMap = (Map) subObject;
+			return subMap;
+		}
+		return null;
+	}	
+	
 	public void deleteInstance(RemusInstance instance) {
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
@@ -309,7 +335,7 @@ public class RemusPipeline implements BaseNode {
 		if ( ! getDataStore().containsKey( "/" + getID() + "/@submit",
 				RemusInstance.STATIC_INSTANCE_STR, key) ) {
 			((Map)value).put(Submission.SubmitKeyField, key );	
-			
+
 			((Map)value).put(Submission.InstanceField, inst.toString());	
 			getDataStore().add( "/" + getID() + "/@submit", 
 					RemusInstance.STATIC_INSTANCE_STR, 
@@ -368,7 +394,6 @@ public class RemusPipeline implements BaseNode {
 		} while (added);
 		return inst;		
 	}
-
 
 
 
