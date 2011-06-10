@@ -368,14 +368,16 @@ public class RemusApplet {
 			inMap.put("_applet", getInput() );
 			baseMap.put("_input", inMap);
 		} else if ( getType() == PIPE ) {
-			List outList = new ArrayList();
-			for ( String input : getInputs() ) {
-				Map inMap = new HashMap();
-				inMap.put("_instance", inst.toString());
-				inMap.put("_applet", input );
-				outList.add( inMap );
+			if ( getInput().compareTo("?") != 0 ) {
+				List outList = new ArrayList();
+				for ( String input : getInputs() ) {
+					Map inMap = new HashMap();
+					inMap.put("_instance", inst.toString());
+					inMap.put("_applet", input );
+					outList.add( inMap );
+				}
+				baseMap.put("_input", outList);
 			}
-			baseMap.put("_input", outList);			
 		} else if ( hasInputs() && getInput().compareTo("?") != 0 ) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", inst.toString());
