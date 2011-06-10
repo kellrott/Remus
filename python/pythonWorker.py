@@ -96,7 +96,7 @@ class WorkerBase:
 	
 	def getStackDB( self, desc, major=True, applet=None, instance=None ):
 		if applet is not None and instance is not None:
-			return remusLib.getStackDB( self.host, self.workerID, self.pipeline, instance, applet, useHTTP=self.useHTTP )
+			return remusLib.StackWrapper( self.host, self.workerID, self.pipeline, instance, applet, useHTTP=self.useHTTP )
 			
 		if desc['_input'].has_key( '_axis' ):
 			axis = desc['_input'][ '_axis' ]
@@ -111,21 +111,7 @@ class WorkerBase:
 	def closeOutput(self):
 		for name in self.outputSet:
 			self.outputSet[name].close()
-		self.outmap = []
-
-		"""
-		for key, name, handle in self.out_file_list:
-			postURL = self.getAttachOutputPath( self.appletDesc, key, name ) 
-			print "ATTACHMENT:", postURL
-			#print urlopen( postURL, fileMap[path].mem_map() ).read()
-			#TODO, figure out streaming post in python
-			handle.close()
-			cmd = "curl -X PUT --data-binary @%s %s" % ( handle.getPath(), postURL )
-			remusLib.log( "OS: " + cmd )
-			os.system( cmd )
-			handle.unlink()
-			#fileMap[path].unlink()
-		"""
+		self.outmap = []		
 		
 	def doWork(self, jobID, jobKeys):
 		mode = self.appletDesc[ '_mode' ]		
