@@ -69,35 +69,37 @@ public class WorkManager implements BaseNode {
 			}
 		}		
 		//scan applets for new work 
-		if ( workQueue.size() == 0 ) {
-			int retry = 3;
-			do {
-				Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
-				if ( newwork.size() == 0 )
-					retry--;
-				else
-					retry = 0;
-				for (AppletInstance ai : newwork.keySet() ) {
-					assert ai != null;
-					for ( WorkKey wk : newwork.get(ai) ) {
-						//make sure that it hasn't been assigned to workers yet
-						boolean found = false;
-						for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
-							if ( worker.containsKey( ai ) && worker.get(ai).contains(wk) ) {
-								found = true;
-							}
-						}
-						if ( !found ) {
-							synchronized (workQueue) {		
-								if ( !workQueue.containsKey(ai) ) {
-									workQueue.put(ai, new HashSet<WorkKey>() );
+		synchronized (workQueue) {			
+			if ( workQueue.size() == 0 ) {
+				int retry = 3;
+				do {
+					Map<AppletInstance, Set<WorkKey>> newwork = app.getWorkQueue(QUEUE_MAX);
+					if ( newwork.size() == 0 )
+						retry--;
+					else
+						retry = 0;
+					for (AppletInstance ai : newwork.keySet() ) {
+						assert ai != null;
+						for ( WorkKey wk : newwork.get(ai) ) {
+							//make sure that it hasn't been assigned to workers yet
+							boolean found = false;
+							for ( Map<AppletInstance, Set<WorkKey> > worker : workerSets.values() ) {
+								if ( worker.containsKey( ai ) && worker.get(ai).contains(wk) ) {
+									found = true;
 								}
-								workQueue.get(ai).add(wk);
+							}
+							if ( !found ) {
+								synchronized (workQueue) {		
+									if ( !workQueue.containsKey(ai) ) {
+										workQueue.put(ai, new HashSet<WorkKey>() );
+									}
+									workQueue.get(ai).add(wk);
+								}
 							}
 						}
 					}
-				}
-			} while (retry > 0 );
+				} while (retry > 0 );
+			}
 		}
 		//add jobs to worker's queue 
 		Map<AppletInstance,Set<WorkKey>> wMap = workerSets.get(workerID);
@@ -217,7 +219,7 @@ public class WorkManager implements BaseNode {
 		for ( AppletInstance ai : workList.keySet() ) {
 			assert ai != null;
 			assert ai.applet != null;
-			
+
 			String pipelineID = ai.applet.getPipeline().getID();
 			Map pipeMap = null;
 			if (out.containsKey(pipelineID)) {
@@ -225,7 +227,7 @@ public class WorkManager implements BaseNode {
 			} else {
 				pipeMap = new HashMap();
 			}
-			
+
 			String appletID = ai.applet.getID();
 			String instStr = ai.inst.toString();
 			if ( i < count ) {
@@ -355,7 +357,7 @@ public class WorkManager implements BaseNode {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub
