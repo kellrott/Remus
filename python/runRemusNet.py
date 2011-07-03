@@ -59,7 +59,8 @@ if __name__=="__main__":
 	try:
 		retryCount = 3
 		while retryCount > 0:
-			workList = remusLib.httpGetJson( host + "/@work" ).read()	
+			workStat = remusLib.httpGetJson( host + "/@work?request" ).read()	
+			workList = workStat[ workerID ]
 			if len(workList) == 0:
 				retryCount -= 1
 				time.sleep(10)

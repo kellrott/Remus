@@ -56,7 +56,7 @@ public class ThriftStore implements MPStore {
 
 	Map<String,String> columns = new HashMap<String,String>();
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException {
 		this.serializer = serializer;
@@ -473,6 +473,7 @@ public class ThriftStore implements MPStore {
 	abstract class SliceIterator<T> implements Iterable<T>, Iterator<T> {
 		boolean hasMore = true, firstSlice = true, elemAdded;
 		int maxFetch = 100;
+		Integer maxCount = null;
 		LinkedList<T> outList;
 		byte [] keyStart,  keyEnd;
 		ColumnParent cp;
@@ -487,6 +488,14 @@ public class ThriftStore implements MPStore {
 			outList = new LinkedList<T>();
 		}
 
+		public SliceIterator(String superColumn, String columnParent, String keyStart, String keyEnd, int maxCount) {
+			this.keyStart = keyStart.getBytes();
+			this.keyEnd = keyEnd.getBytes();
+			this.superColumn = ByteBuffer.wrap( superColumn.getBytes() );
+			cp = new ColumnParent(columnParent);
+			outList = new LinkedList<T>();
+			this.maxCount = maxCount;
+		}
 
 		@Override
 		public Iterator<T> iterator() {
@@ -498,6 +507,8 @@ public class ThriftStore implements MPStore {
 			if ( hasMore && outList.size() < maxFetch ) {
 				hasMore = getNextSlice();
 			}
+			if ( maxCount != null && maxCount <= 0 ) 
+				return false;
 			if ( outList.size() <= 0 )
 				return false;
 			return true;
@@ -543,6 +554,8 @@ public class ThriftStore implements MPStore {
 		}
 		@Override
 		public T next() {
+			if ( maxCount != null )
+				maxCount--;
 			return outList.removeFirst();
 		}
 
@@ -696,6 +709,35 @@ public class ThriftStore implements MPStore {
 		return null;
 	}
 
+	/*
+	@Override
+	public Iterable<KeyValuePair> getSlice(String path, String instance, String key, int count) {
+		final String superColumn = instance + path;
+		String curCF = columnFamily;
+		try {
+			curCF = getColumnFamily(instance);
+		} catch (MPStoreConnectException e1) {
+			e1.printStackTrace();
+		}
+		final ColumnParent cp = new ColumnParent( curCF );
+		
+		SliceIterator<KeyValuePair> out = new SliceIterator<KeyValuePair>(superColumn, curCF, key, "", count) {				
+			@Override
+			void processColumn(ColumnOrSuperColumn scol) {
+				String key = new String( scol.getSuper_column().getName() );
+				for ( Column col : scol.getSuper_column().getColumns() ) {
+					String itemName=new String(col.getName());
+					String [] tmp = itemName.split("_");
+					long jobID = Long.parseLong(  tmp[0] );
+					long workID = Long.parseLong( tmp[1] );
+					Object value = serializer.loads( new String(col.getValue()) );
+					addElement( new KeyValuePair(jobID, workID, key, value) );
+				}
+			}
+		};
+		return out;		
+	}
+*/
 
 
 

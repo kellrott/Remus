@@ -16,13 +16,14 @@ import java.util.Map;
  */
 
 public interface MPStore {
-	
+	@SuppressWarnings("rawtypes")
 	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException;
 	
 	public void add(String path, String instance, long jobid, long emitID, String key, Object data);
 	public void add(String path, String instance, List<KeyValuePair> inputList); 
 
 	public Iterable<Object> get(String path, String instance, String key);
+	//public Iterable<KeyValuePair> getSlice(String path, String instance, String key, int count);
 	
 	public Iterable<String> listKeys(String path, String instance);
 	
@@ -33,7 +34,7 @@ public interface MPStore {
 	public long keyCount( String path, String instance, int maxCount );
 	
 	public Iterable<String> keySlice( String path, String instance, String startKey, int count );
-
+	
 	public void delete(String path, String instance);
 	
 	public void delete(String path, String instance, String key);
@@ -45,5 +46,6 @@ public interface MPStore {
 	public void close();
 
 	public Map<String,String> getConfig();
+
 
 }

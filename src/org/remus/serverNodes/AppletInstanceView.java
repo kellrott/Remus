@@ -11,7 +11,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +19,6 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
 import org.remus.work.RemusApplet;
-import org.remus.work.Submission;
 
 public class AppletInstanceView implements BaseNode {
 
@@ -32,12 +30,13 @@ public class AppletInstanceView implements BaseNode {
 		this.inst = inst;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial,
 			OutputStream os) throws FileNotFoundException {
@@ -158,6 +157,7 @@ public class AppletInstanceView implements BaseNode {
 
 	}
 
+	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
@@ -205,6 +205,7 @@ public class AppletInstanceView implements BaseNode {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Map postStr2Map(String iStr) throws UnsupportedEncodingException {
 		Map out = new HashMap<String, String>();
 		for ( String el : iStr.split("&") ) {
@@ -218,6 +219,7 @@ public class AppletInstanceView implements BaseNode {
 		return out;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
@@ -248,18 +250,14 @@ public class AppletInstanceView implements BaseNode {
 				String curline = null;
 				while ( (curline = br.readLine() ) != null ) {
 					Map inObj = (Map)serial.loads(curline);	
-					long jobID = Long.parseLong( inObj.get("id").toString() );
-					long emitID = (Long)inObj.get("order");
+					//long jobID = Long.parseLong( inObj.get("id").toString() );
+					//long emitID = (Long)inObj.get("order");
 					String key = (String)inObj.get("key");
 					Map value = (Map)inObj.get("value");
-					RemusInstance inst = new RemusInstance();
-
-					//do some validation of the input work description
-					value.remove(RemusApplet.WORKDONE_OP);
-
+					//RemusInstance inst = new RemusInstance();
+					
 					//instance requested applets
 					System.err.println("AGENT SUBMISSION:" + key );
-					
 					applet.getPipeline().handleSubmission( key, value ); 				
 					
 				}				

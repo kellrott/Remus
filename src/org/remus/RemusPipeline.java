@@ -16,6 +16,7 @@ import org.mpstore.AttachStore;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
+import org.remus.manage.WorkStatus;
 import org.remus.serverNodes.AttachListView;
 import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.PipelineAgentView;
@@ -26,10 +27,10 @@ import org.remus.serverNodes.PipelineListView;
 import org.remus.serverNodes.PipelineStatusView;
 import org.remus.serverNodes.ResetInstanceView;
 import org.remus.serverNodes.SubmitView;
-import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.Submission;
-import org.remus.work.WorkKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RemusPipeline implements BaseNode {
 
@@ -43,7 +44,14 @@ public class RemusPipeline implements BaseNode {
 	MPStore datastore;
 	AttachStore attachStore;
 	RemusApp app;
+
+	private Logger logger;
+	
 	public RemusPipeline(RemusApp app, String id, MPStore datastore, AttachStore attachStore) {
+		
+	    logger = LoggerFactory.getLogger(RemusPipeline.class);
+
+	    
 		this.app = app;
 		members = new HashMap<String,RemusApplet>();
 		children = new HashMap<String, BaseNode>();
@@ -75,15 +83,13 @@ public class RemusPipeline implements BaseNode {
 		//children.put(applet.getID(), applet);
 	}
 
-	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxCount) {
+	public Set<WorkStatus> getWorkQueue( ) {
 		if ( inputs == null ) {
 			setupInputs();
 		}
-		Map<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();
+		Set<WorkStatus> out = new HashSet<WorkStatus>();
 		for ( RemusApplet applet : members.values() ) {
-			if ( out.size() < maxCount ) {
-				out.putAll( applet.getWorkList( maxCount - out.size()) );
-			}
+			out.addAll( applet.getWorkList() );
 		}
 		return out;
 	}
@@ -149,33 +155,19 @@ public class RemusPipeline implements BaseNode {
 		}
 		return null;
 	}	
-	
+
 	public void deleteInstance(RemusInstance instance) {
+		logger.info( "Deleting Instance " + instance );
 		for ( RemusApplet applet : members.values() ) {
 			applet.deleteInstance(instance);
 		}
-
 		datastore.delete("/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString());
-
-		/*
-		String submitKey = null;
-		for ( KeyValuePair kv : datastore.listKeyPairs("/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR)) {
-			String subinst = (String)((Map)kv.getValue()).get(Submission.InstanceField);
-			if ( subinst != null && subinst.compareTo(instance.toString()) == 0 ) {
-				submitKey = kv.getKey();
-			}
-		}
-		if ( submitKey != null ) {
-			datastore.delete("/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, submitKey );
-		}
-		 */
-
 	}
 
 	public boolean isComplete(RemusInstance inst) {
 		boolean done = true;
 		for ( RemusApplet applet : members.values() ) {
-			if ( !applet.isComplete(inst) )
+			if ( ! WorkStatus.isComplete(applet, inst) )
 				done = false;
 		}
 		return done;
@@ -210,15 +202,13 @@ public class RemusPipeline implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		//Deletions should be done through one of the sub-views, or in a parent view
+		throw new FileNotFoundException();
 	}
 
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
-	throws FileNotFoundException {
-
-
+			throws FileNotFoundException {
 		for ( KeyValuePair kv : datastore.listKeyPairs( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			Map out = new HashMap();
 			out.put(kv.getKey(), kv.getValue() );
@@ -257,7 +247,7 @@ public class RemusPipeline implements BaseNode {
 		@Override
 		public void doGet(String name, Map params, String workerID,
 				Serializer serial, OutputStream os)
-		throws FileNotFoundException {
+						throws FileNotFoundException {
 			InputStream fis = attachStore.readAttachement("/" + getID(), RemusInstance.STATIC_INSTANCE_STR, null, fileName);
 			if ( fis != null ) {
 				byte [] buffer = new byte[1024];
@@ -353,6 +343,7 @@ public class RemusPipeline implements BaseNode {
 
 
 	public RemusInstance setupInstance(String name, Map params, List<String> appletList) {
+		logger.info("Init submission " + name );
 		Set<RemusApplet> activeSet = new HashSet<RemusApplet>();
 		RemusInstance inst = new RemusInstance();
 
@@ -392,6 +383,9 @@ public class RemusPipeline implements BaseNode {
 				} 
 			}
 		} while (added);
+		
+		app.getWorkManager().jobScan();
+		logger.info("submission " + name + " started as " + inst);
 		return inst;		
 	}
 

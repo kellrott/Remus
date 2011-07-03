@@ -31,6 +31,14 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import me.prettyprint.hector.api.query.SuperColumnQuery;
 import me.prettyprint.hector.api.query.SuperSliceQuery;
 
+
+
+/*
+ * THIS CLASS IS INCOMPLETE AND DOES NOT WORK!!!!!!!!!!!!!!!!
+ * 
+ */
+
+
 public class HectorStore implements MPStore {
 
 
@@ -250,6 +258,14 @@ public class HectorStore implements MPStore {
 		return null;
 	}
 
+	/*
+	@Override
+	public Iterable<KeyValuePair> getSlice(String path, String instance,
+			String key, int count) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	 */
 	
 
 

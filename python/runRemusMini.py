@@ -146,7 +146,7 @@ if __name__=="__main__":
 	
 	if ( appletDesc['_mode'] == "pipe" ):
 		inList = []
-		for inFile in appletDesc['_src'].split(','):			
+		for inFile in appletDesc['_src']:			
 			dStack = remusLib.StackWrapper( server, "DEBUG", pipeline, instance, inFile )			
 			iHandle = remusLib.getDataStack( dStack )
 			inList.append( iHandle )

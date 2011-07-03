@@ -10,7 +10,6 @@ import java.util.Map;
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
 import org.remus.work.RemusApplet;
 
 public class AppletInstanceStatusView implements BaseNode {
@@ -23,36 +22,12 @@ public class AppletInstanceStatusView implements BaseNode {
 	}
 
 
-	public void setWorkStat(RemusInstance inst, int doneCount, int errorCount, int totalCount, long timestamp) {
-		Map u = new HashMap();
-		u.put("_doneCount", doneCount);
-		u.put("_errorCount", errorCount);
-		u.put("_totalCount", totalCount);
-		u.put("_timestamp", timestamp);
-		
-		updateStatus(inst, u);
-	}
-	
 	public Object getStatus(RemusInstance inst) {
 		Object statObj = null;
 		for ( Object obj : applet.getDataStore().get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
 			statObj = obj;
 		}
 		return statObj;
-	}
-
-	public void updateStatus( RemusInstance inst, Map update ) {
-		Object statObj = null;
-		for ( Object obj : applet.getDataStore().get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
-			statObj = obj;
-		}
-		if ( statObj == null ) {
-			statObj = new HashMap();
-		}
-		for ( Object key : update.keySet() ) {
-			((Map)statObj).put(key, update.get(key));
-		}
-		applet.getDataStore().add( applet.getPath() + InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
 	}
 	
 	@Override
@@ -114,14 +89,19 @@ public class AppletInstanceStatusView implements BaseNode {
 	}
 
 
-	public long getTimeStamp(RemusInstance remusInstance) {
-		long val1 = applet.getDataStore().getTimeStamp( applet.getPath(), remusInstance.toString());
-		long val2 = applet.getDataStore().getTimeStamp( applet.getPath() + "/@done" , remusInstance.toString());
-		return Math.max(val1, val2);
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static void updateStatus(RemusApplet applet,
+			RemusInstance inst, Map update) {
+		Object statObj = null;
+		for ( Object obj : applet.getDataStore().get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+			statObj = obj;
+		}
+		if ( statObj == null ) {
+			statObj = new HashMap();
+		}
+		for ( Object key : update.keySet() ) {
+			((Map)statObj).put(key, update.get(key));
+		}
+		applet.getDataStore().add( applet.getPath() + InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
 	}
-
-
-	
-
-
 }

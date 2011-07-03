@@ -20,6 +20,12 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.remus.RemusApp;;
 
 
+/*
+ * THIS CLASS IS INCOMPLETE AND DOES NOT WORK!!!!!!!!!!!!!!!!
+ * 
+ */
+
+
 public class SQLStore implements MPStore {
 
 	public class ConnectionFactory extends BasePoolableObjectFactory {
@@ -706,15 +712,11 @@ public class SQLStore implements MPStore {
 
 	/*
 	@Override
-	public void initAttachStore(Map paramMap) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public List<String> listAttachment(String path, String instance, String key) {
+	public Iterable<KeyValuePair> getSlice(String path, String instance,
+			String key, int count) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	 */
+	
 }

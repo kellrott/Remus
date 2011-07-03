@@ -72,9 +72,9 @@ public class MasterServlet extends HttpServlet {
 		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
-			if ( workerID != null ) {
-				app.getWorkManager().touchWorkerStatus( workerID );
-			}
+			//if ( workerID != null ) {
+			//	app.getWorkManager().touchWorkerStatus( workerID );
+			//}
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
 			app.passCall( RemusApp.GET_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
@@ -93,9 +93,9 @@ public class MasterServlet extends HttpServlet {
 		try {
 			String workerID = getWorkerID(req);
 			//TODO: make sure correct worker is returning assigned results before putting them in the database....
-			if ( workerID != null ) {
-				app.getWorkManager().touchWorkerStatus( workerID );
-			}			
+			//if ( workerID != null ) {
+			//	app.getWorkManager().touchWorkerStatus( workerID );
+			//}			
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
 			app.passCall( RemusApp.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);

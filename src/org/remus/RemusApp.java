@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +19,13 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.MPStoreConnectException;
 import org.mpstore.Serializer;
+import org.remus.manage.WorkStatus;
 import org.remus.manage.WorkManager;
 import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.ManageApp;
 import org.remus.serverNodes.ServerStatusView;
-import org.remus.work.AppletInstance;
 import org.remus.work.RemusApplet;
 import org.remus.work.StoreInfoView;
-import org.remus.work.WorkKey;
 
 /**
  * Main Interface to Remus applications. In charge of root database interface and pipeline 
@@ -227,6 +227,7 @@ public class RemusApp implements BaseNode {
 		}
 		rootStore.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, pipe.getID() );
 		rootStore.delete( "/" + pipe.id + "/@submit", RemusInstance.STATIC_INSTANCE_STR  );
+		rootStore.delete( "/" + pipe.id + "/@instance", RemusInstance.STATIC_INSTANCE_STR  );
 
 		loadPipelines();
 	}
@@ -246,16 +247,13 @@ public class RemusApp implements BaseNode {
 		return null;
 	}
 
-	public Map<AppletInstance,Set<WorkKey>> getWorkQueue(int maxSize) {		
-		Map<AppletInstance,Set<WorkKey>> out = new HashMap<AppletInstance,Set<WorkKey>>();
-		for ( RemusPipeline pipeline : pipelines.values() ) {			
-			if ( out.size() < maxSize ) {
-				out.putAll( pipeline.getWorkQueue( maxSize - out.size() ) );
-			}
-		}
-		return out;		
-	}
 
+	
+	
+	public WorkManager getWorkManager() {
+		return workManage;
+	}
+	
 	public RemusPipeline getPipeline( String name ) {
 		return pipelines.get(name);
 	}
@@ -272,17 +270,6 @@ public class RemusApp implements BaseNode {
 		return null;
 	}
 
-	/*
-	public boolean hasApplet(String appletPath) {
-		if (appletPath.startsWith("/"))
-			appletPath = appletPath.replaceFirst("^\\/", "");
-		String []tmp = appletPath.split(":");
-		if ( pipelines.containsKey(tmp[0]) && pipelines.get(tmp[0]).hasApplet( tmp[1] ) )		
-			return true;
-		return false;
-	}
-	 */
-
 	public MPStore getRootDatastore() {
 		return rootStore;
 	}
@@ -290,10 +277,7 @@ public class RemusApp implements BaseNode {
 	public AttachStore getRootAttachStore() {
 		return rootAttachStore;
 	}
-
-	public WorkManager getWorkManager() {
-		return workManage;
-	}
+	
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
@@ -382,6 +366,12 @@ public class RemusApp implements BaseNode {
 				curNode.doDelete( "", parameterMap, workerID );
 		}
 	}
+
+	public Map getParams() {
+		return params;
+	}
+
+	
 
 
 }

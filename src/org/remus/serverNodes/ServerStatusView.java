@@ -32,6 +32,7 @@ public class ServerStatusView implements BaseNode {
 		try {
 			Map outMap = new HashMap();				
 			Map workerMap = new HashMap();
+			/*
 			for ( String wID : app.getWorkManager().getWorkers()) {
 				//TODO: put in more methods to access work manager statistics
 				Map curMap = new HashMap();
@@ -50,6 +51,8 @@ public class ServerStatusView implements BaseNode {
 			outMap.put( "_workers", workerMap );
 			outMap.put( "_workBufferSize", app.getWorkManager().getWorkBufferSize() );
 			//outMap.put("finishRate", workManage.getFinishRate() );
+			 
+			 */
 			os.write( serial.dumps(outMap).getBytes() );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

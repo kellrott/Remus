@@ -27,14 +27,13 @@ public class InstanceErrorView implements BaseNode {
 		}
 		@Override
 		public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-			// TODO Auto-generated method stub
-
+			throw new FileNotFoundException();
 		}
 
 		@Override
 		public void doGet(String name, Map params, String workerID,
 				Serializer serial, OutputStream os)
-		throws FileNotFoundException {
+						throws FileNotFoundException {
 
 			for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@error", inst.toString() ) ) {
 				Map out = new HashMap();
@@ -52,13 +51,15 @@ public class InstanceErrorView implements BaseNode {
 		@Override
 		public void doPut(String name, String workerID, Serializer serial,
 				InputStream is, OutputStream os) throws FileNotFoundException {
+			throw new FileNotFoundException();
 		}
 
 		@Override
 		public void doSubmit(String name, String workerID, Serializer serial,
 				InputStream is, OutputStream os) throws FileNotFoundException {
+			throw new FileNotFoundException();
 
-
+			/*
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			String curline = null;
@@ -66,7 +67,7 @@ public class InstanceErrorView implements BaseNode {
 				while ((curline = br.readLine()) != null  ) {
 					sb.append(curline);
 				}
-				
+
 				Object data = serial.loads( sb.toString() );
 				for (Object key : ((Map)data).keySet() ) {
 					applet.getPipeline().getApp().getWorkManager().errorWork( 
@@ -77,8 +78,8 @@ public class InstanceErrorView implements BaseNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		
-			
+			 */
+
 		}
 
 		@Override
