@@ -37,11 +37,13 @@ public class ScriptMap implements Scriptable {
 		return "class";
 	}
 
+	/*
 	@Override
 	public Object getDefaultValue(Class<?> arg0) {		
 		return null;
 	}
-
+	 */
+	
 	@Override
 	public Object[] getIds() {
 		return map.keySet().toArray();
@@ -92,6 +94,11 @@ public class ScriptMap implements Scriptable {
 	@Override
 	public String toString() {
 		return map.toString();
+	}
+
+	@Override
+	public Object getDefaultValue(Class arg0) {
+		return null;
 	}
 
 }

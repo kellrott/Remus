@@ -87,7 +87,7 @@ public class ThriftStore implements MPStore {
 				ksDesc = client.describe_keyspace(keySpace);				
 			} catch ( NotFoundException e ) {
 				String strategy = "org.apache.cassandra.locator.SimpleStrategy";				
-				ksDesc = new KsDef(keySpace, strategy, 1, new ArrayList<CfDef>() );				
+				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>() );				
 				try {
 					client.system_add_keyspace( ksDesc  );
 				} catch ( Exception e2 ) {
@@ -294,8 +294,11 @@ public class ThriftStore implements MPStore {
 			TimedOutException, TException {
 				cp.setSuper_column( superColumn );
 				long clock = System.currentTimeMillis() * 1000;				
-				Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
-						colData , clock);	
+				//Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
+				//		colData , clock);	
+				Column col = new Column(ByteBuffer.wrap(colName.getBytes()));
+				col.setValue( colData );
+				col.setTimestamp(clock);	
 				client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
 				return true;
 			}			

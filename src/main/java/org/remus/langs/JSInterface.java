@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONException;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
@@ -32,8 +31,9 @@ public class JSInterface implements MapperInterface {
 		cx = Context.enter();
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
+			
 			@Override
-			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, java.lang.Object javaObject, java.lang.Class<?> staticType) {
+			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class staticType) {
 				//System.out.println( javaObject );
 				if ( javaObject instanceof Map ) {
 					return new ScriptMap( (Map)javaObject );
@@ -42,7 +42,8 @@ public class JSInterface implements MapperInterface {
 					return new NativeArray( ((List)javaObject).toArray() );
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
-			}
+			};
+			
 			
 			@Override
 			public Scriptable wrapNewObject(Context cx, Scriptable scope,
@@ -50,12 +51,15 @@ public class JSInterface implements MapperInterface {
 				System.err.println( "NEW:" + obj );
 				return super.wrapNewObject(cx, scope, obj);
 			}
+			
 			@Override
-			public Object wrap(Context cx, Scriptable scope, Object obj,Class<?> staticType) {
+			public Object wrap(Context cx, Scriptable scope, Object obj,
+					Class staticType) {
 				Object out = super.wrap(cx, scope, obj, staticType);
 				//System.err.println( "WRAP:" + obj + " " + staticType + " " + out);
 				return out;
 			}
+			
 		});		
 	}
 

@@ -1,4 +1,0 @@
-org.remus.port = 16016
-org.remus.mpstore = org.mpstore.SQLStore
-org.remus.srcdir = /opt/webapps/importPipeline/
-org.remus.workdir = /opt/webapps/remusWork

@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
