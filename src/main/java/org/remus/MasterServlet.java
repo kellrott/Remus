@@ -30,13 +30,13 @@ public class MasterServlet extends HttpServlet {
 	Serializer serializer;
 	//	String workDir;
 	String srcDir;
-	Map<String,String> configMap;
+	Map<String, String> configMap;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		try {
-			configMap = new HashMap<String,String>();			
+			configMap = new HashMap<String, String>();			
 			Enumeration names = config.getInitParameterNames();
 			while ( names.hasMoreElements() ) {
 				String name = (String) names.nextElement();

@@ -17,7 +17,7 @@ public class AgentGenerator  implements WorkGenerator {
 		System.out.println("AGENT WORK");
 		for ( String input : applet.getInputs() ) {			
 			String key = instance.toString() + ":" + input;
-			applet.datastore.add( applet.getPath() + "/@work", instance.toString(), 0,0, Integer.toString(jobID), key );
+			applet.datastore.add(applet.getPath() + "/@work", instance.toString(), 0, 0, Integer.toString(jobID), key);
 			jobID++;							
 		}
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );

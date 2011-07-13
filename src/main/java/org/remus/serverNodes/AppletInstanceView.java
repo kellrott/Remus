@@ -224,7 +224,7 @@ public class AppletInstanceView implements BaseNode {
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
 
-		if ( applet.getType() == RemusApplet.STORE ) {
+		if (applet.getMode() == RemusApplet.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
 			//UUID as the key
 			try {
@@ -243,7 +243,7 @@ public class AppletInstanceView implements BaseNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		} else if ( applet.getType() == RemusApplet.AGENT  ) {
+		} else if (applet.getMode() == RemusApplet.AGENT) {
 			//A submit to an agent is stored and a new instance is created
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));

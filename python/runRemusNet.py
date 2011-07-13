@@ -60,17 +60,23 @@ if __name__=="__main__":
 		retryCount = 3
 		while retryCount > 0:
 			workStat = remusLib.httpGetJson( host + "/@work?request" ).read()	
-			workList = workStat[ workerID ]
-			if len(workList) == 0:
+			if workStat.has_key( workerID ):
+				workList = workStat[ workerID ]
+				if len(workList) == 0:
+					retryCount -= 1
+					time.sleep(10)
+				else: 
+					retryCount = 3
+					for pipeline in workList:
+						for instance in workList[pipeline]:
+							for applet in workList[pipeline][instance]:
+								for jobID in workList[pipeline][instance][applet]:
+									doWork( host, pipeline, instance, applet, jobID, [workList[pipeline][instance][applet][jobID]] )
+			else:
 				retryCount -= 1
 				time.sleep(10)
-			else: 
-				retryCount = 3
-				for pipeline in workList:
-					for instance in workList[pipeline]:
-						for applet in workList[pipeline][instance]:
-							for jobID in workList[pipeline][instance][applet]:
-								doWork( host, pipeline, instance, applet, jobID, [workList[pipeline][instance][applet][jobID]] )
+
+
 		shutil.rmtree( tmpDir ) 
 	except:
 		statusTimer.cancel()

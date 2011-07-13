@@ -364,17 +364,19 @@ public class RemusPipeline implements BaseNode {
 			added = false;
 			for ( RemusApplet applet : getMembers() ) {
 				if ( !activeSet.contains(applet) ) {
-					if ( applet.getType() == RemusApplet.STORE) {
-						if ( applet.createInstance(name, params, inst) ) 
+					if (applet.getMode() == RemusApplet.STORE) {
+						if (applet.createInstance(name, params, inst)) {
 							added = true;
+						}
 						activeSet.add(applet);
 					} else {
 						for ( String iRef : applet.getInputs() ) {
 							if ( iRef.compareTo("?") != 0 ) {
 								RemusApplet srcApplet = getApplet( iRef );
 								if (activeSet.contains(srcApplet) ) {
-									if ( applet.createInstance(name, params, inst) ) 
+									if (applet.createInstance(name, params, inst)) {
 										added = true;
+									}
 									activeSet.add(applet);
 								}
 							}
@@ -385,6 +387,7 @@ public class RemusPipeline implements BaseNode {
 		} while (added);
 		
 		app.getWorkManager().jobScan();
+		app.getWorkManager().workPoll();
 		logger.info("submission " + name + " started as " + inst);
 		return inst;		
 	}

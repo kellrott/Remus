@@ -7,11 +7,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.mpstore.AttachStore;
 import org.mpstore.JsonSerializer;
@@ -19,7 +17,6 @@ import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.MPStoreConnectException;
 import org.mpstore.Serializer;
-import org.remus.manage.WorkStatus;
 import org.remus.manage.WorkManager;
 import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.ManageApp;
@@ -40,12 +37,10 @@ public class RemusApp implements BaseNode {
 	 * Class name for MPstore interface.
 	 * @see org.mpstore.ThriftStore
 	 */
-	public static final String configStore = "org.remus.mpstore";
-	public static final String configWork = "org.remus.workdir";
-	public static final String configAttachStore = "org.remus.attachstore";
+	public static final String CONFIG_STORE = "org.remus.mpstore";
+	public static final String CONFIG_WORK = "org.remus.workdir";
+	public static final String CONFIG_ATTACH_STORE = "org.remus.attachstore";
 
-	//File srcbase;
-	public String baseURL = "";
 	Map<String,RemusPipeline> pipelines;
 	Map<String,BaseNode> children;
 
@@ -60,9 +55,6 @@ public class RemusApp implements BaseNode {
 		loadPipelines();		
 	}
 
-	public void setBaseURL(String baseURL) {
-		this.baseURL = baseURL;
-	}
 
 	public void loadPipelines() throws RemusDatabaseException {
 		try { 
@@ -74,13 +66,13 @@ public class RemusApp implements BaseNode {
 			children.put("@db", new StoreInfoView( this ) );
 			
 			pipelines = new HashMap<String, RemusPipeline>();
-			String mpStore = (String)params.get(RemusApp.configStore);
+			String mpStore = (String)params.get(RemusApp.CONFIG_STORE);
 			Class<?> mpClass = Class.forName(mpStore);			
 			rootStore = (MPStore) mpClass.newInstance();
 			Serializer serializer = new JsonSerializer();
 			rootStore.initMPStore(serializer, params);			
 
-			String attachStoreName = (String)params.get(RemusApp.configAttachStore);
+			String attachStoreName = (String)params.get(RemusApp.CONFIG_ATTACH_STORE);
 			Class<?> attachClass = Class.forName(attachStoreName);			
 			rootAttachStore = (AttachStore) attachClass.newInstance();
 			rootAttachStore.initAttachStore(params);
@@ -97,13 +89,14 @@ public class RemusApp implements BaseNode {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MPStoreConnectException e) {
-			throw new RemusDatabaseException( e.toString() );
+			throw new RemusDatabaseException(e.toString());
 		} 
 		workManage = new WorkManager(this);
-		children.put("@work", workManage );
+		children.put("@work", workManage);
 	}
 
-	public void loadPipeline(String name, MPStore store, Serializer serializer, AttachStore attachStore) {
+	public void loadPipeline(String name, MPStore store,
+			Serializer serializer, AttachStore attachStore) {
 		RemusPipeline pipeline = new RemusPipeline(this, name, store, attachStore);		
 		for ( KeyValuePair kv : store.listKeyPairs( "/" + name + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
 			List<RemusApplet> applets = loadApplet( name, kv.getKey(), store, serializer );
@@ -127,39 +120,37 @@ public class RemusApp implements BaseNode {
 			appletObj = (Map)obj;		
 		}
 
-		String code = (String)appletObj.get( RemusApplet.CODE_FIELD );
-		String type = (String)appletObj.get( RemusApplet.MODE_FIELD );
+		String mode = (String)appletObj.get( RemusApplet.MODE_FIELD );
 		String codeType = (String)appletObj.get( RemusApplet.TYPE_FIELD);
 
-		CodeFragment cf =  new CodeFragment(codeType, code);
 		Integer appletType = null;
-		if ( type.compareTo("map") == 0 ) {
+		if (mode.compareTo("map") == 0) {
 			appletType = RemusApplet.MAPPER;
 		}
-		if ( type.compareTo("reduce") == 0 ) {
+		if (mode.compareTo("reduce") == 0) {
 			appletType = RemusApplet.REDUCER;
 		}
-		if ( type.compareTo("pipe") == 0 ) {
+		if ( mode.compareTo("pipe") == 0 ) {
 			appletType = RemusApplet.PIPE;
 		}
-		if ( type.compareTo("merge") == 0 ) {
+		if ( mode.compareTo("merge") == 0 ) {
 			appletType = RemusApplet.MERGER;
 		}
-		if ( type.compareTo("match") == 0 ) {
+		if ( mode.compareTo("match") == 0 ) {
 			appletType = RemusApplet.MATCHER;
 		}
-		if ( type.compareTo("split") == 0 ) {
+		if ( mode.compareTo("split") == 0 ) {
 			appletType = RemusApplet.SPLITTER;
 		}
-		if ( type.compareTo("store") == 0 ) {
+		if ( mode.compareTo("store") == 0 ) {
 			appletType = RemusApplet.STORE;
 		}
-		if ( type.compareTo("agent") == 0 ) {
+		if ( mode.compareTo("agent") == 0 ) {
 			appletType = RemusApplet.AGENT;
 		}
 		if (appletType == null)
 			return null;
-		RemusApplet applet = RemusApplet.newApplet(name, cf, appletType);
+		RemusApplet applet = RemusApplet.newApplet(name, codeType, appletType);
 
 		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
 			//try {

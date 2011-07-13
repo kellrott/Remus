@@ -12,7 +12,7 @@ public class MatchGenerator implements WorkGenerator {
 		DataStackRef lRef = DataStackRef.fromSubmission(applet, applet.getLeftInput(), instance );
 		DataStackRef rRef = DataStackRef.fromSubmission(applet, applet.getRightInput(), instance );
 		for ( String key : lRef.listKeys( applet.datastore ) ) {
-			applet.datastore.add( applet.getPath() + "/@work", instance.toString(), 0,0, Integer.toString(jobID), key );
+			applet.datastore.add( applet.getPath() + "/@work", instance.toString(), 0, 0, Integer.toString(jobID), key );
 			jobID++;							
 		}
 

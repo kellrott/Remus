@@ -28,7 +28,7 @@ public class FileAttachStore implements AttachStore {
 
 	@Override
 	public Map<String, String> getConfig() {
-		Map<String,String> out = new HashMap<String, String>();
+		Map<String, String> out = new HashMap<String, String>();
 		out.put( "baseDir", basePath.getAbsolutePath() );
 		out.put("shared", Boolean.toString( dirShared ) );
 		out.put( "type", "fileSystem" );

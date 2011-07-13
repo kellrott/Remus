@@ -3,6 +3,7 @@ package org.remus.manage;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +15,17 @@ import org.remus.serverNodes.BaseNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @author kellrott
+ *
+ */
 public class WorkManager implements BaseNode {
 
+	/***
+	 * MANAGE_CONFIG = org.remus.workManage, conf string to define 
+	 * which work managers to use.
+	 */
 	public static final String MANAGE_CONFIG = "org.remus.workManage";
 
 	Logger logger;
@@ -26,8 +36,8 @@ public class WorkManager implements BaseNode {
 		logger = LoggerFactory.getLogger(WorkManager.class);
 
 		this.app = app;
-		Map params = app.getParams() ;		
-		String managerName = (String)params.get( MANAGE_CONFIG );		
+		Map params = app.getParams();
+		String managerName = (String)params.get(MANAGE_CONFIG);		
 		try {
 			Class<?> agentClass = Class.forName(managerName);			
 			agent = (WorkAgent) agentClass.newInstance();
@@ -44,10 +54,11 @@ public class WorkManager implements BaseNode {
 		}		
 		workMap = new HashMap<WorkStatus, WorkAgent>();
 		jobScan();
+		workPoll();
 	}
 
 	@Override
-	public BaseNode getChild(String name) {
+	public BaseNode getChild(final String name) {
 		return agent.getChild(name);
 	}
 
@@ -78,17 +89,18 @@ public class WorkManager implements BaseNode {
 	}
 
 
-	Map<WorkStatus, WorkAgent> workMap;
+	private Map<WorkStatus, WorkAgent> workMap;
 
-	public WorkStatus requestWorkStack(WorkAgent agent) {
+	public WorkStatus requestWorkStack(WorkAgent agent, Collection<String> codeTypes) {
 		synchronized (workMap) {
 			WorkStatus out = null;
 			do {
-				for ( WorkStatus a : workMap.keySet() )	{
-					if ( workMap.get(a) == null ) {
+				for (WorkStatus a : workMap.keySet()) {
+					if (workMap.get(a) == null && codeTypes.contains(a.getApplet().getType())) {
 						out = a;
 					}
 				}
+				
 				if ( out == null ) {
 					if ( !jobScan() ) {
 						logger.info("Agent " + agent.getName() + " found empty active stacks");
@@ -97,7 +109,7 @@ public class WorkManager implements BaseNode {
 				}
 			} while ( out == null );
 			if ( out != null ) {
-				logger.info("Agent " + agent.getName() + " checkout " + out.toString() );
+				logger.info("Agent " + agent.getName() + " checkout " + out.toString());
 				workMap.put(out, agent);
 			}
 			return out;
@@ -106,7 +118,7 @@ public class WorkManager implements BaseNode {
 
 	public void returnWorkStack( WorkStatus stack ) {
 		synchronized ( workMap ) {
-			logger.info( "Agent " + workMap.get(stack).getName() + " returning " + stack );
+			logger.info("Agent " + workMap.get(stack).getName() + " returning " + stack);
 			workMap.put(stack, null);
 		}		
 	}
@@ -130,8 +142,11 @@ public class WorkManager implements BaseNode {
 			}
 		}
 		logger.info("jobScan done " + workMap.size() + " active appletInstances");
-		agent.workPoll();
 		return newWork;
+	}
+
+	public void workPoll() {
+		agent.workPoll();
 	}
 
 

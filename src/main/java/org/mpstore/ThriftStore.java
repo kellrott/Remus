@@ -60,7 +60,7 @@ public class ThriftStore implements MPStore {
 	@Override
 	public void initMPStore(Serializer serializer, Map paramMap) throws MPStoreConnectException {
 		this.serializer = serializer;
-		this.basePath = (String)paramMap.get(RemusApp.configWork);
+		this.basePath = (String)paramMap.get(RemusApp.CONFIG_WORK);
 		clientPool = new SoftReferenceObjectPool( new ClientFactory() );
 		columnFamily = (String)paramMap.get(COLUMN_FAMILY);
 		keySpace     = (String)paramMap.get(KEY_SPACE);

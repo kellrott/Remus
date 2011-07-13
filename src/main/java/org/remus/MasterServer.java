@@ -23,7 +23,7 @@ public class MasterServer {
 				serverPort = Integer.parseInt( prop.getProperty("org.remus.port") );
 			}
 			Server server = new Server(serverPort);
-			Context root = new Context(server,"/",Context.SESSIONS);
+			Context root = new Context(server, "/", Context.SESSIONS);
 			ServletHolder sh = new ServletHolder(new MasterServlet());
 
 			for (Map.Entry<Object, Object> propItem : prop.entrySet()) {

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -69,10 +71,12 @@ public class PassiveManager implements WorkAgent {
 		throw new FileNotFoundException();
 	}
 
+	private List<String> codeTypes = Arrays.asList("python");
+	
 	void fillWorkerSet(String workerID) {
 		do {
 			if ( activeStack == null ) {
-				activeStack = parent.requestWorkStack(this);
+				activeStack = parent.requestWorkStack(this, codeTypes);
 				if ( activeStack == null )
 					return;
 			}
@@ -158,7 +162,7 @@ public class PassiveManager implements WorkAgent {
 
 			BufferedReader br = new BufferedReader( new InputStreamReader(is) );
 			String curline = null;
-			while ((curline=br.readLine())!= null ) {
+			while ((curline = br.readLine()) != null) {
 				Map m = (Map)serial.loads( curline );
 				for ( Object instObj : m.keySet() ) {
 					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {

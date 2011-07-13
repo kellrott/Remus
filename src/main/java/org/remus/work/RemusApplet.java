@@ -11,7 +11,6 @@ import java.util.Set;
 
 import org.mpstore.AttachStore;
 import org.mpstore.MPStore;
-import org.remus.CodeFragment;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
 import org.remus.manage.WorkStatus;
@@ -20,12 +19,18 @@ import org.remus.serverNodes.AppletInstanceStatusView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/***
+ * 
+ * @author kellrott
+ *
+ * Base class for Applets
+ */
 public class RemusApplet {
 
-	public static RemusApplet newApplet( String id, CodeFragment code, int type ) {
+	public static RemusApplet newApplet( String id, String type, int mode ) {
 		RemusApplet out = new RemusApplet();
 
-		switch (type) {
+		switch (mode) {
 		case MAPPER: {
 			out.workGenerator = MapGenerator.class; //new MapperApplet();	
 			break;
@@ -56,8 +61,8 @@ public class RemusApplet {
 		}
 		}
 		if ( out != null ) {
-			out.code = code;
 			out.id = id;
+			out.mode = mode;
 			out.type = type;
 			out.inputs = null;
 			out.activeInstances = new LinkedList<RemusInstance>();			
@@ -90,9 +95,9 @@ public class RemusApplet {
 	Class workGenerator = null;
 	private String id;
 	List<String> inputs = null, lInputs = null, rInputs = null;
-	CodeFragment code;
 	MPStore datastore;
-	int type;
+	int mode;
+	private String type;
 	protected RemusPipeline pipeline = null;
 	LinkedList<RemusInstance> activeInstances;
 	private AttachStore attachstore;
@@ -130,10 +135,12 @@ public class RemusApplet {
 		return rInputs.get(0);
 	}
 
-	public CodeFragment getCode() {
-		return code;
+	
+	public String getType() {
+		return type;
 	}
 
+	
 	public List<String> getInputs() {
 		if ( inputs != null )
 			return inputs;
@@ -145,15 +152,6 @@ public class RemusApplet {
 		return "/" + pipeline.getID() + "/" + id;
 	}
 
-	public String getSource() {
-		return code.getSource();
-	}
-
-	/*
-	public void setCodeType(String type) {
-		codeType = type;
-	}
-	 */
 	public void setPipeline(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
@@ -166,7 +164,7 @@ public class RemusApplet {
 
 
 	public boolean isReady( RemusInstance remusInstance ) {
-		if ( type==STORE )
+		if ( mode==STORE )
 			return true;
 		if ( hasInputs() ) {
 			boolean allReady = true;
@@ -225,8 +223,9 @@ public class RemusApplet {
 		return true;
 	}
 
-	public int getType() {
-		return type;
+
+	public int getMode() {
+		return mode;
 	}
 
 	public Set<WorkStatus> getWorkList() {
@@ -254,7 +253,7 @@ public class RemusApplet {
 						}
 						out.add( new WorkStatus(inst, this) );
 					}
-					
+
 				}
 			} else {
 				if ( hasInputs() ) {
@@ -272,7 +271,7 @@ public class RemusApplet {
 	}
 
 	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) {
-		datastore.add(getPath() + "/@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName );
+		datastore.add(getPath() + "/@done", remusInstance.toString(), 0L, 0L, Long.toString(jobID), workerName);
 	}
 
 
@@ -305,29 +304,30 @@ public class RemusApplet {
 				baseMap.put(key, ((Map)i).get(key) );
 			}
 		}
-		if ( baseMap == null )	
+		if (baseMap == null) {
 			baseMap = new HashMap();
+		}
 		baseMap.put("_instance", inst.toString());
 		baseMap.put("_submitKey", submitKey);
 
-		if ( getType() == MERGER || getType() == MATCHER ) {
+		if (getMode() == MERGER || getMode() == MATCHER) {
 			Map inMap = new HashMap();
 			Map lMap = new HashMap();
 			Map rMap = new HashMap();
 			lMap.put("_instance", inst.toString());
-			lMap.put("_applet",getLeftInput() );
+			lMap.put("_applet", getLeftInput());
 			rMap.put("_instance", inst.toString());
-			rMap.put("_applet",getRightInput() );
+			rMap.put("_applet", getRightInput());
 			inMap.put("_left", lMap);
 			inMap.put("_right", rMap);				
 			inMap.put("_axis", "_left");
 			baseMap.put("_input", inMap);
-		} else if ( getType() == AGENT ) {			
+		} else if (getMode() == AGENT) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", "@agent");
 			inMap.put("_applet", getInput() );
 			baseMap.put("_input", inMap);
-		} else if ( getType() == PIPE ) {
+		} else if (getMode() == PIPE) {
 			if ( getInput().compareTo("?") != 0 ) {
 				List outList = new ArrayList();
 				for ( String input : getInputs() ) {
@@ -345,7 +345,7 @@ public class RemusApplet {
 			baseMap.put("_input", inMap);			
 		}
 
-		if ( getType() == STORE || getType() == AGENT ) {
+		if (getMode() == STORE || getMode() == AGENT) {
 			//	baseMap.put(WORKDONE_OP, true);
 		}
 
@@ -355,16 +355,18 @@ public class RemusApplet {
 
 	public void deleteInstance(RemusInstance instance) {
 		datastore.delete(getPath(), instance.toString() );		
-		datastore.delete(getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, instance.toString() );		
-		datastore.delete(getPath() + "/@done", instance.toString() );		
-		datastore.delete(getPath() + "/@work", instance.toString() );		
-		datastore.delete(getPath() + "/@error", instance.toString() );
-		attachstore.delete(getPath(), instance.toString() );
+		datastore.delete(getPath() + AppletInstanceStatusView.InstanceStatusName,
+				RemusInstance.STATIC_INSTANCE_STR, instance.toString());
+		datastore.delete(getPath() + WorkStatus.WorkStatusName, 
+				RemusInstance.STATIC_INSTANCE_STR, instance.toString());
+		datastore.delete(getPath() + "/@done", instance.toString());
+		datastore.delete(getPath() + "/@work", instance.toString());
+		datastore.delete(getPath() + "/@error", instance.toString());
+		attachstore.delete(getPath(), instance.toString());
 	}
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) {
-		datastore.add( getPath() + "/@error", inst.toString(), 0L, 0L, Long.toString(jobID), error);
+		datastore.add(getPath() + "/@error", inst.toString(), 0L, 0L, Long.toString(jobID), error);
 	}
 
 	public void deleteErrors(RemusInstance inst) {
