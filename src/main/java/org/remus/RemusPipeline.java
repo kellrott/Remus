@@ -307,7 +307,7 @@ public class RemusPipeline implements BaseNode {
 	}
 
 
-	public void handleSubmission(String key, Map value) {
+	public RemusInstance handleSubmission(String key, Map value) {
 
 		RemusInstance inst;
 
@@ -339,6 +339,7 @@ public class RemusPipeline implements BaseNode {
 				0L, 0L,
 				inst.toString(),
 				key);			
+		return inst;
 	}
 
 
