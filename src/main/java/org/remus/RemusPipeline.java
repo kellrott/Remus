@@ -209,6 +209,9 @@ public class RemusPipeline implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
 			throws FileNotFoundException {
+		if ( name.length() != 0 ) {
+			throw new FileNotFoundException();
+		}
 		for ( KeyValuePair kv : datastore.listKeyPairs( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
 			Map out = new HashMap();
 			out.put(kv.getKey(), kv.getValue() );
