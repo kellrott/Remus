@@ -8,4 +8,4 @@ if [ -e ${basepath}/etc/${HOST}.prop ]; then
     confFile=${basepath}/etc/${HOST}.prop
 fi
 
-java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib/:${basepath}/build/jar org.remus.MasterServer ${confFile}
+java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/target/dependency -cp ${basepath}/target/remus-0.1.jar org.remus.MasterServer ${confFile}
