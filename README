@@ -38,6 +38,14 @@ REMUS_DIR is the downloaded directory, and should have a ‘README’ file, a �
 3) Build:
 make
 
+3.1) Cassandra Enabled Python Client
+
+The remus client will work without these libraries, but having them makes data access much faster:
+
+easy_install pycassa
+easy_install thrift05
+
+
 4) Server properties file:
 
 Edit the ‘etc/remus.prop’ file to setup your custom parameters. 
