@@ -2,6 +2,8 @@ REMUS
 
 A map reduce pipeline engine.
 
+For more detailed documentation, go to https://github.com/kellrott/Remus/wiki
+
 
 Remus is web oriented database founded pipeline engine. It 
 is comprised of a series of key/value stacks that are 
