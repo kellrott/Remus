@@ -12,68 +12,13 @@ import callback
 import remusLib
 import os
 
-class stdout_write:
-	def __init__(self):
-		self.order = 0
-
-	def emit( self, key, value ):
-		print self.order, key, value
-		self.order += 1
-		
-		
-class jsonIter:
-	def __init__(self, handle):
-		self.handle = handle
-	
-	def __iter__(self):
-		for line in self.handle:
-			yield json.loads( line )
-		self.handle.close()
-	
-	def read(self):
-		return json.loads( self.handle.read() )
-
-class jsonPairSplitter:
-	def __init__(self, iHandle):
-		self.handle = iHandle
-	
-	def __iter__(self):
-		for line in self.handle:
-			data  = json.loads( line )
-			for key in data:
-				yield key, data[key]
-	def close(self):
-		pass
-				
-getCache={}
-
-def httpGetJson( url, useCache=False ):
-	if ( useCache ):
-		if not getCache.has_key( url ):
-			getCache[ url ] = urlopen( url ).read()			
-		handle = StringIO(getCache[ url ])
-	else:
-		#print url
-		handle = urlopen( url )
-	return jsonIter( handle )
-
-class dummy:
-	def __init__(self):
-		pass
-	
-	def write(self, data):
-		pass
-	
-	def close(self):
-		pass
-
 
 class miniFileCallBack:
 
-	def __init__(self, path, appletName, appletDesc ):
+	def __init__(self, path, appletName, appletDesc, outdir="mini" ):
 		self.appletName = appletName
 		self.appletDesc = appletDesc
-		self.outdir = "mini"
+		self.outdir = outdir
 		if not os.path.exists( self.outdir ):
 			os.makedirs( self.outdir )
 		self.outHandles = { None : open( os.path.join( self.outdir, self.appletName + "@data" ), "w") }
@@ -104,7 +49,7 @@ class miniFileCallBack:
 			yield json.loads( line )[ key ]
 
 	def emit(self, key, value, port):
-		self.outHandles[ port ].write( "%s\t%s\n" % (key, json.dumps(value)) )
+		self.outHandles[ port ].write( "%s\t%s\n" % ( json.dumps(key), json.dumps(value)) )
 
 	def getInfo( self, name ):
 		return self.appletDesc.get( name, None ) 
@@ -155,7 +100,7 @@ class FileWrapper:
 		handle = open( self.path )
 		for line in handle:
 			tmp = line.split("\t")
-			yield tmp[0], json.loads( tmp[1] )
+			yield json.loads(tmp[0]), json.loads( tmp[1] )
 
 class FileWrapperGen:
 	def __init__(self, path):
@@ -166,14 +111,29 @@ class FileWrapperGen:
 
 def main( argv ):
 	from getopt import getopt
-	opts, args = getopt( argv, "m:" )
 	
-	print args
+	outdir = "mini"
+	
+	opts, args = getopt( argv, "j:o:" )
+	
+	jobDesc = {}
+	for a,o in opts:
+		if a == "-j":
+			handle = open( o )
+			jobDesc = json.loads( handle.read() )
+			handle.close()
+
+		if a == "-o":
+			outdir = o
+	
 
 	pipePath = args[0]
 	applet   = args[1]
-	input    = args[2]
-
+	if len(args) > 2:
+		input = args[2]
+	else:
+		input = ""
+		
 	for arg in args[3:]:
 		tmp = arg.split( '=' )
 		appletDesc[ tmp[0] ] = tmp[1]
@@ -187,10 +147,9 @@ def main( argv ):
 		pipeline = tmp[1]
 		instance = tmp[2]
 		cb = callback.RemusCallback( miniNetCallback(input, applet, appletDesc) )
-		wrapperFactory = FileWrapperGen( server, pipeline, instance )
+		wrapperFactory = FileWrapperGen( server, pipeline, instance, outdir )
 	else:
-		test = "hello"
-		cb = callback.RemusCallback( miniFileCallBack(input, applet, appletDesc) )
+		cb = callback.RemusCallback( miniFileCallBack(input, applet, appletDesc, outdir) )
 		wrapperFactory = FileWrapperGen( input )
 	
 
@@ -202,9 +161,7 @@ def main( argv ):
 	func = cb.getFunction( "test_func" )	
 		
 	if (appletDesc['_mode'] == "split"):
-		handle = open( input )
-		data = json.loads( handle.read() )
-		func( data )
+		func( appletDesc )
 
 	if ( appletDesc['_mode'] == "map" ):
 		for dkey, data in remusLib.getDataStack( wrapperFactory.getWrapper( appletDesc["_src"] ) ):

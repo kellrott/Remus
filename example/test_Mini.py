@@ -18,7 +18,7 @@ class MiniRunner( unittest.TestCase ):
 
 
 	def test_split(self):
-		self.module.main( [ "pipeline_Basic.json", "testSplit", "input_Basic.json" ] )
+		self.module.main( [ "-j", "input_Basic.json", "pipeline_Basic.json", "testSplit" ] )
 
 		self.module.main( [ "pipeline_Basic.json", "testMap", "mini" ] )
 
