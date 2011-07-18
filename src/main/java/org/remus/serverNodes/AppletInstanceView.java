@@ -20,7 +20,7 @@ import org.mpstore.Serializer;
 import org.remus.RemusInstance;
 import org.remus.work.RemusApplet;
 
-public class AppletInstanceView implements BaseNode {
+public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	RemusApplet applet;
 	RemusInstance inst;
@@ -298,6 +298,16 @@ public class AppletInstanceView implements BaseNode {
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public Iterable<String> getKeys() {
+		return applet.getDataStore().listKeys( applet.getPath(), inst.toString());
+	}
+
+	@Override
+	public Iterable<Object> getData(String key) {
+		return applet.getDataStore().get( applet.getPath(), inst.toString(), key);
 	}
 
 }

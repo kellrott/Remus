@@ -83,6 +83,10 @@ public class PipelineInstanceView implements BaseNode {
 		if ( name.compareTo("@attach") == 0 ) {
 			return new AttachInstanceView(pipeline, inst);			
 		}
+		
+		if ( name.compareTo("@query") == 0 ) {
+			return new PipelineInstanceQueryView(pipeline,inst);
+		}
 				
 		return null;		
 	}
