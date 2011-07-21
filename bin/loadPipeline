@@ -109,7 +109,10 @@ def parseRemusJSON(server, path):
 	print url
 	print putData( url, data ).read()
 
-	fileList = copy( pipelineData['_include'] )
+	if '_include' in pipelineData:
+		fileList = copy( pipelineData['_include'] )
+	else:
+		fileList = []
 
 	initData = {}
 	
@@ -118,7 +121,8 @@ def parseRemusJSON(server, path):
 			node = pipelineData[ name ]
 			if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
 				if node.has_key( "_code" ):
-					fileList.append( node[ "_code" ] )				
+					if os.path.exists(  node[ "_code" ] ):
+						fileList.append( node[ "_code" ] )				
 				
 				if node.has_key( "_init" ):					
 					if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):

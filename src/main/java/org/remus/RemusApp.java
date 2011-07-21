@@ -171,13 +171,15 @@ public class RemusApp implements BaseNode {
 			//}
 		} else {
 			//try {
-			if ( appletObj.get( RemusApplet.SRC ) instanceof String ) {
-				String input = (String) appletObj.get(RemusApplet.SRC );
+			Object src = appletObj.get( RemusApplet.SRC );
+			
+			if ( src instanceof String ) {
+				String input = (String) src;
 				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 				applet.addInput(input);
 			}
-			if ( appletObj.get( RemusApplet.SRC ) instanceof List ) {
-				for ( Object obj : (List)  appletObj.get( RemusApplet.SRC ) )	{
+			if ( src instanceof List ) {
+				for ( Object obj : (List)  src )	{
 					//RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
 					applet.addInput((String)obj);
 				}

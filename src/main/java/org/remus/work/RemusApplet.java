@@ -172,8 +172,10 @@ public class RemusApplet {
 				if ( iRef.compareTo("?") != 0 ) {
 					RemusApplet iApplet = getPipeline().getApplet( iRef );
 					if ( iApplet != null ) {
-						if ( ! WorkStatus.isComplete(iApplet, remusInstance) ) {
-							allReady = false;
+						if ( iApplet.getMode() != STORE ) {
+							if ( ! WorkStatus.isComplete(iApplet, remusInstance) ) {
+								allReady = false;
+							}
 						}
 					} else {
 						allReady = false;

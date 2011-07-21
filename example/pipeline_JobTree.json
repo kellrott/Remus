@@ -1,9 +1,16 @@
 {
 
+"_id" : "testPipeline",
+
+"matrixStack" : {
+	"_mode" : "store"
+},
+
 "testJobTree" : {
 	"_mode" : "map",
-	"_scr"  : "matrixStack",
-	"_type" : "GenePattern"
+	"_src"  : "matrixStack",
+	"_type" : "GenePattern",
+	"_code" : "normalizeToMedian"
 }
 
 }

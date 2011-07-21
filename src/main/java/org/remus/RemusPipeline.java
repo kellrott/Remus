@@ -368,12 +368,14 @@ public class RemusPipeline implements BaseNode {
 			added = false;
 			for ( RemusApplet applet : getMembers() ) {
 				if ( !activeSet.contains(applet) ) {
+					/*
 					if (applet.getMode() == RemusApplet.STORE) {
 						if (applet.createInstance(name, params, inst)) {
 							added = true;
 						}
 						activeSet.add(applet);
 					} else {
+					*/
 						for ( String iRef : applet.getInputs() ) {
 							if ( iRef.compareTo("?") != 0 ) {
 								RemusApplet srcApplet = getApplet( iRef );
@@ -385,7 +387,7 @@ public class RemusPipeline implements BaseNode {
 								}
 							}
 						}
-					}
+					//}
 				} 
 			}
 		} while (added);

@@ -73,13 +73,30 @@ public class WorkManager implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
+		
+		jobScan();
+
 		if ( name.length() != 0 ) {
 			throw new FileNotFoundException();
 		}
 		Map out = new HashMap();
+		Map aMap = new HashMap();
 		for ( WorkAgent agent : agentList.values() ) { 
-			out.put(agent.getName(), agent.getWorkTypes() );
+			aMap.put(agent.getName(), agent.getWorkTypes() );
 		}
+		out.put( "agents", aMap );
+
+		Map<String,Integer> wMap = new HashMap<String,Integer>();
+		for ( WorkStatus work : workMap.keySet() ) {
+			String workType = work.getApplet().getType();
+			if ( ! wMap.containsKey( workType )  ) {
+				wMap.put(workType, 1);
+			} else {
+				wMap.put(workType, wMap.get(workType) + 1 );
+			}
+		}
+		out.put("workCounts", wMap );
+		
 		try {
 			os.write( serial.dumps(out).getBytes() );
 		} catch (IOException e) {

@@ -226,7 +226,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 		if (applet.getMode() == RemusApplet.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
-			//UUID as the key
+			//UUID as the key if none is provided
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();
@@ -235,10 +235,16 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					sb.append(curline);
 				}
 				Map inData = postStr2Map(sb.toString()) ;
+				String key = null;
+				if ( name.length() > 0 ) {
+					key = name;
+				} else {
+					key = (new RemusInstance()).toString();
+				}
 				applet.getDataStore().add( applet.getPath(), 
 						inst.toString(),
 						0L, 0L,
-						(new RemusInstance()).toString(), inData );		
+						key, inData );		
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
