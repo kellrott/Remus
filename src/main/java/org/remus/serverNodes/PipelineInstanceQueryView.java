@@ -15,14 +15,19 @@ import org.remus.RemusPipeline;
 import org.remus.langs.JSInterface;
 import org.remus.mapred.MapCallback;
 import org.remus.work.RemusApplet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PipelineInstanceQueryView implements BaseNode {
 
 	RemusPipeline pipeline;
 	RemusInstance inst;
+	private Logger logger;
 	public PipelineInstanceQueryView(RemusPipeline pipeline, RemusInstance inst) {
 		this.pipeline = pipeline;
 		this.inst = inst;
+		logger = LoggerFactory.getLogger(PipelineInstanceQueryView.class);
+
 	}
 
 	@Override
@@ -86,7 +91,8 @@ public class PipelineInstanceQueryView implements BaseNode {
 				}
 			}
 					);
-		}catch (IOException e) {
+		} catch (IOException e) {
+			logger.debug( e.toString() );
 			e.printStackTrace();
 		}
 	}

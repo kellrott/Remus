@@ -59,7 +59,7 @@ if __name__=="__main__":
 	try:
 		retryCount = 3
 		while retryCount > 0:
-			workStat = remusLib.httpGetJson( host + "/@work?request" ).read()	
+			workStat = remusLib.httpGetJson( host + "/@work/passive?request" ).read()	
 			if workStat.has_key( workerID ):
 				workList = workStat[ workerID ]
 				if len(workList) == 0:

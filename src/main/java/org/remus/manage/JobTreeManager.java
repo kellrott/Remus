@@ -7,11 +7,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,10 @@ import org.mpstore.Serializer;
 import org.remus.serverNodes.BaseNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.json.simple.JSONValue;
+import org.json.simple.parser.JSONParser;
+
 
 public class JobTreeManager implements WorkAgent {
 
@@ -37,20 +42,52 @@ public class JobTreeManager implements WorkAgent {
 	private URL serverURL;
 
 	@Override
+	public List<String> getWorkTypes() {
+		return codeTypes;
+	}
+
+	@Override
+	public void init(WorkManager parent) {
+		this.parent = parent;
+		server = (String) parent.app.getParams().get(JOBTREE_SERVER);
+		try {
+			serverURL = new URL( server );
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger = LoggerFactory.getLogger(JobTreeManager.class);
+
+	}
+
+	@Override
+	public String getName() {
+		return "JobTreeManager";
+	}
+
+	
+	class WatcherThread extends Thread {
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			super.run();
+		}
+		
+	}
+	
+	
+	@Override
 	public void workPoll() {
 
 		logger.info("JobTreeServer work poll contacting server: " + serverURL );
 
-		URL jobURL = null;
-		try {
-			 jobURL = new URL( serverURL.toString() + "/jobID" );
-		} catch (MalformedURLException e1) {
-			return;
-		}
+		JSONParser json = new JSONParser();
 		WorkStatus workStack = parent.requestWorkStack(this, codeTypes);
 
 		if ( workStack != null ) {
 			try {
+				URL jobURL = new URL( serverURL.toString() + "/jobID" );
 				HttpURLConnection conn = (HttpURLConnection)jobURL.openConnection();
 				//conn.setDoInput(true);
 				conn.setDoOutput(true);
@@ -65,6 +102,37 @@ public class JobTreeManager implements WorkAgent {
 				logger.info("JobTreeServer JobID: " + id);
 				
 				logger.info("JobType: " + workStack.getApplet().getType() );
+
+				
+				/*
+				 * Do the job request submission
+				 */
+				
+				URL subURL = new URL( serverURL.toString() + "/job/" + id );				
+				logger.info("Submitting job at: " + subURL);				
+				HttpURLConnection subConn = (HttpURLConnection)subURL.openConnection();
+				subConn.setRequestMethod("POST");
+				subConn.setDoOutput(true);
+				subConn.setDoInput(true);
+				subConn.setUseCaches(false);
+				subConn.setAllowUserInteraction(false);
+
+				OutputStreamWriter out = new OutputStreamWriter(
+						subConn.getOutputStream());
+
+				Map<String,String> subData = new HashMap<String,String>();
+				subData.put("instance", workStack.getInstance().toString() );
+				out.write(  JSONValue.toJSONString(subData) );
+				out.flush();
+				out.close();
+				InputStream subIn = subConn.getInputStream();
+				Reader reader = new InputStreamReader(subIn);
+				reader.close();
+
+				//out.write(workStack.getInstance().toString());
+				//out.flush();
+				//out.close();
+
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -116,25 +184,8 @@ public class JobTreeManager implements WorkAgent {
 	}
 
 	@Override
-	public void init(WorkManager parent) {
-		this.parent = parent;
-		server = (String) parent.app.getParams().get(JOBTREE_SERVER);
-		try {
-			serverURL = new URL( server );
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		logger = LoggerFactory.getLogger(JobTreeManager.class);
-
+	public boolean syncWorkPoll(WorkStatus work) {
+		return false;
 	}
-
-	@Override
-	public String getName() {
-		return "JobTreeManager";
-	}
-
-
-
 
 }

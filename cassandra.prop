@@ -9,4 +9,6 @@ org.mpstore.ThriftStore.columnFamily = remusTable
 org.mpstore.ThriftStore.keySpace = remus
 org.mpstore.ThriftStore.instColumns = false
 
-org.remus.workManage = org.remus.manage.PassiveManager
+org.remus.workManage = org.remus.manage.PassiveManager,org.remus.manage.JobTreeManager
+
+org.remus.manage.JobTreeManager.server=http://localhost:7777/

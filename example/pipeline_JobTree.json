@@ -1,0 +1,9 @@
+{
+
+"testJobTree" : {
+	"_mode" : "map",
+	"_scr"  : "matrixStack",
+	"_type" : "GenePattern"
+}
+
+}

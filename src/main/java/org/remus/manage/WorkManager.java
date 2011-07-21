@@ -1,6 +1,7 @@
 package org.remus.manage;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
@@ -30,18 +31,22 @@ public class WorkManager implements BaseNode {
 
 	Logger logger;
 	RemusApp app;
-	WorkAgent agent;
+	Map<String, WorkAgent> agentList;
 	@SuppressWarnings("rawtypes")
 	public WorkManager(RemusApp app ) {
 		logger = LoggerFactory.getLogger(WorkManager.class);
 
+		agentList = new HashMap<String, WorkAgent>();
 		this.app = app;
 		Map params = app.getParams();
-		String managerName = (String)params.get(MANAGE_CONFIG);		
+		String managerList = (String)params.get(MANAGE_CONFIG);		
 		try {
-			Class<?> agentClass = Class.forName(managerName);			
-			agent = (WorkAgent) agentClass.newInstance();
-			agent.init(this);
+			for (String managerName : managerList.split(",") ) {
+				Class<?> agentClass = Class.forName(managerName);			
+				WorkAgent agent = (WorkAgent) agentClass.newInstance();
+				agent.init(this);
+				agentList.put(agent.getName(), agent);
+			}
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -59,33 +64,44 @@ public class WorkManager implements BaseNode {
 
 	@Override
 	public BaseNode getChild(final String name) {
-		return agent.getChild(name);
+		if ( agentList.containsKey(name))
+			return agentList.get(name);
+		return null;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
-		agent.doGet(name, params, workerID, serial, os);
+		if ( name.length() != 0 ) {
+			throw new FileNotFoundException();
+		}
+		Map out = new HashMap();
+		for ( WorkAgent agent : agentList.values() ) { 
+			out.put(agent.getName(), agent.getWorkTypes() );
+		}
+		try {
+			os.write( serial.dumps(out).getBytes() );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void doPut(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
-		agent.doPut(name, workerID, serial, is, os);
 	}
 
 	@Override
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
-		agent.doSubmit(name, workerID, serial, is, os);
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 			throws FileNotFoundException {
-		agent.doDelete(name, params, workerID);
 	}
 
 
@@ -146,7 +162,9 @@ public class WorkManager implements BaseNode {
 	}
 
 	public void workPoll() {
-		agent.workPoll();
+		for ( WorkAgent agent : agentList.values() ) {
+			agent.workPoll();
+		}
 	}
 
 

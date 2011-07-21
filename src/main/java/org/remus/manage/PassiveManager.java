@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -27,13 +26,17 @@ public class PassiveManager implements WorkAgent {
 	private Set<Long> assignSet;
 
 	private Map<String,Set<Long>> workerSets;
-	private Map<String,Date> lastAccess;
+	//private Map<String,Date> lastAccess;
 	private WorkManager parent;
 	private int assignRate;
 	private HashMap<String, Date> finishTimes;
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
+	@Override
+	public List<String> getWorkTypes() {
+		return codeTypes;
+	}
 
 
 	@Override
@@ -43,7 +46,7 @@ public class PassiveManager implements WorkAgent {
 		activeSet = new HashSet<Long>();
 		assignSet = new HashSet<Long>();
 		assignRate = 1;
-		lastAccess = new HashMap<String, Date>();
+		//lastAccess = new HashMap<String, Date>();
 		finishTimes = new HashMap<String,Date>();
 	}
 
@@ -192,6 +195,15 @@ public class PassiveManager implements WorkAgent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+
+	/**
+	 * The PassiveManager doesn't do syncronous work, so this always returns false
+	 */
+	@Override
+	public boolean syncWorkPoll(WorkStatus work) {
+		return false;
 	}
 
 }
