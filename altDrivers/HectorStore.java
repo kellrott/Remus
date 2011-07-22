@@ -191,7 +191,7 @@ public class HectorStore implements MPStore {
 
 		String keySet = instance + file;
 		RangeSuperSlicesQuery<String, String, String, String> q = 
-			HFactory.createRangeSuperSlicesQuery(keyspaceOperator, strSer,strSer,strSer,strSer);
+			HFactory.createRangeSuperSlicesQuery(keyspaceOperator, strSer, strSer, strSer, strSer);
 		q.setColumnFamily(columnFamily);
 		q.setKeys(keySet, keySet);
 		q.setRange("", "", false, 10);

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>remus</artifactId>
   <packaging>pom</packaging>
-    <groupId>org.remus</groupId>
+  <groupId>org.remus</groupId>
   <version>0.1</version>
   <modules>
     <module>core</module>

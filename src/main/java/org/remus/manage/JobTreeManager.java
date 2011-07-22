@@ -38,7 +38,7 @@ public class JobTreeManager implements WorkAgent {
 	 * The list of code types that can be sent to the JobTreeManager
 	 * 
 	 */
-	private List<String> codeTypes = Arrays.asList("python", "GenePatternTree");
+	private List<String> codeTypes = Arrays.asList("python", "GenePattern");
 
 	private Logger logger;
 
@@ -111,10 +111,13 @@ public class JobTreeManager implements WorkAgent {
 			out.close();
 			InputStream subIn = subConn.getInputStream();
 			Reader reader = new InputStreamReader(subIn);
-			reader.close();
+			reader.close();			
+		}
 
-
-
+		public boolean jobDone() {
+			// TODO Auto-generated method stub
+			
+			return false;
 		}
 
 	}
@@ -141,7 +144,16 @@ public class JobTreeManager implements WorkAgent {
 		public void run() {
 			while (!quit) {
 				synchronized (jobList) {
+					List <JobTreeJob> removeList = new LinkedList<JobTreeJob>();
 					for ( JobTreeJob job : jobList ) {
+						if ( job.jobDone() ) {
+							removeList.add(job);
+						}
+					}
+					for ( JobTreeJob job : removeList ) {
+						removeList.remove(job);
+						parent.completeWorkStack(job.work);
+						logger.info( "JOB Done" + job.jobID);
 						
 					}
 				}

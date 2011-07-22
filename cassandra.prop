@@ -1,6 +1,6 @@
 org.remus.port = 16017
-org.remus.mpstore = org.mpstore.ThriftStore
-org.remus.attachstore = org.mpstore.FileAttachStore
+org.remus.mpstore = org.mpstore.impl.ThriftStore
+org.remus.attachstore = org.mpstore.impl.FileAttachStore
 
 org.mpstore.FileAttachStore.dir = /opt/remus
 org.mpstore.FileAttachStore.shared = true

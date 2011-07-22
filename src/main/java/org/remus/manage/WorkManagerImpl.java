@@ -78,7 +78,7 @@ public class WorkManagerImpl implements BaseNode, WorkManager {
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 		
 		jobScan();
-
+		workPoll();
 		if ( name.length() != 0 ) {
 			throw new FileNotFoundException();
 		}

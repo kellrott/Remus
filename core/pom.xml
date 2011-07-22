@@ -5,7 +5,7 @@
   <artifactId>remus-core</artifactId>
   <packaging>jar</packaging>
   <version>0.1</version>
-  <name>remus</name>
+  <name>remus-core</name>
   <url>http://maven.apache.org</url>
   <build>
     <sourceDirectory>src/java</sourceDirectory>
