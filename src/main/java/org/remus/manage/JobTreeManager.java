@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,18 +66,93 @@ public class JobTreeManager implements WorkAgent {
 		return "JobTreeManager";
 	}
 
-	
+
+	class JobTreeJob {
+		WorkStatus work;
+		String jobID;
+		JobTreeJob( WorkStatus work ) {
+			this.work = work;
+		}
+
+		public void submit() throws IOException {
+			URL jobURL = new URL( serverURL.toString() + "/jobID" );
+			HttpURLConnection conn = (HttpURLConnection)jobURL.openConnection();
+			conn.setDoOutput(true);
+			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+			String id = br.readLine();
+			logger.info("JobTreeServer JobID: " + id);
+			logger.info("JobType: " + work.getApplet().getType() );
+
+			/*
+			 * Send job parameters
+			 */
+
+			URL subURL = new URL( serverURL.toString() + "/job/" + id );				
+			logger.info("Submitting job at: " + subURL);				
+			HttpURLConnection subConn = (HttpURLConnection)subURL.openConnection();
+			subConn.setRequestMethod("POST");
+			subConn.setDoOutput(true);
+			subConn.setDoInput(true);
+			subConn.setUseCaches(false);
+			subConn.setAllowUserInteraction(false);
+
+			OutputStreamWriter out = new OutputStreamWriter(
+					subConn.getOutputStream());
+
+			Map<String,String> subData = new HashMap<String,String>();
+			subData.put("instance", work.getInstance().toString() );
+			out.write(  JSONValue.toJSONString(subData) );
+			out.flush();
+			out.close();
+			InputStream subIn = subConn.getInputStream();
+			Reader reader = new InputStreamReader(subIn);
+			reader.close();
+
+
+
+		}
+
+	}
+
+
+
 	class WatcherThread extends Thread {
+		List <JobTreeJob> jobList;
+		boolean quit;
+		
+		public WatcherThread() {
+			quit = false;
+			jobList = new LinkedList<JobTreeJob>();
+		}
+
+		public void addJob(JobTreeJob job) {
+			synchronized (jobList) {
+				jobList.add(job);
+			}
+		}
+		
 		
 		@Override
 		public void run() {
-			// TODO Auto-generated method stub
-			super.run();
+			while (!quit) {
+				synchronized (jobList) {
+					for ( JobTreeJob job : jobList ) {
+						
+					}
+				}
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					quit = true;
+				}
+			}
+			
 		}
-		
+
 	}
-	
-	
+
+
 	@Override
 	public void workPoll() {
 
@@ -87,53 +163,9 @@ public class JobTreeManager implements WorkAgent {
 
 		if ( workStack != null ) {
 			try {
-				URL jobURL = new URL( serverURL.toString() + "/jobID" );
-				HttpURLConnection conn = (HttpURLConnection)jobURL.openConnection();
-				//conn.setDoInput(true);
-				conn.setDoOutput(true);
-				//conn.setRequestMethod("PUT");
-				//OutputStreamWriter out = new OutputStreamWriter(
-				//		conn.getOutputStream());
-				//out.write(workStack.getInstance().toString());
-				//out.flush();
-				//out.close();
-				BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				String id = br.readLine();
-				logger.info("JobTreeServer JobID: " + id);
-				
-				logger.info("JobType: " + workStack.getApplet().getType() );
+				new JobTreeJob(workStack);
 
-				
-				/*
-				 * Do the job request submission
-				 */
-				
-				URL subURL = new URL( serverURL.toString() + "/job/" + id );				
-				logger.info("Submitting job at: " + subURL);				
-				HttpURLConnection subConn = (HttpURLConnection)subURL.openConnection();
-				subConn.setRequestMethod("POST");
-				subConn.setDoOutput(true);
-				subConn.setDoInput(true);
-				subConn.setUseCaches(false);
-				subConn.setAllowUserInteraction(false);
 
-				OutputStreamWriter out = new OutputStreamWriter(
-						subConn.getOutputStream());
-
-				Map<String,String> subData = new HashMap<String,String>();
-				subData.put("instance", workStack.getInstance().toString() );
-				out.write(  JSONValue.toJSONString(subData) );
-				out.flush();
-				out.close();
-				InputStream subIn = subConn.getInputStream();
-				Reader reader = new InputStreamReader(subIn);
-				reader.close();
-
-				//out.write(workStack.getInstance().toString());
-				//out.flush();
-				//out.close();
-
-				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -178,7 +210,7 @@ public class JobTreeManager implements WorkAgent {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
-	throws FileNotFoundException {
+			throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
