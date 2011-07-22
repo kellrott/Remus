@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.mpstore.JsonSerializer;
 import org.mpstore.Serializer;
+import org.mpstore.impl.JsonSerializer;
 
 /**
  * MasterServlet: Primary servlet interface for web based Remus Server.

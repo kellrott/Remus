@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 
 public class ManageApp implements BaseNode {
 

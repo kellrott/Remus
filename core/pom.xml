@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.remus.genepattern</groupId>
-  <artifactId>remusGenePattern</artifactId>
+  <groupId>org.remus</groupId>
+  <artifactId>remus-core</artifactId>
   <packaging>jar</packaging>
   <version>0.1</version>
-  <name>remusGenePattern</name>
+  <name>remus</name>
   <url>http://maven.apache.org</url>
   <build>
-    <sourceDirectory>src</sourceDirectory>
+    <sourceDirectory>src/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -21,26 +21,5 @@
       </plugin>
     </plugins>
   </build>
-
-    <parent>
-  <groupId>org.remus</groupId>
-  <artifactId>remus</artifactId>
-  <version>0.1</version>
-  </parent>
-  
-    <dependencies>
-  <dependency>
-    <groupId>org.apache.axis</groupId>
-    <artifactId>axis</artifactId>
-    <version>1.4</version>
-</dependency>
-
-    <dependency>
-      <groupId>org.remus</groupId>
-      <artifactId>remus-core</artifactId>
-      <version>0.1</version>
-    </dependency>
-
-    </dependencies>
 
 </project>

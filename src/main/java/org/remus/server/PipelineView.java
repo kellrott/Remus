@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,7 +9,8 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.RemusInstance;
 
 public class PipelineView implements BaseNode {	
 	RemusApp app;
@@ -19,7 +20,7 @@ public class PipelineView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		RemusPipeline pipeline = app.getPipeline(name);
+		RemusPipelineImpl pipeline = app.getPipeline(name);
 		if ( pipeline != null ) {
 			try {
 				app.deletePipeline( pipeline );

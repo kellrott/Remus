@@ -8,15 +8,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
 
 public class ResetInstanceView implements BaseNode {
-	RemusPipeline pipeline;
+	RemusPipelineImpl pipeline;
 
-	public ResetInstanceView(RemusPipeline pipeline) {
+	public ResetInstanceView(RemusPipelineImpl pipeline) {
 		this.pipeline = pipeline;
 	}
 
@@ -66,7 +67,7 @@ public class ResetInstanceView implements BaseNode {
 				}
 			} else {
 				RemusInstance inst = pipeline.getInstance( tmp[0] );
-				RemusApplet applet = pipeline.getApplet(tmp[1]);
+				RemusAppletImpl applet = pipeline.getApplet(tmp[1]);
 				if ( inst != null && applet != null ) {
 					applet.deleteInstance( inst );
 					String subKey = pipeline.getSubKey( inst );

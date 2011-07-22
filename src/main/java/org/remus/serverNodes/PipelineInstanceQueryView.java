@@ -10,20 +10,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
 import org.remus.langs.JSInterface;
 import org.remus.mapred.MapCallback;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineInstanceQueryView implements BaseNode {
 
-	RemusPipeline pipeline;
+	RemusPipelineImpl pipeline;
 	RemusInstance inst;
 	private Logger logger;
-	public PipelineInstanceQueryView(RemusPipeline pipeline, RemusInstance inst) {
+	public PipelineInstanceQueryView(RemusPipelineImpl pipeline, RemusInstance inst) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 		logger = LoggerFactory.getLogger(PipelineInstanceQueryView.class);
@@ -54,7 +55,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 	public void doSubmit(String name, String workerID, final Serializer serial,
 			final InputStream is, final OutputStream os) throws FileNotFoundException {
 
-		RemusApplet applet = pipeline.getApplet(name);
+		RemusAppletImpl applet = pipeline.getApplet(name);
 		if ( applet == null ) {
 			throw new FileNotFoundException();
 		}

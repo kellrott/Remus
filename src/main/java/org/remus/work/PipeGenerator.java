@@ -3,14 +3,14 @@ package org.remus.work;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.remus.DataStackRef;
 import org.remus.RemusInstance;
-import org.remus.manage.WorkStatus;
+import org.remus.manage.WorkStatusImpl;
+import org.remus.server.DataStackRef;
 
 public class PipeGenerator implements WorkGenerator {
 
 	@Override
-	public void writeWorkTable(RemusApplet applet,
+	public void writeWorkTable(RemusAppletImpl applet,
 			RemusInstance instance) {		
 
 		List<String> arrayList = new ArrayList<String>();
@@ -22,6 +22,6 @@ public class PipeGenerator implements WorkGenerator {
 
 
 		long t = applet.datastore.getTimeStamp(applet.getPath() + "/@done", instance.toString() );
-		WorkStatus.setWorkStat( applet, instance, 0, 0, 0, 1, t);
+		WorkStatusImpl.setWorkStat( applet, instance, 0, 0, 0, 1, t);
 	}
 }

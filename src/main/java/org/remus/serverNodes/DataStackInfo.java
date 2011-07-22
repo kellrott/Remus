@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.remus.RemusPipeline;
+import org.remus.server.RemusPipelineImpl;
 
 public class DataStackInfo {
 

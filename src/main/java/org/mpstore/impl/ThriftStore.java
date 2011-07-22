@@ -1,4 +1,4 @@
-package org.mpstore;
+package org.mpstore.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -33,7 +33,11 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
-import org.remus.RemusApp;
+import org.mpstore.KeyValuePair;
+import org.mpstore.MPStore;
+import org.mpstore.MPStoreConnectException;
+import org.mpstore.Serializer;
+import org.remus.server.RemusApp;
 
 
 public class ThriftStore implements MPStore {

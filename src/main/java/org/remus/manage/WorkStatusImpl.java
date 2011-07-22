@@ -6,14 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.remus.RemusApplet;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.WorkStatus;
+import org.remus.work.RemusAppletImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkStatus {
+public class WorkStatusImpl implements WorkStatus {
 	private RemusInstance inst;
-	private RemusApplet applet;
+	private RemusAppletImpl applet;
 
 	public String startJob;
 
@@ -33,10 +35,10 @@ public class WorkStatus {
 	public static final String WorkStatusName = "/@work";
 	public static final String WorkDoneName = "/@done";
 
-	public WorkStatus(RemusInstance inst, RemusApplet applet) {
+	public WorkStatusImpl(RemusInstance inst, RemusAppletImpl applet) {
 		this.inst = inst;
 		this.applet = applet;
-	    logger = LoggerFactory.getLogger(WorkStatus.class);
+	    logger = LoggerFactory.getLogger(WorkStatusImpl.class);
 
 	}	
 	
@@ -47,7 +49,7 @@ public class WorkStatus {
 	
 	@Override
 	public boolean equals(Object obj) {
-		WorkStatus w = (WorkStatus)obj;
+		WorkStatusImpl w = (WorkStatusImpl)obj;
 		if ( w.inst.equals(inst) && w.applet.equals(applet) ) {
 			return true;
 		}
@@ -117,9 +119,9 @@ public class WorkStatus {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Map getStatus(RemusApplet applet, RemusInstance remusInstance) {
+	public static Map getStatus(RemusAppletImpl applet, RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
@@ -129,7 +131,7 @@ public class WorkStatus {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void setWorkStat( RemusApplet applet, RemusInstance inst, int jobStart, int doneCount, int errorCount, int totalCount, long timestamp) {
+	public static void setWorkStat( RemusAppletImpl applet, RemusInstance inst, int jobStart, int doneCount, int errorCount, int totalCount, long timestamp) {
 		Map u = new HashMap();
 		u.put(JOBSTART_FIELD, jobStart);
 		u.put(DONECOUNT_FIELD, doneCount);
@@ -142,10 +144,10 @@ public class WorkStatus {
 	 
 	
 	@SuppressWarnings({"rawtypes" })
-	public static boolean isComplete( RemusApplet applet, RemusInstance remusInstance ) {
+	public static boolean isComplete( RemusAppletImpl applet, RemusInstance remusInstance ) {
 		boolean found = false;
-		for ( Object statObj : applet.getDataStore().get( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
-			if ( statObj != null && ((Map)statObj).containsKey( WorkStatus.WORKDONE_FIELD ) && (Boolean)((Map)statObj).get(WorkStatus.WORKDONE_FIELD) == true ) {
+		for ( Object statObj : applet.getDataStore().get( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+			if ( statObj != null && ((Map)statObj).containsKey( WorkStatusImpl.WORKDONE_FIELD ) && (Boolean)((Map)statObj).get(WorkStatusImpl.WORKDONE_FIELD) == true ) {
 				found = true;
 			}
 		}
@@ -156,40 +158,41 @@ public class WorkStatus {
 		}
 		return found;
 	}
-
+	
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void unsetComplete(RemusApplet applet, RemusInstance remusInstance) {
+	public static void unsetComplete(RemusAppletImpl applet, RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
 		//logger.info("UNSET COMPLETE: " + applet.getPath() );
-		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, false);
-		applet.getDataStore().add( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		((Map)statObj).put( WorkStatusImpl.WORKDONE_FIELD, false);
+		applet.getDataStore().add( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void setComplete(RemusApplet applet, RemusInstance remusInstance) {
+	public static void setComplete(RemusAppletImpl applet, RemusInstance remusInstance) {
 		Object statObj = null;
-		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
+		for ( Object curObj : applet.getDataStore().get( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, remusInstance.toString() ) ) {
 			statObj = curObj;
 		}
 		if ( statObj == null ) {
 			statObj = new HashMap();
 		}
 		//logger.info("SET COMPLETE: " + applet.getPath() );
-		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, true);
-		applet.getDataStore().add( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
+		((Map)statObj).put( WorkStatusImpl.WORKDONE_FIELD, true);
+		applet.getDataStore().add( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0, 0, remusInstance.toString(), statObj );
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void updateStatus( RemusApplet applet, RemusInstance inst, Map update ) {
+	public static void updateStatus( RemusAppletImpl applet, RemusInstance inst, Map update ) {
 		Object statObj = null;
-		for ( Object obj : applet.getDataStore().get( applet.getPath() + WorkStatus.WorkStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
+		for ( Object obj : applet.getDataStore().get( applet.getPath() + WorkStatusImpl.WorkStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
 			statObj = obj;
 		}
 		if ( statObj == null ) {
@@ -198,20 +201,20 @@ public class WorkStatus {
 		for ( Object key : update.keySet() ) {
 			((Map)statObj).put(key, update.get(key));
 		}
-		applet.getDataStore().add( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
+		applet.getDataStore().add( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
 	}
 	
 	public void setStatus( Map statObj ) {
-		applet.getDataStore().add( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
+		applet.getDataStore().add( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, inst.toString(), statObj );
 	}
 
-	public static long getTimeStamp(RemusApplet applet, RemusInstance remusInstance) {
+	public static long getTimeStamp(RemusAppletImpl applet, RemusInstance remusInstance) {
 		long val1 = applet.getDataStore().getTimeStamp( applet.getPath(), remusInstance.toString());
 		long val2 = applet.getDataStore().getTimeStamp( applet.getPath() + "/@done" , remusInstance.toString());
 		return Math.max(val1, val2);
 	}
 
-	public RemusApplet getApplet() {
+	public RemusAppletImpl getApplet() {
 		return applet;
 	}
 
@@ -223,12 +226,9 @@ public class WorkStatus {
 		return isComplete(applet, inst );
 	}
 
-	public static boolean hasStatus(RemusApplet applet, RemusInstance inst) {
-		return applet.getDataStore().containsKey( applet.getPath() + WorkStatus.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() );
+	public static boolean hasStatus(RemusAppletImpl applet, RemusInstance inst) {
+		return applet.getDataStore().containsKey( applet.getPath() + WorkStatusImpl.WorkStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() );
 	}
-
-	
-
 
 	
 }

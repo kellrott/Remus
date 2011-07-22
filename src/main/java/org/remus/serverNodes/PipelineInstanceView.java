@@ -8,16 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class PipelineInstanceView implements BaseNode {
 
-	RemusPipeline pipeline;
+	RemusPipelineImpl pipeline;
 	RemusInstance inst;
 
-	public PipelineInstanceView( RemusPipeline pipeline, RemusInstance inst ) {
+	public PipelineInstanceView( RemusPipelineImpl pipeline, RemusInstance inst ) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 	}
@@ -32,7 +33,7 @@ public class PipelineInstanceView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0)  {
-			for ( RemusApplet applet : pipeline.getMembers() ) {
+			for ( RemusAppletImpl applet : pipeline.getMembers() ) {
 				for ( Object instObj : applet.getDataStore().get(applet.getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
 					Map out = new HashMap();
 					out.put( applet.getID(), instObj );	
@@ -67,7 +68,7 @@ public class PipelineInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipeline.getApplet(name);
+		RemusAppletImpl applet = pipeline.getApplet(name);
 		if ( applet != null ) {
 			return new AppletInstanceView(applet, inst);
 		}

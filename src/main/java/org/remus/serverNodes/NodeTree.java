@@ -1,6 +1,6 @@
 package org.remus.serverNodes;
 
-import org.remus.RemusApp;
+import org.remus.server.RemusApp;
 
 public class NodeTree {
 		

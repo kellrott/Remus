@@ -1,6 +1,6 @@
 package org.remus.mapred;
 
-import org.remus.PluginConfig;
+import org.remus.server.PluginConfig;
 
 public interface InterfaceBase {
 

@@ -17,15 +17,15 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.mpstore.AttachStore;
-import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
-import org.remus.RemusApp;
-import org.remus.RemusDatabaseException;
+import org.mpstore.impl.JsonSerializer;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusApp;
+import org.remus.server.RemusDatabaseException;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 /**
  * Pipeline administration tool. Primarily for dumping and loading pipeline
@@ -41,7 +41,7 @@ public class PipelineAdmin {
 
 	static public String [] allViews = { "@data", "@done", "@instance" }; 
 
-	public static void tableDump( RemusPipeline pipe, Serializer serializer, String instance, File instDir ) throws IOException  {
+	public static void tableDump( RemusPipelineImpl pipe, Serializer serializer, String instance, File instDir ) throws IOException  {
 		System.err.println( "PIPELINE: " + pipe.getID() );
 
 		File submitFile = new File(instDir, "@submit");
@@ -77,7 +77,7 @@ public class PipelineAdmin {
 		}
 		giOS.close();
 
-		for ( RemusApplet applet : pipe.getMembers() ) {
+		for ( RemusAppletImpl applet : pipe.getMembers() ) {
 			System.err.println( "Dumping: " + applet.getID() );
 
 			File instanceFile = new File(instDir, applet.getID() + "@instance");
@@ -158,7 +158,7 @@ public class PipelineAdmin {
 
 
 
-	public static void loadTable( RemusPipeline pipe, Serializer serializer, RemusInstance instance, File loadDir ) throws IOException {
+	public static void loadTable( RemusPipelineImpl pipe, Serializer serializer, RemusInstance instance, File loadDir ) throws IOException {
 		for ( File stackFile : loadDir.listFiles() ) {
 			if ( !stackFile.isDirectory() ) {
 				if ( stackFile.getName().compareTo("@submit") == 0 ) {
@@ -194,9 +194,9 @@ public class PipelineAdmin {
 			if ( cmd == null || cmd.compareTo("list") == 0 ) {
 				if ( args.length > 2 ) {
 					Set<RemusInstance> outSet = new HashSet<RemusInstance>(); 
-					RemusPipeline pipe = app.getPipeline(args[2]);
+					RemusPipelineImpl pipe = app.getPipeline(args[2]);
 					if ( pipe != null ) {
-						for ( RemusApplet applet : pipe.getMembers() ) {
+						for ( RemusAppletImpl applet : pipe.getMembers() ) {
 							for ( RemusInstance inst : applet.getInstanceList() ) {
 								outSet.add(inst);
 							}
@@ -206,7 +206,7 @@ public class PipelineAdmin {
 						}
 					}
 				} else {
-					for ( RemusPipeline pipeline : app.getPipelines() ) {
+					for ( RemusPipelineImpl pipeline : app.getPipelines() ) {
 						System.out.println( pipeline.getID() );
 					}
 				}
@@ -214,11 +214,11 @@ public class PipelineAdmin {
 				if ( cmd.compareTo("dump") == 0 && args.length > 2 ) {
 					String pipeline = args[2];
 					String inst = args[3];
-					RemusPipeline pipe = app.getPipeline(pipeline);
+					RemusPipelineImpl pipe = app.getPipeline(pipeline);
 
 					if ( inst.compareTo("--all") == 0 ) {
 						Set<RemusInstance> instSet = new HashSet<RemusInstance>();
-						for ( RemusApplet applet : pipe.getMembers() ) {
+						for ( RemusAppletImpl applet : pipe.getMembers() ) {
 							instSet.addAll( applet.getInstanceList() );
 						}
 						for ( RemusInstance instance : instSet ) {
@@ -239,7 +239,7 @@ public class PipelineAdmin {
 					String pipeline = args[2];
 					String srcDirPath = args[3];
 
-					RemusPipeline pipe = app.getPipeline(pipeline);
+					RemusPipelineImpl pipe = app.getPipeline(pipeline);
 
 					File srcDir = new File( srcDirPath );
 					RemusInstance instance = new RemusInstance( srcDir.getName() );

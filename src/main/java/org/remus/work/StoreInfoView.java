@@ -9,8 +9,8 @@ import java.util.Map;
 
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
-import org.remus.RemusApp;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.server.RemusApp;
 
 @SuppressWarnings("unchecked")
 public class StoreInfoView implements BaseNode {

@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,16 +12,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.AttachStore;
-import org.mpstore.JsonSerializer;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.MPStoreConnectException;
 import org.mpstore.Serializer;
-import org.remus.manage.WorkManager;
-import org.remus.serverNodes.BaseNode;
+import org.mpstore.impl.JsonSerializer;
+import org.remus.BaseNode;
+import org.remus.RemusInstance;
+import org.remus.manage.WorkManagerImpl;
 import org.remus.serverNodes.ManageApp;
 import org.remus.serverNodes.ServerStatusView;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 import org.remus.work.StoreInfoView;
 
 /**
@@ -35,19 +36,19 @@ import org.remus.work.StoreInfoView;
 public class RemusApp implements BaseNode {
 	/**
 	 * Class name for MPstore interface.
-	 * @see org.mpstore.ThriftStore
+	 * @see org.mpstore.impl.ThriftStore
 	 */
 	public static final String CONFIG_STORE = "org.remus.mpstore";
 	public static final String CONFIG_WORK = "org.remus.workdir";
 	public static final String CONFIG_ATTACH_STORE = "org.remus.attachstore";
 
-	Map<String,RemusPipeline> pipelines;
+	Map<String,RemusPipelineImpl> pipelines;
 	Map<String,BaseNode> children;
 
 	Map params;
 	MPStore rootStore;
 	AttachStore rootAttachStore;
-	private WorkManager workManage;
+	private WorkManagerImpl workManage;
 
 	public RemusApp( Map params ) throws RemusDatabaseException {
 		this.params = params;
@@ -65,7 +66,7 @@ public class RemusApp implements BaseNode {
 			
 			children.put("@db", new StoreInfoView( this ) );
 			
-			pipelines = new HashMap<String, RemusPipeline>();
+			pipelines = new HashMap<String, RemusPipelineImpl>();
 			String mpStore = (String)params.get(RemusApp.CONFIG_STORE);
 			Class<?> mpClass = Class.forName(mpStore);			
 			rootStore = (MPStore) mpClass.newInstance();
@@ -91,16 +92,16 @@ public class RemusApp implements BaseNode {
 		} catch (MPStoreConnectException e) {
 			throw new RemusDatabaseException(e.toString());
 		} 
-		workManage = new WorkManager(this);
+		workManage = new WorkManagerImpl(this);
 		children.put("@work", workManage);
 	}
 
 	public void loadPipeline(String name, MPStore store,
 			Serializer serializer, AttachStore attachStore) {
-		RemusPipeline pipeline = new RemusPipeline(this, name, store, attachStore);		
+		RemusPipelineImpl pipeline = new RemusPipelineImpl(this, name, store, attachStore);		
 		for ( KeyValuePair kv : store.listKeyPairs( "/" + name + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
-			List<RemusApplet> applets = loadApplet( name, kv.getKey(), store, serializer );
-			for ( RemusApplet applet : applets ) {
+			List<RemusAppletImpl> applets = loadApplet( name, kv.getKey(), store, serializer );
+			for ( RemusAppletImpl applet : applets ) {
 				pipeline.addApplet(applet);
 			}
 		}
@@ -109,9 +110,9 @@ public class RemusApp implements BaseNode {
 	}
 
 
-	private List<RemusApplet> loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
+	private List<RemusAppletImpl> loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
 
-		List<RemusApplet> out = new LinkedList<RemusApplet>();
+		List<RemusAppletImpl> out = new LinkedList<RemusAppletImpl>();
 
 		String dbPath = "/" + pipelineName + "/@pipeline";
 
@@ -120,41 +121,41 @@ public class RemusApp implements BaseNode {
 			appletObj = (Map)obj;		
 		}
 
-		String mode = (String)appletObj.get( RemusApplet.MODE_FIELD );
-		String codeType = (String)appletObj.get( RemusApplet.TYPE_FIELD);
+		String mode = (String)appletObj.get( RemusAppletImpl.MODE_FIELD );
+		String codeType = (String)appletObj.get( RemusAppletImpl.TYPE_FIELD);
 
 		Integer appletType = null;
 		if (mode.compareTo("map") == 0) {
-			appletType = RemusApplet.MAPPER;
+			appletType = RemusAppletImpl.MAPPER;
 		}
 		if (mode.compareTo("reduce") == 0) {
-			appletType = RemusApplet.REDUCER;
+			appletType = RemusAppletImpl.REDUCER;
 		}
 		if ( mode.compareTo("pipe") == 0 ) {
-			appletType = RemusApplet.PIPE;
+			appletType = RemusAppletImpl.PIPE;
 		}
 		if ( mode.compareTo("merge") == 0 ) {
-			appletType = RemusApplet.MERGER;
+			appletType = RemusAppletImpl.MERGER;
 		}
 		if ( mode.compareTo("match") == 0 ) {
-			appletType = RemusApplet.MATCHER;
+			appletType = RemusAppletImpl.MATCHER;
 		}
 		if ( mode.compareTo("split") == 0 ) {
-			appletType = RemusApplet.SPLITTER;
+			appletType = RemusAppletImpl.SPLITTER;
 		}
 		if ( mode.compareTo("store") == 0 ) {
-			appletType = RemusApplet.STORE;
+			appletType = RemusAppletImpl.STORE;
 		}
 		if ( mode.compareTo("agent") == 0 ) {
-			appletType = RemusApplet.AGENT;
+			appletType = RemusAppletImpl.AGENT;
 		}
 		if (appletType == null)
 			return null;
-		RemusApplet applet = RemusApplet.newApplet(name, codeType, appletType);
+		RemusAppletImpl applet = RemusAppletImpl.newApplet(name, codeType, appletType);
 
-		if ( appletType == RemusApplet.MATCHER || appletType == RemusApplet.MERGER ) {
+		if ( appletType == RemusAppletImpl.MATCHER || appletType == RemusAppletImpl.MERGER ) {
 			//try {
-			String lInput = (String) appletObj.get( RemusApplet.LEFT_SRC );
+			String lInput = (String) appletObj.get( RemusAppletImpl.LEFT_SRC );
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 			applet.addLeftInput( lInput );
 			//} catch (FileNotFoundException e) {
@@ -162,7 +163,7 @@ public class RemusApp implements BaseNode {
 			//	e.printStackTrace();
 			//}
 			//try {
-			String rInput = (String) appletObj.get( RemusApplet.RIGHT_SRC );
+			String rInput = (String) appletObj.get( RemusAppletImpl.RIGHT_SRC );
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
 			applet.addRightInput(rInput);
 			//} catch (FileNotFoundException e) {
@@ -171,7 +172,7 @@ public class RemusApp implements BaseNode {
 			//}
 		} else {
 			//try {
-			Object src = appletObj.get( RemusApplet.SRC );
+			Object src = appletObj.get( RemusAppletImpl.SRC );
 			
 			if ( src instanceof String ) {
 				String input = (String) src;
@@ -189,9 +190,9 @@ public class RemusApp implements BaseNode {
 			//	e.printStackTrace();
 			//}
 		}
-		if ( appletObj.containsKey( RemusApplet.OUTPUT_FIELD ) ) {
-			for ( Object nameObj : (List)appletObj.get(  RemusApplet.OUTPUT_FIELD  ) ) {
-				RemusApplet outApplet = RemusApplet.newApplet(name + "." + (String)nameObj, null, RemusApplet.OUTPUT );
+		if ( appletObj.containsKey( RemusAppletImpl.OUTPUT_FIELD ) ) {
+			for ( Object nameObj : (List)appletObj.get(  RemusAppletImpl.OUTPUT_FIELD  ) ) {
+				RemusAppletImpl outApplet = RemusAppletImpl.newApplet(name + "." + (String)nameObj, null, RemusAppletImpl.OUTPUT );
 				for (String input : applet.getInputs() ) {
 					outApplet.addInput(input);
 				}
@@ -205,7 +206,7 @@ public class RemusApp implements BaseNode {
 
 
 
-	public void deleteApplet(RemusPipeline pipeline, RemusApplet applet) throws RemusDatabaseException {		
+	public void deleteApplet(RemusPipelineImpl pipeline, RemusAppletImpl applet) throws RemusDatabaseException {		
 		for ( RemusInstance inst : applet.getInstanceList() ) {
 			applet.deleteInstance(inst);
 		}
@@ -214,8 +215,8 @@ public class RemusApp implements BaseNode {
 		loadPipelines();
 	}
 
-	public void deletePipeline(RemusPipeline pipe) throws RemusDatabaseException {
-		for ( RemusApplet applet : pipe.getMembers() ) {
+	public void deletePipeline(RemusPipelineImpl pipe) throws RemusDatabaseException {
+		for ( RemusAppletImpl applet : pipe.getMembers() ) {
 			deleteApplet(pipe, applet);
 		}
 		rootStore.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, pipe.getID() );
@@ -230,7 +231,7 @@ public class RemusApp implements BaseNode {
 		loadPipelines();
 	}
 
-	public void putApplet(RemusPipeline pipe, String name, Object data) throws RemusDatabaseException { 
+	public void putApplet(RemusPipelineImpl pipe, String name, Object data) throws RemusDatabaseException { 
 		rootStore.add("/" + pipe.getID() + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );
 		loadPipelines();
 	}	
@@ -243,18 +244,18 @@ public class RemusApp implements BaseNode {
 
 	
 	
-	public WorkManager getWorkManager() {
+	public WorkManagerImpl getWorkManager() {
 		return workManage;
 	}
 	
-	public RemusPipeline getPipeline( String name ) {
+	public RemusPipelineImpl getPipeline( String name ) {
 		return pipelines.get(name);
 	}
 
-	public Collection<RemusPipeline> getPipelines() {
+	public Collection<RemusPipelineImpl> getPipelines() {
 		return pipelines.values();
 	}
-	public RemusApplet getApplet(String appletPath) {
+	public RemusAppletImpl getApplet(String appletPath) {
 		if (appletPath.startsWith("/"))
 			appletPath = appletPath.replaceFirst("^\\/", "");
 		String []tmp = appletPath.split("/");
@@ -287,7 +288,7 @@ public class RemusApp implements BaseNode {
 		Map out = new HashMap();
 		List<String> oList = new ArrayList<String>();
 		for ( Object pipeObj : getPipelines() ) {
-			oList.add( ((RemusPipeline)pipeObj).id );
+			oList.add( ((RemusPipelineImpl)pipeObj).id );
 		}
 		out.put("@", oList);
 		try {

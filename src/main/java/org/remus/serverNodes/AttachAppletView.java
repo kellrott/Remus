@@ -7,15 +7,16 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 
 public class AttachAppletView implements BaseNode {
 
-	RemusApplet applet;
+	RemusAppletImpl applet;
 	RemusInstance inst;
 
-	public AttachAppletView(RemusApplet applet, RemusInstance inst) {
+	public AttachAppletView(RemusAppletImpl applet, RemusInstance inst) {
 		this.applet = applet;
 		this.inst = inst;
 	}

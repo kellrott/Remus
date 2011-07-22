@@ -1,4 +1,4 @@
-package org.remus.serverNodes;
+package org.remus;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;

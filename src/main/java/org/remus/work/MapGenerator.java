@@ -1,13 +1,13 @@
 package org.remus.work;
 
 
-import org.remus.DataStackRef;
 import org.remus.RemusInstance;
-import org.remus.manage.WorkStatus;
+import org.remus.manage.WorkStatusImpl;
+import org.remus.server.DataStackRef;
 
 public class MapGenerator implements WorkGenerator {
 	@Override
-	public void writeWorkTable(RemusApplet applet, RemusInstance instance) {
+	public void writeWorkTable(RemusAppletImpl applet, RemusInstance instance) {
 		DataStackRef iRef = DataStackRef.fromSubmission( applet, applet.getInput(), instance );
 		int jobID = 0;		
 		for ( String key : iRef.listKeys( applet.datastore ) ) {
@@ -15,6 +15,6 @@ public class MapGenerator implements WorkGenerator {
 			jobID++;							
 		}		
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );
-		WorkStatus.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
+		WorkStatusImpl.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
 	}
 }

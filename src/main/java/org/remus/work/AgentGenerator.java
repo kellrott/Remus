@@ -2,14 +2,14 @@ package org.remus.work;
 
 
 import org.remus.RemusInstance;
-import org.remus.manage.WorkStatus;
+import org.remus.manage.WorkStatusImpl;
 
 public class AgentGenerator  implements WorkGenerator {
-	RemusApplet applet;
+	RemusAppletImpl applet;
 	RemusInstance inst;
 	boolean done;
 	@Override
-	public void writeWorkTable(RemusApplet applet, RemusInstance instance) {
+	public void writeWorkTable(RemusAppletImpl applet, RemusInstance instance) {
 		done = false;
 		this.applet = applet;
 		this.inst = instance;
@@ -21,6 +21,6 @@ public class AgentGenerator  implements WorkGenerator {
 			jobID++;							
 		}
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );
-		WorkStatus.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
+		WorkStatusImpl.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
 	}
 }

@@ -18,7 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.WorkAgent;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +55,7 @@ public class JobTreeManager implements WorkAgent {
 	@Override
 	public void init(WorkManager parent) {
 		this.parent = parent;
-		server = (String) parent.app.getParams().get(JOBTREE_SERVER);
+		server = (String) parent.getParams().get(JOBTREE_SERVER);
 		try {
 			serverURL = new URL( server );
 		} catch (MalformedURLException e) {

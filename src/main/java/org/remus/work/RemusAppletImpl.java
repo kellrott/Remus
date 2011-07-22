@@ -11,9 +11,12 @@ import java.util.Set;
 
 import org.mpstore.AttachStore;
 import org.mpstore.MPStore;
+import org.remus.RemusApplet;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
-import org.remus.manage.WorkStatus;
+import org.remus.WorkStatus;
+import org.remus.manage.WorkStatusImpl;
+import org.remus.server.RemusPipelineImpl;
 import org.remus.serverNodes.AppletInstanceStatusView;
 
 import org.slf4j.Logger;
@@ -25,10 +28,10 @@ import org.slf4j.LoggerFactory;
  *
  * Base class for Applets
  */
-public class RemusApplet {
+public class RemusAppletImpl extends RemusApplet {
 
-	public static RemusApplet newApplet( String id, String type, int mode ) {
-		RemusApplet out = new RemusApplet();
+	public static RemusAppletImpl newApplet( String id, String type, int mode ) {
+		RemusAppletImpl out = new RemusAppletImpl();
 
 		switch (mode) {
 		case MAPPER: {
@@ -67,19 +70,10 @@ public class RemusApplet {
 			out.inputs = null;
 			out.activeInstances = new LinkedList<RemusInstance>();			
 		}
-		out.logger = LoggerFactory.getLogger(RemusApplet.class);
+		out.logger = LoggerFactory.getLogger(RemusAppletImpl.class);
 		return out;
 	}
 
-	public static final int MAPPER = 1;
-	public static final int MERGER = 2;
-	public static final int MATCHER = 3;
-	public static final int SPLITTER = 4;
-	public static final int REDUCER = 5;
-	public static final int PIPE = 6;
-	public static final int STORE = 7;
-	public static final int OUTPUT = 8;
-	public static final int AGENT = 9;
 
 	public static final String CODE_FIELD = "_code";
 	public static final String MODE_FIELD = "_mode";
@@ -98,7 +92,7 @@ public class RemusApplet {
 	MPStore datastore;
 	int mode;
 	private String type;
-	protected RemusPipeline pipeline = null;
+	protected RemusPipelineImpl pipeline = null;
 	LinkedList<RemusInstance> activeInstances;
 	private AttachStore attachstore;
 
@@ -152,12 +146,13 @@ public class RemusApplet {
 		return "/" + pipeline.getID() + "/" + id;
 	}
 
-	public void setPipeline(RemusPipeline remusPipeline) {
+	public void setPipeline(RemusPipelineImpl remusPipeline) {
 		this.pipeline = remusPipeline;		
 		this.datastore = remusPipeline.getDataStore();
 		this.attachstore = remusPipeline.getAttachStore();
 	}
 
+	@Override
 	public RemusPipeline getPipeline() {
 		return this.pipeline;
 	}
@@ -173,7 +168,7 @@ public class RemusApplet {
 					RemusApplet iApplet = getPipeline().getApplet( iRef );
 					if ( iApplet != null ) {
 						if ( iApplet.getMode() != STORE ) {
-							if ( ! WorkStatus.isComplete(iApplet, remusInstance) ) {
+							if ( ! WorkStatusImpl.isComplete( (RemusAppletImpl)iApplet, remusInstance) ) {
 								allReady = false;
 							}
 						}
@@ -195,7 +190,7 @@ public class RemusApplet {
 			if ( iRef.compareTo("?") != 0 ) {
 				RemusApplet iApplet = getPipeline().getApplet( iRef );
 				if ( iApplet != null ) {
-					long val = WorkStatus.getTimeStamp( this, remusInstance );
+					long val = WorkStatusImpl.getTimeStamp( this, remusInstance );
 					if ( out < val ) {
 						out = val;
 					}
@@ -233,12 +228,12 @@ public class RemusApplet {
 	public Set<WorkStatus> getWorkList() {
 		HashSet<WorkStatus> out = new HashSet<WorkStatus>();		
 		for ( RemusInstance inst : getInstanceList() ) {
-			if ( !WorkStatus.isComplete(this, inst) ) {
+			if ( !WorkStatusImpl.isComplete(this, inst) ) {
 				if ( isReady(inst)) {
 					if ( workGenerator != null ) {
-						long infoTime = WorkStatus.getTimeStamp(this, inst);
+						long infoTime = WorkStatusImpl.getTimeStamp(this, inst);
 						long dataTime = getDataTimeStamp(inst);
-						if ( infoTime < dataTime || !WorkStatus.hasStatus( this, inst ) ) {
+						if ( infoTime < dataTime || !WorkStatusImpl.hasStatus( this, inst ) ) {
 							try {
 								logger.info("GENERATE WORK: " + getPath() + " " + inst.toString() );
 								WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();								
@@ -253,18 +248,18 @@ public class RemusApplet {
 						} else {
 							logger.info( "Active Work Stack: " + inst.toString() + ":" + this.getID() );
 						}
-						out.add( new WorkStatus(inst, this) );
+						out.add( new WorkStatusImpl(inst, this) );
 					}
 
 				}
 			} else {
 				if ( hasInputs() ) {
-					long thisTime = WorkStatus.getTimeStamp(this, inst);
+					long thisTime = WorkStatusImpl.getTimeStamp(this, inst);
 					long inTime = inputTimeStamp(inst);
 					//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
 					if ( inTime > thisTime ) {
 						logger.info( "YOUNG INPUT (applet reset):" + getPath() );
-						WorkStatus.unsetComplete(this, inst);
+						WorkStatusImpl.unsetComplete(this, inst);
 					}
 				}
 			}
@@ -359,7 +354,7 @@ public class RemusApplet {
 		datastore.delete(getPath(), instance.toString() );		
 		datastore.delete(getPath() + AppletInstanceStatusView.InstanceStatusName,
 				RemusInstance.STATIC_INSTANCE_STR, instance.toString());
-		datastore.delete(getPath() + WorkStatus.WorkStatusName, 
+		datastore.delete(getPath() + WorkStatusImpl.WorkStatusName, 
 				RemusInstance.STATIC_INSTANCE_STR, instance.toString());
 		datastore.delete(getPath() + "/@done", instance.toString());
 		datastore.delete(getPath() + "/@work", instance.toString());
@@ -384,7 +379,7 @@ public class RemusApplet {
 
 	@Override
 	public boolean equals(Object obj) {
-		RemusApplet a = (RemusApplet)obj;
+		RemusAppletImpl a = (RemusAppletImpl)obj;
 		return a.getPath().equals(getPath());
 	}
 

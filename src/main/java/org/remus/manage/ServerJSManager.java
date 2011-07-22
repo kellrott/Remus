@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.WorkAgent;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
 
 public class ServerJSManager implements WorkAgent {
 

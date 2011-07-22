@@ -7,14 +7,15 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.BaseNode;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class PipelineAgentView implements BaseNode {
 
-	RemusPipeline pipe;
+	RemusPipelineImpl pipe;
 
-	public PipelineAgentView(RemusPipeline remusPipeline) {
+	public PipelineAgentView(RemusPipelineImpl remusPipeline) {
 		this.pipe = remusPipeline;
 	}
 
@@ -29,7 +30,7 @@ public class PipelineAgentView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0 ) {
-			for ( RemusApplet applet : pipe.getMembers() ) {
+			for ( RemusAppletImpl applet : pipe.getMembers() ) {
 				try {
 					os.write( serial.dumps( applet.getID() ).getBytes() );
 					os.write( "\n".getBytes() );
@@ -59,7 +60,7 @@ public class PipelineAgentView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipe.getApplet(name);
+		RemusAppletImpl applet = pipe.getApplet(name);
 		if ( applet != null ) {
 			return new PipelineAppletAgentView( applet );
 		}

@@ -16,5 +16,5 @@ import org.remus.RemusInstance;
  */
 
 public interface WorkGenerator {
-	public void writeWorkTable(RemusApplet applet, RemusInstance instance);
+	public void writeWorkTable(RemusAppletImpl applet, RemusInstance instance);
 }

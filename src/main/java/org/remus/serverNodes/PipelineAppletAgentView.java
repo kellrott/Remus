@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 
 public class PipelineAppletAgentView implements BaseNode {
 
-	RemusApplet applet;
-	public PipelineAppletAgentView(RemusApplet applet) {
+	RemusAppletImpl applet;
+	public PipelineAppletAgentView(RemusAppletImpl applet) {
 		this.applet = applet;
 	}
 

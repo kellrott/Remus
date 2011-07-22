@@ -8,17 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class AttachInstanceView implements BaseNode {
 
 
-	RemusPipeline pipe;
+	RemusPipelineImpl pipe;
 	RemusInstance inst;
 
-	public AttachInstanceView(RemusPipeline pipeline, RemusInstance inst) {
+	public AttachInstanceView(RemusPipelineImpl pipeline, RemusInstance inst) {
 		this.pipe = pipeline;
 		this.inst = inst;
 	}
@@ -35,7 +36,7 @@ public class AttachInstanceView implements BaseNode {
 			Serializer serial, OutputStream os) throws FileNotFoundException {		
 
 		if ( name.length() == 0)  {
-			for ( RemusApplet applet : pipe.getMembers() ) {
+			for ( RemusAppletImpl applet : pipe.getMembers() ) {
 				try {
 					os.write( serial.dumps( applet.getID() ).getBytes() );
 					os.write("\n".getBytes());
@@ -66,7 +67,7 @@ public class AttachInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipe.getApplet(name);
+		RemusAppletImpl applet = pipe.getApplet(name);
 		if ( applet != null ) {
 			return new AttachAppletView( applet, inst );
 		}

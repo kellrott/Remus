@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.util.HashMap;
 import java.util.Map;

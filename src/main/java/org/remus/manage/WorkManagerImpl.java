@@ -9,9 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.RemusApp;
-import org.remus.RemusPipeline;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.WorkAgent;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
+import org.remus.server.RemusApp;
+import org.remus.server.RemusPipelineImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author kellrott
  *
  */
-public class WorkManager implements BaseNode {
+public class WorkManagerImpl implements BaseNode, WorkManager {
 
 	/***
 	 * MANAGE_CONFIG = org.remus.workManage, conf string to define 
@@ -33,8 +36,8 @@ public class WorkManager implements BaseNode {
 	RemusApp app;
 	Map<String, WorkAgent> agentList;
 	@SuppressWarnings("rawtypes")
-	public WorkManager(RemusApp app ) {
-		logger = LoggerFactory.getLogger(WorkManager.class);
+	public WorkManagerImpl(RemusApp app ) {
+		logger = LoggerFactory.getLogger(WorkManagerImpl.class);
 
 		agentList = new HashMap<String, WorkAgent>();
 		this.app = app;
@@ -124,6 +127,7 @@ public class WorkManager implements BaseNode {
 
 	private Map<WorkStatus, WorkAgent> workMap;
 
+	@Override
 	public WorkStatus requestWorkStack(WorkAgent agent, Collection<String> codeTypes) {
 		synchronized (workMap) {
 			WorkStatus out = null;
@@ -166,7 +170,7 @@ public class WorkManager implements BaseNode {
 	public boolean jobScan() {
 		boolean newWork = false;
 		logger.info("Starting jobScan");
-		for ( RemusPipeline pipeline : app.getPipelines() ) {			
+		for ( RemusPipelineImpl pipeline : app.getPipelines() ) {			
 			for ( WorkStatus ws : pipeline.getWorkQueue( ) ) {
 				if ( !workMap.containsKey(ws) ) {
 					workMap.put(ws, null);
@@ -182,6 +186,11 @@ public class WorkManager implements BaseNode {
 		for ( WorkAgent agent : agentList.values() ) {
 			agent.workPoll();
 		}
+	}
+
+	@Override
+	public Map getParams() {
+		return app.getParams();
 	}
 
 

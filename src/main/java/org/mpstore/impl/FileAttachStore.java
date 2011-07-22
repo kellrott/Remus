@@ -1,4 +1,4 @@
-package org.mpstore;
+package org.mpstore.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.mpstore.AttachStore;
 
 
 public class FileAttachStore implements AttachStore {

@@ -11,17 +11,18 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class InstanceErrorView implements BaseNode {
 
 
 	public class AppletInstanceErrorView implements BaseNode {
-		RemusApplet applet;
+		RemusAppletImpl applet;
 		RemusInstance inst;
-		public AppletInstanceErrorView( RemusApplet applet, RemusInstance inst ) {
+		public AppletInstanceErrorView( RemusAppletImpl applet, RemusInstance inst ) {
 			this.applet = applet;
 			this.inst = inst;			
 		}
@@ -90,16 +91,16 @@ public class InstanceErrorView implements BaseNode {
 
 	}
 
-	RemusPipeline pipeline;
+	RemusPipelineImpl pipeline;
 	RemusInstance inst;
-	public InstanceErrorView(RemusPipeline pipeline, RemusInstance inst) {
+	public InstanceErrorView(RemusPipelineImpl pipeline, RemusInstance inst) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		for ( RemusApplet applet : pipeline.getMembers() ) {
+		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
 			applet.deleteErrors(inst);
 		}
 	}
@@ -126,7 +127,7 @@ public class InstanceErrorView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipeline.getApplet(name);
+		RemusAppletImpl applet = pipeline.getApplet(name);
 		if ( applet != null ) {
 			return new AppletInstanceErrorView( applet, inst );
 		}

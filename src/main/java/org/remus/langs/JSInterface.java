@@ -15,13 +15,13 @@ import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
-import org.remus.PluginConfig;
 import org.remus.mapred.MapCallback;
 import org.remus.mapred.MapperInterface;
 import org.remus.mapred.ReducerInterface;
 import org.remus.mapred.SplitCallback;
 import org.remus.mapred.SpliterInterface;
 import org.remus.mapred.PipeInterface;
+import org.remus.server.PluginConfig;
 import org.remus.serverNodes.BaseStackNode;
 
 public class JSInterface implements MapperInterface {

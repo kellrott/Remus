@@ -9,13 +9,14 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
+import org.remus.server.RemusPipelineImpl;
 
 public class PipelineInstanceListViewer implements BaseNode {
 
-	RemusPipeline pipeline;
-	public PipelineInstanceListViewer(RemusPipeline pipeline) {
+	RemusPipelineImpl pipeline;
+	public PipelineInstanceListViewer(RemusPipelineImpl pipeline) {
 		this.pipeline = pipeline;
 	}
 	

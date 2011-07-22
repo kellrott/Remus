@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.Map;
 import org.mpstore.AttachStore;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 
 public class AttachListView implements BaseNode {
 

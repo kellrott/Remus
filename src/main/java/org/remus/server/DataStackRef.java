@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.MPStore;
-import org.remus.work.RemusApplet;
+import org.remus.RemusInstance;
+import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
 
 public class DataStackRef {
@@ -20,7 +21,7 @@ public class DataStackRef {
 
 	}
 
-	public static DataStackRef fromSubmission( RemusApplet applet, String input, RemusInstance instance) {
+	public static DataStackRef fromSubmission( RemusAppletImpl applet, String input, RemusInstance instance) {
 		DataStackRef out = new DataStackRef();
 		out.instance = instance;
 		out.ds = applet.getDataStore();
@@ -29,7 +30,7 @@ public class DataStackRef {
 				Map inputInfo = (Map)((Map)instObj).get(Submission.InputField);
 				String instanceStr = (String) inputInfo.get(Submission.InstanceField);
 				String appletStr = (String) inputInfo.get( "_applet" );				
-				for ( Object subObj : out.ds.get( "/" + applet.getPipeline().id + "/@submit" , RemusInstance.STATIC_INSTANCE_STR, instanceStr) ) {
+				for ( Object subObj : out.ds.get( "/" + applet.getPipeline().getID() + "/@submit" , RemusInstance.STATIC_INSTANCE_STR, instanceStr) ) {
 					instanceStr = (String)((Map)subObj).get(Submission.InstanceField);
 				}
 				if ( inputInfo.containsKey( Submission.KeysField ) ) {
@@ -39,17 +40,17 @@ public class DataStackRef {
 					}
 				}
 				out.instance = new RemusInstance(instanceStr);
-				out.viewPath = "/" + applet.getPipeline().id + "/" + appletStr;
+				out.viewPath = "/" + applet.getPipeline().getID() + "/" + appletStr;
 			}
 		} else {
-			out.viewPath = "/" + applet.getPipeline().id + "/" + input;
+			out.viewPath = "/" + applet.getPipeline().getID() + "/" + input;
 		}
 		return out;
 	}
 
-	public static String pathFromSubmission(RemusApplet applet, String ref,
+	public static String pathFromSubmission(RemusAppletImpl applet, String ref,
 			RemusInstance instance) {
-		return "/" + applet.getPipeline().id + "/" + instance.toString() + "/" + ref;
+		return "/" + applet.getPipeline().getID() + "/" + instance.toString() + "/" + ref;
 	}
 
 	public long getKeyCount( MPStore ds, int maxCount ) {

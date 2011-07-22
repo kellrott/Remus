@@ -10,21 +10,22 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class PipelineErrorView implements BaseNode {
 
-	RemusPipeline pipeline;
-	public PipelineErrorView(RemusPipeline remusPipeline) {
+	RemusPipelineImpl pipeline;
+	public PipelineErrorView(RemusPipelineImpl remusPipeline) {
 		this.pipeline = remusPipeline;
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 	throws FileNotFoundException {
-		for ( RemusApplet applet : pipeline.getMembers() ) {
+		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
 			for ( RemusInstance inst : applet.getInstanceList() ) {
 				applet.deleteErrors(inst);
 			}
@@ -34,7 +35,7 @@ public class PipelineErrorView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			Serializer serial, OutputStream os) throws FileNotFoundException {
-		for ( RemusApplet applet : pipeline.getMembers() ) {
+		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
 			for ( RemusInstance inst : applet.getInstanceList() ) {
 				Map<String,Map<String,Object>> out = new HashMap<String, Map<String,Object>>();				
 				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs( applet.getPath() + "/@error", inst.toString() ) ) {

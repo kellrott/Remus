@@ -16,7 +16,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mpstore.Serializer;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.WorkAgent;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
 
 
 public class PassiveManager implements WorkAgent {

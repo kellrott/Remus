@@ -9,15 +9,16 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 
 public class AppletInstanceStatusView implements BaseNode {
 
 	public static final String InstanceStatusName = "/@instance";
 	
-	RemusApplet applet;
-	public AppletInstanceStatusView(RemusApplet applet) {
+	RemusAppletImpl applet;
+	public AppletInstanceStatusView(RemusAppletImpl applet) {
 		this.applet = applet;
 	}
 
@@ -90,7 +91,7 @@ public class AppletInstanceStatusView implements BaseNode {
 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void updateStatus(RemusApplet applet,
+	public static void updateStatus(RemusAppletImpl applet,
 			RemusInstance inst, Map update) {
 		Object statObj = null;
 		for ( Object obj : applet.getDataStore().get( applet.getPath() + InstanceStatusName , RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {

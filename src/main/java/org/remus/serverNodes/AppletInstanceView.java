@@ -17,15 +17,16 @@ import java.util.Set;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 
 public class AppletInstanceView implements BaseNode, BaseStackNode {
 
-	RemusApplet applet;
+	RemusAppletImpl applet;
 	RemusInstance inst;
 
-	public AppletInstanceView(RemusApplet applet, RemusInstance inst) {
+	public AppletInstanceView(RemusAppletImpl applet, RemusInstance inst) {
 		this.applet = applet;
 		this.inst = inst;
 	}
@@ -224,7 +225,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 	public void doSubmit(String name, String workerID, Serializer serial,
 			InputStream is, OutputStream os) throws FileNotFoundException {
 
-		if (applet.getMode() == RemusApplet.STORE) {
+		if (applet.getMode() == RemusAppletImpl.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
 			//UUID as the key if none is provided
 			try {
@@ -249,7 +250,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		} else if (applet.getMode() == RemusApplet.AGENT) {
+		} else if (applet.getMode() == RemusAppletImpl.AGENT) {
 			//A submit to an agent is stored and a new instance is created
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));

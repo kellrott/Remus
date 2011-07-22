@@ -10,8 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.RemusApp;
-import org.remus.work.RemusApplet;
+import org.remus.BaseNode;
+import org.remus.server.RemusApp;
+import org.remus.work.RemusAppletImpl;
 
 public class ServerStatusView implements BaseNode {
 

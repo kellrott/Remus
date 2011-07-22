@@ -1,4 +1,4 @@
-package org.remus;
+package org.remus.server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,9 +16,13 @@ import org.mpstore.AttachStore;
 import org.mpstore.KeyValuePair;
 import org.mpstore.MPStore;
 import org.mpstore.Serializer;
-import org.remus.manage.WorkStatus;
+import org.remus.BaseNode;
+import org.remus.RemusInstance;
+import org.remus.RemusPipeline;
+import org.remus.WorkStatus;
+
+import org.remus.manage.WorkStatusImpl;
 import org.remus.serverNodes.AttachListView;
-import org.remus.serverNodes.BaseNode;
 import org.remus.serverNodes.PipelineAgentView;
 import org.remus.serverNodes.PipelineErrorView;
 import org.remus.serverNodes.PipelineInstanceListViewer;
@@ -27,19 +31,19 @@ import org.remus.serverNodes.PipelineListView;
 import org.remus.serverNodes.PipelineStatusView;
 import org.remus.serverNodes.ResetInstanceView;
 import org.remus.serverNodes.SubmitView;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RemusPipeline implements BaseNode {
+public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 
 	public static final String CODE_FIELD = "_code";
 
 	HashMap<String,BaseNode> children;
 
-	private HashMap<String,RemusApplet> members;
-	Map<String, RemusApplet> inputs;
+	private HashMap<String,RemusAppletImpl> members;
+	Map<String, RemusAppletImpl> inputs;
 	String id;
 	MPStore datastore;
 	AttachStore attachStore;
@@ -47,13 +51,13 @@ public class RemusPipeline implements BaseNode {
 
 	private Logger logger;
 	
-	public RemusPipeline(RemusApp app, String id, MPStore datastore, AttachStore attachStore) {
+	public RemusPipelineImpl(RemusApp app, String id, MPStore datastore, AttachStore attachStore) {
 		
-	    logger = LoggerFactory.getLogger(RemusPipeline.class);
+	    logger = LoggerFactory.getLogger(RemusPipelineImpl.class);
 
 	    
 		this.app = app;
-		members = new HashMap<String,RemusApplet>();
+		members = new HashMap<String,RemusAppletImpl>();
 		children = new HashMap<String, BaseNode>();
 		children.put("@pipeline", new PipelineListView(this) );
 		children.put("@submit", new SubmitView(this) );
@@ -65,7 +69,7 @@ public class RemusPipeline implements BaseNode {
 
 		children.put("@reset", new ResetInstanceView(this) );
 
-		inputs = new HashMap<String, RemusApplet >();
+		inputs = new HashMap<String, RemusAppletImpl >();
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
@@ -76,7 +80,7 @@ public class RemusPipeline implements BaseNode {
 		return app;
 	}
 
-	public void addApplet(RemusApplet applet) {		
+	public void addApplet(RemusAppletImpl applet) {		
 		applet.setPipeline( this );
 		inputs = null; //invalidate input list
 		members.put(applet.getID(), applet);
@@ -88,15 +92,15 @@ public class RemusPipeline implements BaseNode {
 			setupInputs();
 		}
 		Set<WorkStatus> out = new HashSet<WorkStatus>();
-		for ( RemusApplet applet : members.values() ) {
+		for ( RemusAppletImpl applet : members.values() ) {
 			out.addAll( applet.getWorkList() );
 		}
 		return out;
 	}
 
 	private void setupInputs() {
-		inputs = new HashMap<String, RemusApplet>();
-		for ( RemusApplet applet : members.values() ) {
+		inputs = new HashMap<String, RemusAppletImpl>();
+		for ( RemusAppletImpl applet : members.values() ) {
 			if ( applet.hasInputs() ) {
 				for ( String iref : applet.getInputs() ) {
 					if ( iref.compareTo("?") != 0 ) {
@@ -107,11 +111,11 @@ public class RemusPipeline implements BaseNode {
 		}
 	}
 
-	public Collection<RemusApplet> getMembers() {
+	public Collection<RemusAppletImpl> getMembers() {
 		return members.values();
 	}
 
-	public RemusApplet getApplet(String path) {
+	public RemusAppletImpl getApplet(String path) {
 		return members.get(path);
 	}
 
@@ -158,7 +162,7 @@ public class RemusPipeline implements BaseNode {
 
 	public void deleteInstance(RemusInstance instance) {
 		logger.info( "Deleting Instance " + instance );
-		for ( RemusApplet applet : members.values() ) {
+		for ( RemusAppletImpl applet : members.values() ) {
 			applet.deleteInstance(instance);
 		}
 		datastore.delete("/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString());
@@ -166,8 +170,8 @@ public class RemusPipeline implements BaseNode {
 
 	public boolean isComplete(RemusInstance inst) {
 		boolean done = true;
-		for ( RemusApplet applet : members.values() ) {
-			if ( ! WorkStatus.isComplete(applet, inst) )
+		for ( RemusAppletImpl applet : members.values() ) {
+			if ( ! WorkStatusImpl.isComplete(applet, inst) )
 				done = false;
 		}
 		return done;
@@ -309,7 +313,6 @@ public class RemusPipeline implements BaseNode {
 		return null;
 	}
 
-
 	public RemusInstance handleSubmission(String key, Map value) {
 
 		RemusInstance inst;
@@ -348,7 +351,7 @@ public class RemusPipeline implements BaseNode {
 
 	public RemusInstance setupInstance(String name, Map params, List<String> appletList) {
 		logger.info("Init submission " + name );
-		Set<RemusApplet> activeSet = new HashSet<RemusApplet>();
+		Set<RemusAppletImpl> activeSet = new HashSet<RemusAppletImpl>();
 		RemusInstance inst = new RemusInstance();
 
 		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
@@ -356,7 +359,7 @@ public class RemusPipeline implements BaseNode {
 		}
 
 		for (String sObj : appletList) {
-			RemusApplet applet = getApplet((String)sObj);
+			RemusAppletImpl applet = getApplet((String)sObj);
 			if ( applet != null ) {
 				activeSet.add(applet);
 				applet.createInstance(name, params, inst);
@@ -366,7 +369,7 @@ public class RemusPipeline implements BaseNode {
 		boolean added = false;
 		do {
 			added = false;
-			for ( RemusApplet applet : getMembers() ) {
+			for ( RemusAppletImpl applet : getMembers() ) {
 				if ( !activeSet.contains(applet) ) {
 					/*
 					if (applet.getMode() == RemusApplet.STORE) {
@@ -378,7 +381,7 @@ public class RemusPipeline implements BaseNode {
 					*/
 						for ( String iRef : applet.getInputs() ) {
 							if ( iRef.compareTo("?") != 0 ) {
-								RemusApplet srcApplet = getApplet( iRef );
+								RemusAppletImpl srcApplet = getApplet( iRef );
 								if (activeSet.contains(srcApplet) ) {
 									if (applet.createInstance(name, params, inst)) {
 										added = true;

@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.mpstore.Serializer;
-import org.remus.manage.WorkAgent;
-import org.remus.manage.WorkManager;
-import org.remus.manage.WorkStatus;
-import org.remus.serverNodes.BaseNode;
+import org.remus.BaseNode;
+import org.remus.WorkAgent;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
 
 
 

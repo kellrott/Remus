@@ -1,12 +1,12 @@
 package org.remus.work;
 
-import org.remus.DataStackRef;
 import org.remus.RemusInstance;
-import org.remus.manage.WorkStatus;
+import org.remus.manage.WorkStatusImpl;
+import org.remus.server.DataStackRef;
 
 public class MergeGenerator implements WorkGenerator {
 	@Override
-	public void writeWorkTable(RemusApplet applet,
+	public void writeWorkTable(RemusAppletImpl applet,
 			RemusInstance instance) {
 		int jobID = 0;
 		DataStackRef lRef = DataStackRef.fromSubmission(applet, applet.getLeftInput(), instance );
@@ -17,7 +17,7 @@ public class MergeGenerator implements WorkGenerator {
 		}
 
 		long t = applet.datastore.getTimeStamp(applet.getPath(), instance.toString() );
-		 WorkStatus.setWorkStat( applet, instance, 0,0,0, jobID, t);
+		 WorkStatusImpl.setWorkStat( applet, instance, 0,0,0, jobID, t);
 	}
 
 }

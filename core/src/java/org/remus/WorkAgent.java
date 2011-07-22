@@ -1,8 +1,9 @@
-package org.remus.manage;
+package org.remus;
 
 import java.util.List;
 
-import org.remus.serverNodes.BaseNode;
+import org.remus.WorkManager;
+import org.remus.WorkStatus;
 
 
 public interface WorkAgent extends BaseNode  {

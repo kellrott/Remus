@@ -1,4 +1,4 @@
-package org.mpstore;
+package org.mpstore.impl;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

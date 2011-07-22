@@ -11,15 +11,16 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
-import org.remus.RemusDatabaseException;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remus.work.RemusApplet;
+import org.remus.server.RemusDatabaseException;
+import org.remus.server.RemusPipelineImpl;
+import org.remus.work.RemusAppletImpl;
 
 public class PipelineListView implements BaseNode {
 
-	RemusPipeline pipe;
-	public PipelineListView( RemusPipeline applet ) {
+	RemusPipelineImpl pipe;
+	public PipelineListView( RemusPipelineImpl applet ) {
 		this.pipe = applet;
 	}
 

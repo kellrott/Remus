@@ -9,12 +9,13 @@ import java.util.Map;
 
 import org.mpstore.KeyValuePair;
 import org.mpstore.Serializer;
+import org.remus.BaseNode;
 import org.remus.RemusInstance;
-import org.remus.work.RemusApplet;
+import org.remus.work.RemusAppletImpl;
 
 public class InstanceListView implements BaseNode {
-	RemusApplet applet;
-	public InstanceListView(RemusApplet applet) {
+	RemusAppletImpl applet;
+	public InstanceListView(RemusAppletImpl applet) {
 		this.applet = applet;
 	}
 	
