@@ -47,6 +47,8 @@ public class JobTreeManager implements WorkAgent {
 		return codeTypes;
 	}
 
+	WatcherThread watcher;
+	
 	@Override
 	public void init(WorkManager parent) {
 		this.parent = parent;
@@ -58,7 +60,7 @@ public class JobTreeManager implements WorkAgent {
 			e.printStackTrace();
 		}
 		logger = LoggerFactory.getLogger(JobTreeManager.class);
-
+		watcher = new WatcherThread();
 	}
 
 	@Override
@@ -163,14 +165,13 @@ public class JobTreeManager implements WorkAgent {
 
 		if ( workStack != null ) {
 			try {
-				new JobTreeJob(workStack);
-
-
+				JobTreeJob job = new JobTreeJob(workStack);
+				job.submit();
+				watcher.addJob(job);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Unable to start work");
+				parent.returnWorkStack(workStack);
 			}
-			parent.returnWorkStack(workStack);
 		}
 
 	}
