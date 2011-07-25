@@ -7,6 +7,5 @@
   <modules>
     <module>core</module>
     <module>master</module>
-    <module>genePatternRemus</module>
   </modules>
 </project>
