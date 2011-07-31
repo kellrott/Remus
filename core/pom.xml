@@ -7,8 +7,15 @@
   <version>0.1</version>
   <name>remus-core</name>
   <url>http://maven.apache.org</url>
+
+  <parent>
+    <groupId>org.remus</groupId>
+    <artifactId>remus</artifactId>
+    <version>0.1</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
   <build>
-    <sourceDirectory>src/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
