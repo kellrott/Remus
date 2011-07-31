@@ -6,24 +6,21 @@ namespace perl remusNet
 namespace py remusNet
 
 struct StackRef {
-	1: required string server,
-	2: required string pipeline,
-	3: required string instance,
-	4: required string applet,
-	5: optional list<string> keys
+	1: required string pipeline,
+	2: required string instance,
+	3: required string applet,
+	4: optional list<string> keys
 }
 
 struct InstanceRef {
-	1: required string server,
-	2: required string pipeline,
-	3: required string instance
+	1: required string pipeline,
+	2: required string instance
 }
 
 struct AppletRef {
-	1: required string server,
-	2: required string pipeline,
-	3: required string instance,
-	4: required string applet
+	1: required string pipeline,
+	2: required string instance,
+	3: required string applet
 }
 
 enum WorkMode {
@@ -51,20 +48,20 @@ struct WorkDesc {
 
 struct KeyValPair {
 	1:required string key,
-	2:required string data,
+	2:required string value,
 	3:required i64 jobID,
 	4:required i64 emitID
 }
 
 service RemusDB {
 	
-	bool containKey( 1:AppletRef stack, 2:string key ),
+	bool containsKey( 1:AppletRef stack, 2:string key ),
 	list<string> keySlice( 1:AppletRef stack, 2:string keyStart, 3:i32 count ),
 	list<string> getValue( 1:AppletRef stack, 2:string key ),
 
 	i64 keyCount( 1:AppletRef stack, 2:i32 maxCount ),
 
-	void add( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data),
+	void addData( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data),
 
 	list<KeyValPair> keyValSlice( 1:AppletRef stack, 2:string startKey, 3:i32 count),
 

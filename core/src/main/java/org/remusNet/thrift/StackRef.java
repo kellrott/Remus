@@ -23,13 +23,11 @@ import org.slf4j.LoggerFactory;
 public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StackRef");
 
-  private static final org.apache.thrift.protocol.TField SERVER_FIELD_DESC = new org.apache.thrift.protocol.TField("server", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField PIPELINE_FIELD_DESC = new org.apache.thrift.protocol.TField("pipeline", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField INSTANCE_FIELD_DESC = new org.apache.thrift.protocol.TField("instance", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField APPLET_FIELD_DESC = new org.apache.thrift.protocol.TField("applet", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField PIPELINE_FIELD_DESC = new org.apache.thrift.protocol.TField("pipeline", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField INSTANCE_FIELD_DESC = new org.apache.thrift.protocol.TField("instance", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField APPLET_FIELD_DESC = new org.apache.thrift.protocol.TField("applet", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)4);
 
-  public String server;
   public String pipeline;
   public String instance;
   public String applet;
@@ -37,11 +35,10 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    SERVER((short)1, "server"),
-    PIPELINE((short)2, "pipeline"),
-    INSTANCE((short)3, "instance"),
-    APPLET((short)4, "applet"),
-    KEYS((short)5, "keys");
+    PIPELINE((short)1, "pipeline"),
+    INSTANCE((short)2, "instance"),
+    APPLET((short)3, "applet"),
+    KEYS((short)4, "keys");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -56,15 +53,13 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SERVER
-          return SERVER;
-        case 2: // PIPELINE
+        case 1: // PIPELINE
           return PIPELINE;
-        case 3: // INSTANCE
+        case 2: // INSTANCE
           return INSTANCE;
-        case 4: // APPLET
+        case 3: // APPLET
           return APPLET;
-        case 5: // KEYS
+        case 4: // KEYS
           return KEYS;
         default:
           return null;
@@ -110,8 +105,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SERVER, new org.apache.thrift.meta_data.FieldMetaData("server", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PIPELINE, new org.apache.thrift.meta_data.FieldMetaData("pipeline", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.INSTANCE, new org.apache.thrift.meta_data.FieldMetaData("instance", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -129,13 +122,11 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
   }
 
   public StackRef(
-    String server,
     String pipeline,
     String instance,
     String applet)
   {
     this();
-    this.server = server;
     this.pipeline = pipeline;
     this.instance = instance;
     this.applet = applet;
@@ -145,9 +136,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
    * Performs a deep copy on <i>other</i>.
    */
   public StackRef(StackRef other) {
-    if (other.isSetServer()) {
-      this.server = other.server;
-    }
     if (other.isSetPipeline()) {
       this.pipeline = other.pipeline;
     }
@@ -172,35 +160,10 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
 
   @Override
   public void clear() {
-    this.server = null;
     this.pipeline = null;
     this.instance = null;
     this.applet = null;
     this.keys = null;
-  }
-
-  public String getServer() {
-    return this.server;
-  }
-
-  public StackRef setServer(String server) {
-    this.server = server;
-    return this;
-  }
-
-  public void unsetServer() {
-    this.server = null;
-  }
-
-  /** Returns true if field server is set (has been assigned a value) and false otherwise */
-  public boolean isSetServer() {
-    return this.server != null;
-  }
-
-  public void setServerIsSet(boolean value) {
-    if (!value) {
-      this.server = null;
-    }
   }
 
   public String getPipeline() {
@@ -316,14 +279,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SERVER:
-      if (value == null) {
-        unsetServer();
-      } else {
-        setServer((String)value);
-      }
-      break;
-
     case PIPELINE:
       if (value == null) {
         unsetPipeline();
@@ -361,9 +316,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SERVER:
-      return getServer();
-
     case PIPELINE:
       return getPipeline();
 
@@ -387,8 +339,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
     }
 
     switch (field) {
-    case SERVER:
-      return isSetServer();
     case PIPELINE:
       return isSetPipeline();
     case INSTANCE:
@@ -413,15 +363,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
   public boolean equals(StackRef that) {
     if (that == null)
       return false;
-
-    boolean this_present_server = true && this.isSetServer();
-    boolean that_present_server = true && that.isSetServer();
-    if (this_present_server || that_present_server) {
-      if (!(this_present_server && that_present_server))
-        return false;
-      if (!this.server.equals(that.server))
-        return false;
-    }
 
     boolean this_present_pipeline = true && this.isSetPipeline();
     boolean that_present_pipeline = true && that.isSetPipeline();
@@ -475,16 +416,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
     int lastComparison = 0;
     StackRef typedOther = (StackRef)other;
 
-    lastComparison = Boolean.valueOf(isSetServer()).compareTo(typedOther.isSetServer());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetServer()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.server, typedOther.server);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetPipeline()).compareTo(typedOther.isSetPipeline());
     if (lastComparison != 0) {
       return lastComparison;
@@ -542,35 +473,28 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
         break;
       }
       switch (field.id) {
-        case 1: // SERVER
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.server = iprot.readString();
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 2: // PIPELINE
+        case 1: // PIPELINE
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.pipeline = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // INSTANCE
+        case 2: // INSTANCE
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.instance = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // APPLET
+        case 3: // APPLET
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.applet = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // KEYS
+        case 4: // KEYS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
@@ -602,11 +526,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.server != null) {
-      oprot.writeFieldBegin(SERVER_FIELD_DESC);
-      oprot.writeString(this.server);
-      oprot.writeFieldEnd();
-    }
     if (this.pipeline != null) {
       oprot.writeFieldBegin(PIPELINE_FIELD_DESC);
       oprot.writeString(this.pipeline);
@@ -645,14 +564,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
     StringBuilder sb = new StringBuilder("StackRef(");
     boolean first = true;
 
-    sb.append("server:");
-    if (this.server == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.server);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("pipeline:");
     if (this.pipeline == null) {
       sb.append("null");
@@ -692,9 +603,6 @@ public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fie
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (server == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'server' was not present! Struct: " + toString());
-    }
     if (pipeline == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'pipeline' was not present! Struct: " + toString());
     }

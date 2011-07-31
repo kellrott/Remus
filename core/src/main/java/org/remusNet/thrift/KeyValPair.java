@@ -24,19 +24,19 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("KeyValPair");
 
   private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobID", org.apache.thrift.protocol.TType.I64, (short)3);
   private static final org.apache.thrift.protocol.TField EMIT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("emitID", org.apache.thrift.protocol.TType.I64, (short)4);
 
   public String key;
-  public String data;
+  public String value;
   public long jobID;
   public long emitID;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     KEY((short)1, "key"),
-    DATA((short)2, "data"),
+    VALUE((short)2, "value"),
     JOB_ID((short)3, "jobID"),
     EMIT_ID((short)4, "emitID");
 
@@ -55,8 +55,8 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
       switch(fieldId) {
         case 1: // KEY
           return KEY;
-        case 2: // DATA
-          return DATA;
+        case 2: // VALUE
+          return VALUE;
         case 3: // JOB_ID
           return JOB_ID;
         case 4: // EMIT_ID
@@ -110,7 +110,7 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.KEY, new org.apache.thrift.meta_data.FieldMetaData("key", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("jobID", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -125,13 +125,13 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
 
   public KeyValPair(
     String key,
-    String data,
+    String value,
     long jobID,
     long emitID)
   {
     this();
     this.key = key;
-    this.data = data;
+    this.value = value;
     this.jobID = jobID;
     setJobIDIsSet(true);
     this.emitID = emitID;
@@ -147,8 +147,8 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     if (other.isSetKey()) {
       this.key = other.key;
     }
-    if (other.isSetData()) {
-      this.data = other.data;
+    if (other.isSetValue()) {
+      this.value = other.value;
     }
     this.jobID = other.jobID;
     this.emitID = other.emitID;
@@ -161,7 +161,7 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
   @Override
   public void clear() {
     this.key = null;
-    this.data = null;
+    this.value = null;
     setJobIDIsSet(false);
     this.jobID = 0;
     setEmitIDIsSet(false);
@@ -192,27 +192,27 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     }
   }
 
-  public String getData() {
-    return this.data;
+  public String getValue() {
+    return this.value;
   }
 
-  public KeyValPair setData(String data) {
-    this.data = data;
+  public KeyValPair setValue(String value) {
+    this.value = value;
     return this;
   }
 
-  public void unsetData() {
-    this.data = null;
+  public void unsetValue() {
+    this.value = null;
   }
 
-  /** Returns true if field data is set (has been assigned a value) and false otherwise */
-  public boolean isSetData() {
-    return this.data != null;
+  /** Returns true if field value is set (has been assigned a value) and false otherwise */
+  public boolean isSetValue() {
+    return this.value != null;
   }
 
-  public void setDataIsSet(boolean value) {
+  public void setValueIsSet(boolean value) {
     if (!value) {
-      this.data = null;
+      this.value = null;
     }
   }
 
@@ -272,11 +272,11 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
       }
       break;
 
-    case DATA:
+    case VALUE:
       if (value == null) {
-        unsetData();
+        unsetValue();
       } else {
-        setData((String)value);
+        setValue((String)value);
       }
       break;
 
@@ -304,8 +304,8 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     case KEY:
       return getKey();
 
-    case DATA:
-      return getData();
+    case VALUE:
+      return getValue();
 
     case JOB_ID:
       return new Long(getJobID());
@@ -326,8 +326,8 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     switch (field) {
     case KEY:
       return isSetKey();
-    case DATA:
-      return isSetData();
+    case VALUE:
+      return isSetValue();
     case JOB_ID:
       return isSetJobID();
     case EMIT_ID:
@@ -358,12 +358,12 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
         return false;
     }
 
-    boolean this_present_data = true && this.isSetData();
-    boolean that_present_data = true && that.isSetData();
-    if (this_present_data || that_present_data) {
-      if (!(this_present_data && that_present_data))
+    boolean this_present_value = true && this.isSetValue();
+    boolean that_present_value = true && that.isSetValue();
+    if (this_present_value || that_present_value) {
+      if (!(this_present_value && that_present_value))
         return false;
-      if (!this.data.equals(that.data))
+      if (!this.value.equals(that.value))
         return false;
     }
 
@@ -411,12 +411,12 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetData()).compareTo(typedOther.isSetData());
+    lastComparison = Boolean.valueOf(isSetValue()).compareTo(typedOther.isSetValue());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetData()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.data, typedOther.data);
+    if (isSetValue()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.value, typedOther.value);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -465,9 +465,9 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // DATA
+        case 2: // VALUE
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.data = iprot.readString();
+            this.value = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -514,9 +514,9 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
       oprot.writeString(this.key);
       oprot.writeFieldEnd();
     }
-    if (this.data != null) {
-      oprot.writeFieldBegin(DATA_FIELD_DESC);
-      oprot.writeString(this.data);
+    if (this.value != null) {
+      oprot.writeFieldBegin(VALUE_FIELD_DESC);
+      oprot.writeString(this.value);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldBegin(JOB_ID_FIELD_DESC);
@@ -542,11 +542,11 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("data:");
-    if (this.data == null) {
+    sb.append("value:");
+    if (this.value == null) {
       sb.append("null");
     } else {
-      sb.append(this.data);
+      sb.append(this.value);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -566,8 +566,8 @@ public class KeyValPair implements org.apache.thrift.TBase<KeyValPair, KeyValPai
     if (key == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'key' was not present! Struct: " + toString());
     }
-    if (data == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'data' was not present! Struct: " + toString());
+    if (value == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'value' was not present! Struct: " + toString());
     }
     // alas, we cannot check 'jobID' because it's a primitive and you chose the non-beans generator.
     // alas, we cannot check 'emitID' because it's a primitive and you chose the non-beans generator.

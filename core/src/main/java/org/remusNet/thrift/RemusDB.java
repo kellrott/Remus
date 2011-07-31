@@ -24,7 +24,7 @@ public class RemusDB {
 
   public interface Iface {
 
-    public boolean containKey(AppletRef stack, String key) throws org.apache.thrift.TException;
+    public boolean containsKey(AppletRef stack, String key) throws org.apache.thrift.TException;
 
     public List<String> keySlice(AppletRef stack, String keyStart, int count) throws org.apache.thrift.TException;
 
@@ -32,7 +32,7 @@ public class RemusDB {
 
     public long keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException;
 
-    public void add(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException;
+    public void addData(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException;
 
     public List<KeyValPair> keyValSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException;
 
@@ -46,7 +46,7 @@ public class RemusDB {
 
   public interface AsyncIface {
 
-    public void containKey(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.containKey_call> resultHandler) throws org.apache.thrift.TException;
+    public void containsKey(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.containsKey_call> resultHandler) throws org.apache.thrift.TException;
 
     public void keySlice(AppletRef stack, String keyStart, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keySlice_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -54,7 +54,7 @@ public class RemusDB {
 
     public void keyCount(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyCount_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void add(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.add_call> resultHandler) throws org.apache.thrift.TException;
+    public void addData(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addData_call> resultHandler) throws org.apache.thrift.TException;
 
     public void keyValSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyValSlice_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -103,16 +103,16 @@ public class RemusDB {
       return this.oprot_;
     }
 
-    public boolean containKey(AppletRef stack, String key) throws org.apache.thrift.TException
+    public boolean containsKey(AppletRef stack, String key) throws org.apache.thrift.TException
     {
-      send_containKey(stack, key);
-      return recv_containKey();
+      send_containsKey(stack, key);
+      return recv_containsKey();
     }
 
-    public void send_containKey(AppletRef stack, String key) throws org.apache.thrift.TException
+    public void send_containsKey(AppletRef stack, String key) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containKey", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      containKey_args args = new containKey_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containsKey", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      containsKey_args args = new containsKey_args();
       args.setStack(stack);
       args.setKey(key);
       args.write(oprot_);
@@ -120,7 +120,7 @@ public class RemusDB {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_containKey() throws org.apache.thrift.TException
+    public boolean recv_containsKey() throws org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -129,15 +129,15 @@ public class RemusDB {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "containKey failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "containsKey failed: out of sequence response");
       }
-      containKey_result result = new containKey_result();
+      containsKey_result result = new containsKey_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "containKey failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "containsKey failed: unknown result");
     }
 
     public List<String> keySlice(AppletRef stack, String keyStart, int count) throws org.apache.thrift.TException
@@ -252,16 +252,16 @@ public class RemusDB {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "keyCount failed: unknown result");
     }
 
-    public void add(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
+    public void addData(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
     {
-      send_add(stack, jobID, emitID, key, data);
-      recv_add();
+      send_addData(stack, jobID, emitID, key, data);
+      recv_addData();
     }
 
-    public void send_add(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
+    public void send_addData(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("add", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      add_args args = new add_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      addData_args args = new addData_args();
       args.setStack(stack);
       args.setJobID(jobID);
       args.setEmitID(emitID);
@@ -272,7 +272,7 @@ public class RemusDB {
       oprot_.getTransport().flush();
     }
 
-    public void recv_add() throws org.apache.thrift.TException
+    public void recv_addData() throws org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -281,9 +281,9 @@ public class RemusDB {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "add failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "addData failed: out of sequence response");
       }
-      add_result result = new add_result();
+      addData_result result = new addData_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       return;
@@ -448,25 +448,25 @@ public class RemusDB {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void containKey(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<containKey_call> resultHandler) throws org.apache.thrift.TException {
+    public void containsKey(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<containsKey_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      containKey_call method_call = new containKey_call(stack, key, resultHandler, this, protocolFactory, transport);
+      containsKey_call method_call = new containsKey_call(stack, key, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class containKey_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class containsKey_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private String key;
-      public containKey_call(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<containKey_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public containsKey_call(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<containsKey_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.key = key;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containKey", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        containKey_args args = new containKey_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containsKey", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        containsKey_args args = new containsKey_args();
         args.setStack(stack);
         args.setKey(key);
         args.write(prot);
@@ -479,7 +479,7 @@ public class RemusDB {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_containKey();
+        return (new Client(prot)).recv_containsKey();
       }
     }
 
@@ -591,20 +591,20 @@ public class RemusDB {
       }
     }
 
-    public void add(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<add_call> resultHandler) throws org.apache.thrift.TException {
+    public void addData(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addData_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      add_call method_call = new add_call(stack, jobID, emitID, key, data, resultHandler, this, protocolFactory, transport);
+      addData_call method_call = new addData_call(stack, jobID, emitID, key, data, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class add_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class addData_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private long jobID;
       private long emitID;
       private String key;
       private String data;
-      public add_call(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<add_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public addData_call(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addData_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.jobID = jobID;
@@ -614,8 +614,8 @@ public class RemusDB {
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("add", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        add_args args = new add_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        addData_args args = new addData_args();
         args.setStack(stack);
         args.setJobID(jobID);
         args.setEmitID(emitID);
@@ -631,7 +631,7 @@ public class RemusDB {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_add();
+        (new Client(prot)).recv_addData();
       }
     }
 
@@ -779,11 +779,11 @@ public class RemusDB {
     public Processor(Iface iface)
     {
       iface_ = iface;
-      processMap_.put("containKey", new containKey());
+      processMap_.put("containsKey", new containsKey());
       processMap_.put("keySlice", new keySlice());
       processMap_.put("getValue", new getValue());
       processMap_.put("keyCount", new keyCount());
-      processMap_.put("add", new add());
+      processMap_.put("addData", new addData());
       processMap_.put("keyValSlice", new keyValSlice());
       processMap_.put("deleteStack", new deleteStack());
       processMap_.put("deleteValue", new deleteValue());
@@ -815,26 +815,26 @@ public class RemusDB {
       return true;
     }
 
-    private class containKey implements ProcessFunction {
+    private class containsKey implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        containKey_args args = new containKey_args();
+        containsKey_args args = new containsKey_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containKey", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containsKey", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        containKey_result result = new containKey_result();
-        result.success = iface_.containKey(args.stack, args.key);
+        containsKey_result result = new containsKey_result();
+        result.success = iface_.containsKey(args.stack, args.key);
         result.setSuccessIsSet(true);
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containKey", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("containsKey", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -921,25 +921,25 @@ public class RemusDB {
 
     }
 
-    private class add implements ProcessFunction {
+    private class addData implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        add_args args = new add_args();
+        addData_args args = new addData_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("add", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        add_result result = new add_result();
-        iface_.add(args.stack, args.jobID, args.emitID, args.key, args.data);
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("add", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        addData_result result = new addData_result();
+        iface_.addData(args.stack, args.jobID, args.emitID, args.key, args.data);
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -1054,8 +1054,8 @@ public class RemusDB {
 
   }
 
-  public static class containKey_args implements org.apache.thrift.TBase<containKey_args, containKey_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("containKey_args");
+  public static class containsKey_args implements org.apache.thrift.TBase<containsKey_args, containsKey_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("containsKey_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)2);
@@ -1134,13 +1134,13 @@ public class RemusDB {
       tmpMap.put(_Fields.KEY, new org.apache.thrift.meta_data.FieldMetaData("key", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(containKey_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(containsKey_args.class, metaDataMap);
     }
 
-    public containKey_args() {
+    public containsKey_args() {
     }
 
-    public containKey_args(
+    public containsKey_args(
       AppletRef stack,
       String key)
     {
@@ -1152,7 +1152,7 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public containKey_args(containKey_args other) {
+    public containsKey_args(containsKey_args other) {
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
@@ -1161,8 +1161,8 @@ public class RemusDB {
       }
     }
 
-    public containKey_args deepCopy() {
-      return new containKey_args(this);
+    public containsKey_args deepCopy() {
+      return new containsKey_args(this);
     }
 
     @Override
@@ -1175,7 +1175,7 @@ public class RemusDB {
       return this.stack;
     }
 
-    public containKey_args setStack(AppletRef stack) {
+    public containsKey_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -1199,7 +1199,7 @@ public class RemusDB {
       return this.key;
     }
 
-    public containKey_args setKey(String key) {
+    public containsKey_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -1271,12 +1271,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof containKey_args)
-        return this.equals((containKey_args)that);
+      if (that instanceof containsKey_args)
+        return this.equals((containsKey_args)that);
       return false;
     }
 
-    public boolean equals(containKey_args that) {
+    public boolean equals(containsKey_args that) {
       if (that == null)
         return false;
 
@@ -1306,13 +1306,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(containKey_args other) {
+    public int compareTo(containsKey_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      containKey_args typedOther = (containKey_args)other;
+      containsKey_args typedOther = (containsKey_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -1397,7 +1397,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("containKey_args(");
+      StringBuilder sb = new StringBuilder("containsKey_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -1441,8 +1441,8 @@ public class RemusDB {
 
   }
 
-  public static class containKey_result implements org.apache.thrift.TBase<containKey_result, containKey_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("containKey_result");
+  public static class containsKey_result implements org.apache.thrift.TBase<containsKey_result, containsKey_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("containsKey_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.BOOL, (short)0);
 
@@ -1516,13 +1516,13 @@ public class RemusDB {
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(containKey_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(containsKey_result.class, metaDataMap);
     }
 
-    public containKey_result() {
+    public containsKey_result() {
     }
 
-    public containKey_result(
+    public containsKey_result(
       boolean success)
     {
       this();
@@ -1533,14 +1533,14 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public containKey_result(containKey_result other) {
+    public containsKey_result(containsKey_result other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       this.success = other.success;
     }
 
-    public containKey_result deepCopy() {
-      return new containKey_result(this);
+    public containsKey_result deepCopy() {
+      return new containsKey_result(this);
     }
 
     @Override
@@ -1553,7 +1553,7 @@ public class RemusDB {
       return this.success;
     }
 
-    public containKey_result setSuccess(boolean success) {
+    public containsKey_result setSuccess(boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -1611,12 +1611,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof containKey_result)
-        return this.equals((containKey_result)that);
+      if (that instanceof containsKey_result)
+        return this.equals((containsKey_result)that);
       return false;
     }
 
-    public boolean equals(containKey_result that) {
+    public boolean equals(containsKey_result that) {
       if (that == null)
         return false;
 
@@ -1637,13 +1637,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(containKey_result other) {
+    public int compareTo(containsKey_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      containKey_result typedOther = (containKey_result)other;
+      containsKey_result typedOther = (containsKey_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -1705,7 +1705,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("containKey_result(");
+      StringBuilder sb = new StringBuilder("containsKey_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -3949,8 +3949,8 @@ public class RemusDB {
 
   }
 
-  public static class add_args implements org.apache.thrift.TBase<add_args, add_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("add_args");
+  public static class addData_args implements org.apache.thrift.TBase<addData_args, addData_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addData_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobID", org.apache.thrift.protocol.TType.I64, (short)2);
@@ -4053,13 +4053,13 @@ public class RemusDB {
       tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addData_args.class, metaDataMap);
     }
 
-    public add_args() {
+    public addData_args() {
     }
 
-    public add_args(
+    public addData_args(
       AppletRef stack,
       long jobID,
       long emitID,
@@ -4079,7 +4079,7 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public add_args(add_args other) {
+    public addData_args(addData_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetStack()) {
@@ -4095,8 +4095,8 @@ public class RemusDB {
       }
     }
 
-    public add_args deepCopy() {
-      return new add_args(this);
+    public addData_args deepCopy() {
+      return new addData_args(this);
     }
 
     @Override
@@ -4114,7 +4114,7 @@ public class RemusDB {
       return this.stack;
     }
 
-    public add_args setStack(AppletRef stack) {
+    public addData_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -4138,7 +4138,7 @@ public class RemusDB {
       return this.jobID;
     }
 
-    public add_args setJobID(long jobID) {
+    public addData_args setJobID(long jobID) {
       this.jobID = jobID;
       setJobIDIsSet(true);
       return this;
@@ -4161,7 +4161,7 @@ public class RemusDB {
       return this.emitID;
     }
 
-    public add_args setEmitID(long emitID) {
+    public addData_args setEmitID(long emitID) {
       this.emitID = emitID;
       setEmitIDIsSet(true);
       return this;
@@ -4184,7 +4184,7 @@ public class RemusDB {
       return this.key;
     }
 
-    public add_args setKey(String key) {
+    public addData_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -4208,7 +4208,7 @@ public class RemusDB {
       return this.data;
     }
 
-    public add_args setData(String data) {
+    public addData_args setData(String data) {
       this.data = data;
       return this;
     }
@@ -4319,12 +4319,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof add_args)
-        return this.equals((add_args)that);
+      if (that instanceof addData_args)
+        return this.equals((addData_args)that);
       return false;
     }
 
-    public boolean equals(add_args that) {
+    public boolean equals(addData_args that) {
       if (that == null)
         return false;
 
@@ -4381,13 +4381,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(add_args other) {
+    public int compareTo(addData_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      add_args typedOther = (add_args)other;
+      addData_args typedOther = (addData_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -4536,7 +4536,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("add_args(");
+      StringBuilder sb = new StringBuilder("addData_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -4598,8 +4598,8 @@ public class RemusDB {
 
   }
 
-  public static class add_result implements org.apache.thrift.TBase<add_result, add_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("add_result");
+  public static class addData_result implements org.apache.thrift.TBase<addData_result, addData_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addData_result");
 
 
 
@@ -4662,20 +4662,20 @@ public class RemusDB {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(add_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addData_result.class, metaDataMap);
     }
 
-    public add_result() {
+    public addData_result() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public add_result(add_result other) {
+    public addData_result(addData_result other) {
     }
 
-    public add_result deepCopy() {
-      return new add_result(this);
+    public addData_result deepCopy() {
+      return new addData_result(this);
     }
 
     @Override
@@ -4708,12 +4708,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof add_result)
-        return this.equals((add_result)that);
+      if (that instanceof addData_result)
+        return this.equals((addData_result)that);
       return false;
     }
 
-    public boolean equals(add_result that) {
+    public boolean equals(addData_result that) {
       if (that == null)
         return false;
 
@@ -4725,13 +4725,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(add_result other) {
+    public int compareTo(addData_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      add_result typedOther = (add_result)other;
+      addData_result typedOther = (addData_result)other;
 
       return 0;
     }
@@ -4770,7 +4770,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("add_result(");
+      StringBuilder sb = new StringBuilder("addData_result(");
       boolean first = true;
 
       sb.append(")");

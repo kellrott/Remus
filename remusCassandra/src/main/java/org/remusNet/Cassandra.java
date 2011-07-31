@@ -22,6 +22,7 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.thrift.Cassandra.Client;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -30,13 +31,14 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import org.mpstore.MPStoreConnectException;
 import org.remusNet.thrift.AppletRef;
 import org.remusNet.thrift.KeyValPair;
-import org.remusNet.thrift.RemusDB;
+import org.remusNet.RemusDB;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
-public class Cassandra implements RemusDB.Iface {
+public class Cassandra extends RemusDB {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	ThriftClientPool clientPool;
@@ -45,13 +47,18 @@ public class Cassandra implements RemusDB.Iface {
 	boolean instanceColumns;
 	Map<String,String> columns = new HashMap<String,String>();
 
+	private Logger logger;
+
 	public static final String COLUMN_FAMILY = "org.mpstore.ThriftStore.columnFamily";
 	public static final String KEY_SPACE = "org.mpstore.ThriftStore.keySpace";
 	public static final String SERVER = "org.mpstore.ThriftStore.server";
 	public static final String PORT = "org.mpstore.ThriftStore.port";
 	public static final String INST_COLUMNS = "org.mpstore.ThriftStore.instColumns";
 
-	public void init( Map<String,String> paramMap) {
+	@Override
+	public void init( Map paramMap) throws ConnectionException {
+
+		logger = LoggerFactory.getLogger(Cassandra.class);
 
 		columnFamily = (String)paramMap.get(COLUMN_FAMILY);
 		keySpace     = (String)paramMap.get(KEY_SPACE);
@@ -62,6 +69,8 @@ public class Cassandra implements RemusDB.Iface {
 		if ( paramMap.containsKey(PORT) )
 			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
 
+		logger.info( "CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace );
+		
 		clientPool = new ThriftClientPool(serverName,serverPort,keySpace );
 
 		if ( paramMap.containsKey( INST_COLUMNS ) ) {
@@ -80,13 +89,21 @@ public class Cassandra implements RemusDB.Iface {
 				ksDesc = client.describe_keyspace(keySpace);				
 			} catch ( NotFoundException e ) {
 				String strategy = "org.apache.cassandra.locator.SimpleStrategy";				
-				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>() );				
+				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>() );
+				Map stOpts = new HashMap();
+				stOpts.put("replication_factor", "1"); //BUG: need to tune this
+				ksDesc.setStrategy_options( stOpts );
 				try {
 					client.system_add_keyspace( ksDesc  );
 				} catch ( Exception e2 ) {
-					throw new MPStoreConnectException( "Unable to connect or create keyspace " + keySpace + "\n" + e2.toString() );
+					throw new ConnectionException( "Unable to connect or create keyspace " + keySpace + "\n" + e2.toString() );
 				}
-				//throw new MPStoreConnectException( "Keyspace " + keySpace + " not found" );				
+			} catch (InvalidRequestException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}			
 			tf.close();
 
@@ -96,14 +113,14 @@ public class Cassandra implements RemusDB.Iface {
 		} catch (IllegalStateException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (Exception e) {
+		} catch (TTransportException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 
-	private String getColumnFamily( String inst ) throws MPStoreConnectException {
+	private String getColumnFamily( String inst ) throws ConnectionException {
 		if ( columns.containsKey(inst) ) 
 			return columns.get(inst);		
 
@@ -135,7 +152,7 @@ public class Cassandra implements RemusDB.Iface {
 					client.set_keyspace(keySpace);
 					client.system_add_column_family(cfDesc);
 				} catch ( Exception e2 ) {
-					throw new MPStoreConnectException( "Unable to find or create columnFamily " + cfName + "\n" + e2.toString() );
+					throw new ConnectionException( "Unable to find or create columnFamily " + cfName + "\n" + e2.toString() );
 				}
 			}
 			columns.put(inst, cfName);
@@ -167,7 +184,7 @@ public class Cassandra implements RemusDB.Iface {
 	
 	
 	@Override
-	public void add(AppletRef stack, long jobID, long emitID, String key,
+	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws TException {
 
 
@@ -179,7 +196,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
@@ -211,12 +228,12 @@ public class Cassandra implements RemusDB.Iface {
 	}
 
 	@Override
-	public boolean containKey(AppletRef stack, String key) throws TException {
+	public boolean containsKey(AppletRef stack, String key) throws TException {
 		final String superColumn = stack2column(stack);
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
@@ -254,7 +271,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );		
@@ -286,7 +303,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
@@ -319,7 +336,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 
@@ -348,7 +365,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
@@ -389,7 +406,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
@@ -424,7 +441,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
@@ -463,7 +480,7 @@ public class Cassandra implements RemusDB.Iface {
 		String curCF = columnFamily;
 		try {
 			curCF = getColumnFamily(stack.instance);
-		} catch (MPStoreConnectException e1) {
+		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );

@@ -1,5 +1,6 @@
 org.remus.port = 16017
-org.remus.mpstore = org.mpstore.impl.ThriftStore
+
+org.remus.DB_DRIVER = org.remusNet.Cassandra
 org.remus.attachstore = org.mpstore.impl.FileAttachStore
 
 org.mpstore.FileAttachStore.dir = /opt/remus
