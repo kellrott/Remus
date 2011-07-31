@@ -3,7 +3,7 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  */
-package org.remusNet;
+package org.remusNet.thrift;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,22 +20,28 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, InstanceRef._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("InstanceRef");
+public class StackRef implements org.apache.thrift.TBase<StackRef, StackRef._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("StackRef");
 
   private static final org.apache.thrift.protocol.TField SERVER_FIELD_DESC = new org.apache.thrift.protocol.TField("server", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField PIPELINE_FIELD_DESC = new org.apache.thrift.protocol.TField("pipeline", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField INSTANCE_FIELD_DESC = new org.apache.thrift.protocol.TField("instance", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField APPLET_FIELD_DESC = new org.apache.thrift.protocol.TField("applet", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   public String server;
   public String pipeline;
   public String instance;
+  public String applet;
+  public List<String> keys;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SERVER((short)1, "server"),
     PIPELINE((short)2, "pipeline"),
-    INSTANCE((short)3, "instance");
+    INSTANCE((short)3, "instance"),
+    APPLET((short)4, "applet"),
+    KEYS((short)5, "keys");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -56,6 +62,10 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
           return PIPELINE;
         case 3: // INSTANCE
           return INSTANCE;
+        case 4: // APPLET
+          return APPLET;
+        case 5: // KEYS
+          return KEYS;
         default:
           return null;
       }
@@ -106,28 +116,35 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.INSTANCE, new org.apache.thrift.meta_data.FieldMetaData("instance", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.APPLET, new org.apache.thrift.meta_data.FieldMetaData("applet", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.KEYS, new org.apache.thrift.meta_data.FieldMetaData("keys", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(InstanceRef.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(StackRef.class, metaDataMap);
   }
 
-  public InstanceRef() {
+  public StackRef() {
   }
 
-  public InstanceRef(
+  public StackRef(
     String server,
     String pipeline,
-    String instance)
+    String instance,
+    String applet)
   {
     this();
     this.server = server;
     this.pipeline = pipeline;
     this.instance = instance;
+    this.applet = applet;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public InstanceRef(InstanceRef other) {
+  public StackRef(StackRef other) {
     if (other.isSetServer()) {
       this.server = other.server;
     }
@@ -137,10 +154,20 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     if (other.isSetInstance()) {
       this.instance = other.instance;
     }
+    if (other.isSetApplet()) {
+      this.applet = other.applet;
+    }
+    if (other.isSetKeys()) {
+      List<String> __this__keys = new ArrayList<String>();
+      for (String other_element : other.keys) {
+        __this__keys.add(other_element);
+      }
+      this.keys = __this__keys;
+    }
   }
 
-  public InstanceRef deepCopy() {
-    return new InstanceRef(this);
+  public StackRef deepCopy() {
+    return new StackRef(this);
   }
 
   @Override
@@ -148,13 +175,15 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     this.server = null;
     this.pipeline = null;
     this.instance = null;
+    this.applet = null;
+    this.keys = null;
   }
 
   public String getServer() {
     return this.server;
   }
 
-  public InstanceRef setServer(String server) {
+  public StackRef setServer(String server) {
     this.server = server;
     return this;
   }
@@ -178,7 +207,7 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     return this.pipeline;
   }
 
-  public InstanceRef setPipeline(String pipeline) {
+  public StackRef setPipeline(String pipeline) {
     this.pipeline = pipeline;
     return this;
   }
@@ -202,7 +231,7 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     return this.instance;
   }
 
-  public InstanceRef setInstance(String instance) {
+  public StackRef setInstance(String instance) {
     this.instance = instance;
     return this;
   }
@@ -219,6 +248,69 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
   public void setInstanceIsSet(boolean value) {
     if (!value) {
       this.instance = null;
+    }
+  }
+
+  public String getApplet() {
+    return this.applet;
+  }
+
+  public StackRef setApplet(String applet) {
+    this.applet = applet;
+    return this;
+  }
+
+  public void unsetApplet() {
+    this.applet = null;
+  }
+
+  /** Returns true if field applet is set (has been assigned a value) and false otherwise */
+  public boolean isSetApplet() {
+    return this.applet != null;
+  }
+
+  public void setAppletIsSet(boolean value) {
+    if (!value) {
+      this.applet = null;
+    }
+  }
+
+  public int getKeysSize() {
+    return (this.keys == null) ? 0 : this.keys.size();
+  }
+
+  public java.util.Iterator<String> getKeysIterator() {
+    return (this.keys == null) ? null : this.keys.iterator();
+  }
+
+  public void addToKeys(String elem) {
+    if (this.keys == null) {
+      this.keys = new ArrayList<String>();
+    }
+    this.keys.add(elem);
+  }
+
+  public List<String> getKeys() {
+    return this.keys;
+  }
+
+  public StackRef setKeys(List<String> keys) {
+    this.keys = keys;
+    return this;
+  }
+
+  public void unsetKeys() {
+    this.keys = null;
+  }
+
+  /** Returns true if field keys is set (has been assigned a value) and false otherwise */
+  public boolean isSetKeys() {
+    return this.keys != null;
+  }
+
+  public void setKeysIsSet(boolean value) {
+    if (!value) {
+      this.keys = null;
     }
   }
 
@@ -248,6 +340,22 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
       }
       break;
 
+    case APPLET:
+      if (value == null) {
+        unsetApplet();
+      } else {
+        setApplet((String)value);
+      }
+      break;
+
+    case KEYS:
+      if (value == null) {
+        unsetKeys();
+      } else {
+        setKeys((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -261,6 +369,12 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
 
     case INSTANCE:
       return getInstance();
+
+    case APPLET:
+      return getApplet();
+
+    case KEYS:
+      return getKeys();
 
     }
     throw new IllegalStateException();
@@ -279,6 +393,10 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
       return isSetPipeline();
     case INSTANCE:
       return isSetInstance();
+    case APPLET:
+      return isSetApplet();
+    case KEYS:
+      return isSetKeys();
     }
     throw new IllegalStateException();
   }
@@ -287,12 +405,12 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof InstanceRef)
-      return this.equals((InstanceRef)that);
+    if (that instanceof StackRef)
+      return this.equals((StackRef)that);
     return false;
   }
 
-  public boolean equals(InstanceRef that) {
+  public boolean equals(StackRef that) {
     if (that == null)
       return false;
 
@@ -323,6 +441,24 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
         return false;
     }
 
+    boolean this_present_applet = true && this.isSetApplet();
+    boolean that_present_applet = true && that.isSetApplet();
+    if (this_present_applet || that_present_applet) {
+      if (!(this_present_applet && that_present_applet))
+        return false;
+      if (!this.applet.equals(that.applet))
+        return false;
+    }
+
+    boolean this_present_keys = true && this.isSetKeys();
+    boolean that_present_keys = true && that.isSetKeys();
+    if (this_present_keys || that_present_keys) {
+      if (!(this_present_keys && that_present_keys))
+        return false;
+      if (!this.keys.equals(that.keys))
+        return false;
+    }
+
     return true;
   }
 
@@ -331,13 +467,13 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     return 0;
   }
 
-  public int compareTo(InstanceRef other) {
+  public int compareTo(StackRef other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    InstanceRef typedOther = (InstanceRef)other;
+    StackRef typedOther = (StackRef)other;
 
     lastComparison = Boolean.valueOf(isSetServer()).compareTo(typedOther.isSetServer());
     if (lastComparison != 0) {
@@ -365,6 +501,26 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     }
     if (isSetInstance()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.instance, typedOther.instance);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetApplet()).compareTo(typedOther.isSetApplet());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetApplet()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.applet, typedOther.applet);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetKeys()).compareTo(typedOther.isSetKeys());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetKeys()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keys, typedOther.keys);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -407,6 +563,30 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // APPLET
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.applet = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 5: // KEYS
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
+            {
+              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+              this.keys = new ArrayList<String>(_list0.size);
+              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              {
+                String _elem2;
+                _elem2 = iprot.readString();
+                this.keys.add(_elem2);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -437,13 +617,32 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
       oprot.writeString(this.instance);
       oprot.writeFieldEnd();
     }
+    if (this.applet != null) {
+      oprot.writeFieldBegin(APPLET_FIELD_DESC);
+      oprot.writeString(this.applet);
+      oprot.writeFieldEnd();
+    }
+    if (this.keys != null) {
+      if (isSetKeys()) {
+        oprot.writeFieldBegin(KEYS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.keys.size()));
+          for (String _iter3 : this.keys)
+          {
+            oprot.writeString(_iter3);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("InstanceRef(");
+    StringBuilder sb = new StringBuilder("StackRef(");
     boolean first = true;
 
     sb.append("server:");
@@ -469,6 +668,24 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
       sb.append(this.instance);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("applet:");
+    if (this.applet == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.applet);
+    }
+    first = false;
+    if (isSetKeys()) {
+      if (!first) sb.append(", ");
+      sb.append("keys:");
+      if (this.keys == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.keys);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -483,6 +700,9 @@ public class InstanceRef implements org.apache.thrift.TBase<InstanceRef, Instanc
     }
     if (instance == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'instance' was not present! Struct: " + toString());
+    }
+    if (applet == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'applet' was not present! Struct: " + toString());
     }
   }
 

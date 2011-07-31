@@ -3,7 +3,7 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  */
-package org.remusNet;
+package org.remusNet.thrift;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class RemusDB {
 
     public List<String> getValue(AppletRef stack, String key) throws org.apache.thrift.TException;
 
-    public long keyCount(AppletRef stack) throws org.apache.thrift.TException;
+    public long keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException;
 
     public void add(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException;
 
@@ -52,7 +52,7 @@ public class RemusDB {
 
     public void getValue(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getValue_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void keyCount(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyCount_call> resultHandler) throws org.apache.thrift.TException;
+    public void keyCount(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyCount_call> resultHandler) throws org.apache.thrift.TException;
 
     public void add(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.add_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -215,17 +215,18 @@ public class RemusDB {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getValue failed: unknown result");
     }
 
-    public long keyCount(AppletRef stack) throws org.apache.thrift.TException
+    public long keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException
     {
-      send_keyCount(stack);
+      send_keyCount(stack, maxCount);
       return recv_keyCount();
     }
 
-    public void send_keyCount(AppletRef stack) throws org.apache.thrift.TException
+    public void send_keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyCount", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       keyCount_args args = new keyCount_args();
       args.setStack(stack);
+      args.setMaxCount(maxCount);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -555,24 +556,27 @@ public class RemusDB {
       }
     }
 
-    public void keyCount(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<keyCount_call> resultHandler) throws org.apache.thrift.TException {
+    public void keyCount(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<keyCount_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      keyCount_call method_call = new keyCount_call(stack, resultHandler, this, protocolFactory, transport);
+      keyCount_call method_call = new keyCount_call(stack, maxCount, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class keyCount_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
-      public keyCount_call(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<keyCount_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private int maxCount;
+      public keyCount_call(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<keyCount_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
+        this.maxCount = maxCount;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyCount", org.apache.thrift.protocol.TMessageType.CALL, 0));
         keyCount_args args = new keyCount_args();
         args.setStack(stack);
+        args.setMaxCount(maxCount);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -907,7 +911,7 @@ public class RemusDB {
         }
         iprot.readMessageEnd();
         keyCount_result result = new keyCount_result();
-        result.success = iface_.keyCount(args.stack);
+        result.success = iface_.keyCount(args.stack, args.maxCount);
         result.setSuccessIsSet(true);
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyCount", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -3266,12 +3270,15 @@ public class RemusDB {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("keyCount_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField MAX_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("maxCount", org.apache.thrift.protocol.TType.I32, (short)2);
 
     public AppletRef stack;
+    public int maxCount;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      STACK((short)1, "stack");
+      STACK((short)1, "stack"),
+      MAX_COUNT((short)2, "maxCount");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3288,6 +3295,8 @@ public class RemusDB {
         switch(fieldId) {
           case 1: // STACK
             return STACK;
+          case 2: // MAX_COUNT
+            return MAX_COUNT;
           default:
             return null;
         }
@@ -3328,12 +3337,16 @@ public class RemusDB {
     }
 
     // isset id assignments
+    private static final int __MAXCOUNT_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.STACK, new org.apache.thrift.meta_data.FieldMetaData("stack", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class)));
+      tmpMap.put(_Fields.MAX_COUNT, new org.apache.thrift.meta_data.FieldMetaData("maxCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(keyCount_args.class, metaDataMap);
     }
@@ -3342,19 +3355,25 @@ public class RemusDB {
     }
 
     public keyCount_args(
-      AppletRef stack)
+      AppletRef stack,
+      int maxCount)
     {
       this();
       this.stack = stack;
+      this.maxCount = maxCount;
+      setMaxCountIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public keyCount_args(keyCount_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
+      this.maxCount = other.maxCount;
     }
 
     public keyCount_args deepCopy() {
@@ -3364,6 +3383,8 @@ public class RemusDB {
     @Override
     public void clear() {
       this.stack = null;
+      setMaxCountIsSet(false);
+      this.maxCount = 0;
     }
 
     public AppletRef getStack() {
@@ -3390,6 +3411,29 @@ public class RemusDB {
       }
     }
 
+    public int getMaxCount() {
+      return this.maxCount;
+    }
+
+    public keyCount_args setMaxCount(int maxCount) {
+      this.maxCount = maxCount;
+      setMaxCountIsSet(true);
+      return this;
+    }
+
+    public void unsetMaxCount() {
+      __isset_bit_vector.clear(__MAXCOUNT_ISSET_ID);
+    }
+
+    /** Returns true if field maxCount is set (has been assigned a value) and false otherwise */
+    public boolean isSetMaxCount() {
+      return __isset_bit_vector.get(__MAXCOUNT_ISSET_ID);
+    }
+
+    public void setMaxCountIsSet(boolean value) {
+      __isset_bit_vector.set(__MAXCOUNT_ISSET_ID, value);
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case STACK:
@@ -3400,6 +3444,14 @@ public class RemusDB {
         }
         break;
 
+      case MAX_COUNT:
+        if (value == null) {
+          unsetMaxCount();
+        } else {
+          setMaxCount((Integer)value);
+        }
+        break;
+
       }
     }
 
@@ -3407,6 +3459,9 @@ public class RemusDB {
       switch (field) {
       case STACK:
         return getStack();
+
+      case MAX_COUNT:
+        return new Integer(getMaxCount());
 
       }
       throw new IllegalStateException();
@@ -3421,6 +3476,8 @@ public class RemusDB {
       switch (field) {
       case STACK:
         return isSetStack();
+      case MAX_COUNT:
+        return isSetMaxCount();
       }
       throw new IllegalStateException();
     }
@@ -3444,6 +3501,15 @@ public class RemusDB {
         if (!(this_present_stack && that_present_stack))
           return false;
         if (!this.stack.equals(that.stack))
+          return false;
+      }
+
+      boolean this_present_maxCount = true;
+      boolean that_present_maxCount = true;
+      if (this_present_maxCount || that_present_maxCount) {
+        if (!(this_present_maxCount && that_present_maxCount))
+          return false;
+        if (this.maxCount != that.maxCount)
           return false;
       }
 
@@ -3473,6 +3539,16 @@ public class RemusDB {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetMaxCount()).compareTo(typedOther.isSetMaxCount());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMaxCount()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxCount, typedOther.maxCount);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -3498,6 +3574,14 @@ public class RemusDB {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 2: // MAX_COUNT
+            if (field.type == org.apache.thrift.protocol.TType.I32) {
+              this.maxCount = iprot.readI32();
+              setMaxCountIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -3518,6 +3602,9 @@ public class RemusDB {
         this.stack.write(oprot);
         oprot.writeFieldEnd();
       }
+      oprot.writeFieldBegin(MAX_COUNT_FIELD_DESC);
+      oprot.writeI32(this.maxCount);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -3533,6 +3620,10 @@ public class RemusDB {
       } else {
         sb.append(this.stack);
       }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("maxCount:");
+      sb.append(this.maxCount);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -3552,6 +3643,8 @@ public class RemusDB {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);

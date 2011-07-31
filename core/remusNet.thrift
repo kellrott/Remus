@@ -1,6 +1,6 @@
 
 namespace cpp remusNet
-namespace java org.remusNet
+namespace java org.remusNet.thrift
 namespace php remusNet
 namespace perl remusNet
 namespace py remusNet
@@ -52,8 +52,8 @@ struct WorkDesc {
 struct KeyValPair {
 	1:required string key,
 	2:required string data,
-	3:required i64 emitID,	
-	4:required i64 jobID
+	3:required i64 jobID,
+	4:required i64 emitID
 }
 
 service RemusDB {
@@ -62,7 +62,7 @@ service RemusDB {
 	list<string> keySlice( 1:AppletRef stack, 2:string keyStart, 3:i32 count ),
 	list<string> getValue( 1:AppletRef stack, 2:string key ),
 
-	i64 keyCount( 1:AppletRef stack ),
+	i64 keyCount( 1:AppletRef stack, 2:i32 maxCount ),
 
 	void add( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data),
 
