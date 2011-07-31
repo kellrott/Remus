@@ -13,7 +13,7 @@ import org.junit.*;
 
 import org.remusNet.RemusDB;
 import org.remusNet.thrift.AppletRef;
-import org.remusNet.thrift.KeyValPair;
+import org.remusNet.KeyValPair;
 
 public class MPStoreTest {
 
@@ -56,11 +56,11 @@ public class MPStoreTest {
 		String val2 = "value_2";
 
 		for ( long i =0; i < 100; i++) {
-			ds.addData( aRef1, 0L, i, key1, "value_" + Long.toString(i) );
+			ds.add( aRef1, 0L, i, key1, "value_" + Long.toString(i) );
 		}
 
 		for ( int i = 0; i < 100; i++) {
-			ds.addData( aRef2, 0L, 0L, "key_" + Integer.toString(i), "value" );
+			ds.add( aRef2, 0L, 0L, "key_" + Integer.toString(i), "value" );
 		}
 
 		int count = 0;
@@ -73,7 +73,8 @@ public class MPStoreTest {
 		
 		count = 0;
 		for ( KeyValPair kv : ds.keyValSlice(aRef1, "", 200) ) {
-			Assert.assertTrue( ((String)kv.getValue()).compareTo( "value_" + kv.getEmitID() ) == 0);
+			Object value = kv.getValue();
+			Assert.assertTrue( ((String)value).compareTo( "value_" + kv.getEmitID() ) == 0);
 			count++;
 		}
 		Assert.assertTrue( count == 100 );
@@ -86,7 +87,7 @@ public class MPStoreTest {
 		Assert.assertTrue( count == 100 );
 
 		count = 0;
-		for ( Object val : ds.getValue(aRef1, key1) ) {
+		for ( Object val : ds.get(aRef1, key1) ) {
 			count++;
 			Assert.assertTrue( ((String)val).startsWith("value_") );
 		}

@@ -32,7 +32,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import org.remusNet.thrift.AppletRef;
-import org.remusNet.thrift.KeyValPair;
+import org.remusNet.thrift.KeyValJSONPair;
 import org.remusNet.RemusDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -359,7 +359,7 @@ public class Cassandra extends RemusDB {
 	}
 
 	@Override
-	public List<String> getValue(AppletRef stack, String key) throws TException {
+	public List<String> getValueJSON(AppletRef stack, String key) throws TException {
 
 		final String superColumn = stack2column(stack);
 		String curCF = columnFamily;
@@ -473,7 +473,7 @@ public class Cassandra extends RemusDB {
 	}
 
 	@Override
-	public List<KeyValPair> keyValSlice(AppletRef stack, String startKey,
+	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey,
 			int count) throws TException {
 
 		final String superColumn = stack2column(stack);
@@ -485,7 +485,7 @@ public class Cassandra extends RemusDB {
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
 		
-		ThriftSliceIterator<KeyValPair> out = new ThriftSliceIterator<KeyValPair>(clientPool, superColumn, curCF, startKey, "", count) {				
+		ThriftSliceIterator<KeyValJSONPair> out = new ThriftSliceIterator<KeyValJSONPair>(clientPool, superColumn, curCF, startKey, "", count) {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
 				String key = new String( scol.getSuper_column().getName() );
@@ -495,15 +495,15 @@ public class Cassandra extends RemusDB {
 					long jobID = Long.parseLong(  tmp[0] );
 					long emitID = Long.parseLong( tmp[1] );
 					
-					KeyValPair kv = new KeyValPair(key, new String(col.getValue()), jobID, emitID);
+					KeyValJSONPair kv = new KeyValJSONPair(key, new String(col.getValue()), jobID, emitID);
 					
 					addElement( kv );
 				}
 			}
 		};
 
-		LinkedList<KeyValPair> outList = new LinkedList<KeyValPair>();
-		for ( KeyValPair kv : out ) {
+		LinkedList<KeyValJSONPair> outList = new LinkedList<KeyValJSONPair>();
+		for ( KeyValJSONPair kv : out ) {
 			outList.add(kv);
 		}
 		return outList;

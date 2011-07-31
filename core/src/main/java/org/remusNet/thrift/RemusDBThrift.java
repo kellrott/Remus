@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RemusDB {
+public class RemusDBThrift {
 
   public interface Iface {
 
@@ -28,13 +28,13 @@ public class RemusDB {
 
     public List<String> keySlice(AppletRef stack, String keyStart, int count) throws org.apache.thrift.TException;
 
-    public List<String> getValue(AppletRef stack, String key) throws org.apache.thrift.TException;
+    public List<String> getValueJSON(AppletRef stack, String key) throws org.apache.thrift.TException;
 
     public long keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException;
 
     public void addData(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException;
 
-    public List<KeyValPair> keyValSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException;
+    public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException;
 
     public void deleteStack(AppletRef stack) throws org.apache.thrift.TException;
 
@@ -50,13 +50,13 @@ public class RemusDB {
 
     public void keySlice(AppletRef stack, String keyStart, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keySlice_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void getValue(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getValue_call> resultHandler) throws org.apache.thrift.TException;
+    public void getValueJSON(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getValueJSON_call> resultHandler) throws org.apache.thrift.TException;
 
     public void keyCount(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyCount_call> resultHandler) throws org.apache.thrift.TException;
 
     public void addData(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addData_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void keyValSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyValSlice_call> resultHandler) throws org.apache.thrift.TException;
+    public void keyValJSONSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyValJSONSlice_call> resultHandler) throws org.apache.thrift.TException;
 
     public void deleteStack(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.deleteStack_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -178,16 +178,16 @@ public class RemusDB {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "keySlice failed: unknown result");
     }
 
-    public List<String> getValue(AppletRef stack, String key) throws org.apache.thrift.TException
+    public List<String> getValueJSON(AppletRef stack, String key) throws org.apache.thrift.TException
     {
-      send_getValue(stack, key);
-      return recv_getValue();
+      send_getValueJSON(stack, key);
+      return recv_getValueJSON();
     }
 
-    public void send_getValue(AppletRef stack, String key) throws org.apache.thrift.TException
+    public void send_getValueJSON(AppletRef stack, String key) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValue", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      getValue_args args = new getValue_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValueJSON", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      getValueJSON_args args = new getValueJSON_args();
       args.setStack(stack);
       args.setKey(key);
       args.write(oprot_);
@@ -195,7 +195,7 @@ public class RemusDB {
       oprot_.getTransport().flush();
     }
 
-    public List<String> recv_getValue() throws org.apache.thrift.TException
+    public List<String> recv_getValueJSON() throws org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -204,15 +204,15 @@ public class RemusDB {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getValue failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getValueJSON failed: out of sequence response");
       }
-      getValue_result result = new getValue_result();
+      getValueJSON_result result = new getValueJSON_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getValue failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getValueJSON failed: unknown result");
     }
 
     public long keyCount(AppletRef stack, int maxCount) throws org.apache.thrift.TException
@@ -289,16 +289,16 @@ public class RemusDB {
       return;
     }
 
-    public List<KeyValPair> keyValSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException
+    public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException
     {
-      send_keyValSlice(stack, startKey, count);
-      return recv_keyValSlice();
+      send_keyValJSONSlice(stack, startKey, count);
+      return recv_keyValJSONSlice();
     }
 
-    public void send_keyValSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException
+    public void send_keyValJSONSlice(AppletRef stack, String startKey, int count) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValSlice", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      keyValSlice_args args = new keyValSlice_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValJSONSlice", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      keyValJSONSlice_args args = new keyValJSONSlice_args();
       args.setStack(stack);
       args.setStartKey(startKey);
       args.setCount(count);
@@ -307,7 +307,7 @@ public class RemusDB {
       oprot_.getTransport().flush();
     }
 
-    public List<KeyValPair> recv_keyValSlice() throws org.apache.thrift.TException
+    public List<KeyValJSONPair> recv_keyValJSONSlice() throws org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -316,15 +316,15 @@ public class RemusDB {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "keyValSlice failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "keyValJSONSlice failed: out of sequence response");
       }
-      keyValSlice_result result = new keyValSlice_result();
+      keyValJSONSlice_result result = new keyValJSONSlice_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
         return result.success;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "keyValSlice failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "keyValJSONSlice failed: unknown result");
     }
 
     public void deleteStack(AppletRef stack) throws org.apache.thrift.TException
@@ -521,25 +521,25 @@ public class RemusDB {
       }
     }
 
-    public void getValue(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<getValue_call> resultHandler) throws org.apache.thrift.TException {
+    public void getValueJSON(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<getValueJSON_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getValue_call method_call = new getValue_call(stack, key, resultHandler, this, protocolFactory, transport);
+      getValueJSON_call method_call = new getValueJSON_call(stack, key, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class getValue_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class getValueJSON_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private String key;
-      public getValue_call(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<getValue_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getValueJSON_call(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<getValueJSON_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.key = key;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValue", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getValue_args args = new getValue_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValueJSON", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getValueJSON_args args = new getValueJSON_args();
         args.setStack(stack);
         args.setKey(key);
         args.write(prot);
@@ -552,7 +552,7 @@ public class RemusDB {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getValue();
+        return (new Client(prot)).recv_getValueJSON();
       }
     }
 
@@ -635,18 +635,18 @@ public class RemusDB {
       }
     }
 
-    public void keyValSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<keyValSlice_call> resultHandler) throws org.apache.thrift.TException {
+    public void keyValJSONSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<keyValJSONSlice_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      keyValSlice_call method_call = new keyValSlice_call(stack, startKey, count, resultHandler, this, protocolFactory, transport);
+      keyValJSONSlice_call method_call = new keyValJSONSlice_call(stack, startKey, count, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class keyValSlice_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class keyValJSONSlice_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private String startKey;
       private int count;
-      public keyValSlice_call(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<keyValSlice_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public keyValJSONSlice_call(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<keyValJSONSlice_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.startKey = startKey;
@@ -654,8 +654,8 @@ public class RemusDB {
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValSlice", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        keyValSlice_args args = new keyValSlice_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValJSONSlice", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        keyValJSONSlice_args args = new keyValJSONSlice_args();
         args.setStack(stack);
         args.setStartKey(startKey);
         args.setCount(count);
@@ -663,13 +663,13 @@ public class RemusDB {
         prot.writeMessageEnd();
       }
 
-      public List<KeyValPair> getResult() throws org.apache.thrift.TException {
+      public List<KeyValJSONPair> getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_keyValSlice();
+        return (new Client(prot)).recv_keyValJSONSlice();
       }
     }
 
@@ -781,10 +781,10 @@ public class RemusDB {
       iface_ = iface;
       processMap_.put("containsKey", new containsKey());
       processMap_.put("keySlice", new keySlice());
-      processMap_.put("getValue", new getValue());
+      processMap_.put("getValueJSON", new getValueJSON());
       processMap_.put("keyCount", new keyCount());
       processMap_.put("addData", new addData());
-      processMap_.put("keyValSlice", new keyValSlice());
+      processMap_.put("keyValJSONSlice", new keyValJSONSlice());
       processMap_.put("deleteStack", new deleteStack());
       processMap_.put("deleteValue", new deleteValue());
       processMap_.put("getTimeStamp", new getTimeStamp());
@@ -868,25 +868,25 @@ public class RemusDB {
 
     }
 
-    private class getValue implements ProcessFunction {
+    private class getValueJSON implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        getValue_args args = new getValue_args();
+        getValueJSON_args args = new getValueJSON_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValue", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValueJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        getValue_result result = new getValue_result();
-        result.success = iface_.getValue(args.stack, args.key);
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValue", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        getValueJSON_result result = new getValueJSON_result();
+        result.success = iface_.getValueJSON(args.stack, args.key);
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getValueJSON", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -947,25 +947,25 @@ public class RemusDB {
 
     }
 
-    private class keyValSlice implements ProcessFunction {
+    private class keyValJSONSlice implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        keyValSlice_args args = new keyValSlice_args();
+        keyValJSONSlice_args args = new keyValJSONSlice_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValSlice", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValJSONSlice", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        keyValSlice_result result = new keyValSlice_result();
-        result.success = iface_.keyValSlice(args.stack, args.startKey, args.count);
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValSlice", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        keyValJSONSlice_result result = new keyValJSONSlice_result();
+        result.success = iface_.keyValJSONSlice(args.stack, args.startKey, args.count);
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("keyValJSONSlice", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2546,8 +2546,8 @@ public class RemusDB {
 
   }
 
-  public static class getValue_args implements org.apache.thrift.TBase<getValue_args, getValue_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getValue_args");
+  public static class getValueJSON_args implements org.apache.thrift.TBase<getValueJSON_args, getValueJSON_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getValueJSON_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)2);
@@ -2626,13 +2626,13 @@ public class RemusDB {
       tmpMap.put(_Fields.KEY, new org.apache.thrift.meta_data.FieldMetaData("key", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getValue_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getValueJSON_args.class, metaDataMap);
     }
 
-    public getValue_args() {
+    public getValueJSON_args() {
     }
 
-    public getValue_args(
+    public getValueJSON_args(
       AppletRef stack,
       String key)
     {
@@ -2644,7 +2644,7 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getValue_args(getValue_args other) {
+    public getValueJSON_args(getValueJSON_args other) {
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
@@ -2653,8 +2653,8 @@ public class RemusDB {
       }
     }
 
-    public getValue_args deepCopy() {
-      return new getValue_args(this);
+    public getValueJSON_args deepCopy() {
+      return new getValueJSON_args(this);
     }
 
     @Override
@@ -2667,7 +2667,7 @@ public class RemusDB {
       return this.stack;
     }
 
-    public getValue_args setStack(AppletRef stack) {
+    public getValueJSON_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -2691,7 +2691,7 @@ public class RemusDB {
       return this.key;
     }
 
-    public getValue_args setKey(String key) {
+    public getValueJSON_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -2763,12 +2763,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getValue_args)
-        return this.equals((getValue_args)that);
+      if (that instanceof getValueJSON_args)
+        return this.equals((getValueJSON_args)that);
       return false;
     }
 
-    public boolean equals(getValue_args that) {
+    public boolean equals(getValueJSON_args that) {
       if (that == null)
         return false;
 
@@ -2798,13 +2798,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(getValue_args other) {
+    public int compareTo(getValueJSON_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getValue_args typedOther = (getValue_args)other;
+      getValueJSON_args typedOther = (getValueJSON_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -2889,7 +2889,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getValue_args(");
+      StringBuilder sb = new StringBuilder("getValueJSON_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -2933,8 +2933,8 @@ public class RemusDB {
 
   }
 
-  public static class getValue_result implements org.apache.thrift.TBase<getValue_result, getValue_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getValue_result");
+  public static class getValueJSON_result implements org.apache.thrift.TBase<getValueJSON_result, getValueJSON_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getValueJSON_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
 
@@ -3007,13 +3007,13 @@ public class RemusDB {
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getValue_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getValueJSON_result.class, metaDataMap);
     }
 
-    public getValue_result() {
+    public getValueJSON_result() {
     }
 
-    public getValue_result(
+    public getValueJSON_result(
       List<String> success)
     {
       this();
@@ -3023,7 +3023,7 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getValue_result(getValue_result other) {
+    public getValueJSON_result(getValueJSON_result other) {
       if (other.isSetSuccess()) {
         List<String> __this__success = new ArrayList<String>();
         for (String other_element : other.success) {
@@ -3033,8 +3033,8 @@ public class RemusDB {
       }
     }
 
-    public getValue_result deepCopy() {
-      return new getValue_result(this);
+    public getValueJSON_result deepCopy() {
+      return new getValueJSON_result(this);
     }
 
     @Override
@@ -3061,7 +3061,7 @@ public class RemusDB {
       return this.success;
     }
 
-    public getValue_result setSuccess(List<String> success) {
+    public getValueJSON_result setSuccess(List<String> success) {
       this.success = success;
       return this;
     }
@@ -3120,12 +3120,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getValue_result)
-        return this.equals((getValue_result)that);
+      if (that instanceof getValueJSON_result)
+        return this.equals((getValueJSON_result)that);
       return false;
     }
 
-    public boolean equals(getValue_result that) {
+    public boolean equals(getValueJSON_result that) {
       if (that == null)
         return false;
 
@@ -3146,13 +3146,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(getValue_result other) {
+    public int compareTo(getValueJSON_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getValue_result typedOther = (getValue_result)other;
+      getValueJSON_result typedOther = (getValueJSON_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -3230,7 +3230,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getValue_result(");
+      StringBuilder sb = new StringBuilder("getValueJSON_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -4799,8 +4799,8 @@ public class RemusDB {
 
   }
 
-  public static class keyValSlice_args implements org.apache.thrift.TBase<keyValSlice_args, keyValSlice_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("keyValSlice_args");
+  public static class keyValJSONSlice_args implements org.apache.thrift.TBase<keyValJSONSlice_args, keyValJSONSlice_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("keyValJSONSlice_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField START_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("startKey", org.apache.thrift.protocol.TType.STRING, (short)2);
@@ -4888,13 +4888,13 @@ public class RemusDB {
       tmpMap.put(_Fields.COUNT, new org.apache.thrift.meta_data.FieldMetaData("count", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(keyValSlice_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(keyValJSONSlice_args.class, metaDataMap);
     }
 
-    public keyValSlice_args() {
+    public keyValJSONSlice_args() {
     }
 
-    public keyValSlice_args(
+    public keyValJSONSlice_args(
       AppletRef stack,
       String startKey,
       int count)
@@ -4909,7 +4909,7 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public keyValSlice_args(keyValSlice_args other) {
+    public keyValJSONSlice_args(keyValJSONSlice_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetStack()) {
@@ -4921,8 +4921,8 @@ public class RemusDB {
       this.count = other.count;
     }
 
-    public keyValSlice_args deepCopy() {
-      return new keyValSlice_args(this);
+    public keyValJSONSlice_args deepCopy() {
+      return new keyValJSONSlice_args(this);
     }
 
     @Override
@@ -4937,7 +4937,7 @@ public class RemusDB {
       return this.stack;
     }
 
-    public keyValSlice_args setStack(AppletRef stack) {
+    public keyValJSONSlice_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -4961,7 +4961,7 @@ public class RemusDB {
       return this.startKey;
     }
 
-    public keyValSlice_args setStartKey(String startKey) {
+    public keyValJSONSlice_args setStartKey(String startKey) {
       this.startKey = startKey;
       return this;
     }
@@ -4985,7 +4985,7 @@ public class RemusDB {
       return this.count;
     }
 
-    public keyValSlice_args setCount(int count) {
+    public keyValJSONSlice_args setCount(int count) {
       this.count = count;
       setCountIsSet(true);
       return this;
@@ -5069,12 +5069,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof keyValSlice_args)
-        return this.equals((keyValSlice_args)that);
+      if (that instanceof keyValJSONSlice_args)
+        return this.equals((keyValJSONSlice_args)that);
       return false;
     }
 
-    public boolean equals(keyValSlice_args that) {
+    public boolean equals(keyValJSONSlice_args that) {
       if (that == null)
         return false;
 
@@ -5113,13 +5113,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(keyValSlice_args other) {
+    public int compareTo(keyValJSONSlice_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      keyValSlice_args typedOther = (keyValSlice_args)other;
+      keyValJSONSlice_args typedOther = (keyValJSONSlice_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -5225,7 +5225,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("keyValSlice_args(");
+      StringBuilder sb = new StringBuilder("keyValJSONSlice_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -5275,12 +5275,12 @@ public class RemusDB {
 
   }
 
-  public static class keyValSlice_result implements org.apache.thrift.TBase<keyValSlice_result, keyValSlice_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("keyValSlice_result");
+  public static class keyValJSONSlice_result implements org.apache.thrift.TBase<keyValJSONSlice_result, keyValJSONSlice_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("keyValJSONSlice_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
 
-    public List<KeyValPair> success;
+    public List<KeyValJSONPair> success;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -5347,16 +5347,16 @@ public class RemusDB {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, KeyValPair.class))));
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, KeyValJSONPair.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(keyValSlice_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(keyValJSONSlice_result.class, metaDataMap);
     }
 
-    public keyValSlice_result() {
+    public keyValJSONSlice_result() {
     }
 
-    public keyValSlice_result(
-      List<KeyValPair> success)
+    public keyValJSONSlice_result(
+      List<KeyValJSONPair> success)
     {
       this();
       this.success = success;
@@ -5365,18 +5365,18 @@ public class RemusDB {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public keyValSlice_result(keyValSlice_result other) {
+    public keyValJSONSlice_result(keyValJSONSlice_result other) {
       if (other.isSetSuccess()) {
-        List<KeyValPair> __this__success = new ArrayList<KeyValPair>();
-        for (KeyValPair other_element : other.success) {
-          __this__success.add(new KeyValPair(other_element));
+        List<KeyValJSONPair> __this__success = new ArrayList<KeyValJSONPair>();
+        for (KeyValJSONPair other_element : other.success) {
+          __this__success.add(new KeyValJSONPair(other_element));
         }
         this.success = __this__success;
       }
     }
 
-    public keyValSlice_result deepCopy() {
-      return new keyValSlice_result(this);
+    public keyValJSONSlice_result deepCopy() {
+      return new keyValJSONSlice_result(this);
     }
 
     @Override
@@ -5388,22 +5388,22 @@ public class RemusDB {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public java.util.Iterator<KeyValPair> getSuccessIterator() {
+    public java.util.Iterator<KeyValJSONPair> getSuccessIterator() {
       return (this.success == null) ? null : this.success.iterator();
     }
 
-    public void addToSuccess(KeyValPair elem) {
+    public void addToSuccess(KeyValJSONPair elem) {
       if (this.success == null) {
-        this.success = new ArrayList<KeyValPair>();
+        this.success = new ArrayList<KeyValJSONPair>();
       }
       this.success.add(elem);
     }
 
-    public List<KeyValPair> getSuccess() {
+    public List<KeyValJSONPair> getSuccess() {
       return this.success;
     }
 
-    public keyValSlice_result setSuccess(List<KeyValPair> success) {
+    public keyValJSONSlice_result setSuccess(List<KeyValJSONPair> success) {
       this.success = success;
       return this;
     }
@@ -5429,7 +5429,7 @@ public class RemusDB {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((List<KeyValPair>)value);
+          setSuccess((List<KeyValJSONPair>)value);
         }
         break;
 
@@ -5462,12 +5462,12 @@ public class RemusDB {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof keyValSlice_result)
-        return this.equals((keyValSlice_result)that);
+      if (that instanceof keyValJSONSlice_result)
+        return this.equals((keyValJSONSlice_result)that);
       return false;
     }
 
-    public boolean equals(keyValSlice_result that) {
+    public boolean equals(keyValJSONSlice_result that) {
       if (that == null)
         return false;
 
@@ -5488,13 +5488,13 @@ public class RemusDB {
       return 0;
     }
 
-    public int compareTo(keyValSlice_result other) {
+    public int compareTo(keyValJSONSlice_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      keyValSlice_result typedOther = (keyValSlice_result)other;
+      keyValJSONSlice_result typedOther = (keyValJSONSlice_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -5527,11 +5527,11 @@ public class RemusDB {
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list12 = iprot.readListBegin();
-                this.success = new ArrayList<KeyValPair>(_list12.size);
+                this.success = new ArrayList<KeyValJSONPair>(_list12.size);
                 for (int _i13 = 0; _i13 < _list12.size; ++_i13)
                 {
-                  KeyValPair _elem14;
-                  _elem14 = new KeyValPair();
+                  KeyValJSONPair _elem14;
+                  _elem14 = new KeyValJSONPair();
                   _elem14.read(iprot);
                   this.success.add(_elem14);
                 }
@@ -5559,7 +5559,7 @@ public class RemusDB {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (KeyValPair _iter15 : this.success)
+          for (KeyValJSONPair _iter15 : this.success)
           {
             _iter15.write(oprot);
           }
@@ -5573,7 +5573,7 @@ public class RemusDB {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("keyValSlice_result(");
+      StringBuilder sb = new StringBuilder("keyValJSONSlice_result(");
       boolean first = true;
 
       sb.append("success:");
