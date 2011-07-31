@@ -14,7 +14,6 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.commons.pool.ObjectPool;
 import org.apache.thrift.TException;
 
 
@@ -29,9 +28,9 @@ abstract class ThriftSliceIterator<T> implements Iterable<T>, Iterator<T> {
 	ColumnParent cp;
 	ByteBuffer superColumn;
 
-	ObjectPool clientPool;
+	ThriftClientPool clientPool;
 
-	public ThriftSliceIterator(ObjectPool clientPool, String superColumn, String columnParent, String keyStart, String keyEnd) {
+	public ThriftSliceIterator(ThriftClientPool clientPool, String superColumn, String columnParent, String keyStart, String keyEnd) {
 		this.clientPool = clientPool;
 		this.keyStart = keyStart.getBytes();
 		this.keyEnd = keyEnd.getBytes();
@@ -40,7 +39,7 @@ abstract class ThriftSliceIterator<T> implements Iterable<T>, Iterator<T> {
 		outList = new LinkedList<T>();
 	}
 
-	public ThriftSliceIterator(ObjectPool clientPool, String superColumn, String columnParent, String keyStart, String keyEnd, int maxCount) {
+	public ThriftSliceIterator(ThriftClientPool clientPool, String superColumn, String columnParent, String keyStart, String keyEnd, int maxCount) {
 		this.clientPool = clientPool;
 		this.keyStart = keyStart.getBytes();
 		this.keyEnd = keyEnd.getBytes();

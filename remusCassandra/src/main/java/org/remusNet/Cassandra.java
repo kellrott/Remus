@@ -22,8 +22,6 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -41,7 +39,7 @@ import org.remusNet.thrift.RemusDB;
 public class Cassandra implements RemusDB.Iface {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
-	ObjectPool clientPool;
+	ThriftClientPool clientPool;
 	String columnFamily,keySpace,serverName;
 	int serverPort;
 	boolean instanceColumns;
@@ -64,7 +62,7 @@ public class Cassandra implements RemusDB.Iface {
 		if ( paramMap.containsKey(PORT) )
 			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
 
-		clientPool = new SoftReferenceObjectPool( new ThriftClientFactory(serverName,serverPort,keySpace) );
+		clientPool = new ThriftClientPool(serverName,serverPort,keySpace );
 
 		if ( paramMap.containsKey( INST_COLUMNS ) ) {
 			instanceColumns = Boolean.valueOf((String)paramMap.get(INST_COLUMNS) );

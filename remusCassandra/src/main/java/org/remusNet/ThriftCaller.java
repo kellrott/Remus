@@ -11,8 +11,8 @@ import org.apache.thrift.TException;
 
 abstract class ThriftCaller<T> {
 	
-	ObjectPool clientPool;
-	public ThriftCaller(ObjectPool clientPool) {
+	ThriftClientPool clientPool;
+	public ThriftCaller(ThriftClientPool clientPool) {
 		this.clientPool = clientPool;
 	}
 	
