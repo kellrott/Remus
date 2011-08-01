@@ -34,6 +34,25 @@ public class FileServer extends RemusAttach {
 		attachFile.delete();
 	}
 
+	public static boolean deleteDir(File dir) {
+		if (dir.isDirectory()) {
+			for (File child:dir.listFiles() ) {
+				boolean success = deleteDir(child);
+				if (!success) {
+					return false;
+				}
+			}
+		}
+		return dir.delete();
+	}
+
+	@Override
+	public void deleteStack(AppletRef stack) throws TException {
+		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, null, null);
+		File stackDir = attachFile.getParentFile().getParentFile();
+		deleteDir(stackDir);
+	}
+	
 	@Override
 	public boolean hasAttachment(AppletRef stack, String key, String name)
 			throws TException {
@@ -108,5 +127,13 @@ public class FileServer extends RemusAttach {
 			throw new TException(e);
 		}		
 	}
+
+	@Override
+	public long getAttachmentSize(AppletRef stack, String key, String name)
+			throws TException {
+		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+		return attachFile.length();		
+	}
+
 
 }

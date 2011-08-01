@@ -14,7 +14,7 @@ public abstract class RemusDB implements Iface {
 
 	abstract public void init(Map params) throws ConnectionException;
 
-	void add( AppletRef stack, long jobID, long emitID, String key, Object object ) throws TException {
+	public void add( AppletRef stack, long jobID, long emitID, String key, Object object ) throws TException {
 		addData(stack, jobID,emitID, key, JSON.dumps(object));
 	}
 	
@@ -40,5 +40,15 @@ public abstract class RemusDB implements Iface {
 			out.add( new KeyValPair(kv) );
 		}
 		return out;
+	}
+
+	public Iterable<String> listKeys(AppletRef applet) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public Iterable<KeyValPair> listKeyPairs(AppletRef arPipe) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.server.RemusPipelineImpl;
@@ -30,23 +30,23 @@ public class ResetInstanceView implements BaseNode {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		if ( name.length() > 0 ) {
 			String [] tmp = name.split(":");
 			if ( tmp.length == 1 ) {
-				
+
 				RemusInstance inst = pipeline.getInstance( name );
 				String subKey = pipeline.getSubKey(inst);
 				Map subMap = pipeline.getSubmitData(subKey);
@@ -69,10 +69,15 @@ public class ResetInstanceView implements BaseNode {
 				RemusInstance inst = pipeline.getInstance( tmp[0] );
 				RemusAppletImpl applet = pipeline.getApplet(tmp[1]);
 				if ( inst != null && applet != null ) {
-					applet.deleteInstance( inst );
-					String subKey = pipeline.getSubKey( inst );
-					Map params = pipeline.getSubmitData( subKey );
-					applet.createInstance( subKey, params, inst);
+					try {
+						applet.deleteInstance( inst );
+						String subKey = pipeline.getSubKey( inst );
+						Map params = pipeline.getSubmitData( subKey );
+						applet.createInstance( subKey, params, inst);
+					} catch (TException e) {
+						e.printStackTrace();
+						throw new FileNotFoundException();
+					}
 				}
 			}
 		}

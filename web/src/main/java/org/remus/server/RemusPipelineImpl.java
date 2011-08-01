@@ -12,10 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mpstore.AttachStore;
-import org.mpstore.KeyValuePair;
-import org.mpstore.MPStore;
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.RemusPipeline;
@@ -33,6 +30,11 @@ import org.remus.serverNodes.ResetInstanceView;
 import org.remus.serverNodes.SubmitView;
 import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.RemusAttach;
+import org.remusNet.RemusDB;
+import org.remusNet.thrift.AppletRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,17 +47,17 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 	private HashMap<String,RemusAppletImpl> members;
 	Map<String, RemusAppletImpl> inputs;
 	String id;
-	MPStore datastore;
-	AttachStore attachStore;
+	RemusDB datastore;
+	RemusAttach attachStore;
 	RemusApp app;
 
 	private Logger logger;
-	
-	public RemusPipelineImpl(RemusApp app, String id, MPStore datastore, AttachStore attachStore) {
-		
-	    logger = LoggerFactory.getLogger(RemusPipelineImpl.class);
 
-	    
+	public RemusPipelineImpl(RemusApp app, String id, RemusDB datastore, RemusAttach attachStore) {
+
+		logger = LoggerFactory.getLogger(RemusPipelineImpl.class);
+
+
 		this.app = app;
 		members = new HashMap<String,RemusAppletImpl>();
 		children = new HashMap<String, BaseNode>();
@@ -73,7 +75,7 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		this.id = id;
 		this.datastore = datastore;
 		this.attachStore = attachStore;
-		children.put("@attach", new AttachListView(this.attachStore, "/" + id , RemusInstance.STATIC_INSTANCE_STR, null ) );
+		//children.put("@attach", new AttachListView(this.attachStore, this, RemusInstance.STATIC_INSTANCE, null ) );
 	}
 
 	public RemusApp getApp() {
@@ -135,37 +137,60 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 	 */
 
 	public RemusInstance getInstance(String name) {
-		for ( Object subObject : getDataStore().get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-			Map subMap = (Map) subObject;
-			return new RemusInstance( (String)subMap.get( Submission.InstanceField ) );
-		}
-		for ( Object instObject : getDataStore().get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {			
-			return  new RemusInstance( name );				
+		try {
+			AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+			for ( Object subObject : getDataStore().get(arSubmit, name) ) {
+				Map subMap = (Map) subObject;
+				return new RemusInstance( (String)subMap.get( Submission.InstanceField ) );
+			}
+			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+			for ( Object instObject : getDataStore().get( arInstance, name) ) {			
+				return  new RemusInstance( name );				
+			}
+		} catch (TException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
 	public String getSubKey(RemusInstance inst) {
-		for ( Object instObject : getDataStore().get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {			
-			return (String)instObject;
+		AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+		try {
+			for ( Object instObject : getDataStore().get( arInstance, inst.toString() ) ) {			
+				return (String)instObject;
+			}
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return null;
 	}
 
 	public Map getSubmitData(String subKey) {
-		for ( Object subObject : getDataStore().get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, subKey) ) {
-			Map subMap = (Map) subObject;
-			return subMap;
+		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		try {
+			for ( Object subObject : getDataStore().get( arSubmit, subKey) ) {
+				Map subMap = (Map) subObject;
+				return subMap;
+			}
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return null;
 	}	
 
 	public void deleteInstance(RemusInstance instance) {
-		logger.info( "Deleting Instance " + instance );
-		for ( RemusAppletImpl applet : members.values() ) {
-			applet.deleteInstance(instance);
+		try { 
+			logger.info( "Deleting Instance " + instance );
+			for ( RemusAppletImpl applet : members.values() ) {
+				applet.deleteInstance(instance);
+			}
+			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+			datastore.deleteValue( arInstance, instance.toString());
+		} catch (TException e) {
+			e.printStackTrace();
 		}
-		datastore.delete("/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString());
 	}
 
 	public boolean isComplete(RemusInstance inst) {
@@ -181,7 +206,7 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		return members.size();
 	}
 
-	public MPStore getDataStore() {
+	public RemusDB getDataStore() {
 		return datastore;
 	}
 
@@ -193,15 +218,15 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		return id;
 	}
 
-	public AttachStore getAttachStore() {
+	public RemusAttach getAttachStore() {
 		return attachStore;
 	}
 
 
 
-	public Iterable<KeyValuePair> getSubmits() {
-		return datastore.listKeyPairs( "/" + getID() + "/@submit", 
-				RemusInstance.STATIC_INSTANCE_STR );
+	public Iterable<KeyValPair> getSubmits() {
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		return datastore.listKeyPairs( arSubmit );
 	}
 
 	@Override
@@ -211,16 +236,17 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 	}
 
 	@Override
-	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
-			throws FileNotFoundException {
+	public void doGet(String name, Map params, String workerID, OutputStream os)
+	throws FileNotFoundException {
 		if ( name.length() != 0 ) {
 			throw new FileNotFoundException();
 		}
-		for ( KeyValuePair kv : datastore.listKeyPairs( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		for ( KeyValPair kv : datastore.listKeyPairs(arSubmit) ) {
 			Map out = new HashMap();
 			out.put(kv.getKey(), kv.getValue() );
 			try {
-				os.write( serial.dumps(out).getBytes() );
+				os.write( JSON.dumps(out).getBytes() );
 				os.write("\n".getBytes());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -230,13 +256,13 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		System.err.println( "PUTTING:" + name );
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -253,9 +279,11 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 
 		@Override
 		public void doGet(String name, Map params, String workerID,
-				Serializer serial, OutputStream os)
-						throws FileNotFoundException {
-			InputStream fis = attachStore.readAttachement("/" + getID(), RemusInstance.STATIC_INSTANCE_STR, null, fileName);
+				OutputStream os)
+		throws FileNotFoundException {
+			AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, null );
+
+			InputStream fis = attachStore.readAttachement(arSubmit, null, fileName);
 			if ( fis != null ) {
 				byte [] buffer = new byte[1024];
 				int len;
@@ -275,12 +303,12 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		}
 
 		@Override
-		public void doPut(String name, String workerID, Serializer serial,
-				InputStream is, OutputStream os) throws FileNotFoundException {}
+		public void doPut(String name, String workerID, InputStream is,
+				OutputStream os) throws FileNotFoundException {}
 
 		@Override
-		public void doSubmit(String name, String workerID, Serializer serial,
-				InputStream is, OutputStream os) throws FileNotFoundException {}
+		public void doSubmit(String name, String workerID, InputStream is,
+				OutputStream os) throws FileNotFoundException {}
 
 		@Override
 		public BaseNode getChild(String name) {
@@ -295,21 +323,39 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		if ( children.containsKey(name) )
 			return children.get(name);
 
-		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-			RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
-			return new PipelineInstanceView( this, inst  );
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+
+		try {
+			for ( Object subObject : datastore.get(arSubmit, name) ) {
+				RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
+				return new PipelineInstanceView( this, inst  );
+			}
+		} catch (TException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
+		AppletRef arInstance= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
 
-		for ( Object subObject : datastore.get( "/" + getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-			RemusInstance inst = new RemusInstance( name );
-			return new PipelineInstanceView( this, inst  );
+		try {
+			for ( Object subObject : datastore.get( arInstance, name) ) {
+				RemusInstance inst = new RemusInstance( name );
+				return new PipelineInstanceView( this, inst  );
+			}
+		} catch (TException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
-		if ( attachStore.hasAttachment( "/" + getID(), RemusInstance.STATIC_INSTANCE_STR, null, name ) ) {
-			return new PipelineAttachment( name );
-		}
+		AppletRef arBaseAttach= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, null );
 
+		try { 
+			if ( attachStore.hasAttachment( arBaseAttach, null, name ) ) {
+				return new PipelineAttachment( name );
+			}
+		} catch (TException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 
@@ -328,23 +374,36 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		//we've already fired off the setupInstance requests to the applets, so if new applets are
 		//to be instanced in an exisiting pipeline instance, they will be, but the original submisison 
 		//will remain
-		if ( ! getDataStore().containsKey( "/" + getID() + "/@submit",
-				RemusInstance.STATIC_INSTANCE_STR, key) ) {
-			((Map)value).put(Submission.SubmitKeyField, key );	
+		
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
 
-			((Map)value).put(Submission.InstanceField, inst.toString());	
-			getDataStore().add( "/" + getID() + "/@submit", 
-					RemusInstance.STATIC_INSTANCE_STR, 
-					(Long)0L, 
-					(Long)0L, 
-					key,
-					value );
+		
+		try {
+			if ( ! getDataStore().containsKey(arSubmit, key) ) {
+				((Map)value).put(Submission.SubmitKeyField, key );	
+
+				((Map)value).put(Submission.InstanceField, inst.toString());	
+				getDataStore().add( arSubmit, 
+						(Long)0L, 
+						(Long)0L, 
+						key,
+						value );
+			}
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		getDataStore().add( "/" + getID() + "/@instance", 
-				RemusInstance.STATIC_INSTANCE_STR, 
-				0L, 0L,
-				inst.toString(),
-				key);			
+		AppletRef arInstance= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance" );
+
+		try {
+			getDataStore().add(arInstance,
+					0L, 0L,
+					inst.toString(),
+					key);
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}			
 		return inst;
 	}
 
@@ -354,15 +413,27 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 		Set<RemusAppletImpl> activeSet = new HashSet<RemusAppletImpl>();
 		RemusInstance inst = new RemusInstance();
 
-		for ( Object subObject : datastore.get( "/" + getID() + "/@submit", RemusInstance.STATIC_INSTANCE_STR, name) ) {
-			inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@subit" );
+
+		try {
+			for ( Object subObject : datastore.get( arSubmit, name) ) {
+				inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
+			}
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		for (String sObj : appletList) {
 			RemusAppletImpl applet = getApplet((String)sObj);
 			if ( applet != null ) {
 				activeSet.add(applet);
-				applet.createInstance(name, params, inst);
+				try {
+					applet.createInstance(name, params, inst);
+				} catch (TException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 
@@ -378,23 +449,28 @@ public class RemusPipelineImpl implements BaseNode, RemusPipeline {
 						}
 						activeSet.add(applet);
 					} else {
-					*/
-						for ( String iRef : applet.getInputs() ) {
-							if ( iRef.compareTo("?") != 0 ) {
-								RemusAppletImpl srcApplet = getApplet( iRef );
-								if (activeSet.contains(srcApplet) ) {
+					 */
+					for ( String iRef : applet.getInputs() ) {
+						if ( iRef.compareTo("?") != 0 ) {
+							RemusAppletImpl srcApplet = getApplet( iRef );
+							if (activeSet.contains(srcApplet) ) {
+								try {
 									if (applet.createInstance(name, params, inst)) {
 										added = true;
 									}
-									activeSet.add(applet);
+								} catch (TException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
 								}
+								activeSet.add(applet);
 							}
 						}
+					}
 					//}
 				} 
 			}
 		} while (added);
-		
+
 		app.getWorkManager().jobScan();
 		app.getWorkManager().workPoll();
 		logger.info("submission " + name + " started as " + inst);

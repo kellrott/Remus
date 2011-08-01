@@ -15,11 +15,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mpstore.KeyValuePair;
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.thrift.AppletRef;
 
 public class AppletInstanceView implements BaseNode, BaseStackNode {
 
@@ -39,12 +41,11 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void doGet(String name, Map params, String workerID, Serializer serial,
-			OutputStream os) throws FileNotFoundException {
+	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 
 		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
 			try {
-				os.write( serial.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", applet.getPipeline() ) ).getBytes() );
+				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", applet.getPipeline() ) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -59,11 +60,13 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 			sliceSize = Integer.parseInt(sliceStr);
 		}
 
+		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+
 		if ( name.length() == 0 ) {
 			if ( sliceStr == null ) {
-				for( String key : applet.getDataStore().listKeys( applet.getPath() , inst.toString() ) ) {
+				for( String key : applet.getDataStore().listKeys( ar ) ) {
 					try {
-						os.write( serial.dumps( key ).getBytes() );
+						os.write( JSON.dumps( key ).getBytes() );
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -84,75 +87,68 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				}
 				 */		
 			} else {
-				for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
-					try {
-						os.write( serial.dumps( sliceKey ).getBytes() );
-						os.write("\n".getBytes());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				/*
-				for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), "", sliceSize) ) {
-					for ( Object value : applet.getDataStore().get(  applet.getPath(), inst.toString(), sliceKey ) ) {
-						Map oMap = new HashMap();
-						oMap.put( sliceKey, value);
+				try { 
+					for ( String sliceKey : applet.getDataStore().keySlice( ar, "", sliceSize) ) {
 						try {
-							os.write( serial.dumps( oMap ).getBytes() );
+							os.write( JSON.dumps( sliceKey ).getBytes() );
 							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
+				} catch (TException e) {
+					e.printStackTrace();
 				}
-				 */
 			}
 		} else {
-			String [] tmp = name.split("/");
-			if ( tmp.length == 1) {
-				if ( sliceStr == null ) {
-					for ( Object obj : applet.getDataStore().get( applet.getPath() , inst.toString(), name) ) {
-						Map out = new HashMap();
-						out.put(name, obj );				
-						try {
-							os.write( serial.dumps(out).getBytes() );
-							os.write("\n".getBytes());
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				} else {
-					for ( String sliceKey : applet.getDataStore().keySlice( applet.getPath(), inst.toString(), name, sliceSize) ) {
-						for ( Object value : applet.getDataStore().get(  applet.getPath(), inst.toString(), sliceKey ) ) {
-							Map oMap = new HashMap();
-							oMap.put( sliceKey, value);
+			try {
+				String [] tmp = name.split("/");
+				if ( tmp.length == 1) {
+					if ( sliceStr == null ) {
+						for ( Object obj : applet.getDataStore().get( ar, name) ) {
+							Map out = new HashMap();
+							out.put(name, obj );				
 							try {
-								os.write( serial.dumps( oMap ).getBytes() );
+								os.write( JSON.dumps(out).getBytes() );
 								os.write("\n".getBytes());
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
+					} else {
+						for ( String sliceKey : applet.getDataStore().keySlice( ar, name, sliceSize) ) {
+							for ( Object value : applet.getDataStore().get( ar, sliceKey ) ) {
+								Map oMap = new HashMap();
+								oMap.put( sliceKey, value);
+								try {
+									os.write( JSON.dumps( oMap ).getBytes() );
+									os.write("\n".getBytes());
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						}
+					}
+				} else {				
+					try {
+						InputStream is = applet.getAttachStore().readAttachement(ar, tmp[0], tmp[1] );
+						byte buffer[] = new byte[1024];
+						int len;
+						while ((len=is.read(buffer)) > 0 ) {
+							os.write(buffer, 0, len);
+						}
+						is.close();		
+						os.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
-			} else {				
-				try {
-					InputStream is = applet.getAttachStore().readAttachement(applet.getPath(), inst.toString(), tmp[0], tmp[1] );
-					byte buffer[] = new byte[1024];
-					int len;
-					while ((len=is.read(buffer)) > 0 ) {
-						os.write(buffer, 0, len);
-					}
-					is.close();		
-					os.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			} catch (TException e) {
+				e.printStackTrace();
 			}
 		}
 
@@ -160,8 +156,10 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	@SuppressWarnings({ "rawtypes" })
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
+			AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+
 			if ( name.length() > 0 ) {
 				String [] tmp = name.split("/");
 				if ( tmp.length == 1) {
@@ -171,14 +169,16 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					while( (len=is.read(buffer)) > 0 ) {
 						sb.append(new String(buffer, 0, len));
 					}
-					Object data = serial.loads(sb.toString());
-
-					applet.getDataStore().add( applet.getPath(), 
-							inst.toString(),
-							0L, 0L,
-							name, data);		
+					Object data = JSON.loads(sb.toString());
+					try {
+						applet.getDataStore().add( ar,
+								0L, 0L,
+								name, data);		
+					} catch (TException e) {
+						e.printStackTrace();
+					}
 				} else {
-					applet.getAttachStore().writeAttachment( applet.getPath() , inst.toString(), tmp[0], tmp[1], is );
+					applet.getAttachStore().writeAttachment( ar, tmp[0], tmp[1], is );
 				}
 			} else {
 				StringBuilder sb = new StringBuilder();
@@ -189,13 +189,16 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				}
 				String iStr = sb.toString();
 				if ( iStr.length() > 0 ) {
-					Map data = (Map) serial.loads( iStr );
+					Map data = (Map) JSON.loads( iStr );
 					if ( data != null ) {
 						for ( Object key : data.keySet() ) {
-							applet.getDataStore().add( applet.getPath(), 
-									inst.toString(),
+							try {
+							applet.getDataStore().add( ar,
 									0L, 0L,
 									(String)key, data.get(key) );		
+							} catch (TException e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -222,8 +225,10 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
+
+		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
 
 		if (applet.getMode() == RemusAppletImpl.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
@@ -242,11 +247,13 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				} else {
 					key = (new RemusInstance()).toString();
 				}
-				applet.getDataStore().add( applet.getPath(), 
-						inst.toString(),
+				applet.getDataStore().add( ar,
 						0L, 0L,
 						key, inData );		
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
@@ -256,17 +263,17 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				String curline = null;
 				while ( (curline = br.readLine() ) != null ) {
-					Map inObj = (Map)serial.loads(curline);	
+					Map inObj = (Map)JSON.loads(curline);	
 					//long jobID = Long.parseLong( inObj.get("id").toString() );
 					//long emitID = (Long)inObj.get("order");
 					String key = (String)inObj.get("key");
 					Map value = (Map)inObj.get("value");
 					//RemusInstance inst = new RemusInstance();
-					
+
 					//instance requested applets
 					System.err.println("AGENT SUBMISSION:" + key );
 					applet.getPipeline().handleSubmission( key, value ); 				
-					
+
 				}				
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
@@ -280,22 +287,23 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				Set outSet = new HashSet<Integer>();
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				String curline = null;
-				List<KeyValuePair> inputList = new ArrayList<KeyValuePair>();
+				List<KeyValPair> inputList = new ArrayList<KeyValPair>();
+
 				while ( (curline = br.readLine() ) != null ) {
-					Map inObj = (Map)serial.loads(curline);	
+					Map inObj = (Map)JSON.loads(curline);	
 					long jobID = Long.parseLong( inObj.get("id").toString() );
 					outSet.add((int)jobID);
-					inputList.add( new KeyValuePair( jobID, 
-							(Long)inObj.get("order"), (String)inObj.get("key") , 
-							inObj.get("value") ) );
+					applet.getDataStore().add(ar, jobID, (Long)inObj.get("order"),
+							(String)inObj.get("key"), inObj.get("value") );
+
 				}
-				applet.getDataStore().add( applet.getPath(), 
-						inst.toString(),
-						inputList );
 			} catch (NumberFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -309,12 +317,21 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	@Override
 	public Iterable<String> getKeys() {
-		return applet.getDataStore().listKeys( applet.getPath(), inst.toString());
+		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+
+		return applet.getDataStore().listKeys(ar);
 	}
 
 	@Override
 	public Iterable<Object> getData(String key) {
-		return applet.getDataStore().get( applet.getPath(), inst.toString(), key);
+		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+		try {
+			return applet.getDataStore().get( ar, key);
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

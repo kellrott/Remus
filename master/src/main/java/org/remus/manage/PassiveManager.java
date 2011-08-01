@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.WorkAgent;
 import org.remus.WorkManager;
 import org.remus.WorkStatus;
+import org.remusNet.JSON;
 
 
 public class PassiveManager implements WorkAgent {
@@ -114,8 +114,7 @@ public class PassiveManager implements WorkAgent {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void doGet(String name, Map params, String workerID, Serializer serial,
-			OutputStream os) throws FileNotFoundException {
+	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 
 		if ( params.containsKey("request") ) {
 			if ( workerID != null ) {
@@ -146,7 +145,7 @@ public class PassiveManager implements WorkAgent {
 					out.put(worker, new HashMap() );
 				}
 			}
-			os.write( serial.dumps( out ).getBytes() );
+			os.write( JSON.dumps( out ).getBytes() );
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -156,20 +155,20 @@ public class PassiveManager implements WorkAgent {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		try {
 
 			BufferedReader br = new BufferedReader( new InputStreamReader(is) );
 			String curline = null;
 			while ((curline = br.readLine()) != null) {
-				Map m = (Map)serial.loads( curline );
+				Map m = (Map)JSON.loads( curline );
 				for ( Object instObj : m.keySet() ) {
 					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {
 						List jobList = (List)((Map)m.get(instObj)).get(appletObj);

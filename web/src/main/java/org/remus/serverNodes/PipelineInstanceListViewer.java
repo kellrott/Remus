@@ -7,11 +7,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.server.RemusPipelineImpl;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.thrift.AppletRef;
 
 public class PipelineInstanceListViewer implements BaseNode {
 
@@ -28,13 +29,14 @@ public class PipelineInstanceListViewer implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		
-		for ( KeyValuePair kv : pipeline.getDataStore().listKeyPairs( "/" + pipeline.getID() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+		for ( KeyValPair kv : pipeline.getDataStore().listKeyPairs(ar) ) {
 			Map out = new HashMap();
 			out.put( kv.getKey(), kv.getValue() );	
 			try {
-				os.write( serial.dumps( out ).getBytes() );
+				os.write( JSON.dumps( out ).getBytes() );
 				os.write("\n".getBytes());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -45,15 +47,15 @@ public class PipelineInstanceListViewer implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

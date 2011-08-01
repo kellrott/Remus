@@ -8,13 +8,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.WorkAgent;
 import org.remus.WorkManager;
 import org.remus.WorkStatus;
 import org.remus.server.RemusApp;
 import org.remus.server.RemusPipelineImpl;
+import org.remusNet.JSON;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +75,7 @@ public class WorkManagerImpl implements BaseNode, WorkManager {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		
 		jobScan();
 		workPoll();
@@ -101,7 +101,7 @@ public class WorkManagerImpl implements BaseNode, WorkManager {
 		out.put("workCounts", wMap );
 		
 		try {
-			os.write( serial.dumps(out).getBytes() );
+			os.write( JSON.dumps(out).getBytes() );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -109,13 +109,13 @@ public class WorkManagerImpl implements BaseNode, WorkManager {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 	}
 
 	@SuppressWarnings("rawtypes")

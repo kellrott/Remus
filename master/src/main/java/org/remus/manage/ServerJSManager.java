@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.WorkAgent;
 import org.remus.WorkManager;
@@ -22,21 +21,21 @@ public class ServerJSManager implements WorkAgent {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		
 	}

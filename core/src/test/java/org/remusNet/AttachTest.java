@@ -13,6 +13,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
 import java.util.Properties;
 
+import junit.framework.Assert;
+
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,12 +69,34 @@ public class AttachTest {
 			fos.write( format.toString().getBytes() );
 			fos.write("\n".getBytes());
 		}
+		is.close();
 		fos.close();
 		String key1 = "key_1";
 
 		fs.copyTo( aRef1, key1, "test_file", fTemp );
 		fTemp.delete();
+
+		File fTemp2 = File.createTempFile("remus", "tmp");
+		fs.copyFrom(aRef1, key1, "test_file", fTemp2 );
+
+		is = AttachTest.class.getResourceAsStream("test.txt");	
+		br = new BufferedReader( new InputStreamReader(is) );
+		
+		BufferedReader br2 = new BufferedReader( new InputStreamReader( new FileInputStream(fTemp2) ) );
+		String curLine2;
+		while ( (curLine = br.readLine()) != null ) {
 			
+			curLine2 = br2.readLine();
+			sha1.reset();
+			
+			byte []digest = sha1.digest( curLine.getBytes() );
+			Formatter format = new Formatter();
+			for (byte b : digest) {
+				format.format("%02x", b);
+			}
+			Assert.assertEquals(curLine2, format.toString());
+		}
+		fTemp2.delete();	
 	}
 	
 	

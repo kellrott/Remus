@@ -75,15 +75,19 @@ service RemusAttachThrift {
 
 	void initAttachment( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 length),
 	
+	i64 getAttachmentSize( 1:AppletRef stack, 2:string key, 3:string name),
+	
 	binary readBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:i32 length ),
 	
 	void writeBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:binary data ),
 	
 	list<string> listAttachments( 1:AppletRef stack, 2:string key ),
 
+	bool hasAttachment( 1:AppletRef stack, 2:string key, 3:string name),
+
 	void deleteAttachment( 1:AppletRef stack, 2:string key, 3:string name ),	
 
-	bool hasAttachment( 1:AppletRef stack, 2:string key, 3:string name)
+	void deleteStack( 1:AppletRef stack )
 	
 }
 

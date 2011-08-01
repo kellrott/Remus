@@ -11,19 +11,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.mpstore.AttachStore;
-import org.mpstore.KeyValuePair;
-import org.mpstore.MPStore;
-import org.mpstore.MPStoreConnectException;
-import org.mpstore.Serializer;
-import org.mpstore.impl.JsonSerializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.manage.WorkManagerImpl;
 import org.remus.serverNodes.ManageApp;
 import org.remus.serverNodes.ServerStatusView;
+import org.remus.serverNodes.StoreInfoView;
 import org.remus.work.RemusAppletImpl;
-import org.remus.work.StoreInfoView;
+import org.remusNet.ConnectionException;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.RemusAttach;
+import org.remusNet.RemusDB;
+import org.remusNet.thrift.AppletRef;
 
 /**
  * Main Interface to Remus applications. In charge of root database interface and pipeline 
@@ -46,39 +47,47 @@ public class RemusApp implements BaseNode {
 	Map<String,BaseNode> children;
 
 	Map params;
-	MPStore rootStore;
-	AttachStore rootAttachStore;
+	RemusDB rootStore;
+	RemusAttach rootAttachStore;
 	private WorkManagerImpl workManage;
 
 	public RemusApp( Map params ) throws RemusDatabaseException {
 		this.params = params;
 		//scanSource(srcbase);
-		loadPipelines();		
+		try {
+			loadPipelines();		
+		} catch (TException e ) {
+			throw new RemusDatabaseException( e.toString() );
+		}
 	}
 
 
-	public void loadPipelines() throws RemusDatabaseException {
+	public void loadPipelines() throws TException {
 		try { 
 			children = new HashMap<String,BaseNode>();
 			children.put("@pipeline", new PipelineView(this) );
 			children.put("@status", new ServerStatusView(this) );
 			children.put("@manage", new ManageApp() );
-			
+
 			children.put("@db", new StoreInfoView( this ) );
-			
+
 			pipelines = new HashMap<String, RemusPipelineImpl>();
 			String mpStore = (String)params.get(RemusApp.CONFIG_STORE);
-			Class<?> mpClass = Class.forName(mpStore);			
-			rootStore = (MPStore) mpClass.newInstance();
-			Serializer serializer = new JsonSerializer();
-			rootStore.initMPStore(serializer, params);			
+			Class<RemusDB> mpClass = (Class<RemusDB>) Class.forName(mpStore);			
+			rootStore = (RemusDB) mpClass.newInstance();
 
+			try {
+				rootStore.init(params);			
+			} catch (ConnectionException e) {
+				throw new TException(e);
+			}
 			String attachStoreName = (String)params.get(RemusApp.CONFIG_ATTACH_STORE);
-			Class<?> attachClass = Class.forName(attachStoreName);			
-			rootAttachStore = (AttachStore) attachClass.newInstance();
-			rootAttachStore.initAttachStore(params);
-			for ( KeyValuePair kv : rootStore.listKeyPairs("/@pipeline", RemusInstance.STATIC_INSTANCE_STR ) ) {
-				loadPipeline(kv.getKey(), rootStore, serializer, rootAttachStore);
+			Class<RemusAttach> attachClass = (Class<RemusAttach>)Class.forName(attachStoreName);			
+			rootAttachStore = (RemusAttach) attachClass.newInstance();
+			rootAttachStore.init(params);
+			AppletRef arPipe = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+			for ( KeyValPair kv : rootStore.listKeyPairs( arPipe ) ) {
+				loadPipeline(kv.getKey(), rootStore, rootAttachStore);
 			}
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -89,18 +98,17 @@ public class RemusApp implements BaseNode {
 		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (MPStoreConnectException e) {
-			throw new RemusDatabaseException(e.toString());
 		} 
 		workManage = new WorkManagerImpl(this);
 		children.put("@work", workManage);
 	}
 
-	public void loadPipeline(String name, MPStore store,
-			Serializer serializer, AttachStore attachStore) {
+	public void loadPipeline(String name, RemusDB store,
+			RemusAttach attachStore) throws TException {
 		RemusPipelineImpl pipeline = new RemusPipelineImpl(this, name, store, attachStore);		
-		for ( KeyValuePair kv : store.listKeyPairs( "/" + name + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR) ) {
-			List<RemusAppletImpl> applets = loadApplet( name, kv.getKey(), store, serializer );
+		AppletRef arPipeline = new AppletRef( name, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		for ( KeyValPair kv : store.listKeyPairs( arPipeline ) ) {
+			List<RemusAppletImpl> applets = loadApplet( name, kv.getKey(), store );
 			for ( RemusAppletImpl applet : applets ) {
 				pipeline.addApplet(applet);
 			}
@@ -110,14 +118,13 @@ public class RemusApp implements BaseNode {
 	}
 
 
-	private List<RemusAppletImpl> loadApplet(String pipelineName, String name, MPStore store, Serializer serializer) {
+	private List<RemusAppletImpl> loadApplet(String pipelineName, String name, RemusDB store ) throws TException {
 
 		List<RemusAppletImpl> out = new LinkedList<RemusAppletImpl>();
 
-		String dbPath = "/" + pipelineName + "/@pipeline";
-
+		AppletRef arPipeline = new AppletRef( pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
 		Map appletObj = null;
-		for ( Object obj : store.get(dbPath, RemusInstance.STATIC_INSTANCE_STR, name) ) {
+		for ( Object obj : store.get( arPipeline, name) ) {
 			appletObj = (Map)obj;		
 		}
 
@@ -173,7 +180,7 @@ public class RemusApp implements BaseNode {
 		} else {
 			//try {
 			Object src = appletObj.get( RemusAppletImpl.SRC );
-			
+
 			if ( src instanceof String ) {
 				String input = (String) src;
 				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
@@ -196,7 +203,7 @@ public class RemusApp implements BaseNode {
 				for (String input : applet.getInputs() ) {
 					outApplet.addInput(input);
 				}
-				
+
 				out.add(outApplet);
 			}
 		}		
@@ -206,33 +213,35 @@ public class RemusApp implements BaseNode {
 
 
 
-	public void deleteApplet(RemusPipelineImpl pipeline, RemusAppletImpl applet) throws RemusDatabaseException {		
+	public void deleteApplet(RemusPipelineImpl pipeline, RemusAppletImpl applet) throws TException {		
 		for ( RemusInstance inst : applet.getInstanceList() ) {
 			applet.deleteInstance(inst);
 		}
 		String dbPath = "/" + pipeline.getID() + "/@pipeline";
-		rootStore.delete(dbPath, RemusInstance.STATIC_INSTANCE_STR, applet.getID() );
+		AppletRef arPipeline = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() );
+		rootStore.deleteStack( arPipeline );
 		loadPipelines();
 	}
 
-	public void deletePipeline(RemusPipelineImpl pipe) throws RemusDatabaseException {
+	public void deletePipeline(RemusPipelineImpl pipe) throws TException {
 		for ( RemusAppletImpl applet : pipe.getMembers() ) {
 			deleteApplet(pipe, applet);
 		}
-		rootStore.delete("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, pipe.getID() );
-		rootStore.delete( "/" + pipe.id + "/@submit", RemusInstance.STATIC_INSTANCE_STR  );
-		rootStore.delete( "/" + pipe.id + "/@instance", RemusInstance.STATIC_INSTANCE_STR  );
-
+		rootStore.deleteValue( new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" ), pipe.getID() );
+		rootStore.deleteStack( new AppletRef( pipe.id, RemusInstance.STATIC_INSTANCE_STR, "/@submit" ) );
+		rootStore.deleteStack( new AppletRef( pipe.id, RemusInstance.STATIC_INSTANCE_STR, "/@instance" ) );		
 		loadPipelines();
 	}
 
-	public void putPipeline(String name, Object data) throws RemusDatabaseException {
-		rootStore.add("/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );		
+	public void putPipeline(String name, Object data) throws TException {
+		AppletRef ar = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		rootStore.add(ar, 0L, 0L, name, data );		
 		loadPipelines();
 	}
 
-	public void putApplet(RemusPipelineImpl pipe, String name, Object data) throws RemusDatabaseException { 
-		rootStore.add("/" + pipe.getID() + "/@pipeline", RemusInstance.STATIC_INSTANCE_STR, 0L, 0L, name, data );
+	public void putApplet(RemusPipelineImpl pipe, String name, Object data) throws TException { 
+		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		rootStore.add( ar, 0L, 0L, name, data );
 		loadPipelines();
 	}	
 
@@ -242,12 +251,12 @@ public class RemusApp implements BaseNode {
 	}
 
 
-	
-	
+
+
 	public WorkManagerImpl getWorkManager() {
 		return workManage;
 	}
-	
+
 	public RemusPipelineImpl getPipeline( String name ) {
 		return pipelines.get(name);
 	}
@@ -264,14 +273,14 @@ public class RemusApp implements BaseNode {
 		return null;
 	}
 
-	public MPStore getRootDatastore() {
+	public RemusDB getRootDatastore() {
 		return rootStore;
 	}
 
-	public AttachStore getRootAttachStore() {
+	public RemusAttach getRootAttachStore() {
 		return rootAttachStore;
 	}
-	
+
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
@@ -279,7 +288,7 @@ public class RemusApp implements BaseNode {
 	}
 
 	@Override
-	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os) throws FileNotFoundException {
+	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 
 		if ( name.length() != 0 ) {
 			throw new FileNotFoundException(name);
@@ -292,7 +301,7 @@ public class RemusApp implements BaseNode {
 		}
 		out.put("@", oList);
 		try {
-			os.write( serial.dumps(out).getBytes() );
+			os.write( JSON.dumps(out).getBytes() );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -300,13 +309,13 @@ public class RemusApp implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException(name);
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException(name);		
 	}
 
@@ -321,7 +330,7 @@ public class RemusApp implements BaseNode {
 	public static final int SUBMIT_CALL = 4;
 
 
-	public void passCall( int type, String path, Map parameterMap, String workerID, Serializer serial, InputStream inputStream, OutputStream outputStream) throws FileNotFoundException {
+	public void passCall( int type, String path, Map parameterMap, String workerID, InputStream inputStream, OutputStream outputStream) throws FileNotFoundException {
 		String [] tmp = path.split("/");
 
 		BaseNode curNode = this;
@@ -339,11 +348,11 @@ public class RemusApp implements BaseNode {
 				}
 				//System.err.println( curNode + " " + sb.toString() );
 				if ( type == GET_CALL )
-					curNode.doGet( sb.toString(), parameterMap, workerID, serial, outputStream );
+					curNode.doGet( sb.toString(), parameterMap, workerID, outputStream );
 				if ( type == PUT_CALL )
-					curNode.doPut( sb.toString(), workerID, serial, inputStream, outputStream );
+					curNode.doPut( sb.toString(), workerID, inputStream, outputStream );
 				if ( type == SUBMIT_CALL )
-					curNode.doSubmit( sb.toString(), workerID, serial, inputStream, outputStream );
+					curNode.doSubmit( sb.toString(), workerID, inputStream, outputStream );
 				if ( type == DELETE_CALL )
 					curNode.doDelete( sb.toString(), parameterMap, workerID );
 				called = true;
@@ -351,11 +360,11 @@ public class RemusApp implements BaseNode {
 		}
 		if ( !called ) {
 			if ( type == GET_CALL )
-				curNode.doGet( "", parameterMap, workerID, serial, outputStream );
+				curNode.doGet( "", parameterMap, workerID, outputStream );
 			if ( type == PUT_CALL )
-				curNode.doPut( "", workerID, serial, inputStream, outputStream );
+				curNode.doPut( "", workerID, inputStream, outputStream );
 			if ( type == SUBMIT_CALL )
-				curNode.doSubmit( "", workerID, serial, inputStream, outputStream );
+				curNode.doSubmit( "", workerID, inputStream, outputStream );
 			if ( type == DELETE_CALL )
 				curNode.doDelete( "", parameterMap, workerID );
 		}
@@ -365,7 +374,7 @@ public class RemusApp implements BaseNode {
 		return params;
 	}
 
-	
+
 
 
 }

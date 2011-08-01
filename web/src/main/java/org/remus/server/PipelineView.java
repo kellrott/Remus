@@ -7,10 +7,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.thrift.AppletRef;
 
 public class PipelineView implements BaseNode {	
 	RemusApp app;
@@ -24,7 +26,7 @@ public class PipelineView implements BaseNode {
 		if ( pipeline != null ) {
 			try {
 				app.deletePipeline( pipeline );
-			} catch (RemusDatabaseException e) {
+			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -32,14 +34,15 @@ public class PipelineView implements BaseNode {
 	}
 
 	@Override
-	public void doGet(String name, Map params, String workerID, Serializer serial, OutputStream os)
+	public void doGet(String name, Map params, String workerID, OutputStream os)
 	throws FileNotFoundException {
 		Map out = new HashMap();		
-		for ( KeyValuePair kv : app.getRootDatastore().listKeyPairs( "/@pipeline", RemusInstance.STATIC_INSTANCE_STR ) ) {
+		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		for ( KeyValPair kv : app.getRootDatastore().listKeyPairs( ar ) ) {
 			out.put(kv.getKey(), kv.getValue());
 		}		
 		try {
-			os.write( serial.dumps(out).getBytes() );
+			os.write( JSON.dumps(out).getBytes() );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,7 +51,7 @@ public class PipelineView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial, InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
 			StringBuilder sb = new StringBuilder();
 			byte [] buffer = new byte[1024];
@@ -57,20 +60,20 @@ public class PipelineView implements BaseNode {
 				sb.append(new String(buffer, 0, len));
 			}
 			System.err.println( sb.toString() );
-			Object data = serial.loads(sb.toString());
+			Object data = JSON.loads(sb.toString());
 			app.putPipeline( name, data );					
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (RemusDatabaseException e) {
+		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

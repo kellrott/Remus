@@ -2,7 +2,9 @@ package org.remusNet;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -32,6 +34,31 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface {
 			offset += size;
 		}
 		fis.close();
+	}
+
+	public void copyFrom(AppletRef stack, String key, String name, File file) throws TException, IOException {
+		long fileSize = getAttachmentSize(stack, key, name);
+		
+		FileOutputStream fos = new FileOutputStream(file);
+		
+		long offset = 0;
+		while ( offset < fileSize ) {
+			ByteBuffer buf = readBlock(stack, key, name, offset, BLOCK_SIZE);
+			fos.write( buf.array() );
+			offset += buf.array().length;
+		}
+	}
+
+	public InputStream readAttachement(AppletRef ar, String string,
+			String string2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void writeAttachment(AppletRef ar, String key, String name, InputStream is) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

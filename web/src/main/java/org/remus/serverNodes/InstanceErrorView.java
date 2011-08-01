@@ -9,12 +9,14 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.thrift.AppletRef;
 
 public class InstanceErrorView implements BaseNode {
 
@@ -33,14 +35,15 @@ public class InstanceErrorView implements BaseNode {
 
 		@Override
 		public void doGet(String name, Map params, String workerID,
-				Serializer serial, OutputStream os)
-						throws FileNotFoundException {
+				OutputStream os)
+		throws FileNotFoundException {
 
-			for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@error", inst.toString() ) ) {
+			AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() + "/@error" );
+			for ( KeyValPair kv : applet.getDataStore().listKeyPairs( ar ) ) {
 				Map out = new HashMap();
 				out.put(kv.getKey(), kv.getValue());
 				try {
-					os.write(serial.dumps(out).getBytes());
+					os.write( JSON.dumps(out).getBytes());
 					os.write("\n".getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -50,14 +53,14 @@ public class InstanceErrorView implements BaseNode {
 		}
 
 		@Override
-		public void doPut(String name, String workerID, Serializer serial,
-				InputStream is, OutputStream os) throws FileNotFoundException {
+		public void doPut(String name, String workerID, InputStream is,
+				OutputStream os) throws FileNotFoundException {
 			throw new FileNotFoundException();
 		}
 
 		@Override
-		public void doSubmit(String name, String workerID, Serializer serial,
-				InputStream is, OutputStream os) throws FileNotFoundException {
+		public void doSubmit(String name, String workerID, InputStream is,
+				OutputStream os) throws FileNotFoundException {
 			throw new FileNotFoundException();
 
 			/*
@@ -101,26 +104,30 @@ public class InstanceErrorView implements BaseNode {
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-			applet.deleteErrors(inst);
+			try {
+				applet.deleteErrors(inst);
+			} catch (TException e) {
+				throw new FileNotFoundException();
+			}
 		}
 	}
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException(); 
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

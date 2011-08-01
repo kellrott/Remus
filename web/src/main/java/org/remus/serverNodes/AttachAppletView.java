@@ -6,10 +6,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
+import org.remusNet.thrift.AppletRef;
 
 public class AttachAppletView implements BaseNode {
 
@@ -29,11 +30,12 @@ public class AttachAppletView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0 ) {
-			for ( String key : applet.getAttachStore().listKeys(applet.getPath(), inst.toString() ) ) {
+			AppletRef ap = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+			for ( String key : applet.getDataStore().listKeys( ap ) ) {
 				try {
-					os.write( serial.dumps( key ).getBytes() );
+					os.write( JSON.dumps( key ).getBytes() );
 					os.write("\n".getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -46,23 +48,20 @@ public class AttachAppletView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@Override
-	public BaseNode getChild(String name) {		
-		if ( applet.getAttachStore().hasKey(  applet.getPath(), inst.toString(), name ) ) {
-			return new AttachListView(applet.getAttachStore(), applet.getPath(), inst.toString(), name );
-		}
-		return null;
+	public BaseNode getChild(String name) {	
+		return new AttachListView(applet.getAttachStore(), applet.getPipeline(), inst, applet.getID(), name );
 	}
 
 }

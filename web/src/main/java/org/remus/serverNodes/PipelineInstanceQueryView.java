@@ -9,13 +9,13 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.langs.JSInterface;
 import org.remus.mapred.MapCallback;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,21 +39,21 @@ public class PipelineInstanceQueryView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, final Serializer serial,
-			final InputStream is, final OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, final InputStream is,
+			final OutputStream os) throws FileNotFoundException {
 
 		RemusAppletImpl applet = pipeline.getApplet(name);
 		if ( applet == null ) {
@@ -83,7 +83,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 					Map out = new HashMap();
 					out.put(key, val);		
 					try {
-						os.write(serial.dumps(out).getBytes());
+						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

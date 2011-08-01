@@ -13,7 +13,11 @@ public class KeyValPair extends KeyValJSONPair{
 		super(kv);
 	}
 
-	Object getValue() {
+	public KeyValPair(String key, Object value, long jobID, long emitID) {
+		super(key, JSON.dumps(value), jobID, emitID);
+	}
+	
+	public Object getValue() {
 		return JSON.loads( getValueJson() );
 	}
 }

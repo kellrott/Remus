@@ -1,4 +1,4 @@
-package org.remus.work;
+package org.remus.serverNodes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,10 +7,9 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.MPStore;
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.server.RemusApp;
+import org.remusNet.JSON;
 
 @SuppressWarnings("unchecked")
 public class StoreInfoView implements BaseNode {
@@ -28,28 +27,28 @@ public class StoreInfoView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 
 		try {
 			Map out = new HashMap();
-			out.put( "dataStore", app.getRootDatastore().getConfig()  );
-			out.put( "attachStore", app.getRootAttachStore().getConfig()  );
+			//out.put( "dataStore", app.getRootDatastore().getConfig()  );
+			//out.put( "attachStore", app.getRootAttachStore().getConfig()  );
 			
-			os.write( serial.dumps( out ).getBytes() );
+			os.write( JSON.dumps( out ).getBytes() );
 		} catch ( IOException e ) {
 
 		}
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
 

@@ -16,9 +16,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.mpstore.Serializer;
-import org.mpstore.impl.JsonSerializer;
-
 /**
  * MasterServlet: Primary servlet interface for web based Remus Server.
  * @author kellrott
@@ -27,7 +24,6 @@ import org.mpstore.impl.JsonSerializer;
 
 public class MasterServlet extends HttpServlet {
 	RemusApp app;
-	Serializer serializer;
 	//	String workDir;
 	String srcDir;
 	Map<String, String> configMap;
@@ -42,7 +38,6 @@ public class MasterServlet extends HttpServlet {
 				String name = (String) names.nextElement();
 				configMap.put(name, config.getInitParameter(name));
 			}
-			serializer = new JsonSerializer();
 			app = new RemusApp(configMap);
 		} catch (RemusDatabaseException e) {
 			throw new ServletException(e.toString());
@@ -77,7 +72,7 @@ public class MasterServlet extends HttpServlet {
 			//}
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
-			app.passCall( RemusApp.GET_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -98,7 +93,7 @@ public class MasterServlet extends HttpServlet {
 			//}			
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}	
@@ -116,7 +111,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.PUT_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -132,7 +127,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.DELETE_CALL, fullPath, req.getParameterMap(), workerID, serializer, is, os);
+			app.passCall( RemusApp.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}					

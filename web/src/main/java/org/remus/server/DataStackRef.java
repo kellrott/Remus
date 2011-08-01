@@ -1,36 +1,44 @@
 package org.remus.server;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.mpstore.MPStore;
+
+import org.apache.thrift.TException;
 import org.remus.RemusInstance;
 import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
+import org.remusNet.RemusDB;
+import org.remusNet.thrift.AppletRef;
 
 public class DataStackRef {
 
 	RemusInstance instance;
-	String viewPath;
+	AppletRef viewPath;
 	List<String> keys = null;
-	MPStore ds;
+	RemusDB ds;
 	
 	private DataStackRef() {
 
 	}
 
-	public static DataStackRef fromSubmission( RemusAppletImpl applet, String input, RemusInstance instance) {
+	@SuppressWarnings("unchecked")
+	public static DataStackRef fromSubmission( RemusAppletImpl applet, String input, RemusInstance instance) throws TException {
 		DataStackRef out = new DataStackRef();
 		out.instance = instance;
 		out.ds = applet.getDataStore();
+		
+		AppletRef arInstance = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
+		AppletRef arSubmit   = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		
+		
 		if ( applet.getInput().compareTo("?") == 0 ) {
-			for ( Object instObj : out.ds.get( applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, instance.toString() ) ) {
+			for ( Object instObj : out.ds.get( arInstance, instance.toString() ) ) {
 				Map inputInfo = (Map)((Map)instObj).get(Submission.InputField);
 				String instanceStr = (String) inputInfo.get(Submission.InstanceField);
 				String appletStr = (String) inputInfo.get( "_applet" );				
-				for ( Object subObj : out.ds.get( "/" + applet.getPipeline().getID() + "/@submit" , RemusInstance.STATIC_INSTANCE_STR, instanceStr) ) {
+				for ( Object subObj : out.ds.get( arSubmit, instanceStr) ) {
 					instanceStr = (String)((Map)subObj).get(Submission.InstanceField);
 				}
 				if ( inputInfo.containsKey( Submission.KeysField ) ) {
@@ -40,10 +48,10 @@ public class DataStackRef {
 					}
 				}
 				out.instance = new RemusInstance(instanceStr);
-				out.viewPath = "/" + applet.getPipeline().getID() + "/" + appletStr;
+				out.viewPath = new AppletRef( applet.getPipeline().getID(), out.instance.toString(), appletStr );
 			}
 		} else {
-			out.viewPath = "/" + applet.getPipeline().getID() + "/" + input;
+			out.viewPath = new AppletRef( applet.getPipeline().getID(), out.instance.toString(), input );
 		}
 		return out;
 	}
@@ -53,17 +61,17 @@ public class DataStackRef {
 		return "/" + applet.getPipeline().getID() + "/" + instance.toString() + "/" + ref;
 	}
 
-	public long getKeyCount( MPStore ds, int maxCount ) {
+	public long getKeyCount( RemusDB ds, int maxCount ) throws TException {
 		if ( keys != null )
 			return keys.size();
-		return ds.keyCount( viewPath, instance.toString(), maxCount );			
+		return ds.keyCount( viewPath, maxCount );			
 	}
 
-	public Iterable<String> listKeys( MPStore ds ) {
+	public Iterable<String> listKeys( RemusDB ds ) {
 		if ( keys != null ) {
 			return keys;
 		}
-		return ds.listKeys(viewPath, instance.toString());
+		return ds.listKeys(viewPath);
 	}	
 
 }

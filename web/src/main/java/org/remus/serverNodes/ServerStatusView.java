@@ -9,10 +9,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.Serializer;
 import org.remus.BaseNode;
 import org.remus.server.RemusApp;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
 
 public class ServerStatusView implements BaseNode {
 
@@ -29,7 +29,7 @@ public class ServerStatusView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		try {
 			Map outMap = new HashMap();				
 			Map workerMap = new HashMap();
@@ -54,7 +54,7 @@ public class ServerStatusView implements BaseNode {
 			//outMap.put("finishRate", workManage.getFinishRate() );
 			 
 			 */
-			os.write( serial.dumps(outMap).getBytes() );
+			os.write( JSON.dumps(outMap).getBytes() );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,15 +62,15 @@ public class ServerStatusView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

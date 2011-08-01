@@ -7,11 +7,13 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
+import org.remusNet.thrift.AppletRef;
 
 public class PipelineInstanceView implements BaseNode {
 
@@ -31,19 +33,24 @@ public class PipelineInstanceView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
+			OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0)  {
 			for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-				for ( Object instObj : applet.getDataStore().get(applet.getPath() + AppletInstanceStatusView.InstanceStatusName, RemusInstance.STATIC_INSTANCE_STR, inst.toString() ) ) {
-					Map out = new HashMap();
-					out.put( applet.getID(), instObj );	
-					try {
-						os.write( serial.dumps( out ).getBytes() );
-						os.write("\n".getBytes());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + AppletInstanceStatusView.InstanceStatusName );
+				try {
+					for ( Object instObj : applet.getDataStore().get(ar, inst.toString() ) ) {
+						Map out = new HashMap();
+						out.put( applet.getID(), instObj );	
+						try {
+							os.write( JSON.dumps( out ).getBytes() );
+							os.write("\n".getBytes());
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
+				} catch (TException e) {
+					e.printStackTrace();
 				}
 			}
 		} else {
@@ -53,15 +60,15 @@ public class PipelineInstanceView implements BaseNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doSubmit(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
@@ -72,23 +79,23 @@ public class PipelineInstanceView implements BaseNode {
 		if ( applet != null ) {
 			return new AppletInstanceView(applet, inst);
 		}
-		
+
 		if ( name.compareTo("@error") == 0 ) {
 			return new InstanceErrorView(pipeline, inst);
 		}
-		
+
 		if ( name.compareTo("@status") == 0 ) {
 			return new PipelineInstanceStatusView(pipeline, inst);
 		}
-		
+
 		if ( name.compareTo("@attach") == 0 ) {
 			return new AttachInstanceView(pipeline, inst);			
 		}
-		
+
 		if ( name.compareTo("@query") == 0 ) {
 			return new PipelineInstanceQueryView(pipeline,inst);
 		}
-				
+
 		return null;		
 	}
 

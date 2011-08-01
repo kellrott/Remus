@@ -11,14 +11,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.mpstore.KeyValuePair;
-import org.mpstore.Serializer;
+import org.apache.thrift.TException;
 import org.remus.BaseNode;
 import org.remus.RemusInstance;
 import org.remus.langs.JSInterface;
 import org.remus.mapred.MapCallback;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
+import org.remusNet.JSON;
+import org.remusNet.KeyValPair;
+import org.remusNet.thrift.AppletRef;
 
 public class PipelineStatusView implements BaseNode, BaseStackNode {
 
@@ -35,25 +37,26 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID,
-			Serializer serial, OutputStream os) throws FileNotFoundException {
-		
+			OutputStream os) throws FileNotFoundException {
+
 		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
 			try {
-				os.write( serial.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline ) ).getBytes() );
+				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline ) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return;
 		}
-		
+
 		if ( name.length() == 0 ) {
 			for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+				AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+				for ( KeyValPair kv : applet.getDataStore().listKeyPairs( arInstance ) ) {
 					Map out = new HashMap();
 					out.put( kv.getKey() + ":" + applet.getID(), kv.getValue() );	
 					try {
-						os.write( serial.dumps( out ).getBytes() );
+						os.write( JSON.dumps( out ).getBytes() );
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -65,30 +68,40 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			String [] tmp = name.split(":");
 			if ( tmp.length == 1 ) {
 				for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-					for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, tmp[0]) ) {
+					try {
+						AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+						for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
+							Map out = new HashMap();
+							out.put( applet.getID(), obj );	
+							try {
+								os.write( JSON.dumps( out ).getBytes() );
+								os.write("\n".getBytes());
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+					} catch (TException e) {
+						e.printStackTrace();
+					}
+				}
+			} else if ( tmp.length == 2 ) {
+				RemusAppletImpl applet = pipeline.getApplet( tmp[1] );
+				AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+				try {
+					for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
 						Map out = new HashMap();
 						out.put( applet.getID(), obj );	
 						try {
-							os.write( serial.dumps( out ).getBytes() );
+							os.write( JSON.dumps( out ).getBytes() );
 							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
-				}
-			} else if ( tmp.length == 2 ) {
-				RemusAppletImpl applet = pipeline.getApplet( tmp[1] );
-				for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, tmp[0]) ) {
-					Map out = new HashMap();
-					out.put( applet.getID(), obj );	
-					try {
-						os.write( serial.dumps( out ).getBytes() );
-						os.write("\n".getBytes());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				} catch (TException e) {
+					e.printStackTrace();
 				}
 			}
 		}
@@ -96,15 +109,15 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	}
 
 	@Override
-	public void doPut(String name, String workerID, Serializer serial,
-			InputStream is, OutputStream os) throws FileNotFoundException {
+	public void doPut(String name, String workerID, InputStream is,
+			OutputStream os) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void doSubmit(String name, String workerID, final Serializer serial,
-			InputStream is, final OutputStream os) throws FileNotFoundException {		
+	public void doSubmit(String name, String workerID, InputStream is,
+			final OutputStream os) throws FileNotFoundException {		
 		try {
 			char [] buffer = new char[1024];
 			int len;
@@ -116,7 +129,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 					sb.append(buffer, 0, len);
 				}
 			} while ( len >= 0 );
-			
+
 			JSInterface js = new JSInterface();
 			js.init(null);
 			js.initMapper(sb.toString());
@@ -126,7 +139,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 					Map out = new HashMap();
 					out.put(key, val);		
 					try {
-						os.write(serial.dumps(out).getBytes());
+						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -135,13 +148,13 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				}
 			}
 			);
-			
-			
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	@Override
@@ -157,8 +170,13 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			RemusInstance inst = new RemusInstance(tmp[0]);
 			RemusAppletImpl applet = pipeline.getApplet( tmp[1] );
 			LinkedList<Object> out = new LinkedList<Object>();
-			for ( Object obj : applet.getDataStore().get(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR, inst.toString()) ) {
-				out.add(obj);
+			AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+			try { 
+				for ( Object obj : applet.getDataStore().get(arInstance, inst.toString()) ) {
+					out.add(obj);
+				}
+			} catch (TException e) {
+				e.printStackTrace();
 			}
 			return out;
 		}
@@ -169,7 +187,8 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	public Iterable<String> getKeys() {
 		LinkedList<String> list = new LinkedList<String>();
 		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-			for ( String key : applet.getDataStore().listKeys(applet.getPath() + "/@instance", RemusInstance.STATIC_INSTANCE_STR) ) {
+			AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+			for ( String key : applet.getDataStore().listKeys(arInstance) ) {
 				list.add( key + ":" + applet.getID() );	
 			}
 		}
