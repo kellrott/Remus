@@ -37,15 +37,12 @@ public class MPStoreTest {
 
 		String instance1 = "00-testing-01";
 		String instance2 = "00-testing-02";
-		String instance3 = "00-testing-02";
 
 		String applet1 = "@testfile_1";
 		String applet2 = "@testfile_2";
-		String applet3 = "@testfile_3";
 
 		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
 		AppletRef aRef2 = new AppletRef("unitTest", instance2, applet2);
-		AppletRef aRef3 = new AppletRef("unitTest", instance3, applet3);
 		
 		String keyPath2 ="hello";
 

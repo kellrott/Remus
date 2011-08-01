@@ -49,6 +49,9 @@ public class FileServer extends RemusAttach {
 			long length) throws TException {
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
         try {
+        	if (!attachFile.getParentFile().exists()) {
+        		attachFile.getParentFile().mkdirs();
+        	}
 			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
 			f.setLength(length);
 			f.close();

@@ -1,4 +1,4 @@
-package org.remusNet;
+package org.remusNet.cassandra;
 
 import java.util.NoSuchElementException;
 

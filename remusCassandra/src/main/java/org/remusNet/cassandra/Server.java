@@ -1,4 +1,4 @@
-package org.remusNet;
+package org.remusNet.cassandra;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -33,12 +33,13 @@ import org.apache.thrift.transport.TTransportException;
 
 import org.remusNet.thrift.AppletRef;
 import org.remusNet.thrift.KeyValJSONPair;
+import org.remusNet.ConnectionException;
 import org.remusNet.RemusDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class Cassandra extends RemusDB {
+public class Server extends RemusDB {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	ThriftClientPool clientPool;
@@ -58,7 +59,7 @@ public class Cassandra extends RemusDB {
 	@Override
 	public void init( Map paramMap) throws ConnectionException {
 
-		logger = LoggerFactory.getLogger(Cassandra.class);
+		logger = LoggerFactory.getLogger(Server.class);
 
 		columnFamily = (String)paramMap.get(COLUMN_FAMILY);
 		keySpace     = (String)paramMap.get(KEY_SPACE);

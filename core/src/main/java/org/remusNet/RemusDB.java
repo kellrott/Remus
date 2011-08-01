@@ -12,7 +12,7 @@ import org.remusNet.thrift.RemusDBThrift.Iface;
 
 public abstract class RemusDB implements Iface {
 
-	abstract void init(Map params) throws ConnectionException;
+	abstract public void init(Map params) throws ConnectionException;
 
 	void add( AppletRef stack, long jobID, long emitID, String key, Object object ) throws TException {
 		addData(stack, jobID,emitID, key, JSON.dumps(object));

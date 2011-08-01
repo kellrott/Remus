@@ -1,4 +1,4 @@
-package org.remusNet;
+package org.remusNet.cassandra;
 
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.commons.pool.BasePoolableObjectFactory;
