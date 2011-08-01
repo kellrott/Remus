@@ -2,10 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.remus</groupId>
-  <artifactId>remus-master</artifactId>
+  <artifactId>remus-fs</artifactId>
   <packaging>jar</packaging>
   <version>0.1</version>
-  <name>Remus Work Master</name>
+  <name>Remus FileServer</name>
   <url>http://maven.apache.org</url>
   
   <build>
@@ -51,20 +51,5 @@
       <artifactId>slf4j-simple</artifactId>
       <version>1.6.1</version>
     </dependency>        
-    <dependency>
-      <groupId>commons-pool</groupId>
-      <artifactId>commons-pool</artifactId>
-      <version>20030825.183949</version>
-    </dependency>
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>rhino</groupId>
-      <artifactId>js</artifactId>
-      <version>1.7R1</version>
-    </dependency>
   </dependencies>
 </project>

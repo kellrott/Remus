@@ -6,3 +6,5 @@ build
 *.pyc
 target
 .pydevproject
+gen-java
+gen-py

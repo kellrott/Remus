@@ -1,6 +1,7 @@
 org.remus.port = 16017
-org.remus.mpstore = org.mpstore.impl.ThriftStore
-org.remus.attachstore = org.mpstore.impl.FileAttachStore
+
+org.remus.DB_DRIVER = org.remusNet.cassandra.Server
+org.remus.ATTACH_DRIVER = org.remusNet.fs.FileServer
 
 org.mpstore.FileAttachStore.dir = /opt/remus
 org.mpstore.FileAttachStore.shared = true
