@@ -1,7 +1,6 @@
 package org.remusNet;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,12 +42,20 @@ public abstract class RemusDB implements Iface {
 	}
 
 	public Iterable<String> listKeys(AppletRef applet) {
-		// TODO Auto-generated method stub
-		return null;
+		return new RemusDBSliceIterator<String>(this, applet, "", "", false) {
+			@Override
+			void processKeyValue(String key, Object val, long jobID, long emitID) {
+				addElement(key);
+			}			
+		};		
 	}
 
-	public Iterable<KeyValPair> listKeyPairs(AppletRef arPipe) {
-		// TODO Auto-generated method stub
-		return null;
+	public Iterable<KeyValPair> listKeyPairs(AppletRef applet) {	
+		return new RemusDBSliceIterator<KeyValPair>(this, applet, "", "", true) {
+			@Override
+			void processKeyValue(String key, Object val, long jobID, long emitID) {
+				addElement(new KeyValPair(key, val, jobID, emitID));
+			}			
+		};		
 	}
 }

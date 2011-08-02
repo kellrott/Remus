@@ -20,8 +20,8 @@ public class AttachListView implements BaseNode {
 	String key, applet;
 	RemusInstance instance;
 	RemusPipeline pipeline;
-	
-	
+
+
 	public AttachListView(RemusAttach attach, RemusPipeline pipeline, RemusInstance inst, String applet, String key) {
 		this.attach = attach;
 		this.instance = inst;
@@ -34,7 +34,7 @@ public class AttachListView implements BaseNode {
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		throw new FileNotFoundException();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void doGet(String name, Map params, String workerID,
@@ -80,13 +80,24 @@ public class AttachListView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		if ( name.length() != 0 ) {	
-			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet );
-			attach.writeAttachment( ar, key, name, is );
+			try {
+				AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet );
+				OutputStream as = attach.writeAttachment(ar, key, name);
+				byte [] buffer = new byte[1024];
+				int readLen;
+				while ((readLen=is.read(buffer)) > 0) {
+					as.write(buffer, 0, readLen);
+				}
+				as.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new FileNotFoundException();
+			}
 		} else {
 			throw new FileNotFoundException();
 		}
 	}
-	
+
 	@Override
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {

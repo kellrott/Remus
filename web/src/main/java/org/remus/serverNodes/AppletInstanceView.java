@@ -158,7 +158,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
-			AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+			AppletRef ar = new AppletRef(applet.getPipeline().getID(), inst.toString(), applet.getID());
 
 			if ( name.length() > 0 ) {
 				String [] tmp = name.split("/");
@@ -178,7 +178,13 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 						e.printStackTrace();
 					}
 				} else {
-					applet.getAttachStore().writeAttachment( ar, tmp[0], tmp[1], is );
+					OutputStream as = applet.getAttachStore().writeAttachment(ar, tmp[0], tmp[1]);
+					byte [] buffer = new byte[1024];
+					int readLen;
+					while ((readLen=is.read(buffer)) > 0) {
+						as.write(buffer, 0, readLen);
+					}
+					as.close();
 				}
 			} else {
 				StringBuilder sb = new StringBuilder();
@@ -188,10 +194,10 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					sb.append(new String(buffer, 0, len));
 				}
 				String iStr = sb.toString();
-				if ( iStr.length() > 0 ) {
-					Map data = (Map) JSON.loads( iStr );
-					if ( data != null ) {
-						for ( Object key : data.keySet() ) {
+				if (iStr.length() > 0) {
+					Map data = (Map) JSON.loads(iStr);
+					if (data != null) {
+						for (Object key : data.keySet()) {
 							try {
 							applet.getDataStore().add( ar,
 									0L, 0L,

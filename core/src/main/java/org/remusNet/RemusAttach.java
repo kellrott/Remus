@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -97,10 +98,58 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface {
 		return null;
 	}
 
+	
+	private class SendOnClose extends OutputStream {
 
-	public void writeAttachment(AppletRef ar, String key, String name, InputStream is) {
-		// TODO Auto-generated method stub
+		private AppletRef stack;
+		private String key;
+		private String name;
+		private File file;
+		private FileOutputStream fos;
+		
+		public SendOnClose(AppletRef stack, String key, String name) throws IOException {
+			this.stack = stack;
+			this.key = key;
+			this.name = name;
+			file = File.createTempFile("remus", "trans");
+			fos = new FileOutputStream(file);
+		}
+		
+		@Override
+		public void write(int b) throws IOException {
+			fos.write(b);			
+		}
+		
+		@Override
+		public void close() throws IOException {
+			super.close();
+			fos.close();
+			long fileSize = file.length();
+			try {
+				initAttachment(stack, key, name, fileSize);
+				byte [] buffer = new byte[BLOCK_SIZE];
+				long offset = 0;
+				FileInputStream fis = new FileInputStream(file);
+				while (offset < fileSize) {
+					int readSize = fis.read(buffer);
+					ByteBuffer buff = ByteBuffer.allocate(readSize);
+					for (int i = 0; i < readSize; i++) {
+						buff.array()[i] = buffer[i];
+					}
+					writeBlock(stack, key, name, offset, buff);
+					offset += readSize;
+				}
+				fis.close();
+				file.delete();
+			} catch (TException e) {
+				throw new IOException(e);
+			}			
+		}		
+	}
+	
 
+	public OutputStream writeAttachment(AppletRef stack, String key, String name) throws IOException {
+		return new SendOnClose(stack, key, name);		
 	}
 
 }
