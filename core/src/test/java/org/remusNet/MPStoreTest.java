@@ -57,7 +57,7 @@ public class MPStoreTest {
 		}
 
 		for ( int i = 0; i < 100; i++) {
-			ds.add( aRef2, 0L, 0L, "key_" + Integer.toString(i), "value" );
+			ds.add( aRef2, 0L, 0L, "key_" + Integer.toString(i), "value_" + i );
 		}
 
 		int count = 0;
@@ -80,6 +80,7 @@ public class MPStoreTest {
 		count = 0;
 		for ( KeyValPair kv : ds.keyValSlice(aRef2, "", 200) ) {
 			count++;
+			System.err.println( kv.getValue() );
 		}
 		Assert.assertTrue( count == 100 );
 

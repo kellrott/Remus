@@ -71,7 +71,7 @@ public class Server extends RemusDB {
 			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
 
 		logger.info( "CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace );
-		
+
 		clientPool = new ThriftClientPool(serverName,serverPort,keySpace );
 
 		if ( paramMap.containsKey( INST_COLUMNS ) ) {
@@ -178,20 +178,21 @@ public class Server extends RemusDB {
 		return columns.get(inst);
 	}
 
-	
-	private String stack2column(AppletRef stack ) {
+
+	private String stack2column(AppletRef stack) {
 		return stack.instance + stack.pipeline + stack.applet;
 	}
-	
-	
+
+
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws TException {
 
 
 		final String column = stack2column(stack);
-		final ByteBuffer superColumn = ByteBuffer.wrap( key.getBytes());
-		final String colName = Long.toString(jobID) + "_" + Long.toString(emitID);
+		final ByteBuffer superColumn = ByteBuffer.wrap(key.getBytes());
+		final String colName = 
+			Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap(data.getBytes());
 
 		String curCF = columnFamily;
@@ -225,7 +226,7 @@ public class Server extends RemusDB {
 			e.printStackTrace();
 		}
 
-		
+
 	}
 
 	@Override
@@ -252,8 +253,8 @@ public class Server extends RemusDB {
 					ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
 					if ( res != null )
 						returnVal = true;
-				} catch (NoSuchElementException e) {					
-				} catch (NotFoundException e) {					
+				} catch (NoSuchElementException e) {
+				} catch (NotFoundException e) {
 				}
 				return returnVal;
 			}			
@@ -275,7 +276,7 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnPath cp = new ColumnPath( curCF );		
+		final ColumnPath cp = new ColumnPath(curCF);
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
 			@Override
@@ -318,7 +319,7 @@ public class Server extends RemusDB {
 			TimedOutException, TException {
 
 				long clock = System.currentTimeMillis() * 1000;
-				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+				client.remove(ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
 				return null;
 			}
 		};
@@ -474,8 +475,8 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey,
-			int count) throws TException {
+	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, final String startKey,
+			final int count) throws TException {
 
 		final String superColumn = stack2column(stack);
 		String curCF = columnFamily;
@@ -485,7 +486,41 @@ public class Server extends RemusDB {
 			e1.printStackTrace();
 		}
 		final ColumnParent cp = new ColumnParent( curCF );
-		
+
+		ThriftCaller<List<KeyValJSONPair>> keyValSlice = new ThriftCaller<List<KeyValJSONPair>>(clientPool) {			
+			@Override
+			protected List<KeyValJSONPair> request(Client client)
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
+
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()), ByteBuffer.wrap("".getBytes()), false, count);
+				SlicePredicate slice = new SlicePredicate();	 
+				slice.setSlice_range(sRange);
+				List<ColumnOrSuperColumn> res = client.get_slice(ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
+
+				List<KeyValJSONPair> out = new LinkedList<KeyValJSONPair>();
+
+				for (ColumnOrSuperColumn scol : res) {		
+					String key = new String(scol.getSuper_column().getName());
+					for (Column col : scol.getSuper_column().getColumns()) {
+						String itemName = new String(col.getName());
+						String [] tmp = itemName.split("_");
+						long jobID = Long.parseLong(tmp[0]);
+						long emitID = Long.parseLong(tmp[1]);
+						KeyValJSONPair kv = new KeyValJSONPair(
+								key, new String(col.getValue()), jobID, emitID);
+						out.add(kv);
+					}
+				}
+				return out;
+			}
+		};
+		try {
+			return keyValSlice.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		/*
 		ThriftSliceIterator<KeyValJSONPair> out = new ThriftSliceIterator<KeyValJSONPair>(clientPool, superColumn, curCF, startKey, "", count) {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
@@ -495,9 +530,9 @@ public class Server extends RemusDB {
 					String [] tmp = itemName.split("_");
 					long jobID = Long.parseLong(  tmp[0] );
 					long emitID = Long.parseLong( tmp[1] );
-					
+
 					KeyValJSONPair kv = new KeyValJSONPair(key, new String(col.getValue()), jobID, emitID);
-					
+
 					addElement( kv );
 				}
 			}
@@ -508,6 +543,10 @@ public class Server extends RemusDB {
 			outList.add(kv);
 		}
 		return outList;
+		 */
+
+		return null;
+
 	}
 
 }

@@ -15,8 +15,6 @@ import org.remusNet.thrift.AppletRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.net.TelnetProtocolException;
-
 public class WorkStatusImpl implements WorkStatus {
 	private RemusInstance inst;
 	private RemusAppletImpl applet;

@@ -16,15 +16,21 @@ import org.remusNet.thrift.AppletRef;
 
 public class FileServer extends RemusAttach {
 
+	/**
+	 * Location in the file system the attachments are stored
+	 */
 	private File basePath;
+	/**
+	 * Is the directory shared?
+	 */
 	private Boolean dirShared;
 	public final static String DIR_NAME    = "org.mpstore.FileAttachStore.dir";
 	public final static String DIR_SHARED  = "org.mpstore.FileAttachStore.shared";
 
 	@Override
 	public void init(Map params) {
-		this.basePath = new File( (String)params.get( DIR_NAME ) );
-		this.dirShared = Boolean.valueOf( (String) params.get( DIR_SHARED ) ); 		
+		this.basePath = new File((String) params.get(DIR_NAME));
+		this.dirShared = Boolean.valueOf((String) params.get(DIR_SHARED)); 		
 	}
 
 	@Override
@@ -36,7 +42,7 @@ public class FileServer extends RemusAttach {
 
 	public static boolean deleteDir(File dir) {
 		if (dir.isDirectory()) {
-			for (File child:dir.listFiles() ) {
+			for (File child : dir.listFiles()) {
 				boolean success = deleteDir(child);
 				if (!success) {
 					return false;
