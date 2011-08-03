@@ -24,7 +24,7 @@ public class RemusWorker {
 
   public interface Iface {
 
-    public String startJob(StackRef input, WorkDesc work) throws org.apache.thrift.TException;
+    public String startJob(String dataServer, AppletRef input, WorkDesc work) throws org.apache.thrift.TException;
 
     public WorkStatus workStatus(String jobID) throws org.apache.thrift.TException;
 
@@ -32,7 +32,7 @@ public class RemusWorker {
 
   public interface AsyncIface {
 
-    public void startJob(StackRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startJob_call> resultHandler) throws org.apache.thrift.TException;
+    public void startJob(String dataServer, AppletRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.startJob_call> resultHandler) throws org.apache.thrift.TException;
 
     public void workStatus(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.workStatus_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -75,16 +75,17 @@ public class RemusWorker {
       return this.oprot_;
     }
 
-    public String startJob(StackRef input, WorkDesc work) throws org.apache.thrift.TException
+    public String startJob(String dataServer, AppletRef input, WorkDesc work) throws org.apache.thrift.TException
     {
-      send_startJob(input, work);
+      send_startJob(dataServer, input, work);
       return recv_startJob();
     }
 
-    public void send_startJob(StackRef input, WorkDesc work) throws org.apache.thrift.TException
+    public void send_startJob(String dataServer, AppletRef input, WorkDesc work) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startJob", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       startJob_args args = new startJob_args();
+      args.setDataServer(dataServer);
       args.setInput(input);
       args.setWork(work);
       args.write(oprot_);
@@ -166,18 +167,20 @@ public class RemusWorker {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void startJob(StackRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<startJob_call> resultHandler) throws org.apache.thrift.TException {
+    public void startJob(String dataServer, AppletRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<startJob_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      startJob_call method_call = new startJob_call(input, work, resultHandler, this, protocolFactory, transport);
+      startJob_call method_call = new startJob_call(dataServer, input, work, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class startJob_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private StackRef input;
+      private String dataServer;
+      private AppletRef input;
       private WorkDesc work;
-      public startJob_call(StackRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<startJob_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public startJob_call(String dataServer, AppletRef input, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<startJob_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.dataServer = dataServer;
         this.input = input;
         this.work = work;
       }
@@ -185,6 +188,7 @@ public class RemusWorker {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startJob", org.apache.thrift.protocol.TMessageType.CALL, 0));
         startJob_args args = new startJob_args();
+        args.setDataServer(dataServer);
         args.setInput(input);
         args.setWork(work);
         args.write(prot);
@@ -286,7 +290,7 @@ public class RemusWorker {
         }
         iprot.readMessageEnd();
         startJob_result result = new startJob_result();
-        result.success = iface_.startJob(args.input, args.work);
+        result.success = iface_.startJob(args.dataServer, args.input, args.work);
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("startJob", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
@@ -326,16 +330,19 @@ public class RemusWorker {
   public static class startJob_args implements org.apache.thrift.TBase<startJob_args, startJob_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("startJob_args");
 
-    private static final org.apache.thrift.protocol.TField INPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("input", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-    private static final org.apache.thrift.protocol.TField WORK_FIELD_DESC = new org.apache.thrift.protocol.TField("work", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField DATA_SERVER_FIELD_DESC = new org.apache.thrift.protocol.TField("dataServer", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField INPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("input", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField WORK_FIELD_DESC = new org.apache.thrift.protocol.TField("work", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
-    public StackRef input;
+    public String dataServer;
+    public AppletRef input;
     public WorkDesc work;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      INPUT((short)1, "input"),
-      WORK((short)2, "work");
+      DATA_SERVER((short)1, "dataServer"),
+      INPUT((short)2, "input"),
+      WORK((short)3, "work");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -350,9 +357,11 @@ public class RemusWorker {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // INPUT
+          case 1: // DATA_SERVER
+            return DATA_SERVER;
+          case 2: // INPUT
             return INPUT;
-          case 2: // WORK
+          case 3: // WORK
             return WORK;
           default:
             return null;
@@ -398,8 +407,10 @@ public class RemusWorker {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.DATA_SERVER, new org.apache.thrift.meta_data.FieldMetaData("dataServer", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.INPUT, new org.apache.thrift.meta_data.FieldMetaData("input", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StackRef.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class)));
       tmpMap.put(_Fields.WORK, new org.apache.thrift.meta_data.FieldMetaData("work", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WorkDesc.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -410,10 +421,12 @@ public class RemusWorker {
     }
 
     public startJob_args(
-      StackRef input,
+      String dataServer,
+      AppletRef input,
       WorkDesc work)
     {
       this();
+      this.dataServer = dataServer;
       this.input = input;
       this.work = work;
     }
@@ -422,8 +435,11 @@ public class RemusWorker {
      * Performs a deep copy on <i>other</i>.
      */
     public startJob_args(startJob_args other) {
+      if (other.isSetDataServer()) {
+        this.dataServer = other.dataServer;
+      }
       if (other.isSetInput()) {
-        this.input = new StackRef(other.input);
+        this.input = new AppletRef(other.input);
       }
       if (other.isSetWork()) {
         this.work = new WorkDesc(other.work);
@@ -436,15 +452,40 @@ public class RemusWorker {
 
     @Override
     public void clear() {
+      this.dataServer = null;
       this.input = null;
       this.work = null;
     }
 
-    public StackRef getInput() {
+    public String getDataServer() {
+      return this.dataServer;
+    }
+
+    public startJob_args setDataServer(String dataServer) {
+      this.dataServer = dataServer;
+      return this;
+    }
+
+    public void unsetDataServer() {
+      this.dataServer = null;
+    }
+
+    /** Returns true if field dataServer is set (has been assigned a value) and false otherwise */
+    public boolean isSetDataServer() {
+      return this.dataServer != null;
+    }
+
+    public void setDataServerIsSet(boolean value) {
+      if (!value) {
+        this.dataServer = null;
+      }
+    }
+
+    public AppletRef getInput() {
       return this.input;
     }
 
-    public startJob_args setInput(StackRef input) {
+    public startJob_args setInput(AppletRef input) {
       this.input = input;
       return this;
     }
@@ -490,11 +531,19 @@ public class RemusWorker {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case DATA_SERVER:
+        if (value == null) {
+          unsetDataServer();
+        } else {
+          setDataServer((String)value);
+        }
+        break;
+
       case INPUT:
         if (value == null) {
           unsetInput();
         } else {
-          setInput((StackRef)value);
+          setInput((AppletRef)value);
         }
         break;
 
@@ -511,6 +560,9 @@ public class RemusWorker {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case DATA_SERVER:
+        return getDataServer();
+
       case INPUT:
         return getInput();
 
@@ -528,6 +580,8 @@ public class RemusWorker {
       }
 
       switch (field) {
+      case DATA_SERVER:
+        return isSetDataServer();
       case INPUT:
         return isSetInput();
       case WORK:
@@ -548,6 +602,15 @@ public class RemusWorker {
     public boolean equals(startJob_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_dataServer = true && this.isSetDataServer();
+      boolean that_present_dataServer = true && that.isSetDataServer();
+      if (this_present_dataServer || that_present_dataServer) {
+        if (!(this_present_dataServer && that_present_dataServer))
+          return false;
+        if (!this.dataServer.equals(that.dataServer))
+          return false;
+      }
 
       boolean this_present_input = true && this.isSetInput();
       boolean that_present_input = true && that.isSetInput();
@@ -583,6 +646,16 @@ public class RemusWorker {
       int lastComparison = 0;
       startJob_args typedOther = (startJob_args)other;
 
+      lastComparison = Boolean.valueOf(isSetDataServer()).compareTo(typedOther.isSetDataServer());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetDataServer()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dataServer, typedOther.dataServer);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetInput()).compareTo(typedOther.isSetInput());
       if (lastComparison != 0) {
         return lastComparison;
@@ -620,15 +693,22 @@ public class RemusWorker {
           break;
         }
         switch (field.id) {
-          case 1: // INPUT
+          case 1: // DATA_SERVER
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.dataServer = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // INPUT
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.input = new StackRef();
+              this.input = new AppletRef();
               this.input.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // WORK
+          case 3: // WORK
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.work = new WorkDesc();
               this.work.read(iprot);
@@ -651,6 +731,11 @@ public class RemusWorker {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.dataServer != null) {
+        oprot.writeFieldBegin(DATA_SERVER_FIELD_DESC);
+        oprot.writeString(this.dataServer);
+        oprot.writeFieldEnd();
+      }
       if (this.input != null) {
         oprot.writeFieldBegin(INPUT_FIELD_DESC);
         this.input.write(oprot);
@@ -670,6 +755,14 @@ public class RemusWorker {
       StringBuilder sb = new StringBuilder("startJob_args(");
       boolean first = true;
 
+      sb.append("dataServer:");
+      if (this.dataServer == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dataServer);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("input:");
       if (this.input == null) {
         sb.append("null");

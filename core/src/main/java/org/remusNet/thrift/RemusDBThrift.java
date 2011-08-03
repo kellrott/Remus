@@ -24,6 +24,13 @@ public class RemusDBThrift {
 
   public interface Iface {
 
+    /**
+     * Data access related methods
+     * 
+     * 
+     * @param stack
+     * @param key
+     */
     public boolean containsKey(AppletRef stack, String key) throws org.apache.thrift.TException;
 
     public List<String> keySlice(AppletRef stack, String keyStart, int count) throws org.apache.thrift.TException;

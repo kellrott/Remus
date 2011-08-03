@@ -26,16 +26,19 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
   private static final org.apache.thrift.protocol.TField PIPELINE_FIELD_DESC = new org.apache.thrift.protocol.TField("pipeline", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField INSTANCE_FIELD_DESC = new org.apache.thrift.protocol.TField("instance", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField APPLET_FIELD_DESC = new org.apache.thrift.protocol.TField("applet", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField KEYS_FIELD_DESC = new org.apache.thrift.protocol.TField("keys", org.apache.thrift.protocol.TType.LIST, (short)4);
 
   public String pipeline;
   public String instance;
   public String applet;
+  public List<String> keys;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     PIPELINE((short)1, "pipeline"),
     INSTANCE((short)2, "instance"),
-    APPLET((short)3, "applet");
+    APPLET((short)3, "applet"),
+    KEYS((short)4, "keys");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -56,6 +59,8 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
           return INSTANCE;
         case 3: // APPLET
           return APPLET;
+        case 4: // KEYS
+          return KEYS;
         default:
           return null;
       }
@@ -106,6 +111,9 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.APPLET, new org.apache.thrift.meta_data.FieldMetaData("applet", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.KEYS, new org.apache.thrift.meta_data.FieldMetaData("keys", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AppletRef.class, metaDataMap);
   }
@@ -137,6 +145,13 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
     if (other.isSetApplet()) {
       this.applet = other.applet;
     }
+    if (other.isSetKeys()) {
+      List<String> __this__keys = new ArrayList<String>();
+      for (String other_element : other.keys) {
+        __this__keys.add(other_element);
+      }
+      this.keys = __this__keys;
+    }
   }
 
   public AppletRef deepCopy() {
@@ -148,6 +163,7 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
     this.pipeline = null;
     this.instance = null;
     this.applet = null;
+    this.keys = null;
   }
 
   public String getPipeline() {
@@ -222,6 +238,45 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
     }
   }
 
+  public int getKeysSize() {
+    return (this.keys == null) ? 0 : this.keys.size();
+  }
+
+  public java.util.Iterator<String> getKeysIterator() {
+    return (this.keys == null) ? null : this.keys.iterator();
+  }
+
+  public void addToKeys(String elem) {
+    if (this.keys == null) {
+      this.keys = new ArrayList<String>();
+    }
+    this.keys.add(elem);
+  }
+
+  public List<String> getKeys() {
+    return this.keys;
+  }
+
+  public AppletRef setKeys(List<String> keys) {
+    this.keys = keys;
+    return this;
+  }
+
+  public void unsetKeys() {
+    this.keys = null;
+  }
+
+  /** Returns true if field keys is set (has been assigned a value) and false otherwise */
+  public boolean isSetKeys() {
+    return this.keys != null;
+  }
+
+  public void setKeysIsSet(boolean value) {
+    if (!value) {
+      this.keys = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case PIPELINE:
@@ -248,6 +303,14 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
       }
       break;
 
+    case KEYS:
+      if (value == null) {
+        unsetKeys();
+      } else {
+        setKeys((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -261,6 +324,9 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
 
     case APPLET:
       return getApplet();
+
+    case KEYS:
+      return getKeys();
 
     }
     throw new IllegalStateException();
@@ -279,6 +345,8 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
       return isSetInstance();
     case APPLET:
       return isSetApplet();
+    case KEYS:
+      return isSetKeys();
     }
     throw new IllegalStateException();
   }
@@ -320,6 +388,15 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
       if (!(this_present_applet && that_present_applet))
         return false;
       if (!this.applet.equals(that.applet))
+        return false;
+    }
+
+    boolean this_present_keys = true && this.isSetKeys();
+    boolean that_present_keys = true && that.isSetKeys();
+    if (this_present_keys || that_present_keys) {
+      if (!(this_present_keys && that_present_keys))
+        return false;
+      if (!this.keys.equals(that.keys))
         return false;
     }
 
@@ -369,6 +446,16 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetKeys()).compareTo(typedOther.isSetKeys());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetKeys()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keys, typedOther.keys);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -407,6 +494,23 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // KEYS
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
+            {
+              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
+              this.keys = new ArrayList<String>(_list0.size);
+              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              {
+                String _elem2;
+                _elem2 = iprot.readString();
+                this.keys.add(_elem2);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -436,6 +540,20 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
       oprot.writeFieldBegin(APPLET_FIELD_DESC);
       oprot.writeString(this.applet);
       oprot.writeFieldEnd();
+    }
+    if (this.keys != null) {
+      if (isSetKeys()) {
+        oprot.writeFieldBegin(KEYS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.keys.size()));
+          for (String _iter3 : this.keys)
+          {
+            oprot.writeString(_iter3);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
     }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -469,6 +587,16 @@ public class AppletRef implements org.apache.thrift.TBase<AppletRef, AppletRef._
       sb.append(this.applet);
     }
     first = false;
+    if (isSetKeys()) {
+      if (!first) sb.append(", ");
+      sb.append("keys:");
+      if (this.keys == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.keys);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }

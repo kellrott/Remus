@@ -34,8 +34,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
    * @see WorkMode
    */
   public WorkMode mode;
-  public StackRef input;
-  public StackRef output;
+  public AppletRef input;
+  public AppletRef output;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -118,9 +118,9 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     tmpMap.put(_Fields.MODE, new org.apache.thrift.meta_data.FieldMetaData("mode", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, WorkMode.class)));
     tmpMap.put(_Fields.INPUT, new org.apache.thrift.meta_data.FieldMetaData("input", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StackRef.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class)));
     tmpMap.put(_Fields.OUTPUT, new org.apache.thrift.meta_data.FieldMetaData("output", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, StackRef.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(WorkDesc.class, metaDataMap);
   }
@@ -131,8 +131,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
   public WorkDesc(
     String lang,
     WorkMode mode,
-    StackRef input,
-    StackRef output)
+    AppletRef input,
+    AppletRef output)
   {
     this();
     this.lang = lang;
@@ -152,10 +152,10 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       this.mode = other.mode;
     }
     if (other.isSetInput()) {
-      this.input = new StackRef(other.input);
+      this.input = new AppletRef(other.input);
     }
     if (other.isSetOutput()) {
-      this.output = new StackRef(other.output);
+      this.output = new AppletRef(other.output);
     }
   }
 
@@ -227,11 +227,11 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     }
   }
 
-  public StackRef getInput() {
+  public AppletRef getInput() {
     return this.input;
   }
 
-  public WorkDesc setInput(StackRef input) {
+  public WorkDesc setInput(AppletRef input) {
     this.input = input;
     return this;
   }
@@ -251,11 +251,11 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     }
   }
 
-  public StackRef getOutput() {
+  public AppletRef getOutput() {
     return this.output;
   }
 
-  public WorkDesc setOutput(StackRef output) {
+  public WorkDesc setOutput(AppletRef output) {
     this.output = output;
     return this;
   }
@@ -297,7 +297,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       if (value == null) {
         unsetInput();
       } else {
-        setInput((StackRef)value);
+        setInput((AppletRef)value);
       }
       break;
 
@@ -305,7 +305,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       if (value == null) {
         unsetOutput();
       } else {
-        setOutput((StackRef)value);
+        setOutput((AppletRef)value);
       }
       break;
 
@@ -487,7 +487,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
           break;
         case 3: // INPUT
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.input = new StackRef();
+            this.input = new AppletRef();
             this.input.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
@@ -495,7 +495,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
           break;
         case 4: // OUTPUT
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.output = new StackRef();
+            this.output = new AppletRef();
             this.output.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);

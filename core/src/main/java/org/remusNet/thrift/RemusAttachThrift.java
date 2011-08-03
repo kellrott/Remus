@@ -22,6 +22,10 @@ import org.slf4j.LoggerFactory;
 
 public class RemusAttachThrift {
 
+  /**
+   * Work results methods
+   * 
+   */
   public interface Iface {
 
     public void initAttachment(AppletRef stack, String key, String name, long length) throws org.apache.thrift.TException;
