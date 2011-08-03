@@ -12,7 +12,6 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.server.TThreadPoolServer.Args;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransportException;
 import org.remusNet.thrift.BadPeerName;
 import org.remusNet.thrift.PeerInfo;
 import org.remusNet.thrift.RemusGossip;
@@ -20,6 +19,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PeerServer {
+
+	public class PeerPingThread extends Thread {
+		PeerServer parent;
+		Boolean quit = false;
+
+		PeerPingThread(PeerServer parent) {
+			this.parent = parent;
+			quit = false;
+		}
+
+		@Override
+		public void run() {
+			while (!quit) {
+				doPing();
+				try {
+					synchronized (quit) {
+						if (!quit) { 
+							quit.wait(PING_TIME * 1000);
+						}
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();		
+				}
+			}
+		}
+
+		public void close() {
+			quit = true;
+		}
+
+		public void reqPing() {
+			synchronized (quit) {
+				quit.notify();
+			}
+		}
+
+		private synchronized void doPing() {
+			try {
+				parent.doPing();
+			} catch (TException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
 
 	/**
 	 * The default gossip port
@@ -38,6 +82,8 @@ public class PeerServer {
 
 	private Logger logger;
 
+	private PeerPingThread pingThread;
+
 	public PeerServer(PeerInfo info, String host, Integer hostPort) throws TException, BadPeerName, UnknownHostException, SocketException {
 		init(info, host, hostPort, GOSSIP_PORT);
 	}
@@ -54,7 +100,7 @@ public class PeerServer {
 
 		return "127.0.0.1";
 
-/*
+		/*
 		for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
 			NetworkInterface ifc = ifaces.nextElement();
 			if(ifc.isUp()) {
@@ -65,24 +111,24 @@ public class PeerServer {
 			}
 		}
 		return null;
-*/
+		 */
 	}
 
 
 	private void init(PeerInfo info, String host, Integer hostPort, int localPort) throws TException, BadPeerName, UnknownHostException, SocketException {
-
 		logger = LoggerFactory.getLogger(PeerServer.class);
-
 		serverTransport = new TServerSocket(localPort);
 		localInfo = info;
 		info.address = getDefaultAddress();
 		info.port = localPort;
-		localCopy = new Peer(info);
+		pingThread = new PeerPingThread(this);
+		localCopy = new Peer(info, pingThread );
+		pingThread.start();
+		logger.info(info.name + " Starting gossip on " + info.address + ":" + info.port);
 
-		logger.info("Starting gossip on " + info.address + ":" + info.port);
-		
 		if (host != null && hostPort != null) {
 			getPeers(host, hostPort);
+			doPing();
 		}
 
 		RemusGossip.Processor processor = new RemusGossip.Processor(localCopy);
@@ -90,12 +136,12 @@ public class PeerServer {
 		Args args = new TThreadPoolServer.Args(serverTransport);
 		args.inputProtocolFactory(protFactory);
 		args.processor(processor);
-		server = new TThreadPoolServer(args);		 
-
+		server = new TThreadPoolServer(args);
 		Thread serverThread = new Thread() {			
 			@Override
 			public void run() {
 				server.serve();
+				logger.info(localInfo.name + " Server Done");
 			}			
 		};
 		serverThread.start();
@@ -105,14 +151,19 @@ public class PeerServer {
 		logger.info("Stopping gossip on " + localInfo.address + ":" + localInfo.port);
 		PeerInfo next = localCopy.getNext(localInfo.name);
 		if (next != null) {
-			logger.info("Telling Peer about STOP: " + next.address + ":" + next.port);
-			TSocket transport = new TSocket(next.address, next.port);
-			TBinaryProtocol protocol = new TBinaryProtocol(transport);
-			RemusGossip.Client client = new RemusGossip.Client(protocol);	
-			transport.open();
-			client.delPeer(localInfo.name);
-			transport.close();
+			logger.info(localInfo.name + " Telling Peer about STOP: " + next.name );
+			try {
+				TSocket transport = new TSocket(next.address, next.port);
+				TBinaryProtocol protocol = new TBinaryProtocol(transport);
+				RemusGossip.Client client = new RemusGossip.Client(protocol);	
+				transport.open();
+				client.delPeer(localInfo.name);
+				transport.close();		
+			} catch (TException e) {
+
+			}
 		}
+		pingThread.close();
 		server.stop();		
 	}
 
@@ -131,39 +182,21 @@ public class PeerServer {
 		}
 		transport.close();
 	}
-	
-	public void doPing() throws TTransportException {
+
+	public void doPing() throws TException {
 		PeerInfo next = localCopy.getNext(localInfo.name);
 		if (next != null) {
-		TSocket transport = new TSocket(next.address, next.port);
-		TBinaryProtocol protocol = new TBinaryProtocol(transport);
-		RemusGossip.Client client = new RemusGossip.Client(protocol);
-		transport.open();
-		
-		//client.ping( localCopy.getPeers() );
-		
-		transport.close();
+			logger.info( localInfo.name + " pinging " + next.name + " with " + localCopy.getPeers().size() + " peers" );
+			TSocket transport = new TSocket(next.address, next.port);
+			TBinaryProtocol protocol = new TBinaryProtocol(transport);
+			RemusGossip.Client client = new RemusGossip.Client(protocol);
+			transport.open();
+			client.ping( localCopy.getPeers() );
+			transport.close();
+		} else {
+			logger.info( localInfo.name + " is alone");
 		}
 	}
-	
 
-	/*
-	class PingThread extends Thread {
-		TSocket transport;
-		TBinaryProtocol protocol;
-		RemusGossip.Client client;
-
-		public PingThread() {
-			transport = new TSocket("localhost", GOSSIP_PORT);
-			protocol = new TBinaryProtocol(transport);
-			client = new RemusGossip.Client(protocol);
-		}
-
-		@Override
-		public void run() {
-		client.pi
-		}		
-	}
-	 */
 
 }

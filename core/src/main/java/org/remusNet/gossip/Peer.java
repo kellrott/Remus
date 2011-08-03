@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
+import org.remusNet.gossip.PeerServer.PeerPingThread;
 import org.remusNet.thrift.BadPeerName;
 import org.remusNet.thrift.PeerInfo;
 import org.remusNet.thrift.RemusGossip;
@@ -20,12 +21,15 @@ public class Peer implements RemusGossip.Iface {
 	List<PeerInfo> addList;
 	Logger logger;
 	PeerInfo local;
-	public Peer(PeerInfo local) throws TException, BadPeerName {
+	private PeerPingThread callback;
+	
+	public Peer(PeerInfo local, PeerServer.PeerPingThread callback ) throws TException, BadPeerName {
 		logger = LoggerFactory.getLogger(Peer.class);
 		peerMap = new HashMap<String, PeerInfo>();
 		lastPing = new HashMap<String, Long>();
 		addList = new LinkedList<PeerInfo>();
 		this.local = local;
+		this.callback = callback;
 		addPeer(local);
 	}
 
@@ -42,6 +46,7 @@ public class Peer implements RemusGossip.Iface {
 				lastPing.put(info.name, (new Date()).getTime());
 			}			
 		}
+		callback.reqPing();
 	}
 
 	@Override
@@ -67,17 +72,24 @@ public class Peer implements RemusGossip.Iface {
 
 	@Override
 	public void ping(List<PeerInfo> workers) throws TException {
+		logger.info( local.name + " PINGED with " + workers.size() + " records" );
+		boolean added = false;
 		synchronized (peerMap) {
 			synchronized (lastPing) {
 				for (PeerInfo worker : workers) {
 					if (!peerMap.containsKey(worker.name)) {
 						peerMap.put(worker.name, worker);
+						added = true;
 					}
 					if (peerMap.get(worker.name) != null) {
 						lastPing.put(worker.name, (new Date()).getTime());
 					}
 				}
 			}
+		}
+		if (added) {
+			logger.info( local.name + " learned about new peers" );
+			callback.reqPing();
 		}
 	}
 
@@ -103,20 +115,26 @@ public class Peer implements RemusGossip.Iface {
 	 * alphabetical order of names.
 	 * @param name the name of the current node
 	 * @return the next alphabetical hit from name
+	 * @throws TException 
 	 */
-	public final PeerInfo getNext(final String name) {
+	public final PeerInfo getNext(final String name) throws TException {
 		synchronized (peerMap) {
-			if (peerMap.size() == 0) {
+			List<String> peerNames = new LinkedList<String>();
+			for (PeerInfo pi : peerMap.values()){
+				if (pi!=null) {
+					peerNames.add(pi.name);
+				}
+			}
+			if (peerNames.size() == 0) {
 				return null;
 			}
-			List<String> peers = new LinkedList<String>(peerMap.keySet());
-			Collections.sort(peers);
-			int i = peers.lastIndexOf(name);
-			i = (i + 1) % (peers.size());
-			if (peers.get(i).compareTo(name) == 0) {
+			Collections.sort(peerNames);
+			int i = peerNames.lastIndexOf(name);
+			i = (i + 1) % (peerNames.size());
+			if (peerNames.get(i).compareTo(name) == 0) {
 				return null;
 			}				
-			return peerMap.get(peers.get(i));
+			return peerMap.get(peerNames.get(i));
 		}
 	}
 
