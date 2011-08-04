@@ -2,8 +2,8 @@
 gen-thrift : gen-java
 
 
-gen-java : remusNet.thrift
-	thrift -gen java remusNet.thrift
+gen-java : remus.thrift
+	thrift -gen java remus.thrift
 	cp -r gen-java/org src/main/java/
 
 clean :

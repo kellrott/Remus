@@ -1,29 +1,32 @@
 package org.remus.work;
 
 import org.apache.thrift.TException;
-import org.remus.RemusInstance;
-import org.remus.manage.WorkStatusImpl;
+import org.remus.RemusDB;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.core.WorkStatus;
 import org.remus.server.DataStackRef;
-import org.remusNet.thrift.AppletRef;
+import org.remus.thrift.AppletRef;
 
 public class ReduceGenerator implements WorkGenerator {
 
 	@Override
-	public void writeWorkTable(RemusAppletImpl applet,
-			RemusInstance instance) {
-		try {
-			AppletRef ar = new AppletRef(applet.getPipeline().getID(), instance.toString(), applet.getID() );
-			AppletRef arWork = new AppletRef(applet.getPipeline().getID(), instance.toString(), applet.getID() + "/@work" );
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 
-			DataStackRef iRef = DataStackRef.fromSubmission(applet, applet.getInput(), instance);
+		try {
+			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() );
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
+
+			DataStackRef iRef = DataStackRef.fromSubmission(pipeline, applet, applet.getInput(), instance);
 			int jobID = 0;
 
-			for ( String key : iRef.listKeys( applet.datastore  ) ) {
-				applet.datastore.add( arWork, 0,0, Integer.toString(jobID), key );
+			for ( String key : iRef.listKeys( datastore  ) ) {
+				datastore.add( arWork, 0,0, Integer.toString(jobID), key );
 				jobID++;
 			}
-			long t = applet.datastore.getTimeStamp( ar );
-			WorkStatusImpl.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
+			long t = datastore.getTimeStamp( ar );
+			WorkStatus.setWorkStat( pipeline, applet, instance, 0, 0, 0, jobID, t);
 		}catch (TException e ) {
 			e.printStackTrace();
 		}

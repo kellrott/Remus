@@ -1,7 +1,10 @@
 package org.remus.work;
 
 
-import org.remus.RemusInstance;
+import org.remus.RemusDB;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 
 /**
  * Base interface for applet work generators.
@@ -16,5 +19,5 @@ import org.remus.RemusInstance;
  */
 
 public interface WorkGenerator {
-	public void writeWorkTable(RemusAppletImpl applet, RemusInstance instance);
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore);
 }

@@ -4,22 +4,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
-import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
+import org.remus.JSON;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 
 public class AttachInstanceView implements BaseNode {
-
-
-	RemusPipelineImpl pipe;
+	
+	RemusPipeline pipe;
 	RemusInstance inst;
 
-	public AttachInstanceView(RemusPipelineImpl pipeline, RemusInstance inst) {
+	public AttachInstanceView(RemusPipeline pipeline, RemusInstance inst) {
 		this.pipe = pipeline;
 		this.inst = inst;
 	}
@@ -36,9 +34,9 @@ public class AttachInstanceView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {		
 
 		if ( name.length() == 0)  {
-			for ( RemusAppletImpl applet : pipe.getMembers() ) {
+			for ( String appletName : pipe.getMembers() ) {
 				try {
-					os.write( JSON.dumps( applet.getID() ).getBytes() );
+					os.write( JSON.dumps( appletName ).getBytes() );
 					os.write("\n".getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -67,9 +65,9 @@ public class AttachInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusAppletImpl applet = pipe.getApplet(name);
+		RemusApplet applet = pipe.getApplet(name);
 		if ( applet != null ) {
-			return new AttachAppletView( applet, inst );
+			return new AttachAppletView( pipe, applet, inst );
 		}
 		return null;
 	}

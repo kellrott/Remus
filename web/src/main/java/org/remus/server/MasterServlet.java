@@ -5,16 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.remus.core.RemusApp;
+import org.remus.plugin.PluginManager;
+import org.remus.serverNodes.AppView;
 
 /**
  * MasterServlet: Primary servlet interface for web based Remus Server.
@@ -24,25 +25,16 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MasterServlet extends HttpServlet {
 	RemusApp app;
+	AppView  appView;
 	//	String workDir;
 	String srcDir;
 	Map<String, String> configMap;
 
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		try {
-			configMap = new HashMap<String, String>();			
-			Enumeration names = config.getInitParameterNames();
-			while ( names.hasMoreElements() ) {
-				String name = (String) names.nextElement();
-				configMap.put(name, config.getInitParameter(name));
-			}
-			app = new RemusApp(configMap);
-		} catch (RemusDatabaseException e) {
-			throw new ServletException(e.toString());
-		}		
+	public MasterServlet(PluginManager plugs) throws RemusDatabaseException {
+		app = new RemusApp(plugs);
+		appView = new AppView(app);
 	}
+		
 	/**
 	 * 
 	 */
@@ -72,7 +64,7 @@ public class MasterServlet extends HttpServlet {
 			//}
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
-			app.passCall( RemusApp.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			appView.passCall( AppView.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -93,7 +85,7 @@ public class MasterServlet extends HttpServlet {
 			//}			
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			appView.passCall( AppView.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}	
@@ -111,7 +103,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			appView.passCall( AppView.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}		
@@ -127,7 +119,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			app.passCall( RemusApp.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			appView.passCall( AppView.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 		} catch ( FileNotFoundException e ) {
 			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
 		}					

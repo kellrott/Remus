@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.remus.BaseNode;
-import org.remus.WorkAgent;
-import org.remus.WorkManager;
-import org.remus.WorkStatus;
-import org.remusNet.JSON;
+import org.remus.JSON;
+import org.remus.core.BaseNode;
+import org.remus.core.WorkAgent;
+import org.remus.core.WorkManager;
+import org.remus.core.WorkStatus;
 
 
 public class PassiveManager implements WorkAgent {

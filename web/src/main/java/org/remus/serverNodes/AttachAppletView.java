@@ -6,18 +6,22 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
-import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
-import org.remusNet.thrift.AppletRef;
+import org.remus.JSON;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.thrift.AppletRef;
+
 
 public class AttachAppletView implements BaseNode {
 
-	RemusAppletImpl applet;
+	RemusPipeline pipeline;
+	RemusApplet applet;
 	RemusInstance inst;
 
-	public AttachAppletView(RemusAppletImpl applet, RemusInstance inst) {
+	public AttachAppletView(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
+		this.pipeline = pipeline;
 		this.applet = applet;
 		this.inst = inst;
 	}
@@ -32,7 +36,7 @@ public class AttachAppletView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0 ) {
-			AppletRef ap = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+			AppletRef ap = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() );
 			for ( String key : applet.getDataStore().listKeys( ap ) ) {
 				try {
 					os.write( JSON.dumps( key ).getBytes() );
@@ -61,7 +65,7 @@ public class AttachAppletView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {	
-		return new AttachListView(applet.getAttachStore(), applet.getPipeline(), inst, applet.getID(), name );
+		return new AttachListView(applet.getAttachStore(), pipeline, inst, applet.getID(), name );
 	}
 
 }

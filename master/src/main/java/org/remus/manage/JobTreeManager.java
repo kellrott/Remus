@@ -17,10 +17,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.remus.BaseNode;
-import org.remus.WorkAgent;
-import org.remus.WorkManager;
-import org.remus.WorkStatus;
+import org.remus.core.BaseNode;
+import org.remus.core.WorkAgent;
+import org.remus.core.WorkManager;
+import org.remus.core.WorkStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +44,7 @@ public class JobTreeManager implements WorkAgent {
 	private String server;
 	private URL serverURL;
 
-	@Override
-	public List<String> getWorkTypes() {
-		return codeTypes;
-	}
-
+	
 	WatcherThread watcher;
 	
 	@Override
@@ -190,45 +186,6 @@ public class JobTreeManager implements WorkAgent {
 
 	}
 
-
-	@Override
-	public BaseNode getChild(String name) {
-		return null;
-	}
-
-	@Override
-	public void doGet(String name, Map params, String workerID,
-			OutputStream os) throws FileNotFoundException {
-
-		try {
-			os.write( "JobTree module".getBytes() );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	@Override
-	public void doPut(String name, String workerID, InputStream is,
-			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void doSubmit(String name, String workerID, InputStream is,
-			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void doDelete(String name, Map params, String workerID)
-			throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public boolean syncWorkPoll(WorkStatus work) {

@@ -6,10 +6,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.remus.BaseNode;
+import org.remus.JSON;
+import org.remus.core.BaseNode;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
 
 public class PipelineAgentView implements BaseNode {
 

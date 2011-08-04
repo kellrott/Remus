@@ -2,29 +2,27 @@ package org.remus.work;
 
 
 import org.apache.thrift.TException;
-import org.remus.RemusInstance;
-import org.remus.manage.WorkStatusImpl;
-import org.remusNet.thrift.AppletRef;
+import org.remus.RemusDB;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.core.WorkStatus;
+import org.remus.thrift.AppletRef;
 
-public class AgentGenerator  implements WorkGenerator {
-	RemusAppletImpl applet;
-	RemusInstance inst;
-	boolean done;
+public class AgentGenerator implements WorkGenerator {
+
 	@Override
-	public void writeWorkTable(RemusAppletImpl applet, RemusInstance instance) {
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 
-		AppletRef ar = new AppletRef(applet.getPipeline().getID(), instance.toString(), applet.getID() );
-		AppletRef arWork = new AppletRef(applet.getPipeline().getID(), instance.toString(), applet.getID() + "/@work" );
+		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() );
+		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
 		
-		done = false;
-		this.applet = applet;
-		this.inst = instance;
 		int jobID = 0;
 		System.out.println("AGENT WORK");
 		for ( String input : applet.getInputs() ) {			
 			String key = instance.toString() + ":" + input;
 			try {
-				applet.datastore.add(ar, 0, 0, Integer.toString(jobID), key);
+				datastore.add(ar, 0, 0, Integer.toString(jobID), key);
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -32,11 +30,13 @@ public class AgentGenerator  implements WorkGenerator {
 			jobID++;							
 		}
 		try {
-			long t = applet.datastore.getTimeStamp( ar );
-			WorkStatusImpl.setWorkStat( applet, instance, 0, 0, 0, jobID, t);
+			long t = datastore.getTimeStamp( ar );
+			WorkStatus.setWorkStat(pipeline, applet, instance, 0, 0, 0, jobID, t);
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	
 }

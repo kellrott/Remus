@@ -10,21 +10,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
-import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
-import org.remusNet.KeyValPair;
-import org.remusNet.thrift.AppletRef;
+import org.remus.JSON;
+import org.remus.KeyValPair;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.thrift.AppletRef;
 
 public class InstanceErrorView implements BaseNode {
 
 
 	public class AppletInstanceErrorView implements BaseNode {
-		RemusAppletImpl applet;
+		RemusApplet applet;
 		RemusInstance inst;
-		public AppletInstanceErrorView( RemusAppletImpl applet, RemusInstance inst ) {
+		public AppletInstanceErrorView( RemusApplet applet, RemusInstance inst ) {
 			this.applet = applet;
 			this.inst = inst;			
 		}
@@ -94,16 +94,16 @@ public class InstanceErrorView implements BaseNode {
 
 	}
 
-	RemusPipelineImpl pipeline;
+	RemusPipeline pipeline;
 	RemusInstance inst;
-	public InstanceErrorView(RemusPipelineImpl pipeline, RemusInstance inst) {
+	public InstanceErrorView(RemusPipeline pipeline, RemusInstance inst) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
+		for ( RemusApplet applet : pipeline.getMembers() ) {
 			try {
 				applet.deleteErrors(inst);
 			} catch (TException e) {
@@ -134,7 +134,7 @@ public class InstanceErrorView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusAppletImpl applet = pipeline.getApplet(name);
+		RemusApplet applet = pipeline.getApplet(name);
 		if ( applet != null ) {
 			return new AppletInstanceErrorView( applet, inst );
 		}

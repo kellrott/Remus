@@ -9,10 +9,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.remus.BaseNode;
-import org.remus.server.RemusApp;
+import org.remus.JSON;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusApp;
 import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
 
 public class ServerStatusView implements BaseNode {
 

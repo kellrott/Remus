@@ -18,7 +18,9 @@ import junit.framework.Assert;
 import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
-import org.remusNet.thrift.AppletRef;
+import org.remus.ConnectionException;
+import org.remus.RemusAttach;
+import org.remus.thrift.AppletRef;
 
 public class AttachTest {
 

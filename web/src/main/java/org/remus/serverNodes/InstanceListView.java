@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
+import org.remus.JSON;
+import org.remus.KeyValPair;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusInstance;
+import org.remus.thrift.AppletRef;
 import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
-import org.remusNet.KeyValPair;
-import org.remusNet.thrift.AppletRef;
 
 public class InstanceListView implements BaseNode {
 	RemusAppletImpl applet;

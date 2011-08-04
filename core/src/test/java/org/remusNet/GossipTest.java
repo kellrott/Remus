@@ -7,9 +7,10 @@ import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.remusNet.gossip.PeerServer;
-import org.remusNet.thrift.BadPeerName;
-import org.remusNet.thrift.PeerInfo;
+import org.remus.gossip.PeerServer;
+import org.remus.thrift.BadPeerName;
+import org.remus.thrift.PeerType;
+import org.remus.PeerInfo;
 
 public class GossipTest {
 
@@ -18,7 +19,7 @@ public class GossipTest {
 	PeerServer master;
 	@Before public void setUp() throws TException, BadPeerName, InterruptedException, UnknownHostException, SocketException {
 		PeerInfo info = new PeerInfo();
-		info.master = true;
+		info.peerType = PeerType.MASTER;
 		info.name = "master";
 		master = new PeerServer(info, null, null, startPort);
 		Thread.sleep(1000);
@@ -58,7 +59,7 @@ public class GossipTest {
 		int allocCount=0;
 		for ( int i = 0; i < GROUP_SIZE; i++ ) {
 			PeerInfo info1 = new PeerInfo();
-			info1.database = true;
+			info1.peerType = PeerType.DB_SERVER;
 			info1.name = "db_" + i;
 			try {
 				PeerServer dbPeer = new PeerServer(info1, "localhost", startPort, startPort + i);		

@@ -1,0 +1,18 @@
+{
+"org.remus.js.JSWorker" : {
+
+}
+"org.remus.server.WebServer" : {
+
+}
+"org.remus.cassandra.Server" : {
+	"org.mpstore.ThriftStore.columnFamily" : "remusTable",
+	"org.mpstore.ThriftStore.keySpace" : "remus",
+	"org.mpstore.ThriftStore.instColumns" : "false"
+}
+"org.remus.fs.FileServer" : {
+	"org.mpstore.FileAttachStore.dir" : "/opt/remus",
+	"org.mpstore.FileAttachStore.shared" : "false"
+}
+
+}

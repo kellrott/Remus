@@ -6,11 +6,12 @@ import java.util.Map;
 
 
 import org.apache.thrift.TException;
-import org.remus.RemusInstance;
-import org.remus.work.RemusAppletImpl;
+import org.remus.RemusDB;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.thrift.AppletRef;
 import org.remus.work.Submission;
-import org.remusNet.RemusDB;
-import org.remusNet.thrift.AppletRef;
 
 public class DataStackRef {
 
@@ -24,13 +25,13 @@ public class DataStackRef {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static DataStackRef fromSubmission( RemusAppletImpl applet, String input, RemusInstance instance) throws TException {
+	public static DataStackRef fromSubmission( RemusPipeline pipeline, RemusApplet applet, String input, RemusInstance instance) throws TException {
 		DataStackRef out = new DataStackRef();
 		out.instance = instance;
 		out.ds = applet.getDataStore();
 		
-		AppletRef arInstance = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
-		AppletRef arSubmit   = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
+		AppletRef arSubmit   = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 		
 		
 		if ( applet.getInput().compareTo("?") == 0 ) {
@@ -48,17 +49,17 @@ public class DataStackRef {
 					}
 				}
 				out.instance = new RemusInstance(instanceStr);
-				out.viewPath = new AppletRef( applet.getPipeline().getID(), out.instance.toString(), appletStr );
+				out.viewPath = new AppletRef( pipeline.getID(), out.instance.toString(), appletStr );
 			}
 		} else {
-			out.viewPath = new AppletRef( applet.getPipeline().getID(), out.instance.toString(), input );
+			out.viewPath = new AppletRef( pipeline.getID(), out.instance.toString(), input );
 		}
 		return out;
 	}
 
-	public static String pathFromSubmission(RemusAppletImpl applet, String ref,
+	public static String pathFromSubmission(RemusPipeline pipeline, RemusApplet applet, String ref,
 			RemusInstance instance) {
-		return "/" + applet.getPipeline().getID() + "/" + instance.toString() + "/" + ref;
+		return "/" + pipeline.getID() + "/" + instance.toString() + "/" + ref;
 	}
 
 	public long getKeyCount( RemusDB ds, int maxCount ) throws TException {

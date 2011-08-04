@@ -17,16 +17,16 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.thrift.TException;
-import org.remus.RemusInstance;
-import org.remus.server.RemusApp;
+import org.remus.JSON;
+import org.remus.KeyValPair;
+import org.remus.RemusAttach;
+import org.remus.RemusDB;
+import org.remus.core.RemusApp;
+import org.remus.core.RemusInstance;
 import org.remus.server.RemusDatabaseException;
 import org.remus.server.RemusPipelineImpl;
+import org.remus.thrift.AppletRef;
 import org.remus.work.RemusAppletImpl;
-import org.remusNet.JSON;
-import org.remusNet.KeyValPair;
-import org.remusNet.RemusAttach;
-import org.remusNet.RemusDB;
-import org.remusNet.thrift.AppletRef;
 
 /**
  * Pipeline administration tool. Primarily for dumping and loading pipeline

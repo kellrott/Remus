@@ -7,12 +7,12 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
-import org.remus.RemusPipeline;
-import org.remusNet.JSON;
-import org.remusNet.RemusAttach;
-import org.remusNet.thrift.AppletRef;
+import org.remus.JSON;
+import org.remus.RemusAttach;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
+import org.remus.thrift.AppletRef;
 
 public class AttachListView implements BaseNode {
 

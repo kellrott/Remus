@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.BaseNode;
-import org.remus.RemusInstance;
+import org.remus.core.BaseNode;
+import org.remus.core.RemusInstance;
 import org.remus.server.RemusPipelineImpl;
 import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;

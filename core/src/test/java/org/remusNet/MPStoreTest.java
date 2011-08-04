@@ -11,9 +11,10 @@ import java.util.Properties;
 import org.apache.thrift.TException;
 import org.junit.*;
 
-import org.remusNet.RemusDB;
-import org.remusNet.thrift.AppletRef;
-import org.remusNet.KeyValPair;
+import org.remus.ConnectionException;
+import org.remus.KeyValPair;
+import org.remus.RemusDB;
+import org.remus.thrift.AppletRef;
 
 public class MPStoreTest {
 
