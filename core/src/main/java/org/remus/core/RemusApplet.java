@@ -69,7 +69,7 @@ public class RemusApplet {
 
 		AppletRef arApplet = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		
+
 		Object appletDesc = null;
 		for (Object obj : datastore.get(arApplet, name)) {
 			appletDesc = obj;
@@ -78,7 +78,7 @@ public class RemusApplet {
 			throw new RemusDatabaseException("Applet Description not found");
 		}
 		load((Map) appletDesc);
-			
+
 		/*
 		if ( out != null ) {
 			out.id = id;
@@ -162,7 +162,7 @@ public class RemusApplet {
 		if (appletType == null) {
 			throw new RemusDatabaseException("Invalid Applet Type");
 		}
-		
+
 		setMode(appletType);
 		if (appletType == MATCHER || appletType == MERGER) {
 			//try {
@@ -201,7 +201,7 @@ public class RemusApplet {
 			//	e.printStackTrace();
 			//}
 		}
-		
+
 	}
 
 	public void addInput(String in) {
@@ -326,7 +326,6 @@ public class RemusApplet {
 	public void deleteInstance(RemusInstance instance) throws TException, NotImplemented {
 		AppletRef applet = new AppletRef(pipeline.getID(), instance.toString(), getID());
 		datastore.deleteStack(applet);
-		attachstore.deleteStack(applet);
 		applet.applet = getID() + "/@done";
 		datastore.deleteStack(applet);
 		applet.applet = getID() + "/@work";
@@ -339,6 +338,10 @@ public class RemusApplet {
 		datastore.deleteStack(applet);
 		applet.applet = getID() + WorkStatus.WorkStatusName;
 		datastore.deleteStack(applet);
+
+		if (attachstore != null) {
+			attachstore.deleteStack(applet);
+		}
 	}
 
 
@@ -413,12 +416,12 @@ public class RemusApplet {
 		if (getMode() == STORE || getMode() == AGENT) {
 			//	baseMap.put(WORKDONE_OP, true);
 		}
-		
+
 		AppletInstance.updateStatus(pipeline, this, inst, baseMap, datastore);
 		return true;
 	};
 
-	
+
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) throws TException, NotImplemented {
 		AppletRef applet = new AppletRef(pipeline.getID(), inst.toString(), getID() + "/@error");

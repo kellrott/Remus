@@ -68,7 +68,12 @@ public class MapTest {
 
 	}
 
-	@After public void tearDown() {
+	@After public void tearDown() throws RemusDatabaseException, TException {
+		
+		RemusApp app = new RemusApp(pm);
+		RemusPipeline pipe = app.getPipeline("testPipeline");
+		app.deletePipeline(pipe);
+		
 		pm.close();
 	}
 
