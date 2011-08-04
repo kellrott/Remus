@@ -9,16 +9,19 @@ import java.util.Map;
 
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
 
 public class PipelineInstanceListViewer implements BaseNode {
 
-	RemusPipelineImpl pipeline;
-	public PipelineInstanceListViewer(RemusPipelineImpl pipeline) {
+	RemusPipeline pipeline;
+	RemusDB datastore;
+	public PipelineInstanceListViewer(RemusPipeline pipeline, RemusDB datastore ) {
 		this.pipeline = pipeline;
+		this.datastore = datastore;
 	}
 	
 	@Override
@@ -32,7 +35,7 @@ public class PipelineInstanceListViewer implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 		
 		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
-		for ( KeyValPair kv : pipeline.getDataStore().listKeyPairs(ar) ) {
+		for ( KeyValPair kv : datastore.listKeyPairs(ar) ) {
 			Map out = new HashMap();
 			out.put( kv.getKey(), kv.getValue() );	
 			try {

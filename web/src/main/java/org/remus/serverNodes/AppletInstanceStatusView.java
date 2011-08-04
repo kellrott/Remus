@@ -11,23 +11,25 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class AppletInstanceStatusView implements BaseNode {
 
 	public static final String InstanceStatusName = "/@instance";
 
 	RemusApplet applet;
-	public AppletInstanceStatusView(RemusApplet applet) {
+	RemusPipeline pipeline;
+	public AppletInstanceStatusView(RemusPipeline pipeline, RemusApplet applet) {
 		this.applet = applet;
 	}
 
 
 	public Object getStatus(RemusInstance inst) {
 		Object statObj = null;
-		AppletRef ar = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
 		try {
 			for ( Object obj : applet.getDataStore().get( ar, inst.toString()) ) {
 				statObj = obj;
@@ -48,7 +50,7 @@ public class AppletInstanceStatusView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
 		if ( name.length() == 0 ) {
 			for ( KeyValPair kv : applet.getDataStore().listKeyPairs( ar ) ) {			
 				Map out = new HashMap();
@@ -101,12 +103,12 @@ public class AppletInstanceStatusView implements BaseNode {
 		return null;
 	}
 
-
+/*
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static void updateStatus(RemusAppletImpl applet,
+	public static void updateStatus(RemusApplet applet,
 			RemusInstance inst, Map update) {
 		Object statObj = null;
-		AppletRef ar = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
 
 		try {
 			for ( Object obj : applet.getDataStore().get( ar, inst.toString()) ) {
@@ -123,4 +125,5 @@ public class AppletInstanceStatusView implements BaseNode {
 			e.printStackTrace();
 		}
 	}
+	*/
 }

@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
@@ -18,8 +19,10 @@ import org.remus.thrift.AppletRef;
 
 public class PipelineConfigView implements BaseNode {	
 	RemusApp app;
-	PipelineConfigView(RemusApp app) {
+	RemusDB datastore;
+	PipelineConfigView(RemusApp app, RemusDB datastore) {
 		this.app = app;
+		this.datastore = datastore;
 	}
 
 	@Override
@@ -40,7 +43,7 @@ public class PipelineConfigView implements BaseNode {
 	throws FileNotFoundException {
 		Map out = new HashMap();		
 		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		for ( KeyValPair kv : app.getRootDatastore().listKeyPairs( ar ) ) {
+		for ( KeyValPair kv : datastore.listKeyPairs( ar ) ) {
 			out.put(kv.getKey(), kv.getValue());
 		}		
 		try {
@@ -63,7 +66,7 @@ public class PipelineConfigView implements BaseNode {
 			}
 			System.err.println( sb.toString() );
 			Object data = JSON.loads(sb.toString());
-			app.addPipeline( new RemusPipeline(name, data) );
+			app.addPipeline( name, data );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

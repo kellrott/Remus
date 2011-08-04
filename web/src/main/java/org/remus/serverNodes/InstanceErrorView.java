@@ -22,9 +22,11 @@ public class InstanceErrorView implements BaseNode {
 
 
 	public class AppletInstanceErrorView implements BaseNode {
+		RemusPipeline pipeline;
 		RemusApplet applet;
 		RemusInstance inst;
-		public AppletInstanceErrorView( RemusApplet applet, RemusInstance inst ) {
+		public AppletInstanceErrorView( RemusPipeline pipeline, RemusApplet applet, RemusInstance inst ) {
+			this.pipeline = pipeline;
 			this.applet = applet;
 			this.inst = inst;			
 		}
@@ -38,7 +40,7 @@ public class InstanceErrorView implements BaseNode {
 				OutputStream os)
 		throws FileNotFoundException {
 
-			AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() + "/@error" );
+			AppletRef ar = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() + "/@error" );
 			for ( KeyValPair kv : applet.getDataStore().listKeyPairs( ar ) ) {
 				Map out = new HashMap();
 				out.put(kv.getKey(), kv.getValue());
@@ -103,8 +105,9 @@ public class InstanceErrorView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		for ( RemusApplet applet : pipeline.getMembers() ) {
+		for ( String appletName : pipeline.getMembers() ) {
 			try {
+				RemusApplet applet = pipeline.getApplet(appletName);
 				applet.deleteErrors(inst);
 			} catch (TException e) {
 				throw new FileNotFoundException();
@@ -136,7 +139,7 @@ public class InstanceErrorView implements BaseNode {
 	public BaseNode getChild(String name) {
 		RemusApplet applet = pipeline.getApplet(name);
 		if ( applet != null ) {
-			return new AppletInstanceErrorView( applet, inst );
+			return new AppletInstanceErrorView( pipeline, applet, inst );
 		}
 		return null;
 	}

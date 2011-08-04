@@ -11,14 +11,16 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.core.BaseNode;
 import org.remus.core.DataStackInfo;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class PipelineAppletAgentView implements BaseNode {
-
-	RemusAppletImpl applet;
-	public PipelineAppletAgentView(RemusAppletImpl applet) {
+	RemusPipeline pipeline;
+	RemusApplet applet;
+	public PipelineAppletAgentView(RemusPipeline pipeline, RemusApplet applet) {
+		this.pipeline = pipeline;
 		this.applet = applet;
 	}
 
@@ -35,7 +37,7 @@ public class PipelineAppletAgentView implements BaseNode {
 
 		if ( params.containsKey(DataStackInfo.PARAM_FLAG) ) {
 			try {
-				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineAppletAgentView.class, "status", applet.getPipeline()) ).getBytes() );
+				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineAppletAgentView.class, "status", pipeline) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -43,7 +45,7 @@ public class PipelineAppletAgentView implements BaseNode {
 			return;
 		}
 
-		AppletRef ar = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
+		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 		try {
 			if ( name.length() == 0 ) {
 				for ( String key : applet.getDataStore().listKeys( ar ) ) {

@@ -13,7 +13,6 @@ import org.remus.KeyValPair;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.core.RemusPipeline.PipelineAttachment;
 import org.remus.thrift.AppletRef;
 import org.remus.work.Submission;
 
@@ -25,15 +24,15 @@ public class PipelineView implements BaseNode {
 	public PipelineView(RemusPipeline pipe) {
 		this.pipe = pipe;
 		children = new HashMap<String, BaseNode>();
-		children.put("@pipeline", new PipelineView(this) );
-		children.put("@submit", new SubmitView(this) );
-		children.put("@status", new PipelineStatusView(this) );
-		children.put("@instance", new PipelineInstanceListViewer(this) );
-		children.put("@agent", new PipelineAgentView(this) );
+		children.put("@pipeline", new PipelineView(pipe) );
+		children.put("@submit", new SubmitView(pipe) );
+		children.put("@status", new PipelineStatusView(pipe) );
+		children.put("@instance", new PipelineInstanceListViewer(pipe) );
+		children.put("@agent", new PipelineAgentView(pipe) );
 
-		children.put("@error", new PipelineErrorView(this) );
+		children.put("@error", new PipelineErrorView(pipe) );
 
-		children.put("@reset", new ResetInstanceView(this) );
+		children.put("@reset", new ResetInstanceView(pipe) );
 	}
 
 	@Override

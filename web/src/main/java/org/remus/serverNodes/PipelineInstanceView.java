@@ -9,20 +9,23 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class PipelineInstanceView implements BaseNode {
 
-	RemusPipelineImpl pipeline;
+	RemusPipeline pipeline;
 	RemusInstance inst;
+	RemusDB datastore;
 
-	public PipelineInstanceView( RemusPipelineImpl pipeline, RemusInstance inst ) {
+	public PipelineInstanceView( RemusPipeline pipeline, RemusInstance inst, RemusDB datastore ) {
 		this.pipeline = pipeline;
 		this.inst = inst;
+		this.datastore = datastore;
 	}
 
 	@Override
@@ -35,12 +38,12 @@ public class PipelineInstanceView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0)  {
-			for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-				AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + AppletInstanceStatusView.InstanceStatusName );
+			for ( String appletName : pipeline.getMembers() ) {
+				AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + AppletInstanceStatusView.InstanceStatusName );
 				try {
-					for ( Object instObj : applet.getDataStore().get(ar, inst.toString() ) ) {
+					for ( Object instObj : datastore.get(ar, inst.toString() ) ) {
 						Map out = new HashMap();
-						out.put( applet.getID(), instObj );	
+						out.put( appletName, instObj );	
 						try {
 							os.write( JSON.dumps( out ).getBytes() );
 							os.write("\n".getBytes());
@@ -75,9 +78,9 @@ public class PipelineInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusAppletImpl applet = pipeline.getApplet(name);
+		RemusApplet applet = pipeline.getApplet(name);
 		if ( applet != null ) {
-			return new AppletInstanceView(applet, inst);
+			return new AppletInstanceView(pipeline, applet, inst);
 		}
 
 		if ( name.compareTo("@error") == 0 ) {
@@ -85,7 +88,7 @@ public class PipelineInstanceView implements BaseNode {
 		}
 
 		if ( name.compareTo("@status") == 0 ) {
-			return new PipelineInstanceStatusView(pipeline, inst);
+			return new PipelineInstanceStatusView(pipeline, inst, datastore);
 		}
 
 		if ( name.compareTo("@attach") == 0 ) {

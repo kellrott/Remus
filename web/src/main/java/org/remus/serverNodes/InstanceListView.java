@@ -11,14 +11,17 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class InstanceListView implements BaseNode {
-	RemusAppletImpl applet;
-	public InstanceListView(RemusAppletImpl applet) {
+	RemusPipeline pipeline;
+	RemusApplet applet;
+	public InstanceListView(RemusPipeline pipeline, RemusApplet applet) {
 		this.applet = applet;
+		this.pipeline = pipeline;
 	}
 
 	@Override
@@ -32,11 +35,11 @@ public class InstanceListView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 
 		Map out = new HashMap();
-		AppletRef ar = new AppletRef(applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
 		try {
 			if ( name.length() == 0 ) {
 				for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
-					out.put(kv.getKey(), kv.getValue() );
+					out.put(kv.getKey(), kv.getValue());
 				}
 			} else {
 				for ( Object obj : applet.getDataStore().get( ar, name )) {

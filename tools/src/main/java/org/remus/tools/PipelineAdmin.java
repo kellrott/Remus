@@ -22,11 +22,11 @@ import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.core.RemusApp;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.server.RemusDatabaseException;
-import org.remus.server.RemusPipelineImpl;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 /**
  * Pipeline administration tool. Primarily for dumping and loading pipeline
@@ -42,7 +42,7 @@ public class PipelineAdmin {
 
 	static public String [] allViews = { "@data", "@done", "@instance" }; 
 
-	public static void tableDump( RemusPipelineImpl pipe, String instance, File instDir ) throws IOException, TException  {
+	public static void tableDump( RemusPipeline pipe, String instance, File instDir ) throws IOException, TException  {
 		System.err.println( "PIPELINE: " + pipe.getID() );
 
 		File submitFile = new File(instDir, "@submit");
@@ -81,9 +81,10 @@ public class PipelineAdmin {
 		}
 		giOS.close();
 
-		for ( RemusAppletImpl applet : pipe.getMembers() ) {
-			System.err.println( "Dumping: " + applet.getID() );
-
+		for ( String appletName : pipe.getMembers() ) {
+			System.err.println( "Dumping: " + appletName );
+			RemusApplet applet = pipe.getApplet(appletName);
+			
 			File instanceFile = new File(instDir, applet.getID() + "@instance");
 			FileOutputStream insOS = new FileOutputStream(instanceFile);
 			for ( KeyValPair kv : pipe.getApp().getRootDatastore().listKeyPairs( arInstance) ) {

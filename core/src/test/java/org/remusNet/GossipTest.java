@@ -19,7 +19,7 @@ public class GossipTest {
 	PeerServer master;
 	@Before public void setUp() throws TException, BadPeerName, InterruptedException, UnknownHostException, SocketException {
 		PeerInfo info = new PeerInfo();
-		info.peerType = PeerType.MASTER;
+		info.peerType = PeerType.MANAGER;
 		info.name = "master";
 		master = new PeerServer(info, null, null, startPort);
 		Thread.sleep(1000);

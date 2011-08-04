@@ -20,16 +20,19 @@ import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.core.BaseNode;
 import org.remus.core.DataStackInfo;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class AppletInstanceView implements BaseNode, BaseStackNode {
 
-	RemusAppletImpl applet;
+	RemusPipeline pipeline;
+	RemusApplet applet;
 	RemusInstance inst;
 
-	public AppletInstanceView(RemusAppletImpl applet, RemusInstance inst) {
+	public AppletInstanceView(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
+		this.pipeline = pipeline;
 		this.applet = applet;
 		this.inst = inst;
 	}
@@ -46,7 +49,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
 			try {
-				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", applet.getPipeline() ) ).getBytes() );
+				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline ) ).getBytes() );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -61,7 +64,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 			sliceSize = Integer.parseInt(sliceStr);
 		}
 
-		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+		AppletRef ar = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() );
 
 		if ( name.length() == 0 ) {
 			if ( sliceStr == null ) {
@@ -159,7 +162,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
-			AppletRef ar = new AppletRef(applet.getPipeline().getID(), inst.toString(), applet.getID());
+			AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
 
 			if ( name.length() > 0 ) {
 				String [] tmp = name.split("/");
@@ -235,9 +238,9 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+		AppletRef ar = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() );
 
-		if (applet.getMode() == RemusAppletImpl.STORE) {
+		if (applet.getMode() == RemusApplet.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
 			//UUID as the key if none is provided
 			try {
@@ -264,7 +267,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		} else if (applet.getMode() == RemusAppletImpl.AGENT) {
+		} else if (applet.getMode() == RemusApplet.AGENT) {
 			//A submit to an agent is stored and a new instance is created
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -279,7 +282,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 					//instance requested applets
 					System.err.println("AGENT SUBMISSION:" + key );
-					applet.getPipeline().handleSubmission( key, value ); 				
+					pipeline.handleSubmission( key, value ); 				
 
 				}				
 			} catch (NumberFormatException e) {
@@ -324,14 +327,14 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 	@Override
 	public Iterable<String> getKeys() {
-		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+		AppletRef ar = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() );
 
 		return applet.getDataStore().listKeys(ar);
 	}
 
 	@Override
 	public Iterable<Object> getData(String key) {
-		AppletRef ar = new AppletRef( applet.getPipeline().getID(), inst.toString(), applet.getID() );
+		AppletRef ar = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() );
 		try {
 			return applet.getDataStore().get( ar, key);
 		} catch (TException e) {

@@ -8,14 +8,14 @@ import java.util.Map;
 
 import org.remus.JSON;
 import org.remus.core.BaseNode;
-import org.remus.server.RemusPipelineImpl;
-import org.remus.work.RemusAppletImpl;
+import org.remus.core.RemusApplet;
+import org.remus.core.RemusPipeline;
 
 public class PipelineAgentView implements BaseNode {
 
-	RemusPipelineImpl pipe;
+	RemusPipeline pipe;
 
-	public PipelineAgentView(RemusPipelineImpl remusPipeline) {
+	public PipelineAgentView(RemusPipeline remusPipeline) {
 		this.pipe = remusPipeline;
 	}
 
@@ -30,9 +30,9 @@ public class PipelineAgentView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 		if ( name.length() == 0 ) {
-			for ( RemusAppletImpl applet : pipe.getMembers() ) {
+			for ( String appletName : pipe.getMembers() ) {
 				try {
-					os.write( JSON.dumps( applet.getID() ).getBytes() );
+					os.write( JSON.dumps( appletName ).getBytes() );
 					os.write( "\n".getBytes() );
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -60,9 +60,9 @@ public class PipelineAgentView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusAppletImpl applet = pipe.getApplet(name);
+		RemusApplet applet = pipe.getApplet(name);
 		if ( applet != null ) {
-			return new PipelineAppletAgentView( applet );
+			return new PipelineAppletAgentView( pipe, applet );
 		}
 		return null;
 	}

@@ -244,12 +244,13 @@ public class RemusApplet {
 	public Set<WorkStatus> getWorkList() {
 		HashSet<WorkStatus> out = new HashSet<WorkStatus>();		
 		for ( RemusInstance inst : getInstanceList() ) {
+			AppletInstance ai = new AppletInstance( pipeline, inst, this, datastore );			
 			if ( !WorkStatus.isComplete(pipeline, this, inst) ) {
-				if ( isReady(inst)) {
+				if ( ai.isReady()) {
 					if ( workGenerator != null ) {
 						long infoTime = WorkStatus.getTimeStamp(pipeline, this, inst);
 						try {
-							long dataTime = getDataTimeStamp(inst);
+							long dataTime = ai.getDataTimeStamp();
 							if ( infoTime < dataTime || !WorkStatus.hasStatus( pipeline, this, inst ) ) {
 								try {
 									logger.info("GENERATE WORK: " + pipeline.getID() +"/" + getID() + " " + inst.toString() );
@@ -275,7 +276,7 @@ public class RemusApplet {
 			} else {
 				if ( hasInputs() ) {
 					long thisTime = WorkStatus.getTimeStamp(pipeline, this, inst);
-					long inTime = inputTimeStamp(inst);
+					long inTime = ai.inputTimeStamp();
 					//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
 					if ( inTime > thisTime ) {
 						logger.info( "YOUNG INPUT (applet reset):" + getID() );
@@ -387,7 +388,7 @@ public class RemusApplet {
 			//	baseMap.put(WORKDONE_OP, true);
 		}
 
-		AppletInstanceStatusView.updateStatus(this, inst, baseMap);
+		WorkStatus.updateStatus(pipeline, this, inst, baseMap);
 		return true;
 	};
 

@@ -11,20 +11,20 @@ import java.util.Map;
 
 import org.remus.JSON;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
-import org.remus.fs.JSInterface;
+import org.remus.core.RemusPipeline;
+import org.remus.js.JSInterface;
 import org.remus.mapred.MapCallback;
-import org.remus.server.RemusPipelineImpl;
-import org.remus.work.RemusAppletImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineInstanceQueryView implements BaseNode {
 
-	RemusPipelineImpl pipeline;
+	RemusPipeline pipeline;
 	RemusInstance inst;
 	private Logger logger;
-	public PipelineInstanceQueryView(RemusPipelineImpl pipeline, RemusInstance inst) {
+	public PipelineInstanceQueryView(RemusPipeline pipeline, RemusInstance inst) {
 		this.pipeline = pipeline;
 		this.inst = inst;
 		logger = LoggerFactory.getLogger(PipelineInstanceQueryView.class);
@@ -55,7 +55,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 	public void doSubmit(String name, String workerID, final InputStream is,
 			final OutputStream os) throws FileNotFoundException {
 
-		RemusAppletImpl applet = pipeline.getApplet(name);
+		RemusApplet applet = pipeline.getApplet(name);
 		if ( applet == null ) {
 			throw new FileNotFoundException();
 		}
@@ -72,7 +72,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 				}
 			} while ( len >= 0 );
 
-			AppletInstanceView appletView = new AppletInstanceView(applet, inst);
+			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
 
 			JSInterface js = new JSInterface();
 			js.init(null);

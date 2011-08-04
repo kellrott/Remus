@@ -14,20 +14,23 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.DataStackInfo;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
-import org.remus.fs.JSInterface;
+import org.remus.core.RemusPipeline;
+import org.remus.js.JSInterface;
 import org.remus.mapred.MapCallback;
-import org.remus.server.RemusPipelineImpl;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class PipelineStatusView implements BaseNode, BaseStackNode {
 
-	RemusPipelineImpl pipeline;
-	public PipelineStatusView(RemusPipelineImpl pipeline) {
+	RemusPipeline pipeline;
+	RemusDB datastore;
+	public PipelineStatusView(RemusPipeline pipeline, RemusDB datastore) {
 		this.pipeline = pipeline;
+		this.datastore = datastore;
 	}
 
 	@Override
@@ -51,11 +54,11 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		}
 
 		if ( name.length() == 0 ) {
-			for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-				AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
-				for ( KeyValPair kv : applet.getDataStore().listKeyPairs( arInstance ) ) {
+			for ( String appletName : pipeline.getMembers() ) {
+				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
+				for ( KeyValPair kv : datastore.listKeyPairs( arInstance ) ) {
 					Map out = new HashMap();
-					out.put( kv.getKey() + ":" + applet.getID(), kv.getValue() );	
+					out.put( kv.getKey() + ":" + appletName, kv.getValue() );	
 					try {
 						os.write( JSON.dumps( out ).getBytes() );
 						os.write("\n".getBytes());
@@ -68,12 +71,12 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		} else {
 			String [] tmp = name.split(":");
 			if ( tmp.length == 1 ) {
-				for ( RemusAppletImpl applet : pipeline.getMembers() ) {
+				for ( String appletName : pipeline.getMembers() ) {
 					try {
-						AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
-						for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
+						AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
+						for ( Object obj : datastore.get(arInstance, tmp[0]) ) {
 							Map out = new HashMap();
-							out.put( applet.getID(), obj );	
+							out.put( appletName, obj );	
 							try {
 								os.write( JSON.dumps( out ).getBytes() );
 								os.write("\n".getBytes());
@@ -87,8 +90,8 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 					}
 				}
 			} else if ( tmp.length == 2 ) {
-				RemusAppletImpl applet = pipeline.getApplet( tmp[1] );
-				AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+				RemusApplet applet = pipeline.getApplet( tmp[1] );
+				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 				try {
 					for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
 						Map out = new HashMap();
@@ -169,9 +172,9 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		String [] tmp = key.split(":");
 		if ( tmp.length == 2 ) {
 			RemusInstance inst = new RemusInstance(tmp[0]);
-			RemusAppletImpl applet = pipeline.getApplet( tmp[1] );
+			RemusApplet applet = pipeline.getApplet( tmp[1] );
 			LinkedList<Object> out = new LinkedList<Object>();
-			AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
+			AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 			try { 
 				for ( Object obj : applet.getDataStore().get(arInstance, inst.toString()) ) {
 					out.add(obj);
@@ -187,10 +190,10 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	@Override
 	public Iterable<String> getKeys() {
 		LinkedList<String> list = new LinkedList<String>();
-		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
-			AppletRef arInstance = new AppletRef( applet.getPipeline().getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getPath() + "/@instance" );
-			for ( String key : applet.getDataStore().listKeys(arInstance) ) {
-				list.add( key + ":" + applet.getID() );	
+		for ( String appletName : pipeline.getMembers() ) {
+			AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
+			for ( String key : datastore.listKeys(arInstance) ) {
+				list.add( key + ":" + appletName );	
 			}
 		}
 		return list;

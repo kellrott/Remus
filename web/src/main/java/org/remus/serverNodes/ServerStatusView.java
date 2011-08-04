@@ -12,7 +12,6 @@ import java.util.Map;
 import org.remus.JSON;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
-import org.remus.work.RemusAppletImpl;
 
 public class ServerStatusView implements BaseNode {
 

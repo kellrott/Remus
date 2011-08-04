@@ -43,14 +43,14 @@ public class AppletInstance {
 		return true;
 	}
 
-	/*
-	public long inputTimeStamp( RemusInstance remusInstance ) {
+	
+	public long inputTimeStamp( ) {
 		long out = 0;
 		for ( String iRef : applet.getInputs() ) {
 			if ( iRef.compareTo("?") != 0 ) {
 				RemusApplet iApplet = pipeline.getApplet( iRef );
 				if ( iApplet != null ) {
-					long val = WorkStatus.getTimeStamp(pipeline, this, remusInstance);
+					long val = WorkStatus.getTimeStamp(pipeline, applet, instance);
 					if ( out < val ) {
 						out = val;
 					}
@@ -59,10 +59,10 @@ public class AppletInstance {
 		}
 		return out;
 	}
-*/
+
 	
-	public long getDataTimeStamp( RemusInstance remusInstance ) throws TException {
-		return datastore.getTimeStamp( new AppletRef(pipeline.getID(), remusInstance.toString(), applet.getID() ) );
+	public long getDataTimeStamp( ) throws TException {
+		return datastore.getTimeStamp( new AppletRef(pipeline.getID(), instance.toString(), applet.getID() ) );
 	}
 
 

@@ -9,15 +9,15 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
-import org.remus.work.RemusAppletImpl;
+import org.remus.core.RemusPipeline;
 import org.remus.work.Submission;
 
 public class ResetInstanceView implements BaseNode {
-	RemusPipelineImpl pipeline;
+	RemusPipeline pipeline;
 
-	public ResetInstanceView(RemusPipelineImpl pipeline) {
+	public ResetInstanceView(RemusPipeline pipeline) {
 		this.pipeline = pipeline;
 	}
 
@@ -67,7 +67,7 @@ public class ResetInstanceView implements BaseNode {
 				}
 			} else {
 				RemusInstance inst = pipeline.getInstance( tmp[0] );
-				RemusAppletImpl applet = pipeline.getApplet(tmp[1]);
+				RemusApplet applet = pipeline.getApplet(tmp[1]);
 				if ( inst != null && applet != null ) {
 					try {
 						applet.deleteInstance( inst );

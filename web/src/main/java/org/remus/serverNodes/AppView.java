@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
@@ -18,10 +20,10 @@ public class AppView implements BaseNode {
 
 	RemusApp app;
 	private HashMap<String, BaseNode> children;
-	public AppView(RemusApp app) {
+	public AppView(RemusApp app, RemusDB datastore) {
 		this.app = app;
 		children = new HashMap<String,BaseNode>();
-		children.put("@pipeline", new PipelineConfigView(app));
+		children.put("@pipeline", new PipelineConfigView(app,datastore));
 		children.put("@status", new ServerStatusView(app));
 		children.put("@manage", new ManageApp() );
 		children.put("@db", new StoreInfoView(app));
@@ -41,8 +43,12 @@ public class AppView implements BaseNode {
 
 		Map out = new HashMap();
 		List<String> oList = new ArrayList<String>();
-		for ( Object pipeObj : app.getPipelines() ) {
-			oList.add( ((RemusPipeline)pipeObj).getID() );
+		try {
+		for ( String pipeName : app.getPipelines() ) {
+			oList.add( pipeName );
+		}
+		} catch (TException e) {
+			e.printStackTrace();
 		}
 		out.put("@", oList);
 		try {

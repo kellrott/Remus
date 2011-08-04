@@ -142,9 +142,6 @@ public class RemusPipeline {
 		}
 	}
 
-	
-
-
 	private List<RemusApplet> loadApplet(String pipelineName, String name, RemusDB store ) throws TException {
 		List<RemusApplet> out = new LinkedList<RemusApplet>();
 

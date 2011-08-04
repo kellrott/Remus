@@ -12,18 +12,20 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 import org.remus.work.Submission;
 
 public class SubmitView implements BaseNode {
 
-	RemusPipelineImpl pipe;
-	public SubmitView(RemusPipelineImpl pipe) {
+	RemusPipeline pipe;
+	RemusDB datasource;
+	public SubmitView(RemusPipeline pipe, RemusDB datasource) {
 		this.pipe = pipe;
+		this.datasource = datasource;
 	}
 
 	@Override
@@ -40,11 +42,11 @@ public class SubmitView implements BaseNode {
 		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
 		try {
 			if ( name.length() == 0 ) {
-				for ( KeyValPair kv : pipe.getDataStore().listKeyPairs(ar)) {
+				for ( KeyValPair kv : datasource.listKeyPairs(ar)) {
 					out.put(kv.getKey(), kv.getValue() );
 				}
 			} else {
-				for ( Object obj : pipe.getDataStore().get(ar, name )) {
+				for ( Object obj : datasource.get(ar, name )) {
 					out.put(name, obj );
 				}
 			}

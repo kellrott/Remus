@@ -12,25 +12,26 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.core.BaseNode;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
-import org.remus.server.RemusPipelineImpl;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
-import org.remus.work.RemusAppletImpl;
 
 public class PipelineErrorView implements BaseNode {
 
-	RemusPipelineImpl pipeline;
-	public PipelineErrorView(RemusPipelineImpl remusPipeline) {
+	RemusPipeline pipeline;
+	public PipelineErrorView(RemusPipeline remusPipeline) {
 		this.pipeline = remusPipeline;
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 	throws FileNotFoundException {
-		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
+		for ( String appletName : pipeline.getMembers() ) {
+			RemusApplet applet = pipeline.getApplet(appletName);
 			for ( RemusInstance inst : applet.getInstanceList() ) {
 				try {
-				applet.deleteErrors(inst);
+					applet.deleteErrors(inst);
 				} catch (TException e) {
 					e.printStackTrace();
 					throw new FileNotFoundException();
@@ -42,12 +43,13 @@ public class PipelineErrorView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
-		for ( RemusAppletImpl applet : pipeline.getMembers() ) {
+		for ( String appletName : pipeline.getMembers() ) {
+			RemusApplet applet = pipeline.getApplet(appletName);
 			for ( RemusInstance inst : applet.getInstanceList() ) {
 				Map<String,Map<String,Object>> out = new HashMap<String, Map<String,Object>>();		
-				
-				AppletRef ar = new AppletRef(applet.getPipeline().getID(), inst.toString(), applet.getID() + "/@error" );
-				
+
+				AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + "/@error" );
+
 				for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar) ) {
 					String key = inst.toString() + ":" + applet.getID();
 					if ( ! out.containsKey( key )) {
