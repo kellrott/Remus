@@ -15,6 +15,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -33,6 +34,9 @@ public class PipelineConfigView implements BaseNode {
 			try {
 				app.deletePipeline( pipeline );
 			} catch (TException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (RemusDatabaseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

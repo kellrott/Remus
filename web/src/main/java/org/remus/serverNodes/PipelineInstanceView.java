@@ -14,6 +14,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -35,6 +36,7 @@ public class PipelineInstanceView implements BaseNode {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
@@ -42,11 +44,11 @@ public class PipelineInstanceView implements BaseNode {
 			for ( String appletName : pipeline.getMembers() ) {
 				AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + AppletInstanceStatusView.InstanceStatusName );
 				try {
-					for ( Object instObj : datastore.get(ar, inst.toString() ) ) {
+					for (Object instObj : datastore.get(ar, inst.toString())) {
 						Map out = new HashMap();
-						out.put( appletName, instObj );	
+						out.put(appletName, instObj);	
 						try {
-							os.write( JSON.dumps( out ).getBytes() );
+							os.write(JSON.dumps(out).getBytes());
 							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -81,25 +83,31 @@ public class PipelineInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipeline.getApplet(name);
-		if ( applet != null ) {
+		RemusApplet applet = null;
+		try {
+			applet = pipeline.getApplet(name);
+		} catch (RemusDatabaseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (applet != null) {
 			return new AppletInstanceView(pipeline, applet, inst);
 		}
 
-		if ( name.compareTo("@error") == 0 ) {
+		if (name.compareTo("@error") == 0) {
 			return new InstanceErrorView(pipeline, inst);
 		}
 
-		if ( name.compareTo("@status") == 0 ) {
+		if (name.compareTo("@status") == 0) {
 			return new PipelineInstanceStatusView(pipeline, inst, datastore);
 		}
 
-		if ( name.compareTo("@attach") == 0 ) {
+		if (name.compareTo("@attach") == 0) {
 			return new AttachInstanceView(pipeline, inst);			
 		}
 
-		if ( name.compareTo("@query") == 0 ) {
-			return new PipelineInstanceQueryView(pipeline,inst);
+		if (name.compareTo("@query") == 0) {
+			return new PipelineInstanceQueryView(pipeline, inst);
 		}
 
 		return null;		

@@ -14,6 +14,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -44,11 +45,11 @@ public class PipelineInstanceStatusView implements BaseNode {
 				for ( String appletName : pipeline.getMembers() ) {
 					AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
 					try {
-						for ( Object data : datastore.get( ap, inst.toString() ) ) {
+						for (Object data : datastore.get(ap, inst.toString())) {
 							Map out = new HashMap();
 							out.put(appletName, data);
-							os.write( JSON.dumps(out).getBytes() );
-							os.write("\n".getBytes() );
+							os.write(JSON.dumps(out).getBytes());
+							os.write("\n".getBytes());
 						}
 					} catch (TException e) {
 						e.printStackTrace();
@@ -57,21 +58,24 @@ public class PipelineInstanceStatusView implements BaseNode {
 					}
 				}
 			} else {
-				RemusApplet applet = pipeline.getApplet( name );
-				if ( applet != null ) {
-					try {
+				try {
+					RemusApplet applet = pipeline.getApplet(name);
+					if (applet != null) {
 						AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
-						for ( Object data : applet.getDataStore().get( ap, inst.toString() ) ) {
+						for (Object data : applet.getDataStore().get(ap, inst.toString())) {
 							Map out = new HashMap();
 							out.put(applet.getID(), data);
-							os.write( JSON.dumps(out).getBytes() );
-							os.write("\n".getBytes() );
+							os.write(JSON.dumps(out).getBytes());
+							os.write("\n".getBytes());
 						}
-					} catch (TException e) {
-						e.printStackTrace();
-					} catch (NotImplemented e) {
-						e.printStackTrace();
 					}
+				} catch (TException e) {
+					e.printStackTrace();
+				} catch (NotImplemented e) {
+					e.printStackTrace();
+				} catch (RemusDatabaseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 

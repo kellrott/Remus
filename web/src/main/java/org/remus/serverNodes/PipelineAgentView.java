@@ -10,6 +10,7 @@ import org.remus.JSON;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 
 public class PipelineAgentView implements BaseNode {
 
@@ -32,8 +33,8 @@ public class PipelineAgentView implements BaseNode {
 		if ( name.length() == 0 ) {
 			for ( String appletName : pipe.getMembers() ) {
 				try {
-					os.write( JSON.dumps( appletName ).getBytes() );
-					os.write( "\n".getBytes() );
+					os.write(JSON.dumps(appletName).getBytes());
+					os.write("\n".getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -60,9 +61,13 @@ public class PipelineAgentView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipe.getApplet(name);
-		if ( applet != null ) {
-			return new PipelineAppletAgentView( pipe, applet );
+		try {
+			RemusApplet applet = pipe.getApplet(name);
+			if (applet != null) {
+				return new PipelineAppletAgentView(pipe, applet);
+			}
+		} catch (RemusDatabaseException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

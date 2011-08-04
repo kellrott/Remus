@@ -22,18 +22,20 @@ public class PipelineView implements BaseNode {
 	HashMap<String,BaseNode> children;
 
 	RemusPipeline pipe;
-	public PipelineView(RemusPipeline pipe, RemusDB database) {
+	RemusDB datastore;
+	
+	public PipelineView(RemusPipeline pipe, RemusDB datastore) {
 		this.pipe = pipe;
+		this.datastore = datastore;
 		children = new HashMap<String, BaseNode>();
-		children.put("@pipeline", new PipelineView(pipe, database) );
-		children.put("@submit", new SubmitView(pipe, database) );
-		children.put("@status", new PipelineStatusView(pipe, database) );
-		children.put("@instance", new PipelineInstanceListViewer(pipe, database) );
-		children.put("@agent", new PipelineAgentView(pipe) );
+		children.put("@pipeline", new PipelineView(pipe, datastore) );
+		children.put("@submit", new SubmitView(pipe, datastore) );
+		children.put("@status", new PipelineStatusView(pipe, datastore));
+		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
+		children.put("@agent", new PipelineAgentView(pipe));
 
-		children.put("@error", new PipelineErrorView(pipe) );
-
-		children.put("@reset", new ResetInstanceView(pipe) );
+		children.put("@error", new PipelineErrorView(pipe));
+		children.put("@reset", new ResetInstanceView(pipe));
 	}
 	
 	@Override
@@ -42,6 +44,7 @@ public class PipelineView implements BaseNode {
 		throw new FileNotFoundException();
 	}
 
+	/*
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os)
 	throws FileNotFoundException {
@@ -61,31 +64,19 @@ public class PipelineView implements BaseNode {
 			}
 		}
 	}
-
-	@Override
-	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
-		System.err.println( "PUTTING:" + name );
-	}
-
-	@Override
-	public void doSubmit(String name, String workerID, InputStream is,
-			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
-	}
-
-
+	 */
+	
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 		Map out = new HashMap();
 		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		try {
 			if ( name.length() == 0 ) {
-				for ( KeyValPair kv : pipe.getDataStore().listKeyPairs(ar)) {
+				for ( KeyValPair kv : datastore.listKeyPairs(ar)) {
 					out.put(kv.getKey(), kv.getValue() );
 				}
 			} else {
-				for ( Object obj : pipe.getDataStore().get(ar, name )) {
+				for ( Object obj : datastore.get(ar, name )) {
 					out.put(name, obj );
 				}
 			}
@@ -129,13 +120,6 @@ public class PipelineView implements BaseNode {
 		// TODO Auto-generated method stub
 
 	}
-
-	@Override
-	public BaseNode getChild(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 
 	class PipelineAttachment implements BaseNode {
 

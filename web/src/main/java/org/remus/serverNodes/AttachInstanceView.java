@@ -11,9 +11,10 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 
 public class AttachInstanceView implements BaseNode {
-	
+
 	RemusPipeline pipe;
 	RemusInstance inst;
 
@@ -65,9 +66,13 @@ public class AttachInstanceView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipe.getApplet(name);
-		if ( applet != null ) {
-			return new AttachAppletView( pipe, applet, inst );
+		try {
+			RemusApplet applet = pipe.getApplet(name);
+			if ( applet != null ) {
+				return new AttachAppletView( pipe, applet, inst );
+			}
+		} catch (RemusDatabaseException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

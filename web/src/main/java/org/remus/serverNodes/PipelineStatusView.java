@@ -22,6 +22,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.js.JSFunctionCall;
 import org.remus.mapred.MapReduceCallback;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -94,9 +95,9 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 					}
 				}
 			} else if ( tmp.length == 2 ) {
-				RemusApplet applet = pipeline.getApplet( tmp[1] );
-				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 				try {
+					RemusApplet applet = pipeline.getApplet(tmp[1]);
+					AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 					for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
 						Map out = new HashMap();
 						out.put( applet.getID(), obj );	
@@ -111,6 +112,9 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				} catch (TException e) {
 					e.printStackTrace();
 				} catch (NotImplemented e) {
+					e.printStackTrace();
+				} catch (RemusDatabaseException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -178,16 +182,20 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		String [] tmp = key.split(":");
 		if ( tmp.length == 2 ) {
 			RemusInstance inst = new RemusInstance(tmp[0]);
-			RemusApplet applet = pipeline.getApplet( tmp[1] );
 			LinkedList<Object> out = new LinkedList<Object>();
-			AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 			try { 
+				RemusApplet applet = pipeline.getApplet( tmp[1] );
+				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
+
 				for (Object obj : applet.getDataStore().get(arInstance, inst.toString())) {
 					out.add(obj);
 				}
 			} catch (TException e) {
 				e.printStackTrace();
 			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (RemusDatabaseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

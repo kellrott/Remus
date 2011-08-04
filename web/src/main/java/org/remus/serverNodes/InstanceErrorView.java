@@ -16,6 +16,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -114,6 +115,8 @@ public class InstanceErrorView implements BaseNode {
 				throw new FileNotFoundException();
 			} catch (NotImplemented e) {
 				throw new FileNotFoundException();
+			} catch (RemusDatabaseException e) {
+				throw new FileNotFoundException();
 			}
 		}
 	}
@@ -140,9 +143,13 @@ public class InstanceErrorView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		RemusApplet applet = pipeline.getApplet(name);
-		if ( applet != null ) {
-			return new AppletInstanceErrorView( pipeline, applet, inst );
+		try {
+			RemusApplet applet = pipeline.getApplet(name);
+			if ( applet != null ) {
+				return new AppletInstanceErrorView( pipeline, applet, inst );
+			}
+		} catch (RemusDatabaseException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
