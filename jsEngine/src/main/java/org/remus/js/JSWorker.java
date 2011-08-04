@@ -1,26 +1,21 @@
 package org.remus.js;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.core.BaseNode;
-import org.remus.core.WorkAgent;
-import org.remus.core.WorkManager;
-import org.remus.core.WorkStatus;
-import org.remus.plugin.PluginInterface;
+import org.remus.RemusDB;
+import org.remus.Worker;
+import org.remus.mapred.WorkEngine;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.JobStatus;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.WorkDesc;
 import org.remus.PeerInfo;
 
-public class JSWorker implements WorkAgent {
+public class JSWorker extends Worker {
 
+	PluginManager plugins;
 	
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -32,19 +27,21 @@ public class JSWorker implements WorkAgent {
 
 	@Override
 	public void init(Map params) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public String jobRequest(String dataServer, WorkDesc work)
 			throws TException {
+		RemusDB db = plugins.getDataServer();
+		JSFunctionCall js = new JSFunctionCall();
+		WorkEngine we = new WorkEngine(work, db, js);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public org.remus.thrift.WorkStatus workStatus(String jobID)
+	public JobStatus jobStatus(String jobID)
 			throws TException {
 		// TODO Auto-generated method stub
 		return null;
@@ -52,9 +49,7 @@ public class JSWorker implements WorkAgent {
 
 	@Override
 	public void start(PluginManager pluginManager) {
-		// TODO Auto-generated method stub
-		
-	}
-	
+		plugins = pluginManager;
+	}	
 
 }

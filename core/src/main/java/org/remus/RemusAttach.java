@@ -7,20 +7,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
-import org.remus.thrift.RemusAttachThrift;
+import org.remus.thrift.JobStatus;
+import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
+import org.remus.thrift.WorkDesc;
 
-public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInterface {
+public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 
 	static public final int BLOCK_SIZE=4048; 
 	@SuppressWarnings("unchecked")
 	abstract public void init(Map params);
 
-	public void copyTo(AppletRef stack, String key, String name, File file) throws TException, IOException {
+	public void copyTo(AppletRef stack, String key, String name, File file) throws TException, IOException, NotImplemented {
 		long fileSize = file.length();		
 		initAttachment(stack, key, name, fileSize);		
 		byte [] buffer = new byte[BLOCK_SIZE];
@@ -38,7 +43,7 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 		fis.close();
 	}
 
-	public void copyFrom(AppletRef stack, String key, String name, File file) throws TException, IOException {
+	public void copyFrom(AppletRef stack, String key, String name, File file) throws TException, IOException, NotImplemented {
 		long fileSize = getAttachmentSize(stack, key, name);
 
 		FileOutputStream fos = new FileOutputStream(file);
@@ -59,7 +64,7 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 		AppletRef stack;
 		String key;
 		String name;
-		public BlockReader(AppletRef stack, String key, String name) throws TException {
+		public BlockReader(AppletRef stack, String key, String name) throws TException, NotImplemented {
 			this.stack = stack;
 			this.name = name;
 			this.key = key;
@@ -80,6 +85,8 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 					offset = 0;
 				} catch (TException e) {
 					throw new IOException(e);
+				} catch (NotImplemented e) {
+					throw new IOException(e);
 				}
 			}
 			byte out = buffer[(int) offset];
@@ -90,7 +97,7 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 	}
 
 	public InputStream readAttachement(AppletRef stack, String key,
-			String name) {
+			String name) throws NotImplemented {
 		try {
 			return new BlockReader(stack, key, name);
 		} catch (TException e) {
@@ -101,7 +108,6 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 
 	
 	private class SendOnClose extends OutputStream {
-
 		private AppletRef stack;
 		private String key;
 		private String name;
@@ -144,7 +150,9 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 				file.delete();
 			} catch (TException e) {
 				throw new IOException(e);
-			}			
+			} catch (NotImplemented e) {
+				throw new IOException(e);
+			}
 		}		
 	}
 	
@@ -153,4 +161,70 @@ public abstract class RemusAttach implements RemusAttachThrift.Iface, PluginInte
 		return new SendOnClose(stack, key, name);		
 	}
 
+	
+
+	@Override
+	public void addData(AppletRef stack, long jobID, long emitID, String key,
+			String data) throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public boolean containsKey(AppletRef stack, String key)
+			throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public void deleteValue(AppletRef stack, String key) throws NotImplemented,
+			TException {
+		throw new NotImplemented();		
+	}
+
+	@Override
+	public long getTimeStamp(AppletRef stack) throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public List<String> getValueJSON(AppletRef stack, String key)
+			throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public String jobRequest(String dataServer, WorkDesc work)
+			throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public long keyCount(AppletRef stack, int maxCount) throws NotImplemented,
+			TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public List<String> keySlice(AppletRef stack, String keyStart, int count)
+			throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack,
+			String startKey, int count) throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public void scheduleRequest() throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
+
+	@Override
+	public JobStatus jobStatus(String jobID) throws NotImplemented,
+			TException {
+		throw new NotImplemented();
+	}
+	
 }

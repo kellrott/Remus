@@ -24,6 +24,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AppletInstanceView implements BaseNode, BaseStackNode {
 
@@ -103,6 +104,8 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					}
 				} catch (TException e) {
 					e.printStackTrace();
+				} catch (NotImplemented e) {
+					e.printStackTrace();
 				}
 			}
 		} else {
@@ -110,11 +113,11 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				String [] tmp = name.split("/");
 				if ( tmp.length == 1) {
 					if ( sliceStr == null ) {
-						for ( Object obj : applet.getDataStore().get( ar, name) ) {
+						for (Object obj : applet.getDataStore().get( ar, name)) {
 							Map out = new HashMap();
-							out.put(name, obj );				
+							out.put(name, obj);
 							try {
-								os.write( JSON.dumps(out).getBytes() );
+								os.write(JSON.dumps(out).getBytes());
 								os.write("\n".getBytes());
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
@@ -153,6 +156,9 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				}
 			} catch (TException e) {
 				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 
@@ -175,10 +181,12 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					}
 					Object data = JSON.loads(sb.toString());
 					try {
-						applet.getDataStore().add( ar,
+						applet.getDataStore().add(ar,
 								0L, 0L,
-								name, data);		
+								name, data);
 					} catch (TException e) {
+						e.printStackTrace();
+					} catch (NotImplemented e) {
 						e.printStackTrace();
 					}
 				} else {
@@ -203,10 +211,13 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 					if (data != null) {
 						for (Object key : data.keySet()) {
 							try {
-							applet.getDataStore().add( ar,
-									0L, 0L,
-									(String)key, data.get(key) );		
+								applet.getDataStore().add( ar,
+										0L, 0L,
+										(String)key, data.get(key) );		
 							} catch (TException e) {
+								e.printStackTrace();
+							} catch (NotImplemented e) {
+								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -247,23 +258,26 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 				BufferedReader br = new BufferedReader(new InputStreamReader(is));
 				StringBuilder sb = new StringBuilder();
 				String curline;
-				while ( (curline = br.readLine() ) != null ) {
+				while ((curline = br.readLine()) != null) {
 					sb.append(curline);
 				}
-				Map inData = postStr2Map(sb.toString()) ;
+				Map inData = postStr2Map(sb.toString());
 				String key = null;
-				if ( name.length() > 0 ) {
+				if (name.length() > 0) {
 					key = name;
 				} else {
 					key = (new RemusInstance()).toString();
 				}
-				applet.getDataStore().add( ar,
+				applet.getDataStore().add(ar,
 						0L, 0L,
-						key, inData );		
+						key, inData);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (TException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NotImplemented e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
@@ -316,6 +330,9 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -338,6 +355,9 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 		try {
 			return applet.getDataStore().get( ar, key);
 		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

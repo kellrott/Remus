@@ -2065,14 +2065,14 @@ public class RemusGossip {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                this.success = new ArrayList<PeerInfoThrift>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
+                this.success = new ArrayList<PeerInfoThrift>(_list28.size);
+                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
                 {
-                  PeerInfoThrift _elem26;
-                  _elem26 = new PeerInfoThrift();
-                  _elem26.read(iprot);
-                  this.success.add(_elem26);
+                  PeerInfoThrift _elem30;
+                  _elem30 = new PeerInfoThrift();
+                  _elem30.read(iprot);
+                  this.success.add(_elem30);
                 }
                 iprot.readListEnd();
               }
@@ -2098,9 +2098,9 @@ public class RemusGossip {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (PeerInfoThrift _iter27 : this.success)
+          for (PeerInfoThrift _iter31 : this.success)
           {
-            _iter27.write(oprot);
+            _iter31.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -2399,14 +2399,14 @@ public class RemusGossip {
           case 1: // WORKERS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                this.workers = new ArrayList<PeerInfoThrift>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                this.workers = new ArrayList<PeerInfoThrift>(_list32.size);
+                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
                 {
-                  PeerInfoThrift _elem30;
-                  _elem30 = new PeerInfoThrift();
-                  _elem30.read(iprot);
-                  this.workers.add(_elem30);
+                  PeerInfoThrift _elem34;
+                  _elem34 = new PeerInfoThrift();
+                  _elem34.read(iprot);
+                  this.workers.add(_elem34);
                 }
                 iprot.readListEnd();
               }
@@ -2433,9 +2433,9 @@ public class RemusGossip {
         oprot.writeFieldBegin(WORKERS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.workers.size()));
-          for (PeerInfoThrift _iter31 : this.workers)
+          for (PeerInfoThrift _iter35 : this.workers)
           {
-            _iter31.write(oprot);
+            _iter35.write(oprot);
           }
           oprot.writeListEnd();
         }

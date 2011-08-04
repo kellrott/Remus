@@ -11,6 +11,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;
 
 public class DataStackRef {
@@ -25,7 +26,9 @@ public class DataStackRef {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static DataStackRef fromSubmission( RemusPipeline pipeline, RemusApplet applet, String input, RemusInstance instance) throws TException {
+	public static DataStackRef fromSubmission( RemusPipeline pipeline, 
+			RemusApplet applet, String input, RemusInstance instance) 
+	throws TException, NotImplemented, RemusDatabaseException {
 		DataStackRef out = new DataStackRef();
 		out.instance = instance;
 		out.ds = applet.getDataStore();
@@ -37,6 +40,9 @@ public class DataStackRef {
 		if ( applet.getInput().compareTo("?") == 0 ) {
 			for ( Object instObj : out.ds.get( arInstance, instance.toString() ) ) {
 				Map inputInfo = (Map)((Map)instObj).get(Submission.InputField);
+				if (inputInfo == null) {
+					throw new RemusDatabaseException("Submission missing _input field");
+				}
 				String instanceStr = (String) inputInfo.get(Submission.InstanceField);
 				String appletStr = (String) inputInfo.get( "_applet" );				
 				for ( Object subObj : out.ds.get( arSubmit, instanceStr) ) {
@@ -62,7 +68,7 @@ public class DataStackRef {
 		return "/" + pipeline.getID() + "/" + instance.toString() + "/" + ref;
 	}
 
-	public long getKeyCount( RemusDB ds, int maxCount ) throws TException {
+	public long getKeyCount( RemusDB ds, int maxCount ) throws TException, NotImplemented {
 		if ( keys != null )
 			return keys.size();
 		return ds.keyCount( viewPath, maxCount );			

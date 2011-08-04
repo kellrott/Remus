@@ -16,6 +16,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class PipelineConfigView implements BaseNode {	
 	RemusApp app;
@@ -66,11 +67,14 @@ public class PipelineConfigView implements BaseNode {
 			}
 			System.err.println( sb.toString() );
 			Object data = JSON.loads(sb.toString());
-			app.addPipeline( name, data );
+			app.putPipeline(name, data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

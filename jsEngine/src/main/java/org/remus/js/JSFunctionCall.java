@@ -1,7 +1,5 @@
 package org.remus.js;
 
-import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,50 +7,46 @@ import java.util.Map;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
-import org.mozilla.javascript.FunctionObject;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
 import org.remus.fs.ScriptMap;
-import org.remus.mapred.MapCallback;
-import org.remus.mapred.MapperInterface;
-import org.remus.mapred.ReducerInterface;
-import org.remus.mapred.SplitCallback;
-import org.remus.mapred.SpliterInterface;
-import org.remus.mapred.PipeInterface;
-import org.remus.server.PluginConfig;
-import org.remus.serverNodes.BaseStackNode;
+import org.remus.mapred.MapReduceCallback;
+import org.remus.mapred.MapReduceFunction;
+import org.remus.mapred.NotSupported;
 
-public class JSInterface  {
-	Context cx;	
+public class JSFunctionCall implements MapReduceFunction {
 
-	public void init(PluginConfig config) {
+	Context cx;
+	private JSFunction currentFunction;	
+
+	public JSFunctionCall() {
 		cx = Context.enter();
 		cx.setWrapFactory( new WrapFactory() {
 			@SuppressWarnings("unchecked")
-			
+
 			@Override
 			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class staticType) {
 				//System.out.println( javaObject );
-				if ( javaObject instanceof Map ) {
-					return new ScriptMap( (Map)javaObject );
+				if (javaObject instanceof Map) {
+					return new ScriptMap((Map)javaObject);
 				}
-				if ( javaObject instanceof List ) {
-					return new NativeArray( ((List)javaObject).toArray() );
+				if (javaObject instanceof List) {
+					return new NativeArray(((List) javaObject).toArray());
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			};
-			
-			
+
+
 			@Override
 			public Scriptable wrapNewObject(Context cx, Scriptable scope,
 					Object obj) {
 				System.err.println( "NEW:" + obj );
 				return super.wrapNewObject(cx, scope, obj);
 			}
-			
+
 			@Override
 			public Object wrap(Context cx, Scriptable scope, Object obj,
 					Class staticType) {
@@ -60,12 +54,8 @@ public class JSInterface  {
 				//System.err.println( "WRAP:" + obj + " " + staticType + " " + out);
 				return out;
 			}
-			
-		});		
-	}
 
-	OutputStream curOUT;
-	private JSFunction currentFunction;
+		});					}
 
 
 	class JSFunction  {
@@ -74,7 +64,7 @@ public class JSInterface  {
 		public void call(String key, Object val) {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
-			func.call(cx, scope, null, new Object [] { key, val } );
+			func.call(cx, scope, null, new Object [] { key, val });
 		}
 	}
 
@@ -83,11 +73,11 @@ public class JSInterface  {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
 			JSFunction jfunc = new JSFunction();
-			jfunc.emit = new EmitInterface(  );
+			jfunc.emit = new EmitInterface();
 			Function out = cx.compileFunction(scope, source, fileName, 1, null);
 			jfunc.func = out;
 			prepScope(scope, jfunc.emit);
-			
+
 			return jfunc;
 		} catch (EcmaError e) {
 			e.printStackTrace();
@@ -105,55 +95,76 @@ public class JSInterface  {
 		}
 	}
 
-	public void setStdout(OutputStream os) {
-		curOUT = os;
-		//Object wrappedOut = Context.javaToJS( new PrintWriter(os), scope);
-		//ScriptableObject.putProperty(scope, "stdout", wrappedOut);
-	}
+	
 
 	public class EmitInterface {
-		MapCallback cb;
+		MapReduceCallback cb;
 		public EmitInterface() {
 		}
-		private void setEmit(MapCallback cb) {
+		private void setEmit(MapReduceCallback cb) {
 			this.cb = cb;
 		}
 		private Object unwrap(Object in) {
 			Object out = in;
-			if ( in instanceof NativeObject ) {
-				NativeObject n = (NativeObject)in;
+			if (in instanceof NativeObject) {
+				NativeObject n = (NativeObject) in;
 				Map m = new HashMap();
 
-				for ( Object key : n.getIds() ) {
-					if ( key instanceof String )
-						m.put(key, n.get((String)key, null));
-					else if ( key instanceof Integer)
-						m.put(key, n.get((Integer)key, null));
-							
+				for (Object key : n.getIds()) {
+					if (key instanceof String) {
+						m.put(key, n.get((String) key, null));
+					} else if (key instanceof Integer) {
+						m.put(key, n.get((Integer) key, null));
+					}
 				}
 				out = m;
 			}
 			return out;
 		}
 		public void emit(String key, Object val) {
-			cb.emit(key, unwrap(val) );
+			cb.emit(key, unwrap(val));
 		}		
 	}
 
-
-	@Override
-	public void map(BaseStackNode dataStack, MapCallback callback) {
-		currentFunction.emit.setEmit(callback);
-		for (String key : dataStack.getKeys() ) {
-			for (Object data : dataStack.getData(key)) {
-				currentFunction.call( key, data );
-			}
-		}
+	
+	public void initMapper(String config) {
+		currentFunction = compileFunction(config, "view");
 	}
 
 	@Override
-	public void initMapper(String config) {
-		currentFunction = compileFunction(config, "view");
+	public void map(String key, Object value, MapReduceCallback cb)
+			throws NotSupported {
+		currentFunction.emit.setEmit(cb);
+		currentFunction.call(key, value);
+	}
+
+	@Override
+	public void match(String key, List<Object> leftVals,
+			List<Object> rightVals, MapReduceCallback cb) throws NotSupported {
+		throw new NotSupported();
+	}
+
+	@Override
+	public void merge(String leftKey, List<Object> leftVals, String rightKey,
+			List<Object> rightVals, MapReduceCallback cb) throws NotSupported {
+		throw new NotSupported();		
+	}
+
+	@Override
+	public void pipe(List<Object> handles, MapReduceCallback cb)
+			throws NotSupported {
+		throw new NotSupported();
+	}
+
+	@Override
+	public void reduce(String key, List<Object> values, MapReduceCallback cb)
+			throws NotSupported {
+		throw new NotSupported();
+	}
+
+	@Override
+	public void split(Object info, MapReduceCallback cb) throws NotSupported {
+		throw new NotSupported();
 	}
 
 }

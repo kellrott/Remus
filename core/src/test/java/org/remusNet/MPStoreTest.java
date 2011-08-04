@@ -15,6 +15,7 @@ import org.remus.ConnectionException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class MPStoreTest {
 
@@ -34,7 +35,7 @@ public class MPStoreTest {
 		//ds.initMPStore(new JsonSerializer(), prop );
 	}
 
-	@Test public void insertTest() throws TException {
+	@Test public void insertTest() throws TException, NotImplemented {
 
 		String instance1 = "00-testing-01";
 		String instance2 = "00-testing-02";

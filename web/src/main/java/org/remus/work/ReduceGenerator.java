@@ -7,7 +7,9 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.server.DataStackRef;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class ReduceGenerator implements WorkGenerator {
 
@@ -28,6 +30,12 @@ public class ReduceGenerator implements WorkGenerator {
 			long t = datastore.getTimeStamp( ar );
 			WorkStatus.setWorkStat( pipeline, applet, instance, 0, 0, 0, jobID, t);
 		}catch (TException e ) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

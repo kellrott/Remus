@@ -15,7 +15,10 @@ import org.remus.PeerInfo;
 import org.remus.RemusAttach;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.WorkDesc;
 
 public class FileServer extends RemusAttach {
 

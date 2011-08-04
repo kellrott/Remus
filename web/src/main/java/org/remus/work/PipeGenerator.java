@@ -11,6 +11,7 @@ import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.server.DataStackRef;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class PipeGenerator implements WorkGenerator {
 
@@ -32,6 +33,9 @@ public class PipeGenerator implements WorkGenerator {
 			long t = datastore.getTimeStamp( ar );
 			WorkStatus.setWorkStat( pipeline, applet, instance, 0, 0, 0, 1, t);
 		}catch (TException e){
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

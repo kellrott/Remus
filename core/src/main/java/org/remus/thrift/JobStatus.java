@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum WorkStatus implements org.apache.thrift.TEnum {
+public enum JobStatus implements org.apache.thrift.TEnum {
   QUEUED(0),
   WORKING(1),
   DONE(2),
@@ -18,7 +18,7 @@ public enum WorkStatus implements org.apache.thrift.TEnum {
 
   private final int value;
 
-  private WorkStatus(int value) {
+  private JobStatus(int value) {
     this.value = value;
   }
 
@@ -33,7 +33,7 @@ public enum WorkStatus implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static WorkStatus findByValue(int value) { 
+  public static JobStatus findByValue(int value) { 
     switch (value) {
       case 0:
         return QUEUED;

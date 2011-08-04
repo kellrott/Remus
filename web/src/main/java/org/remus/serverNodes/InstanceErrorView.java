@@ -17,6 +17,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class InstanceErrorView implements BaseNode {
 
@@ -110,6 +111,8 @@ public class InstanceErrorView implements BaseNode {
 				RemusApplet applet = pipeline.getApplet(appletName);
 				applet.deleteErrors(inst);
 			} catch (TException e) {
+				throw new FileNotFoundException();
+			} catch (NotImplemented e) {
 				throw new FileNotFoundException();
 			}
 		}

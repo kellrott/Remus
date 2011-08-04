@@ -17,6 +17,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;
 
 public class SubmitView implements BaseNode {
@@ -51,6 +52,8 @@ public class SubmitView implements BaseNode {
 				}
 			}
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		try {

@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.remus.ConnectionException;
 import org.remus.RemusAttach;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AttachTest {
 
@@ -41,7 +42,7 @@ public class AttachTest {
 
 	
 	
-	@Test public void attachTest() throws TException, IOException, NoSuchAlgorithmException {
+	@Test public void attachTest() throws TException, IOException, NoSuchAlgorithmException, NotImplemented {
 		String instance1 = "00-testing-01";
 		String instance2 = "00-testing-02";
 

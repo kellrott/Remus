@@ -23,6 +23,7 @@ import org.remus.serverNodes.ManageApp;
 import org.remus.serverNodes.ServerStatusView;
 import org.remus.serverNodes.StoreInfoView;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 /**
  * Main Interface to Remus applications. In charge of root database interface and pipeline 
@@ -48,33 +49,33 @@ public class RemusApp {
 		}
 	}
 
-
-
-
-	public void deletePipeline(RemusPipeline pipe) throws TException {
-		for ( String appletName : pipe.getMembers() ) {
-			pipe.deleteApplet( pipe.getApplet(appletName) );
+	public void deletePipeline(RemusPipeline pipe) throws TException, RemusDatabaseException {		
+		try {
+			for ( String appletName : pipe.getMembers() ) {
+				pipe.deleteApplet( pipe.getApplet(appletName) );
+			}
+			rootStore.deleteValue( new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" ), pipe.getID() );
+			rootStore.deleteStack( new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" ) );
+			rootStore.deleteStack( new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance" ) );		
+		} catch (NotImplemented e) {
+			e.printStackTrace();
 		}
-		rootStore.deleteValue( new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" ), pipe.getID() );
-		rootStore.deleteStack( new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" ) );
-		rootStore.deleteStack( new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance" ) );		
 	}
 
-	/*
-	public void putPipeline(String name, Object data) throws TException {
-		AppletRef ar = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
-		rootStore.add(ar, 0L, 0L, name, data );		
-		loadPipelines();
+	
+	public void putPipeline(String pipelineName, Object data) throws TException, NotImplemented {
+		AppletRef arPipeline = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		rootStore.add(arPipeline, 0L, 0L, pipelineName, new HashMap() );		
+		for ( Object key : ((Map) data).keySet() ) {
+			String appletName = (String)key;
+			AppletRef arApplet = new AppletRef( pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+			try {
+				Map appletData = (Map)((Map)data).get(key);
+				rootStore.add(arApplet, 0, 0, appletName, appletData );
+			} catch (ClassCastException e) {}
+		}		
 	}
-	 */
-
-	/*
-	public void putApplet(RemusPipelineImpl pipe, String name, Object data) throws TException { 
-		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
-		rootStore.add( ar, 0L, 0L, name, data );
-		loadPipelines();
-	}	
-	 */
+	
 
 	public RemusPipeline getPipeline( String name ) {
 		if ( hasPipeline(name) ) {
@@ -85,7 +86,11 @@ public class RemusApp {
 
 	public Collection<String> getPipelines() throws TException {
 		AppletRef ar = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
-		return (Collection<String>) rootStore.listKeys(ar);		
+		List out = new LinkedList();
+		for ( String key : rootStore.listKeys(ar) ) {
+			out.add(key);
+		}
+		return out;
 	}
 
 
@@ -96,12 +101,11 @@ public class RemusApp {
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return false;
 	}
 
 }
-
-
-
-

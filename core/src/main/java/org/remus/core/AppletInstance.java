@@ -1,8 +1,12 @@
 package org.remus.core;
 
+import java.util.Map;
+
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AppletInstance {
 
@@ -24,14 +28,19 @@ public class AppletInstance {
 			boolean allReady = true;
 			for ( String iRef : applet.getInputs() ) {
 				if ( iRef.compareTo("?") != 0 ) {
-					RemusApplet iApplet = pipeline.getApplet( iRef );
-					if ( iApplet != null ) {
-						if ( iApplet.getMode() != RemusApplet.STORE ) {
-							if ( ! WorkStatus.isComplete( pipeline, iApplet, instance) ) {
-								allReady = false;
+					try {
+						RemusApplet iApplet = pipeline.getApplet( iRef );
+						if ( iApplet != null ) {
+							if ( iApplet.getMode() != RemusApplet.STORE ) {
+								if ( ! WorkStatus.isComplete( pipeline, iApplet, instance) ) {
+									allReady = false;
+								}
 							}
+						} else {
+							allReady = false;
 						}
-					} else {
+					} catch (RemusDatabaseException e) {
+						e.printStackTrace();
 						allReady = false;
 					}
 				} else {				
@@ -43,25 +52,35 @@ public class AppletInstance {
 		return true;
 	}
 
+	public static void updateStatus(RemusPipeline pipeline,
+			RemusApplet remusApplet, RemusInstance inst, Map instanceInfo, RemusDB datastore) throws TException, NotImplemented {
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, remusApplet.getID() + "/@instance" );		
+		datastore.add(ar, 0, 0, inst.toString(), instanceInfo);
+	}
+
 	
 	public long inputTimeStamp( ) {
 		long out = 0;
 		for ( String iRef : applet.getInputs() ) {
 			if ( iRef.compareTo("?") != 0 ) {
-				RemusApplet iApplet = pipeline.getApplet( iRef );
-				if ( iApplet != null ) {
-					long val = WorkStatus.getTimeStamp(pipeline, applet, instance);
-					if ( out < val ) {
-						out = val;
+				try {
+					RemusApplet iApplet = pipeline.getApplet( iRef );
+					if ( iApplet != null ) {
+						long val = WorkStatus.getTimeStamp(pipeline, applet, instance);
+						if ( out < val ) {
+							out = val;
+						}
 					}
+				} catch (RemusDatabaseException e) {
+					e.printStackTrace();
 				}
 			}			
 		}
 		return out;
 	}
 
-	
-	public long getDataTimeStamp( ) throws TException {
+
+	public long getDataTimeStamp( ) throws TException, NotImplemented {
 		return datastore.getTimeStamp( new AppletRef(pipeline.getID(), instance.toString(), applet.getID() ) );
 	}
 
@@ -79,9 +98,10 @@ public class AppletInstance {
 
 
 
-	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) throws TException {
+	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) throws TException, NotImplemented {
 		AppletRef ar = new AppletRef(pipeline.getID(), remusInstance.toString(), applet.getID() + "/@done" );
 		datastore.add(ar, 0L, 0L, Long.toString(jobID), workerName);
 	}
+
 
 }

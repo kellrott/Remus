@@ -15,6 +15,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class PipelineAppletAgentView implements BaseNode {
 	RemusPipeline pipeline;
@@ -77,6 +78,8 @@ public class PipelineAppletAgentView implements BaseNode {
 			}
 		} catch (TException e) {
 			throw new FileNotFoundException();
+		} catch (NotImplemented e) {
+			throw new FileNotFoundException();			
 		}
 	}
 

@@ -15,6 +15,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AppletInstanceStatusView implements BaseNode {
 
@@ -31,10 +32,13 @@ public class AppletInstanceStatusView implements BaseNode {
 		Object statObj = null;
 		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + InstanceStatusName );
 		try {
-			for ( Object obj : applet.getDataStore().get( ar, inst.toString()) ) {
+			for ( Object obj : applet.getDataStore().get(ar, inst.toString())) {
 				statObj = obj;
 			}
 		} catch ( TException e ) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return statObj;
@@ -67,9 +71,9 @@ public class AppletInstanceStatusView implements BaseNode {
 			try {
 				for ( Object obj : applet.getDataStore().get( ar, name) ) {
 					Map out = new HashMap();
-					out.put(name, obj );				
+					out.put(name, obj);
 					try {
-						os.write( JSON.dumps(out).getBytes() );
+						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -77,6 +81,9 @@ public class AppletInstanceStatusView implements BaseNode {
 					}
 				}
 			}catch (TException e) {
+				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

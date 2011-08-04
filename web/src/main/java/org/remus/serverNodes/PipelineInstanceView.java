@@ -15,6 +15,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class PipelineInstanceView implements BaseNode {
 
@@ -53,6 +54,8 @@ public class PipelineInstanceView implements BaseNode {
 						}
 					}
 				} catch (TException e) {
+					e.printStackTrace();
+				} catch (NotImplemented e) {
 					e.printStackTrace();
 				}
 			}

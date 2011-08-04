@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
 
 
 abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T> {
@@ -72,6 +73,8 @@ abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T> {
 			}
 			firstSlice = false;
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		return elemAdded;

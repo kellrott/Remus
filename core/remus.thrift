@@ -26,7 +26,7 @@ enum WorkMode {
 	MERGE
 }
 
-enum WorkStatus {
+enum JobStatus {
 	QUEUED,
 	WORKING,
 	DONE,
@@ -50,10 +50,11 @@ struct PeerInfoThrift {
 }
 
 struct WorkDesc {
-	1: required string lang,
-	2: required WorkMode mode,
-	3: required AppletRef input,
-	4: required AppletRef output
+	1: required string lang;
+	2: required WorkMode mode;
+	3: required string infoJSON;
+	4: required AppletRef input;
+	5: required list<i64> jobs;
 }
 
 struct KeyValJSONPair {
@@ -63,71 +64,77 @@ struct KeyValJSONPair {
 	4:required i64 emitID
 }
 
-service RemusDBThrift {
+
+exception NotImplemented {
+
+}
+
+
+service RemusNet {
 	
 	/**
 	 * Data access related methods
 	 *
 	 */
 	
-	bool containsKey( 1:AppletRef stack, 2:string key );
+	bool containsKey( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 	
-	list<string> keySlice( 1:AppletRef stack, 2:string keyStart, 3:i32 count );
+	list<string> keySlice( 1:AppletRef stack, 2:string keyStart, 3:i32 count ) throws (1:NotImplemented e);
 	
-	list<string> getValueJSON( 1:AppletRef stack, 2:string key );
+	list<string> getValueJSON( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 
-	i64 keyCount( 1:AppletRef stack, 2:i32 maxCount );
+	i64 keyCount( 1:AppletRef stack, 2:i32 maxCount ) throws (1:NotImplemented e);
 
-	void addData( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data);
+	void addData( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data) throws (1:NotImplemented e);
 
-	list<KeyValJSONPair> keyValJSONSlice( 1:AppletRef stack, 2:string startKey, 3:i32 count);
+	list<KeyValJSONPair> keyValJSONSlice( 1:AppletRef stack, 2:string startKey, 3:i32 count) throws (1:NotImplemented e);
 
-	void deleteStack( 1:AppletRef stack );
+	void deleteStack( 1:AppletRef stack ) throws (1:NotImplemented e);
 	
-	void deleteValue( 1:AppletRef stack, 2:string key );
+	void deleteValue( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 	
-	i64 getTimeStamp( 1:AppletRef stack );
+	i64 getTimeStamp( 1:AppletRef stack ) throws (1:NotImplemented e);
 
 	/**
 	 * Work results methods
 	 *
 	 */
 
-	//void emitWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:i64 emitID, 5:string key 6:string data );
-	//void errorWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:string message);
+	//void emitWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:i64 emitID, 5:string key 6:string data ) throws (1:NotImplemented e);
+	//void errorWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:string message) throws (1:NotImplemented e);
 
+	/**
+	 * Attachment methods
+	 *
+	 */
 
-}
-
-service RemusAttachThrift {
-
-	void initAttachment( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 length),
+	void initAttachment( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 length) throws (1:NotImplemented e);
 	
-	i64 getAttachmentSize( 1:AppletRef stack, 2:string key, 3:string name),
+	i64 getAttachmentSize( 1:AppletRef stack, 2:string key, 3:string name)  throws (1:NotImplemented e);
 	
-	binary readBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:i32 length ),
+	binary readBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:i32 length ) throws (1:NotImplemented e);
 	
-	void writeBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:binary data ),
+	void writeBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:binary data )  throws (1:NotImplemented e);
 	
-	list<string> listAttachments( 1:AppletRef stack, 2:string key ),
+	list<string> listAttachments( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 
-	bool hasAttachment( 1:AppletRef stack, 2:string key, 3:string name),
+	bool hasAttachment( 1:AppletRef stack, 2:string key, 3:string name) throws (1:NotImplemented e);
 
-	void deleteAttachment( 1:AppletRef stack, 2:string key, 3:string name ),	
-
-	void deleteStack( 1:AppletRef stack )
+	void deleteAttachment( 1:AppletRef stack, 2:string key, 3:string name ) throws (1:NotImplemented e);
 	
-}
+	/**
+	 * Worker methods
+	 *
+	 */
+	
+	string jobRequest( 1:string dataServer, 2:WorkDesc work ) throws (1:NotImplemented e);
+	JobStatus jobStatus( 1:string jobID ) throws (1:NotImplemented e);
 
+	/**
+	 * Manager methods
+	 */
+	void scheduleRequest() throws (1:NotImplemented e); 
 
-service RemusWorker {
-	string jobRequest( 1:string dataServer, 2:WorkDesc work );
-	WorkStatus workStatus( 1:string jobID );
-}
-
-
-service RemusManagerThrift {
-	void scheduleRequest();
 }
 
 exception BadPeerName {

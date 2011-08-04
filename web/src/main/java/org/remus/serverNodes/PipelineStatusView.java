@@ -20,9 +20,10 @@ import org.remus.core.DataStackInfo;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.js.JSInterface;
-import org.remus.mapred.MapCallback;
+import org.remus.js.JSFunctionCall;
+import org.remus.mapred.MapReduceCallback;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class PipelineStatusView implements BaseNode, BaseStackNode {
 
@@ -87,6 +88,9 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 						}
 					} catch (TException e) {
 						e.printStackTrace();
+					} catch (NotImplemented e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 			} else if ( tmp.length == 2 ) {
@@ -105,6 +109,8 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 						}
 					}
 				} catch (TException e) {
+					e.printStackTrace();
+				} catch (NotImplemented e) {
 					e.printStackTrace();
 				}
 			}
@@ -134,10 +140,10 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				}
 			} while ( len >= 0 );
 
-			JSInterface js = new JSInterface();
+			JSFunctionCall js = new JSFunctionCall();
 			js.init(null);
 			js.initMapper(sb.toString());
-			js.map( this, new MapCallback() {				
+			js.map( this, new MapReduceCallback() {				
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();
@@ -176,10 +182,13 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			LinkedList<Object> out = new LinkedList<Object>();
 			AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
 			try { 
-				for ( Object obj : applet.getDataStore().get(arInstance, inst.toString()) ) {
+				for (Object obj : applet.getDataStore().get(arInstance, inst.toString())) {
 					out.add(obj);
 				}
 			} catch (TException e) {
+				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return out;

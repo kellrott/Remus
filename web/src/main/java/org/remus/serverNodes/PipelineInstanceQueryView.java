@@ -14,8 +14,8 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.js.JSInterface;
-import org.remus.mapred.MapCallback;
+import org.remus.js.JSFunctionCall;
+import org.remus.mapred.MapReduceCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,10 +74,10 @@ public class PipelineInstanceQueryView implements BaseNode {
 
 			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
 
-			JSInterface js = new JSInterface();
+			JSFunctionCall js = new JSFunctionCall();
 			js.init(null);
 			js.initMapper(sb.toString());
-			js.map( appletView, new MapCallback() {				
+			js.map( appletView, new MapReduceCallback() {				
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();

@@ -12,6 +12,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;
 
 public class ResetInstanceView implements BaseNode {
@@ -75,6 +76,9 @@ public class ResetInstanceView implements BaseNode {
 						Map params = pipeline.getSubmitData( subKey );
 						applet.createInstance( subKey, params, inst);
 					} catch (TException e) {
+						e.printStackTrace();
+						throw new FileNotFoundException();
+					} catch (NotImplemented e) {
 						e.printStackTrace();
 						throw new FileNotFoundException();
 					}

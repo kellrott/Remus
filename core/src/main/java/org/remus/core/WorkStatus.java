@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,8 +95,10 @@ public class WorkStatus {
 			}
 		} catch (TException e) {
 			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
 		}
-		if ( newJobStart != jobStart ) {
+		if (newJobStart != jobStart) {
 			logger.info("JobStart : " + inst.toString() + ":" + applet.getID() + " = " + jobStart );
 			status.put(JOBSTART_FIELD, newJobStart);
 			setStatus( status );
@@ -107,14 +110,16 @@ public class WorkStatus {
 		return out;		
 	}
 
-	public Object getJob(Long jobID)  {
+	public Object getJob(Long jobID) {
 		Object out = null;
 		try {
 			AppletRef arWork = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() + WorkStatusName );
-			for ( Object val : applet.getDataStore().get( arWork, String.valueOf(jobID)) ) {
+			for (Object val : applet.getDataStore().get( arWork, String.valueOf(jobID))) {
 				out = val;
 			} 
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		return out;
@@ -125,6 +130,8 @@ public class WorkStatus {
 		try {
 			applet.getDataStore().add( arWork, 0,0, String.valueOf(jobID), workerID);
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 	}
@@ -145,6 +152,8 @@ public class WorkStatus {
 				statObj = curObj;
 			}
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		if ( statObj == null ) {
@@ -172,17 +181,19 @@ public class WorkStatus {
 		AppletRef arStatus = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
 		AppletRef arError = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@error" );
 		try {
-			for ( Object statObj : applet.getDataStore().get( arStatus, remusInstance.toString() ) ) {
+			for (Object statObj : applet.getDataStore().get( arStatus, remusInstance.toString())) {
 				if ( statObj != null && ((Map)statObj).containsKey( WorkStatus.WORKDONE_FIELD ) && (Boolean)((Map)statObj).get(WorkStatus.WORKDONE_FIELD) == true ) {
 					found = true;
 				}
 			}
 			if ( found ) {
-				for ( @SuppressWarnings("unused") String key : applet.getDataStore().listKeys(  arError ) ) {
+				for (@SuppressWarnings("unused") String key : applet.getDataStore().listKeys(  arError ) ) {
 					found = false;
 				}
 			}
-		} catch (TException e ){
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		return found;
@@ -197,7 +208,9 @@ public class WorkStatus {
 			for ( Object curObj : applet.getDataStore().get( ar, remusInstance.toString() ) ) {
 				statObj = curObj;
 			}
-		} catch (TException e ) {
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		if ( statObj == null ) {
@@ -207,8 +220,10 @@ public class WorkStatus {
 		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, false);
 		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
 		try {
-			applet.getDataStore().add( arWork, 0, 0, remusInstance.toString(), statObj );
+			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString(), statObj);
 		} catch (TException e ) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
@@ -219,10 +234,12 @@ public class WorkStatus {
 		Object statObj = null;
 		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
 		try {
-			for ( Object curObj : applet.getDataStore().get( arWork, remusInstance.toString() ) ) {
+			for (Object curObj : applet.getDataStore().get( arWork, remusInstance.toString())) {
 				statObj = curObj;
 			}
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		if ( statObj == null ) {
@@ -231,8 +248,10 @@ public class WorkStatus {
 		//logger.info("SET COMPLETE: " + applet.getPath() );
 		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, true);
 		try {
-			applet.getDataStore().add( arWork, 0, 0, remusInstance.toString(), statObj );
+			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString(), statObj);
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 	}
@@ -240,23 +259,29 @@ public class WorkStatus {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void updateStatus( RemusPipeline pipeline, RemusApplet applet, RemusInstance inst, Map update ) {
 		Object statObj = null;
-		AppletRef arWork = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
+		AppletRef arWork = new AppletRef(pipeline.getID(), 
+				RemusInstance.STATIC_INSTANCE_STR, applet.getID() + 
+				WorkStatusName);
 		try {
-			for ( Object obj : applet.getDataStore().get( arWork, inst.toString()) ) {
+			for (Object obj : applet.getDataStore().get( arWork, inst.toString())) {
 				statObj = obj;
 			}
 		} catch (TException e) {
 			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
 		}
-		if ( statObj == null ) {
+		if (statObj == null) {
 			statObj = new HashMap();
 		}
-		for ( Object key : update.keySet() ) {
-			((Map)statObj).put(key, update.get(key));
+		for (Object key : update.keySet()) {
+			((Map) statObj).put(key, update.get(key));
 		}
 		try {
-			applet.getDataStore().add(arWork, 0L, 0L, inst.toString(), statObj );
+			applet.getDataStore().add(arWork, 0L, 0L, inst.toString(), statObj);
 		} catch (TException e ) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 	}
@@ -267,6 +292,8 @@ public class WorkStatus {
 			applet.getDataStore().add( arWork, 0L, 0L, inst.toString(), statObj );
 		} catch (TException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 	}
@@ -280,6 +307,8 @@ public class WorkStatus {
 			long val2 = applet.getDataStore().getTimeStamp(arDone);
 			return Math.max(val1, val2);
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 		return 0;
@@ -302,6 +331,9 @@ public class WorkStatus {
 		try {
 			return applet.getDataStore().containsKey( ar, inst.toString() );
 		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return false;

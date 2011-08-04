@@ -11,6 +11,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusManager;
 import org.remus.thrift.PeerType;
 
 
@@ -69,7 +70,14 @@ public class PluginManager {
 		}
 		return null;
 	}
-
+	
+	/*
+	public RemusDB getServiceByAddress(String address) {
+		
+	}
+	/(
+	 * 
+	 */
 	public RemusAttach getAttachStore() {
 		for (PluginInterface pi : plugins) {
 			if (pi.getPeerInfo().peerType == PeerType.ATTACH_SERVER) {
@@ -77,6 +85,20 @@ public class PluginManager {
 			}
 		}
 		return null;
+	}
+
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public RemusManager getManager() {
+		for (PluginInterface pi : plugins) {
+			if (pi.getPeerInfo().peerType == PeerType.MANAGER) {
+				return (RemusManager) pi;
+			}
+		}
+		return null;		
 	}
 	
 }

@@ -8,6 +8,8 @@ import org.remus.core.RemusPipeline;
 
 /**
  * Base interface for applet work generators.
+ * These are the classes that write jobIDs into the
+ * database in the <applet>/@work stack
  * @see org.remus.work.MapGenerator
  * @see org.remus.work.ReduceGenerator
  * @see org.remus.work.PipeGenerator

@@ -19,7 +19,9 @@ import org.remus.core.RemusPipeline;
 public class AppView implements BaseNode {
 
 	RemusApp app;
+	RemusDB datastore;
 	private HashMap<String, BaseNode> children;
+	
 	public AppView(RemusApp app, RemusDB datastore) {
 		this.app = app;
 		children = new HashMap<String,BaseNode>();
@@ -27,6 +29,7 @@ public class AppView implements BaseNode {
 		children.put("@status", new ServerStatusView(app));
 		children.put("@manage", new ManageApp() );
 		children.put("@db", new StoreInfoView(app));
+		this.datastore = datastore;
 	}
 
 	@Override
@@ -76,7 +79,7 @@ public class AppView implements BaseNode {
 			return children.get(name);
 		}
 		if (app.hasPipeline(name)) {
-			return new PipelineView(app.getPipeline(name));
+			return new PipelineView(app.getPipeline(name),datastore);
 		}
 
 		return null;

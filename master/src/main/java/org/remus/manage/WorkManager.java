@@ -1,23 +1,19 @@
 package org.remus.manage;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.thrift.TException;
-import org.remus.JSON;
 import org.remus.PeerInfo;
 import org.remus.RemusManager;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
-import org.remus.core.WorkAgent;
+import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.plugin.PluginManager;
-import org.remus.server.RemusPipelineImpl;
+import org.remus.server.RemusDatabaseException;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 
 import org.slf4j.Logger;
@@ -28,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * @author kellrott
  *
  */
-public class WorkManager implements RemusManager {
+public class WorkManager extends RemusManager {
 
 	/***
 	 * MANAGE_CONFIG = org.remus.workManage, conf string to define 
@@ -37,11 +33,6 @@ public class WorkManager implements RemusManager {
 	public static final String MANAGE_CONFIG = "org.remus.workManage";
 
 	Logger logger;
-	
-	RemusApp app;
-
-	private Map<WorkStatus, WorkAgent> workMap;
-
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -52,7 +43,8 @@ public class WorkManager implements RemusManager {
 
 	@Override
 	public void init(Map params) throws Exception {
-		// TODO Auto-generated method stub		
+		logger = LoggerFactory.getLogger(WorkManager.class);	
+
 	}
 
 	PluginManager plugins;
@@ -62,8 +54,20 @@ public class WorkManager implements RemusManager {
 	}
 
 	@Override
-	public void scheduleRequest() throws TException {
-		
+	public void scheduleRequest() throws TException, NotImplemented {
+
+		Set<WorkStatus> fullList = new HashSet();
+		try {
+			RemusApp app = new RemusApp(plugins);
+			for (String name : app.getPipelines()) {
+				RemusPipeline pipe = app.getPipeline(name);
+				Set<WorkStatus> curSet = pipe.getWorkQueue();
+				fullList.addAll(curSet);
+			}
+			logger.info("MANAGER found " + fullList.size() + " active stacks");
+		} catch (RemusDatabaseException e) {
+			throw new TException(e);
+		}
 		
 		
 		

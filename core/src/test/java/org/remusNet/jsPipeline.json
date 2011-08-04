@@ -1,0 +1,17 @@
+{
+"_id" : "testPipeline",
+"_include" : [ "test.file" ],
+
+"inputStack" : {	
+	"_mode" : "store"
+},
+
+"testMap" : {
+	"_src" : "inputStack",
+	"_mode" : "map",
+	"_type" : "javascript",
+	"_code" : ":jsCode",
+	"jsCode"  : "function(key,val){remus.emit(key,val);}"
+}
+
+}

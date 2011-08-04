@@ -8,6 +8,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AgentGenerator implements WorkGenerator {
 
@@ -26,6 +27,9 @@ public class AgentGenerator implements WorkGenerator {
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			jobID++;							
 		}
@@ -33,6 +37,9 @@ public class AgentGenerator implements WorkGenerator {
 			long t = datastore.getTimeStamp( ar );
 			WorkStatus.setWorkStat(pipeline, applet, instance, 0, 0, 0, jobID, t);
 		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

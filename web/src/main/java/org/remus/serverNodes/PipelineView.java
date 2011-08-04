@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -21,24 +22,18 @@ public class PipelineView implements BaseNode {
 	HashMap<String,BaseNode> children;
 
 	RemusPipeline pipe;
-	public PipelineView(RemusPipeline pipe) {
+	public PipelineView(RemusPipeline pipe, RemusDB database) {
 		this.pipe = pipe;
 		children = new HashMap<String, BaseNode>();
-		children.put("@pipeline", new PipelineView(pipe) );
-		children.put("@submit", new SubmitView(pipe) );
-		children.put("@status", new PipelineStatusView(pipe) );
-		children.put("@instance", new PipelineInstanceListViewer(pipe) );
+		children.put("@pipeline", new PipelineView(pipe, database) );
+		children.put("@submit", new SubmitView(pipe, database) );
+		children.put("@status", new PipelineStatusView(pipe, database) );
+		children.put("@instance", new PipelineInstanceListViewer(pipe, database) );
 		children.put("@agent", new PipelineAgentView(pipe) );
 
 		children.put("@error", new PipelineErrorView(pipe) );
 
 		children.put("@reset", new ResetInstanceView(pipe) );
-	}
-
-	@Override
-	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
 	}
 	
 	@Override
@@ -203,7 +198,7 @@ public class PipelineView implements BaseNode {
 		try {
 			for ( Object subObject : datastore.get(arSubmit, name) ) {
 				RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
-				return new PipelineInstanceView( this, inst  );
+				return new PipelineInstanceView(this, inst, datastore);
 			}
 		} catch (TException e1) {
 			// TODO Auto-generated catch block

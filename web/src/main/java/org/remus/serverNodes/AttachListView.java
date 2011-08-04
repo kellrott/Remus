@@ -13,6 +13,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
 
 public class AttachListView implements BaseNode {
 
@@ -53,25 +54,32 @@ public class AttachListView implements BaseNode {
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		} else {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet );
-			InputStream is = attach.readAttachement(ar, key, name);
-			if ( is != null ) {
-				byte [] buffer = new byte[1024];
-				int len;
-				try {
-					while ( (len = is.read(buffer)) >= 0 ) {
-						os.write( buffer, 0, len );
-					}
-					os.close();
-					is.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}			
-			} else {
-				throw new FileNotFoundException();
+			try {
+				InputStream is = attach.readAttachement(ar, key, name);
+				if ( is != null ) {
+					byte [] buffer = new byte[1024];
+					int len;
+					try {
+						while ( (len = is.read(buffer)) >= 0 ) {
+							os.write( buffer, 0, len );
+						}
+						os.close();
+						is.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}			
+				} else {
+					throw new FileNotFoundException();
+				}
+			} catch (NotImplemented e) {
+				e.printStackTrace();
 			}
 		}
 
