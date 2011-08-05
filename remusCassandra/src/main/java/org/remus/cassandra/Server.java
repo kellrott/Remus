@@ -126,6 +126,10 @@ public class Server extends RemusDB {
 	}
 
 
+	@Override
+	public void stop() {
+	}
+
 	private String getColumnFamily( String inst ) throws ConnectionException {
 		if ( columns.containsKey(inst) ) 
 			return columns.get(inst);		

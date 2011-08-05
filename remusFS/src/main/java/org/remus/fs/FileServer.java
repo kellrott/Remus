@@ -160,5 +160,11 @@ public class FileServer extends RemusAttach {
 		
 	}
 
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }

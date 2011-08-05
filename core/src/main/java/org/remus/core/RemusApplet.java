@@ -132,7 +132,7 @@ public class RemusApplet {
 	public void load(Map appletObj) throws RemusDatabaseException {
 
 		String modeStr = (String) appletObj.get(MODE_FIELD);
-		String codeType = (String) appletObj.get(TYPE_FIELD);
+		type = (String) appletObj.get(TYPE_FIELD);
 
 		Integer appletType = null;
 		if (modeStr.compareTo("map") == 0) {

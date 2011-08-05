@@ -10,7 +10,7 @@ import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet.Iface;
 
-abstract public class Worker implements Iface, PluginInterface{
+abstract public class RemusWorker implements Iface, PluginInterface{
 
 
 	@Override

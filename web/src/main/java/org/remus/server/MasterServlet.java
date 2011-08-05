@@ -32,7 +32,7 @@ public class MasterServlet extends HttpServlet {
 
 	public MasterServlet(PluginManager plugs) throws RemusDatabaseException {
 		app = new RemusApp(plugs);
-		appView = new AppView(app, plugs.getDataServer());
+		appView = new AppView(app, plugs.getDataServer(),plugs.getAttachStore());
 	}
 		
 	/**

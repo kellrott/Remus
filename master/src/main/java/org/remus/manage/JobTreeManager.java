@@ -17,18 +17,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.remus.PeerInfo;
+import org.remus.RemusWorker;
 import org.remus.core.BaseNode;
-import org.remus.core.WorkAgent;
-import org.remus.core.WorkManager;
 import org.remus.core.WorkStatus;
+import org.remus.plugin.PluginManager;
+import org.remus.thrift.JobStatus;
+import org.remus.thrift.NotImplemented;
+import org.remus.thrift.WorkDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.thrift.TException;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 
 
-public class JobTreeManager implements WorkAgent {
+public class JobTreeManager extends RemusWorker {
 
 	final static public String JOBTREE_SERVER = "org.remus.manage.JobTreeManager.server";	
 	private WorkManager parent;
@@ -48,9 +53,8 @@ public class JobTreeManager implements WorkAgent {
 	WatcherThread watcher;
 	
 	@Override
-	public void init(WorkManager parent) {
-		this.parent = parent;
-		server = (String) parent.getParams().get(JOBTREE_SERVER);
+	public void init(Map params) {
+		server = (String)params.get(JOBTREE_SERVER);
 		try {
 			serverURL = new URL( server );
 		} catch (MalformedURLException e) {
@@ -60,12 +64,6 @@ public class JobTreeManager implements WorkAgent {
 		logger = LoggerFactory.getLogger(JobTreeManager.class);
 		watcher = new WatcherThread();
 	}
-
-	@Override
-	public String getName() {
-		return "JobTreeManager";
-	}
-
 
 	class JobTreeJob {
 		WorkStatus work;
@@ -147,7 +145,7 @@ public class JobTreeManager implements WorkAgent {
 					}
 					for ( JobTreeJob job : removeList ) {
 						removeList.remove(job);
-						parent.completeWorkStack(job.work);
+						//parent.completeWorkStack(job.work);
 						logger.info( "JOB Done" + job.jobID);
 						
 					}
@@ -165,31 +163,42 @@ public class JobTreeManager implements WorkAgent {
 	}
 
 
+	
+
+	
+
 	@Override
-	public void workPoll() {
-
-		logger.info("JobTreeServer work poll contacting server: " + serverURL );
-
-		JSONParser json = new JSONParser();
-		WorkStatus workStack = parent.requestWorkStack(this, codeTypes);
-
-		if ( workStack != null ) {
-			try {
-				JobTreeJob job = new JobTreeJob(workStack);
-				job.submit();
-				watcher.addJob(job);
-			} catch (IOException e) {
-				logger.error("Unable to start work");
-				parent.returnWorkStack(workStack);
-			}
-		}
-
+	public String jobRequest(String dataServer, WorkDesc work)
+			throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 
 	@Override
-	public boolean syncWorkPoll(WorkStatus work) {
-		return false;
+	public JobStatus jobStatus(String jobID) throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
+
+	@Override
+	public PeerInfo getPeerInfo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void start(PluginManager pluginManager) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

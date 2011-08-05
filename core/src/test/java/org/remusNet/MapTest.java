@@ -36,7 +36,9 @@ public class MapTest {
 
 		Map manMap = new HashMap();
 		initMap.put("org.remus.manage.WorkManager", manMap);
-
+		
+		Map jsMap = new HashMap();
+		initMap.put("org.remus.js.JSWorker", jsMap);
 		pm = new PluginManager(initMap);
 		pm.start();
 

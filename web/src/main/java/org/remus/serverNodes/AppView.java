@@ -11,25 +11,27 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
-import org.remus.core.RemusPipeline;
 
 public class AppView implements BaseNode {
 
 	RemusApp app;
 	RemusDB datastore;
 	private HashMap<String, BaseNode> children;
+	private RemusAttach attachstore;
 	
-	public AppView(RemusApp app, RemusDB datastore) {
+	public AppView(RemusApp app, RemusDB datastore, RemusAttach attachstore) {
 		this.app = app;
+		this.datastore = datastore;
+		this.attachstore = attachstore;
 		children = new HashMap<String,BaseNode>();
 		children.put("@pipeline", new PipelineConfigView(app,datastore));
 		children.put("@status", new ServerStatusView(app));
 		children.put("@manage", new ManageApp() );
 		children.put("@db", new StoreInfoView(app));
-		this.datastore = datastore;
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class AppView implements BaseNode {
 			return children.get(name);
 		}
 		if (app.hasPipeline(name)) {
-			return new PipelineView(app.getPipeline(name),datastore);
+			return new PipelineView(app.getPipeline(name),datastore,attachstore);
 		}
 
 		return null;

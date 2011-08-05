@@ -65,5 +65,14 @@ public class WebServer implements WebAgent {
 		serverThread.start();		
 	}
 
+	@Override
+	public void stop() {
+		try {
+			server.stop();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 }

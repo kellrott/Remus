@@ -1,13 +1,17 @@
 package org.remus.manage;
 
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.remus.PeerInfo;
 import org.remus.RemusManager;
+import org.remus.RemusWorker;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
@@ -15,6 +19,8 @@ import org.remus.plugin.PluginManager;
 import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.WorkDesc;
+import org.remus.thrift.WorkMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +31,6 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class WorkManager extends RemusManager {
-
-	/***
-	 * MANAGE_CONFIG = org.remus.workManage, conf string to define 
-	 * which work managers to use.
-	 */
-	public static final String MANAGE_CONFIG = "org.remus.workManage";
 
 	Logger logger;
 
@@ -44,7 +44,12 @@ public class WorkManager extends RemusManager {
 	@Override
 	public void init(Map params) throws Exception {
 		logger = LoggerFactory.getLogger(WorkManager.class);	
-
+		workerSets = new HashMap<String, Set<Long>>();
+		activeSet = new HashSet<Long>();
+		assignSet = new HashSet<Long>();
+		assignRate = 1;
+		//lastAccess = new HashMap<String, Date>();
+		finishTimes = new HashMap<String,Date>();
 	}
 
 	PluginManager plugins;
@@ -52,6 +57,18 @@ public class WorkManager extends RemusManager {
 	public void start(PluginManager pluginManager) throws Exception {
 		plugins = pluginManager;
 	}
+
+
+	private WorkStatus activeStack = null;
+	private Set<Long> activeSet;
+	private Set<Long> assignSet;
+
+	private Map<String,Set<Long>> workerSets;
+	//private Map<String,Date> lastAccess;
+	private int assignRate;
+	private HashMap<String, Date> finishTimes;
+
+	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
 	@Override
 	public void scheduleRequest() throws TException, NotImplemented {
@@ -68,13 +85,92 @@ public class WorkManager extends RemusManager {
 		} catch (RemusDatabaseException e) {
 			throw new TException(e);
 		}
-		
-		
-		
+
+		for ( RemusWorker worker : plugins.getWorkers() ) {
+			PeerInfo pi = worker.getPeerInfo();
+			List<String> langs = pi.workTypes;
+			logger.info("Worker " + pi.name + " offers " + langs);
+			for (WorkStatus stat : fullList){
+				logger.info( stat.getApplet().getType() );
+				if ( langs.contains( stat.getApplet().getType())) {
+					logger.info("Assigning " + stat + " to " + pi.name);
+					WorkDesc wdesc = new WorkDesc(stat.getApplet().getType(), WorkMode.MAP, null, null, null);
+					worker.jobRequest("test", wdesc);
+				}
+			}
+		}
 	}
 
-	
 
+	void fillWorkerSet(String workerID) {
+		do {
+			if ( activeStack == null ) {
+				//activeStack = parent.requestWorkStack(this, codeTypes);
+				if ( activeStack == null )
+					return;
+			}
+			if ( activeStack.isComplete() ) {
+				//parent.completeWorkStack(activeStack);
+				activeStack = null;
+			}
+		} while ( activeStack == null );
+
+		if ( activeStack != null ) {
+			Set<Long> workerMap = workerSets.get( workerID );
+			if ( workerMap == null ) {
+				workerMap = new HashSet<Long>();
+				workerSets.put(workerID, workerMap);
+			}
+			if ( activeSet.size() + assignSet.size() < assignRate ) {
+				Collection<Long> workSet = activeStack.getReadyJobs( workerSets.size() * assignRate );
+				activeSet.addAll( workSet );
+				activeSet.removeAll( assignSet );
+			}
+			while ( workerMap.size() < assignRate && activeSet.size() > 0) {
+				long id = activeSet.iterator().next();
+				workerMap.add( id );
+				activeSet.remove( id );
+				assignSet.add( id );
+			}
+		}
+	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	/*
+	 while ((curline = br.readLine()) != null) {
+				Map m = (Map)JSON.loads( curline );
+				for ( Object instObj : m.keySet() ) {
+					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {
+						List jobList = (List)((Map)m.get(instObj)).get(appletObj);
+						for ( Object key2 : jobList ) {
+							long jobID = Long.parseLong( key2.toString() );
+							//TODO:add emit id count check
+							activeStack.finishJob( jobID, workerID );
+							synchronized ( finishTimes ) {			
+								Date d = new Date();		
+								Date last = finishTimes.get( workerID );
+								if ( last != null ) {
+									if ( d.getTime() - last.getTime() > MAX_REFRESH_TIME ) {
+										assignRate /= 2;
+									}
+									assignRate++;
+								}
+								finishTimes.put(workerID, d);
+							}
+
+						}
+
+					}
+				}
+			}
+
+	 */
 
 
 }

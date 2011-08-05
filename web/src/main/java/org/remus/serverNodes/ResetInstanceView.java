@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
@@ -12,6 +11,7 @@ import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;
 
@@ -54,8 +54,13 @@ public class ResetInstanceView implements BaseNode {
 				if ( inst == null || subKey == null || subMap == null ) {
 					throw new FileNotFoundException();	
 				}			
-				subMap.remove( Submission.WorkDoneField );			
-				pipeline.deleteInstance(inst);
+				subMap.remove( Submission.WorkDoneField );
+				try {
+					pipeline.deleteInstance(inst);
+				} catch (RemusDatabaseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				pipeline.handleSubmission( subKey , subMap );
 
 				try {
@@ -68,20 +73,24 @@ public class ResetInstanceView implements BaseNode {
 				}
 			} else {
 				RemusInstance inst = pipeline.getInstance( tmp[0] );
-				RemusApplet applet = pipeline.getApplet(tmp[1]);
-				if ( inst != null && applet != null ) {
-					try {
-						applet.deleteInstance( inst );
-						String subKey = pipeline.getSubKey( inst );
-						Map params = pipeline.getSubmitData( subKey );
-						applet.createInstance( subKey, params, inst);
-					} catch (TException e) {
-						e.printStackTrace();
-						throw new FileNotFoundException();
-					} catch (NotImplemented e) {
-						e.printStackTrace();
-						throw new FileNotFoundException();
+				try {
+					RemusApplet applet = pipeline.getApplet(tmp[1]);
+					if ( inst != null && applet != null ) {
+						try {
+							applet.deleteInstance( inst );
+							String subKey = pipeline.getSubKey( inst );
+							Map params = pipeline.getSubmitData( subKey );
+							applet.createInstance( subKey, params, inst);
+						} catch (TException e) {
+							e.printStackTrace();
+							throw new FileNotFoundException();
+						} catch (NotImplemented e) {
+							e.printStackTrace();
+							throw new FileNotFoundException();
+						}
 					}
+				} catch (RemusDatabaseException e) {
+					e.printStackTrace();
 				}
 			}
 		}
