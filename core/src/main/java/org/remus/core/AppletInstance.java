@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
-import org.remus.server.RemusDatabaseException;
+import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 

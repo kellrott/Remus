@@ -5,11 +5,11 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
+import org.remus.core.DataStackRef;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
-import org.remus.server.DataStackRef;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -23,7 +23,7 @@ public class PipeGenerator implements WorkGenerator {
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
 
 			List<String> arrayList = new ArrayList<String>();
-			for ( String ref : applet.getInputs() ) {
+			for (String ref : applet.getInputs()) {
 				String iRef = DataStackRef.pathFromSubmission( pipeline, applet, ref, instance );
 				arrayList.add( iRef );
 			}

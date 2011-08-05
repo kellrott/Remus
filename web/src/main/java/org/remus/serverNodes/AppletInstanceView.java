@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.core.BaseStackNode;
 import org.remus.core.DataStackInfo;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;

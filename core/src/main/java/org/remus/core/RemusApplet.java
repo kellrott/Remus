@@ -12,8 +12,7 @@ import java.util.Set;
 import org.apache.thrift.TException;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
-import org.remus.server.RemusDatabaseException;
-import org.remus.serverNodes.AppletInstanceStatusView;
+import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.work.AgentGenerator;
@@ -315,7 +314,7 @@ public class RemusApplet {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>();
 		AppletRef applet = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, getID() + 
-				AppletInstanceStatusView.InstanceStatusName);
+				"/@instance");
 		for (String key : datastore.listKeys(applet)){
 			out.add(new RemusInstance(key));
 		}
@@ -334,7 +333,7 @@ public class RemusApplet {
 		datastore.deleteStack(applet);
 
 		applet.instance = RemusInstance.STATIC_INSTANCE_STR;
-		applet.applet = getID() + AppletInstanceStatusView.InstanceStatusName;
+		applet.applet = getID() + "/@instance";
 		datastore.deleteStack(applet);
 		applet.applet = getID() + WorkStatus.WorkStatusName;
 		datastore.deleteStack(applet);
@@ -351,7 +350,7 @@ public class RemusApplet {
 	public boolean createInstance(String submitKey, Map params, RemusInstance inst) throws TException, NotImplemented {
 
 		logger.info("Creating instance of " + getID() + " for " + inst.toString() );
-		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + AppletInstanceStatusView.InstanceStatusName );
+		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + "/@instance" );
 
 		if ( datastore.containsKey( instApplet, inst.toString()) ) {
 			return false;

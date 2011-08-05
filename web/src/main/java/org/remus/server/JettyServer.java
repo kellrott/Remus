@@ -6,14 +6,23 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.remus.PeerInfo;
-import org.remus.core.WebAgent;
+import org.remus.RemusAttach;
+import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusWeb;
+import org.remus.core.BaseStackNode;
+import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.WorkMode;
 
-public class WebServer implements WebAgent {
+public class JettyServer implements RemusWeb {
 
 	Map params;
 	Server server;
+
+	RemusDB datastore;
+	RemusAttach attachstore;
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -36,9 +45,12 @@ public class WebServer implements WebAgent {
 			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
 		}
 
+		datastore = pluginManager.getDataServer();
+		attachstore = pluginManager.getAttachStore();
+
 		server = new Server(serverPort);
 		Context root = new Context(server, "/", Context.SESSIONS);
-		ServletHolder sh = new ServletHolder(new MasterServlet(pluginManager));
+		ServletHolder sh = new ServletHolder(new MasterServlet(this));
 
 
 		/*
@@ -74,5 +86,24 @@ public class WebServer implements WebAgent {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public RemusAttach getAttachStore() {
+		return attachstore;
+	}
+
+	@Override
+	public RemusDB getDataStore() {
+		return datastore;
+	}
+
+	@Override
+	public void jsRequest(String string, WorkMode map,
+			BaseStackNode appletView, MapReduceCallback mapReduceCallback) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 
 }

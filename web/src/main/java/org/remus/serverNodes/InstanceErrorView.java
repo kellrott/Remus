@@ -12,11 +12,11 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 

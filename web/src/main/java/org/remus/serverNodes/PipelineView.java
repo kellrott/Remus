@@ -13,6 +13,7 @@ import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -25,17 +26,19 @@ public class PipelineView implements BaseNode {
 
 	HashMap<String,BaseNode> children;
 
+	RemusWeb web;
 	RemusPipeline pipe;
 	RemusDB datastore;
 	RemusAttach attachstore;
 	
-	public PipelineView(RemusPipeline pipe, RemusDB datastore, RemusAttach attachstore) {
+	public PipelineView(RemusPipeline pipe, RemusWeb web) {
+		this.web = web;
 		this.pipe = pipe;
-		this.datastore = datastore;
-		this.attachstore = attachstore;
+		this.datastore = web.getDataStore();
+		this.attachstore = web.getAttachStore();
 		children = new HashMap<String, BaseNode>();
 		children.put("@submit", new SubmitView(pipe, datastore) );
-		children.put("@status", new PipelineStatusView(pipe, datastore));
+		children.put("@status", new PipelineStatusView(pipe, web));
 		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
 		children.put("@agent", new PipelineAgentView(pipe));
 
@@ -199,7 +202,7 @@ public class PipelineView implements BaseNode {
 		try {
 			for ( Object subObject : datastore.get(arSubmit, name) ) {
 				RemusInstance inst = new RemusInstance( (String)((Map)subObject).get( Submission.InstanceField ) );
-				return new PipelineInstanceView(pipe, inst, datastore);
+				return new PipelineInstanceView(pipe, inst, web);
 			}
 		} catch (TException e1) {
 			// TODO Auto-generated catch block
@@ -214,7 +217,7 @@ public class PipelineView implements BaseNode {
 		try {
 			for ( Object subObject : datastore.get( arInstance, name) ) {
 				RemusInstance inst = new RemusInstance( name );
-				return new PipelineInstanceView(pipe, inst, datastore);
+				return new PipelineInstanceView(pipe, inst, web);
 			}
 		} catch (TException e1) {
 			// TODO Auto-generated catch block

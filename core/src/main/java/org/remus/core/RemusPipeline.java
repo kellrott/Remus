@@ -11,8 +11,8 @@ import org.apache.thrift.TException;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
 
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;

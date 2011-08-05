@@ -3,12 +3,12 @@ package org.remus.work;
 
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.core.DataStackRef;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
-import org.remus.server.DataStackRef;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 

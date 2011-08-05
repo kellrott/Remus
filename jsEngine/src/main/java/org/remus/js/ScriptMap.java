@@ -1,4 +1,4 @@
-package org.remus.fs;
+package org.remus.js;
 
 import java.util.Map;
 

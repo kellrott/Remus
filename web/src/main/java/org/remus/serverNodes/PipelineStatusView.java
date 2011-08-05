@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -15,24 +14,28 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusWeb;
+import org.remus.core.BaseStackNode;
 import org.remus.core.DataStackInfo;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.js.JSFunctionCall;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.server.BaseNode;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.WorkMode;
 
 public class PipelineStatusView implements BaseNode, BaseStackNode {
 
+	RemusWeb web;
 	RemusPipeline pipeline;
 	RemusDB datastore;
-	public PipelineStatusView(RemusPipeline pipeline, RemusDB datastore) {
+	public PipelineStatusView(RemusPipeline pipeline, RemusWeb web) {
+		this.web = web;
 		this.pipeline = pipeline;
-		this.datastore = datastore;
+		this.datastore = web.getDataStore();
 	}
 
 	@Override
@@ -144,10 +147,8 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				}
 			} while ( len >= 0 );
 
-			JSFunctionCall js = new JSFunctionCall();
-			js.init(null);
-			js.initMapper(sb.toString());
-			js.map( this, new MapReduceCallback() {				
+			
+			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback() {				
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();

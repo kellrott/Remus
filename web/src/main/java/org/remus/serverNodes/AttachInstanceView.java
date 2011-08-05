@@ -7,11 +7,11 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.remus.JSON;
+import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
-import org.remus.server.RemusDatabaseException;
 
 public class AttachInstanceView implements BaseNode {
 

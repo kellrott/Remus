@@ -1,11 +1,9 @@
 package org.remus.manage;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.net.HttpURLConnection;
@@ -21,7 +19,6 @@ import org.remus.PeerInfo;
 import org.remus.RemusWorker;
 import org.remus.core.WorkStatus;
 import org.remus.plugin.PluginManager;
-import org.remus.server.BaseNode;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkDesc;
@@ -30,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.TException;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 
 
 public class JobTreeManager extends RemusWorker {

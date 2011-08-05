@@ -10,24 +10,27 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
 public class PipelineInstanceView implements BaseNode {
 
+	RemusWeb web;
 	RemusPipeline pipeline;
 	RemusInstance inst;
 	RemusDB datastore;
 
-	public PipelineInstanceView( RemusPipeline pipeline, RemusInstance inst, RemusDB datastore ) {
+	public PipelineInstanceView( RemusPipeline pipeline, RemusInstance inst, RemusWeb web ) {
+		this.web = web;
 		this.pipeline = pipeline;
 		this.inst = inst;
-		this.datastore = datastore;
+		this.datastore = web.getDataStore();
 	}
 
 	@Override
@@ -107,7 +110,7 @@ public class PipelineInstanceView implements BaseNode {
 		}
 
 		if (name.compareTo("@query") == 0) {
-			return new PipelineInstanceQueryView(pipeline, inst);
+			return new PipelineInstanceQueryView(web, pipeline, inst);
 		}
 
 		return null;		

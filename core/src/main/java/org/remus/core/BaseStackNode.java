@@ -1,6 +1,5 @@
-package org.remus.serverNodes;
+package org.remus.core;
 
-import java.util.Iterator;
 
 public interface BaseStackNode {
 

@@ -10,21 +10,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.remus.JSON;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.js.JSFunctionCall;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.server.BaseNode;
+import org.remus.thrift.WorkMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineInstanceQueryView implements BaseNode {
 
+	RemusWeb web;
 	RemusPipeline pipeline;
 	RemusInstance inst;
 	private Logger logger;
-	public PipelineInstanceQueryView(RemusPipeline pipeline, RemusInstance inst) {
+	public PipelineInstanceQueryView(RemusWeb web, RemusPipeline pipeline, RemusInstance inst) {
+		this.web = web;
 		this.pipeline = pipeline;
 		this.inst = inst;
 		logger = LoggerFactory.getLogger(PipelineInstanceQueryView.class);
@@ -55,12 +59,11 @@ public class PipelineInstanceQueryView implements BaseNode {
 	public void doSubmit(String name, String workerID, final InputStream is,
 			final OutputStream os) throws FileNotFoundException {
 
-		RemusApplet applet = pipeline.getApplet(name);
-		if ( applet == null ) {
-			throw new FileNotFoundException();
-		}
-
 		try { 
+			RemusApplet applet = pipeline.getApplet(name);
+			if ( applet == null ) {
+				throw new FileNotFoundException();
+			}
 			char [] buffer = new char[1024];
 			int len;
 			StringBuilder sb = new StringBuilder();
@@ -74,10 +77,8 @@ public class PipelineInstanceQueryView implements BaseNode {
 
 			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
 
-			JSFunctionCall js = new JSFunctionCall();
-			js.init(null);
-			js.initMapper(sb.toString());
-			js.map( appletView, new MapReduceCallback() {				
+			web.jsRequest( sb.toString(), WorkMode.MAP, appletView, 
+					new MapReduceCallback() {				
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();
@@ -90,17 +91,19 @@ public class PipelineInstanceQueryView implements BaseNode {
 						e.printStackTrace();
 					}
 				}
-			}
-					);
+			});
 		} catch (IOException e) {
 			logger.debug( e.toString() );
+			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		// TODO Auto-generated method stub
 
 	}

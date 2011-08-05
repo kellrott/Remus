@@ -1,10 +1,5 @@
 package org.remus.core;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,16 +7,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.JSON;
-import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
 
-import org.remus.plugin.PluginManager;
-import org.remus.server.RemusDatabaseException;
-import org.remus.serverNodes.ManageApp;
-import org.remus.serverNodes.ServerStatusView;
-import org.remus.serverNodes.StoreInfoView;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -38,14 +27,14 @@ public class RemusApp {
 	RemusDB rootStore;
 	RemusAttach rootAttachStore;
 
-	public RemusApp( PluginManager plugins ) throws RemusDatabaseException {
-		rootStore = plugins.getDataServer();
-		rootAttachStore = plugins.getAttachStore();
+	public RemusApp(RemusDB datastore, RemusAttach attachstore) throws RemusDatabaseException {
+		rootStore = datastore;
+		rootAttachStore = attachstore;
 		//scanSource(srcbase);
 		try {
 			getPipelines();
 		} catch (TException e) {
-			throw new RemusDatabaseException( e.toString() );
+			throw new RemusDatabaseException(e.toString());
 		}
 	}
 

@@ -1,4 +1,4 @@
-package org.remus.server;
+package org.remus.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
-import org.remus.core.RemusApplet;
-import org.remus.core.RemusInstance;
-import org.remus.core.RemusPipeline;
+import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.work.Submission;

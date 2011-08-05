@@ -12,7 +12,6 @@ import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
-import org.remus.fs.ScriptMap;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.mapred.MapReduceFunction;
 import org.remus.mapred.NotSupported;

@@ -13,6 +13,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.remus.RemusAttach;
+import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
 import org.remus.plugin.PluginManager;
 import org.remus.serverNodes.AppView;
@@ -30,9 +34,9 @@ public class MasterServlet extends HttpServlet {
 	String srcDir;
 	Map<String, String> configMap;
 
-	public MasterServlet(PluginManager plugs) throws RemusDatabaseException {
-		app = new RemusApp(plugs);
-		appView = new AppView(app, plugs.getDataServer(),plugs.getAttachStore());
+	public MasterServlet(RemusWeb web) throws RemusDatabaseException {
+		app = new RemusApp(web.getDataStore(), web.getAttachStore());
+		appView = new AppView(app, web);
 	}
 		
 	/**
@@ -41,11 +45,11 @@ public class MasterServlet extends HttpServlet {
 	private static final long serialVersionUID = -8067165004515233805L;
 
 
-	private String getWorkerID( HttpServletRequest req ) {
+	private String getWorkerID(HttpServletRequest req) {
 		String workerID = null;
-		if ( req.getCookies() != null ) {
-			for ( Cookie cookie : req.getCookies() ) {
-				if ( cookie.getName().compareTo( "remusWorker" ) == 0 ) {
+		if (req.getCookies() != null) {
+			for (Cookie cookie : req.getCookies()) {
+				if (cookie.getName().compareTo("remusWorker") == 0) {
 					workerID = cookie.getValue();
 				}
 			}

@@ -13,24 +13,27 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
 import org.remus.server.BaseNode;
 
 public class AppView implements BaseNode {
 
+	RemusWeb web;
 	RemusApp app;
 	RemusDB datastore;
 	private HashMap<String, BaseNode> children;
 	private RemusAttach attachstore;
 	
-	public AppView(RemusApp app, RemusDB datastore, RemusAttach attachstore) {
+	public AppView(RemusApp app, RemusWeb web) {
 		this.app = app;
-		this.datastore = datastore;
-		this.attachstore = attachstore;
+		this.web = web;
+		this.datastore = web.getDataStore();
+		this.attachstore = web.getAttachStore();
 		children = new HashMap<String,BaseNode>();
-		children.put("@pipeline", new PipelineConfigView(app,datastore));
+		children.put("@pipeline", new PipelineConfigView(app, datastore));
 		children.put("@status", new ServerStatusView(app));
-		children.put("@manage", new ManageApp() );
+		children.put("@manage", new ManageApp());
 		children.put("@db", new StoreInfoView(app));
 	}
 
@@ -81,7 +84,7 @@ public class AppView implements BaseNode {
 			return children.get(name);
 		}
 		if (app.hasPipeline(name)) {
-			return new PipelineView(app.getPipeline(name),datastore,attachstore);
+			return new PipelineView(app.getPipeline(name), web);
 		}
 
 		return null;
@@ -110,14 +113,14 @@ public class AppView implements BaseNode {
 					sb.append( tmp[j] );
 				}
 				//System.err.println( curNode + " " + sb.toString() );
-				if ( type == GET_CALL )
-					curNode.doGet( sb.toString(), parameterMap, workerID, outputStream );
-				if ( type == PUT_CALL )
-					curNode.doPut( sb.toString(), workerID, inputStream, outputStream );
-				if ( type == SUBMIT_CALL )
-					curNode.doSubmit( sb.toString(), workerID, inputStream, outputStream );
-				if ( type == DELETE_CALL )
-					curNode.doDelete( sb.toString(), parameterMap, workerID );
+				if (type == GET_CALL)
+					curNode.doGet(sb.toString(), parameterMap, workerID, outputStream);
+				if (type == PUT_CALL)
+					curNode.doPut(sb.toString(), workerID, inputStream, outputStream);
+				if (type == SUBMIT_CALL)
+					curNode.doSubmit(sb.toString(), workerID, inputStream, outputStream);
+				if (type == DELETE_CALL)
+					curNode.doDelete(sb.toString(), parameterMap, workerID);
 				called = true;
 			}
 		}

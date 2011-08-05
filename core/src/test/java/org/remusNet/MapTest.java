@@ -12,12 +12,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PluginManager;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -46,7 +46,7 @@ public class MapTest {
 
 	@Test public void mapTest() throws RemusDatabaseException, TException, NotImplemented {
 
-		RemusApp app = new RemusApp(pm);
+		RemusApp app = new RemusApp(pm.getDataServer(), pm.getAttachStore());
 		InputStream is = MapTest.class.getResourceAsStream("jsPipeline.json");
 		Object pipelineDesc = JSONValue.parse(new InputStreamReader(is));
 
@@ -72,7 +72,7 @@ public class MapTest {
 
 	@After public void tearDown() throws RemusDatabaseException, TException {
 		
-		RemusApp app = new RemusApp(pm);
+		RemusApp app = new RemusApp(pm.getDataServer(), pm.getAttachStore());
 		RemusPipeline pipe = app.getPipeline("testPipeline");
 		app.deletePipeline(pipe);
 		

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.PeerInfo;
+import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.RemusWorker;
 import org.remus.core.RemusApp;
@@ -19,7 +20,6 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.plugin.PluginManager;
-import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
@@ -80,7 +80,7 @@ public class WorkManager extends RemusManager {
 
 		Set<WorkStatus> fullList = new HashSet();
 		try {
-			RemusApp app = new RemusApp(plugins);
+			RemusApp app = new RemusApp(plugins.getDataServer(),plugins.getAttachStore());
 			for (String name : app.getPipelines()) {
 				RemusPipeline pipe = app.getPipeline(name);
 				Set<WorkStatus> curSet = pipe.getWorkQueue();
