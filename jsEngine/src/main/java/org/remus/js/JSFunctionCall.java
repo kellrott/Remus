@@ -126,9 +126,10 @@ public class JSFunctionCall implements MapReduceFunction {
 		}		
 	}
 
-	
-	public void initMapper(String config) {
-		currentFunction = compileFunction(config, "view");
+	@Override
+	public void init(Map instanceInfo) {
+		String jsCode = (String)instanceInfo.get("jsCode");
+		currentFunction = compileFunction(jsCode, "view");
 	}
 
 	@Override

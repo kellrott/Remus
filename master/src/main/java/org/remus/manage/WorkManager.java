@@ -1,5 +1,6 @@
 package org.remus.manage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -9,14 +10,18 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
+import org.remus.JSON;
 import org.remus.PeerInfo;
 import org.remus.RemusManager;
 import org.remus.RemusWorker;
 import org.remus.core.RemusApp;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusPipeline;
 import org.remus.core.WorkStatus;
 import org.remus.plugin.PluginManager;
 import org.remus.server.RemusDatabaseException;
+import org.remus.thrift.AppletRef;
+import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.WorkDesc;
@@ -86,16 +91,56 @@ public class WorkManager extends RemusManager {
 			throw new TException(e);
 		}
 
-		for ( RemusWorker worker : plugins.getWorkers() ) {
+		for (RemusWorker worker : plugins.getWorkers()) {
 			PeerInfo pi = worker.getPeerInfo();
 			List<String> langs = pi.workTypes;
 			logger.info("Worker " + pi.name + " offers " + langs);
 			for (WorkStatus stat : fullList){
-				logger.info( stat.getApplet().getType() );
-				if ( langs.contains( stat.getApplet().getType())) {
+				logger.info(stat.getApplet().getType());
+				if (langs.contains(stat.getApplet().getType())) {
 					logger.info("Assigning " + stat + " to " + pi.name);
-					WorkDesc wdesc = new WorkDesc(stat.getApplet().getType(), WorkMode.MAP, null, null, null);
-					worker.jobRequest("test", wdesc);
+					WorkDesc wdesc = new WorkDesc();
+					wdesc.workStack = new AppletRef(
+							stat.getPipeline().getID(), 
+							stat.getInstance().toString(), 
+							stat.getApplet().getID());
+					wdesc.lang = stat.getApplet().getType();
+					wdesc.infoJSON = JSON.dumps(stat.getInstanceInfo());
+
+					switch (stat.getApplet().getMode()) {
+					case RemusApplet.MAPPER: {
+						wdesc.mode = WorkMode.MAP;
+						break;
+					}
+					case RemusApplet.REDUCER: {
+						wdesc.mode = WorkMode.REDUCE;
+						break;
+					}
+					default: {}
+					}
+
+					Collection<Long> jobs;
+					while ((jobs = stat.getReadyJobs(10)).size() > 0) {
+						wdesc.jobs = new ArrayList(jobs);
+						String jobID = worker.jobRequest("test", wdesc);
+
+						boolean done = false;
+						do {
+							JobStatus s = worker.jobStatus(jobID);
+							if (s == JobStatus.DONE) {
+								for (long job : jobs) {
+									stat.finishJob(job, pi.name);
+								}
+								done = true;
+							} else if (s == JobStatus.ERROR) {
+								for (long job : jobs) {
+									stat.errorJob(job, "javascript error");
+								}
+								done = true;
+							}
+						} while (!done);
+
+					}
 				}
 			}
 		}
@@ -109,7 +154,7 @@ public class WorkManager extends RemusManager {
 				if ( activeStack == null )
 					return;
 			}
-			if ( activeStack.isComplete() ) {
+			if (activeStack.isComplete()) {
 				//parent.completeWorkStack(activeStack);
 				activeStack = null;
 			}

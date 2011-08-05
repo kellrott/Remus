@@ -26,7 +26,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
   private static final org.apache.thrift.protocol.TField LANG_FIELD_DESC = new org.apache.thrift.protocol.TField("lang", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField MODE_FIELD_DESC = new org.apache.thrift.protocol.TField("mode", org.apache.thrift.protocol.TType.I32, (short)2);
   private static final org.apache.thrift.protocol.TField INFO_JSON_FIELD_DESC = new org.apache.thrift.protocol.TField("infoJSON", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField INPUT_FIELD_DESC = new org.apache.thrift.protocol.TField("input", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField WORK_STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("workStack", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField JOBS_FIELD_DESC = new org.apache.thrift.protocol.TField("jobs", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   public String lang;
@@ -36,7 +36,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
    */
   public WorkMode mode;
   public String infoJSON;
-  public AppletRef input;
+  public AppletRef workStack;
   public List<Long> jobs;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -48,7 +48,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
      */
     MODE((short)2, "mode"),
     INFO_JSON((short)3, "infoJSON"),
-    INPUT((short)4, "input"),
+    WORK_STACK((short)4, "workStack"),
     JOBS((short)5, "jobs");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -70,8 +70,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
           return MODE;
         case 3: // INFO_JSON
           return INFO_JSON;
-        case 4: // INPUT
-          return INPUT;
+        case 4: // WORK_STACK
+          return WORK_STACK;
         case 5: // JOBS
           return JOBS;
         default:
@@ -124,7 +124,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, WorkMode.class)));
     tmpMap.put(_Fields.INFO_JSON, new org.apache.thrift.meta_data.FieldMetaData("infoJSON", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.INPUT, new org.apache.thrift.meta_data.FieldMetaData("input", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.WORK_STACK, new org.apache.thrift.meta_data.FieldMetaData("workStack", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class)));
     tmpMap.put(_Fields.JOBS, new org.apache.thrift.meta_data.FieldMetaData("jobs", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
@@ -140,14 +140,14 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     String lang,
     WorkMode mode,
     String infoJSON,
-    AppletRef input,
+    AppletRef workStack,
     List<Long> jobs)
   {
     this();
     this.lang = lang;
     this.mode = mode;
     this.infoJSON = infoJSON;
-    this.input = input;
+    this.workStack = workStack;
     this.jobs = jobs;
   }
 
@@ -164,8 +164,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     if (other.isSetInfoJSON()) {
       this.infoJSON = other.infoJSON;
     }
-    if (other.isSetInput()) {
-      this.input = new AppletRef(other.input);
+    if (other.isSetWorkStack()) {
+      this.workStack = new AppletRef(other.workStack);
     }
     if (other.isSetJobs()) {
       List<Long> __this__jobs = new ArrayList<Long>();
@@ -185,7 +185,7 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     this.lang = null;
     this.mode = null;
     this.infoJSON = null;
-    this.input = null;
+    this.workStack = null;
     this.jobs = null;
   }
 
@@ -269,27 +269,27 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     }
   }
 
-  public AppletRef getInput() {
-    return this.input;
+  public AppletRef getWorkStack() {
+    return this.workStack;
   }
 
-  public WorkDesc setInput(AppletRef input) {
-    this.input = input;
+  public WorkDesc setWorkStack(AppletRef workStack) {
+    this.workStack = workStack;
     return this;
   }
 
-  public void unsetInput() {
-    this.input = null;
+  public void unsetWorkStack() {
+    this.workStack = null;
   }
 
-  /** Returns true if field input is set (has been assigned a value) and false otherwise */
-  public boolean isSetInput() {
-    return this.input != null;
+  /** Returns true if field workStack is set (has been assigned a value) and false otherwise */
+  public boolean isSetWorkStack() {
+    return this.workStack != null;
   }
 
-  public void setInputIsSet(boolean value) {
+  public void setWorkStackIsSet(boolean value) {
     if (!value) {
-      this.input = null;
+      this.workStack = null;
     }
   }
 
@@ -358,11 +358,11 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       }
       break;
 
-    case INPUT:
+    case WORK_STACK:
       if (value == null) {
-        unsetInput();
+        unsetWorkStack();
       } else {
-        setInput((AppletRef)value);
+        setWorkStack((AppletRef)value);
       }
       break;
 
@@ -388,8 +388,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     case INFO_JSON:
       return getInfoJSON();
 
-    case INPUT:
-      return getInput();
+    case WORK_STACK:
+      return getWorkStack();
 
     case JOBS:
       return getJobs();
@@ -411,8 +411,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       return isSetMode();
     case INFO_JSON:
       return isSetInfoJSON();
-    case INPUT:
-      return isSetInput();
+    case WORK_STACK:
+      return isSetWorkStack();
     case JOBS:
       return isSetJobs();
     }
@@ -459,12 +459,12 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
         return false;
     }
 
-    boolean this_present_input = true && this.isSetInput();
-    boolean that_present_input = true && that.isSetInput();
-    if (this_present_input || that_present_input) {
-      if (!(this_present_input && that_present_input))
+    boolean this_present_workStack = true && this.isSetWorkStack();
+    boolean that_present_workStack = true && that.isSetWorkStack();
+    if (this_present_workStack || that_present_workStack) {
+      if (!(this_present_workStack && that_present_workStack))
         return false;
-      if (!this.input.equals(that.input))
+      if (!this.workStack.equals(that.workStack))
         return false;
     }
 
@@ -523,12 +523,12 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetInput()).compareTo(typedOther.isSetInput());
+    lastComparison = Boolean.valueOf(isSetWorkStack()).compareTo(typedOther.isSetWorkStack());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetInput()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.input, typedOther.input);
+    if (isSetWorkStack()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.workStack, typedOther.workStack);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -581,10 +581,10 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // INPUT
+        case 4: // WORK_STACK
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.input = new AppletRef();
-            this.input.read(iprot);
+            this.workStack = new AppletRef();
+            this.workStack.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -636,9 +636,9 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
       oprot.writeString(this.infoJSON);
       oprot.writeFieldEnd();
     }
-    if (this.input != null) {
-      oprot.writeFieldBegin(INPUT_FIELD_DESC);
-      this.input.write(oprot);
+    if (this.workStack != null) {
+      oprot.writeFieldBegin(WORK_STACK_FIELD_DESC);
+      this.workStack.write(oprot);
       oprot.writeFieldEnd();
     }
     if (this.jobs != null) {
@@ -686,11 +686,11 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("input:");
-    if (this.input == null) {
+    sb.append("workStack:");
+    if (this.workStack == null) {
       sb.append("null");
     } else {
-      sb.append(this.input);
+      sb.append(this.workStack);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -716,8 +716,8 @@ public class WorkDesc implements org.apache.thrift.TBase<WorkDesc, WorkDesc._Fie
     if (infoJSON == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'infoJSON' was not present! Struct: " + toString());
     }
-    if (input == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'input' was not present! Struct: " + toString());
+    if (workStack == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'workStack' was not present! Struct: " + toString());
     }
     if (jobs == null) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'jobs' was not present! Struct: " + toString());

@@ -53,7 +53,7 @@ struct WorkDesc {
 	1: required string lang;
 	2: required WorkMode mode;
 	3: required string infoJSON;
-	4: required AppletRef input;
+	4: required AppletRef workStack;
 	5: required list<i64> jobs;
 }
 

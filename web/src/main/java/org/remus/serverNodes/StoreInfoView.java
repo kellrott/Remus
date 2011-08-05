@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.remus.JSON;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
+import org.remus.server.BaseNode;
 
 @SuppressWarnings("unchecked")
 public class StoreInfoView implements BaseNode {

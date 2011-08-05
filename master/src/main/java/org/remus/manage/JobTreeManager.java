@@ -19,9 +19,9 @@ import java.util.Map;
 
 import org.remus.PeerInfo;
 import org.remus.RemusWorker;
-import org.remus.core.BaseNode;
 import org.remus.core.WorkStatus;
 import org.remus.plugin.PluginManager;
+import org.remus.server.BaseNode;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkDesc;
@@ -85,7 +85,7 @@ public class JobTreeManager extends RemusWorker {
 			 * Send job parameters
 			 */
 
-			URL subURL = new URL( serverURL.toString() + "/job/" + id );				
+			URL subURL = new URL(serverURL.toString() + "/job/" + id);
 			logger.info("Submitting job at: " + subURL);				
 			HttpURLConnection subConn = (HttpURLConnection)subURL.openConnection();
 			subConn.setRequestMethod("POST");

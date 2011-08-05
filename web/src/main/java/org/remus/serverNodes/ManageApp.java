@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.remus.core.BaseNode;
+import org.remus.server.BaseNode;
 
 public class ManageApp implements BaseNode {
 

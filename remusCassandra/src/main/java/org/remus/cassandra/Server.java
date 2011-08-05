@@ -189,7 +189,7 @@ public class Server extends RemusDB {
 
 
 	private String stack2column(AppletRef stack) {
-		return stack.instance + stack.pipeline + stack.applet;
+		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
 	}
 
 

@@ -1,8 +1,11 @@
 package org.remus.mapred;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MapReduceFunction {
+	
+	void init(Map instanceInfo);	
 	void split(Object info, MapReduceCallback cb) throws NotSupported;
 	void map(String key, Object value, MapReduceCallback cb) throws NotSupported;
 	void reduce(String key, List<Object> values, MapReduceCallback cb) throws NotSupported;

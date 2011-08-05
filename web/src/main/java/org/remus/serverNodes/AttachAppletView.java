@@ -7,10 +7,10 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.remus.JSON;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
 
 

@@ -38,19 +38,21 @@ public class JSWorker extends RemusWorker {
 	@Override
 	public String jobRequest(String dataServer, WorkDesc work)
 			throws TException {
-		logger.info("Received job request");
-		RemusDB db = plugins.getDataServer();
+		logger.info("Received job request: " + work.mode + " " + work.workStack);
+		RemusDB db = plugins.getDataServer();		
+		
 		JSFunctionCall js = new JSFunctionCall();
 		WorkEngine we = new WorkEngine(work, db, js);
-		// TODO Auto-generated method stub
-		return null;
+		
+		we.start();
+		
+		return "job";
 	}
 
 	@Override
 	public JobStatus jobStatus(String jobID)
 			throws TException {
-		// TODO Auto-generated method stub
-		return null;
+		return JobStatus.DONE;
 	}
 
 	@Override

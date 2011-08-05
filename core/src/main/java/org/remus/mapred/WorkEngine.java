@@ -1,6 +1,9 @@
 package org.remus.mapred;
 
+import java.util.Map;
+
 import org.apache.thrift.TException;
+import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
@@ -21,21 +24,32 @@ public class WorkEngine {
 	}
 
 	public void start() {
-		AppletRef ar = new AppletRef(work.input.pipeline, 
-				work.input.instance, work.input.applet);
-		AppletRef arWork = new AppletRef(work.input.pipeline, 
-				work.input.instance, work.input.applet + "/@work");
+		AppletRef arWork = new AppletRef(work.workStack.pipeline, 
+				work.workStack.instance, work.workStack.applet + "/@work");
 		status = JobStatus.WORKING;
 
+		Map stackInfo = (Map) JSON.loads(work.infoJSON);
+		mapred.init(stackInfo);
 		try { 
 			if (work.mode == WorkMode.MAP) {
+				Map inputInfo = (Map) stackInfo.get("_input");
+				AppletRef ar = new AppletRef(
+						work.workStack.pipeline,
+						(String) inputInfo.get("_instance"),
+						(String) inputInfo.get("_applet")
+						);
+				AppletRef outRef = new AppletRef(
+						work.workStack.pipeline,
+						work.workStack.instance,
+						work.workStack.applet
+				);
 				for (long jobID : work.jobs) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						MapReduceCallback cb = new MapReduceCallback();
 						for (Object value : db.get(ar, (String) key)) {
 							mapred.map((String) key, value, cb);
 						}
-						
+						cb.writeEmits(db, outRef, jobID);
 					}
 				}
 			}

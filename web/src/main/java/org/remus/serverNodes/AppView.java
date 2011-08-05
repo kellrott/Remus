@@ -13,8 +13,8 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusApp;
+import org.remus.server.BaseNode;
 
 public class AppView implements BaseNode {
 

@@ -126,7 +126,7 @@ public class WorkStatus {
 	}
 
 	public void finishJob(long jobID, String workerID) {
-		AppletRef arWork = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() + WorkStatusName );
+		AppletRef arWork = new AppletRef( pipeline.getID(), inst.toString(), applet.getID() + "/@done");
 		try {
 			applet.getDataStore().add( arWork, 0,0, String.valueOf(jobID), workerID);
 		} catch (TException e) {
@@ -136,7 +136,17 @@ public class WorkStatus {
 		}
 	}
 
-
+	public void errorJob(long jobID, String errorMsg) {
+		AppletRef arWork = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + "/@error");
+		try {
+			applet.getDataStore().add(arWork, 0, 0,
+					String.valueOf(jobID), errorMsg);
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
+		}
+	}
 
 	@SuppressWarnings("rawtypes")
 	public Map getStatus() {
@@ -256,14 +266,31 @@ public class WorkStatus {
 		}
 	}
 
+	public Object getInstanceInfo() {
+		AppletRef arInfo = new AppletRef(pipeline.getID(), 
+				RemusInstance.STATIC_INSTANCE_STR, applet.getID() + 
+				"/@instance");
+		Object infoObj = null;
+		try {
+			for (Object obj : applet.getDataStore().get( arInfo, inst.toString())) {
+				infoObj = obj;
+			}
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
+		}
+		return infoObj;
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void updateStatus( RemusPipeline pipeline, RemusApplet applet, RemusInstance inst, Map update ) {
 		Object statObj = null;
 		AppletRef arWork = new AppletRef(pipeline.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, applet.getID() + 
-				WorkStatusName);
+				RemusInstance.STATIC_INSTANCE_STR, applet.getID() 
+				+ WorkStatusName);
 		try {
-			for (Object obj : applet.getDataStore().get( arWork, inst.toString())) {
+			for (Object obj : applet.getDataStore().get(arWork, inst.toString())) {
 				statObj = obj;
 			}
 		} catch (TException e) {
@@ -337,6 +364,10 @@ public class WorkStatus {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	public RemusPipeline getPipeline() {
+		return pipeline;
 	}
 
 

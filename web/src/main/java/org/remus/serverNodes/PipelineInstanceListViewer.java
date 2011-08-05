@@ -10,9 +10,9 @@ import java.util.Map;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.BaseNode;
 import org.remus.server.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 

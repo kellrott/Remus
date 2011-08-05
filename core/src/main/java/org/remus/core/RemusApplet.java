@@ -365,11 +365,11 @@ public class RemusApplet {
 			}
 		}
 
-		AppletRef pipelineApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + "/@pipeline" );
+		AppletRef pipelineApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 
-		for ( Object i : datastore.get( pipelineApplet, getID() ) ) {
-			for ( Object key : ((Map)i).keySet() ) {
-				baseMap.put(key, ((Map)i).get(key) );
+		for (Object i : datastore.get(pipelineApplet, getID())) {
+			for (Object key : ((Map) i).keySet()) {
+				baseMap.put(key, ((Map) i).get(key));
 			}
 		}
 		if (baseMap == null) {
@@ -406,10 +406,10 @@ public class RemusApplet {
 				}
 				baseMap.put("_input", outList);
 			}
-		} else if ( hasInputs() && getInput().compareTo("?") != 0 ) {
+		} else if (hasInputs() && getInput().compareTo("?") != 0) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", inst.toString());
-			inMap.put("_applet", getInput() );
+			inMap.put("_applet", getInput());
 			baseMap.put("_input", inMap);			
 		}
 

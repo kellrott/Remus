@@ -9,9 +9,9 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
-import org.remus.core.BaseNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
