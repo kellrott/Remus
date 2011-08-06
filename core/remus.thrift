@@ -30,7 +30,8 @@ enum JobStatus {
 	QUEUED,
 	WORKING,
 	DONE,
-	ERROR
+	ERROR,
+	UNKNOWN
 }
 
 enum PeerType {

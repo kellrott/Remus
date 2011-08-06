@@ -54,7 +54,8 @@ public class JSFunctionCall implements MapReduceFunction {
 				return out;
 			}
 
-		});					}
+		});					
+	}
 
 
 	class JSFunction  {
@@ -94,7 +95,7 @@ public class JSFunctionCall implements MapReduceFunction {
 		}
 	}
 
-	
+
 
 	public class EmitInterface {
 		MapReduceCallback cb;
@@ -133,7 +134,7 @@ public class JSFunctionCall implements MapReduceFunction {
 
 	@Override
 	public void map(String key, Object value, MapReduceCallback cb)
-			throws NotSupported {
+	throws NotSupported {
 		currentFunction.emit.setEmit(cb);
 		currentFunction.call(key, value);
 	}
@@ -152,13 +153,13 @@ public class JSFunctionCall implements MapReduceFunction {
 
 	@Override
 	public void pipe(List<Object> handles, MapReduceCallback cb)
-			throws NotSupported {
+	throws NotSupported {
 		throw new NotSupported();
 	}
 
 	@Override
 	public void reduce(String key, List<Object> values, MapReduceCallback cb)
-			throws NotSupported {
+	throws NotSupported {
 		throw new NotSupported();
 	}
 

@@ -14,7 +14,8 @@ public enum JobStatus implements org.apache.thrift.TEnum {
   QUEUED(0),
   WORKING(1),
   DONE(2),
-  ERROR(3);
+  ERROR(3),
+  UNKNOWN(4);
 
   private final int value;
 
@@ -43,6 +44,8 @@ public enum JobStatus implements org.apache.thrift.TEnum {
         return DONE;
       case 3:
         return ERROR;
+      case 4:
+        return UNKNOWN;
       default:
         return null;
     }

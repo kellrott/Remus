@@ -1,7 +1,9 @@
 package org.remus.js;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
@@ -15,10 +17,18 @@ import org.remus.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+
 public class JSWorker extends RemusWorker {
 
 	PluginManager plugins;
 	private Logger logger;
+	private static final int NTHREDS = 10;
+	ExecutorService executor;
+	
+	Map<String,WorkEngine> workMap;
 	
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -32,7 +42,8 @@ public class JSWorker extends RemusWorker {
 	@Override
 	public void init(Map params) {
 		logger = LoggerFactory.getLogger(JSWorker.class);	
-
+		executor = Executors.newFixedThreadPool(NTHREDS);
+		workMap = new HashMap<String, WorkEngine>();
 	}
 
 	@Override
@@ -42,17 +53,21 @@ public class JSWorker extends RemusWorker {
 		RemusDB db = plugins.getDataServer();		
 		
 		JSFunctionCall js = new JSFunctionCall();
-		WorkEngine we = new WorkEngine(work, db, js);
-		
-		we.start();
-		
-		return "job";
+		WorkEngine we = new WorkEngine(work, db, js);		
+		executor.submit(we);
+		String jobName = UUID.randomUUID().toString();
+		workMap.put(jobName, we);
+		return jobName;
 	}
 
 	@Override
 	public JobStatus jobStatus(String jobID)
 			throws TException {
-		return JobStatus.DONE;
+		WorkEngine a = workMap.get(jobID);
+		if (a != null) {
+			return a.getStatus();
+		}			
+		return JobStatus.UNKNOWN;
 	}
 
 	@Override
@@ -62,8 +77,11 @@ public class JSWorker extends RemusWorker {
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-		
+		executor.shutdown();
+		// Wait until all threads are finish
+		while (!executor.isTerminated()) {
+
+		}		
 	}	
 
 }

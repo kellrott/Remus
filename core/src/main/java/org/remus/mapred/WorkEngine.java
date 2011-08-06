@@ -5,13 +5,14 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusDB;
+import org.remus.core.WorkStatus;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
 
-public class WorkEngine {
+public class WorkEngine implements Runnable {
 	WorkDesc work;
 	RemusDB db;
 	MapReduceFunction mapred;
@@ -23,7 +24,8 @@ public class WorkEngine {
 		status = JobStatus.QUEUED;
 	}
 
-	public void start() {
+	@Override
+	public void run() {
 		AppletRef arWork = new AppletRef(work.workStack.pipeline, 
 				work.workStack.instance, work.workStack.applet + "/@work");
 		status = JobStatus.WORKING;
@@ -52,6 +54,7 @@ public class WorkEngine {
 						cb.writeEmits(db, outRef, jobID);
 					}
 				}
+				status = JobStatus.DONE;
 			}
 		} catch (TException e) {
 			status = JobStatus.ERROR;
@@ -60,6 +63,10 @@ public class WorkEngine {
 		} catch (NotSupported e) {
 			status = JobStatus.ERROR;
 		}
+	}
+
+	public JobStatus getStatus() {
+		return status;
 	}
 
 }
