@@ -11,7 +11,11 @@
 	"_mode" : "map",
 	"_type" : "javascript",
 	"_code" : ":jsCode",
-	"jsCode"  : "function(key,val){remus.emit(key,val);}"
+	"jsCode"  : "
+function(key,val){
+	remus.emit(key, { 'word' : val, 'len' : val.length, 'square' : val.length * val.length } );
+}
+"
 }
 
 }

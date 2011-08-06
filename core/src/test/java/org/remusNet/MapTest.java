@@ -6,11 +6,14 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.apache.thrift.TException;
 import org.json.simple.JSONValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
@@ -61,12 +64,25 @@ public class MapTest {
 		AppletRef ar = new AppletRef("testPipeline", inst.toString(), "inputStack");
 
 		RemusDB dataServer = pm.getDataServer();
-		dataServer.add(ar, 0, 0, "hello", "world");
+		dataServer.add(ar, 0, 0, "a", "four");
+		dataServer.add(ar, 0, 0, "b", "score");
+		dataServer.add(ar, 0, 0, "c", "and");
+		dataServer.add(ar, 0, 0, "d", "seven");
+		dataServer.add(ar, 0, 0, "e", "years");
+		dataServer.add(ar, 0, 0, "f", "ago");
 		
 		RemusManager manage = pm.getManager();
 		manage.scheduleRequest();
 		//app.setupPipeline( )
 
+		
+		AppletRef dr = new AppletRef("testPipeline", inst.toString(), "testMap");
+		for ( KeyValPair kv : dataServer.listKeyPairs(dr) ) {
+			Map data = (Map)kv.getValue();
+			Assert.assertTrue( data.get("word").toString().length() == (Long)data.get("len") );
+			System.err.println(kv.getKey() + " " + kv.getValue() );
+		}
+		
 
 	}
 
