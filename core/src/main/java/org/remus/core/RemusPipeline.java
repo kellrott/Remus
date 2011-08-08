@@ -217,6 +217,19 @@ public class RemusPipeline {
 		return datastore.listKeyPairs( arSubmit );
 	}
 
+	public void deleteSubmission(String key) throws TException, NotImplemented, RemusDatabaseException {
+		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
+		Map sMap = null;
+		for (Object obj : datastore.get(arSubmit, key)) {
+			sMap = (Map)sMap;
+		}
+		if (sMap != null) {
+			String instStr = (String) sMap.get(Submission.InstanceField);
+			RemusInstance inst = new RemusInstance(instStr);
+			deleteInstance(inst);
+		}
+		datastore.deleteValue(arSubmit, key);
+	}
 
 	public RemusInstance handleSubmission(String key, Map value) {
 
@@ -321,7 +334,7 @@ public class RemusPipeline {
 							for (String iRef : applet.getInputs()) {
 								if (iRef.compareTo("?") != 0) {
 									RemusApplet srcApplet = getApplet(iRef);
-									if (activeSet.contains(srcApplet)) {
+									if (activeSet.contains(iRef)) {
 										try {
 											if (applet.createInstance(name, params, inst)) {
 												added = true;
