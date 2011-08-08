@@ -96,7 +96,6 @@ public class WorkManager extends RemusManager {
 			List<String> langs = pi.workTypes;
 			logger.info("Worker " + pi.name + " offers " + langs);
 			for (WorkStatus stat : fullList){
-				logger.info(stat.getApplet().getType());
 				if (langs.contains(stat.getApplet().getType())) {
 					logger.info("Assigning " + stat + " to " + pi.name);
 					WorkDesc wdesc = new WorkDesc();
@@ -120,27 +119,31 @@ public class WorkManager extends RemusManager {
 					}
 
 					Collection<Long> jobs;
-					while ((jobs = stat.getReadyJobs(10)).size() > 0) {
-						wdesc.jobs = new ArrayList(jobs);
-						String jobID = worker.jobRequest("test", wdesc);
+					do {
+						jobs = stat.getReadyJobs(10);
+						logger.info("Found " + jobs.size() + " jobs");
+						if (jobs.size() > 0) {
+							wdesc.jobs = new ArrayList(jobs);
+							String jobID = worker.jobRequest("test", wdesc);
 
-						boolean done = false;
-						do {
-							JobStatus s = worker.jobStatus(jobID);
-							if (s == JobStatus.DONE) {
-								for (long job : jobs) {
-									stat.finishJob(job, pi.name);
+							boolean done = false;
+							do {
+								JobStatus s = worker.jobStatus(jobID);
+								if (s == JobStatus.DONE) {
+									for (long job : jobs) {
+										stat.finishJob(job, pi.name);
+									}
+									done = true;
+								} else if (s == JobStatus.ERROR) {
+									for (long job : jobs) {
+										stat.errorJob(job, "javascript error");
+									}
+									done = true;
 								}
-								done = true;
-							} else if (s == JobStatus.ERROR) {
-								for (long job : jobs) {
-									stat.errorJob(job, "javascript error");
-								}
-								done = true;
-							}
-						} while (!done);
+							} while (!done);
+						}
+					} while (jobs.size() > 0);
 
-					}
 				}
 			}
 		}

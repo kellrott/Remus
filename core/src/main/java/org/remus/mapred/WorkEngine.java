@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusDB;
-import org.remus.core.WorkStatus;
+import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
@@ -35,9 +35,12 @@ public class WorkEngine implements Runnable {
 		try { 
 			if (work.mode == WorkMode.MAP) {
 				Map inputInfo = (Map) stackInfo.get("_input");
+				RemusInstance inst = RemusInstance.getInstance(db, 
+						work.workStack.pipeline, 
+						(String) inputInfo.get("_instance"));
 				AppletRef ar = new AppletRef(
 						work.workStack.pipeline,
-						(String) inputInfo.get("_instance"),
+						inst.toString(),
 						(String) inputInfo.get("_applet")
 						);
 				AppletRef outRef = new AppletRef(

@@ -21,7 +21,6 @@ public class PluginManager {
 	List<PluginInterface> plugins;
 
 	public PluginManager(Map<String,Object> params) {
-		System.err.println(params);
 		plugins = new LinkedList<PluginInterface>();
 
 		for (String className : params.keySet()) {
