@@ -4,7 +4,7 @@
   <groupId>org.remus</groupId>
   <artifactId>remus-web</artifactId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.1-SNAPSHOT</version>
   <name>Remus Web Server</name>
   <url>http://maven.apache.org</url>
   
@@ -26,14 +26,14 @@
   <parent>
     <groupId>org.remus</groupId>
     <artifactId>remus</artifactId>
-    <version>0.1</version>
+    <version>0.1-SNAPSHOT</version>
   </parent>
   
   <dependencies>  
      <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-core</artifactId>
-      <version>0.1</version>
+      <version>0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
