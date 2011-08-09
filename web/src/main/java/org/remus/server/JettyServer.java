@@ -1,28 +1,48 @@
 package org.remus.server;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.thrift.TException;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.Context;
 import org.mortbay.jetty.servlet.ServletHolder;
+import org.remus.JSON;
 import org.remus.PeerInfo;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
+import org.remus.RemusManager;
 import org.remus.RemusWeb;
+import org.remus.RemusWorker;
 import org.remus.core.BaseStackNode;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.AppletRef;
+import org.remus.thrift.JobStatus;
+import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
+import org.remus.thrift.RemusNet.keySlice_args;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class JettyServer implements RemusWeb {
+public class JettyServer extends RemusWeb {
 
 	Map params;
 	Server server;
 
+	public static final int DEFAULT_PORT = 16016;
+	
 	RemusDB datastore;
 	RemusAttach attachstore;
+	private Logger logger;
+	private PluginManager pm;
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -31,17 +51,22 @@ public class JettyServer implements RemusWeb {
 		return out;
 	}
 
+	Map<AppletRef,BaseStackNode> stackMap;
+
 	@Override
 	public void init(Map params) {
 		this.params = params;		
+		logger = LoggerFactory.getLogger(JettyServer.class);
+		stackMap = new HashMap<AppletRef, BaseStackNode>();
 	}	
 
 	@Override
 	public void start(PluginManager pluginManager) throws RemusDatabaseException {
+		this.pm = pluginManager;
 		System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "0");		
 
-		int serverPort = 16016;
-		if ( params.containsKey("org.remus.port") ) {
+		int serverPort = DEFAULT_PORT;
+		if (params.containsKey("org.remus.port")) {
 			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
 		}
 
@@ -97,13 +122,58 @@ public class JettyServer implements RemusWeb {
 		return datastore;
 	}
 
+	
 	@Override
-	public void jsRequest(String string, WorkMode map,
+	public void jsRequest(String string, WorkMode mode,
 			BaseStackNode appletView, MapReduceCallback mapReduceCallback) {
-		// TODO Auto-generated method stub
+		logger.info("Javascript Query");
+		RemusWorker jsWorker = null;
+		//RemusManager manager = pm.getManager();
+		//jsWorker = manager.getWorker("javascript");
 		
+		for (RemusWorker worker : pm.getWorkers()) {
+			if (worker.getPeerInfo().workTypes.contains("javascript")) {
+				jsWorker = worker;
+			}
+		}
+		
+		WorkDesc work = new WorkDesc();
+		work.mode = mode;
+		work.infoJSON = JSON.dumps(new HashMap());
+		work.jobs = Arrays.asList(0L);
+		work.lang = "javascript";
+		
+		try {
+			String jobID = jsWorker.jobRequest("this", work);			
+			boolean done = false;
+			do {
+				JobStatus stat = jsWorker.jobStatus(jobID);
+				if (stat == JobStatus.QUEUED || stat == JobStatus.WORKING) {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} else {
+					done = true;
+				}
+			} while (!done);
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 
 	
-
+	@Override
+	public List<String> getValueJSON(AppletRef stack, String key)
+			throws NotImplemented, TException {
+		logger.info("WEB_DB GET: " + stack + " " + key);
+		return Arrays.asList("test");
+	}
+	
 }
