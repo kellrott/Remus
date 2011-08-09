@@ -1,14 +1,11 @@
 package org.remus.plugin;
 
-import java.io.File;
-import java.io.FileReader;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.json.simple.parser.JSONParser;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusManager;
@@ -50,16 +47,6 @@ public class PluginManager {
 		for (PluginInterface p : plugins) {
 			p.start(this);
 		}
-	}
-
-	static public void main(String [] args) throws Exception {
-
-		JSONParser j = new JSONParser();		
-		FileReader read = new FileReader(new File(args[0]));
-		Object params = j.parse(read);
-
-		PluginManager p = new PluginManager((Map) params);
-		p.start();
 	}
 
 	public RemusDB getDataServer() {

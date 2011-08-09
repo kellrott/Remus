@@ -3,9 +3,14 @@
 binpath=`dirname $0`
 basepath=`dirname $binpath`
 HOST=`hostname`
+
 confFile=${basepath}/etc/remus.prop
 if [ -e ${basepath}/etc/${HOST}.prop ]; then
     confFile=${basepath}/etc/${HOST}.prop
 fi
 
-java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/target/dependency -cp ${basepath}/target/remus-0.1.jar org.remus.MasterServer ${confFile}
+if [ "x$1" != "x" ]; then
+    confFile=$1
+fi
+
+java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}

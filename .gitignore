@@ -8,3 +8,4 @@ target
 .pydevproject
 gen-java
 gen-py
+lib

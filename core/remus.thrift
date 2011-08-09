@@ -1,9 +1,6 @@
 
-namespace cpp remus
 namespace java org.remus.thrift
-namespace php remusNet
-namespace perl remusNet
-namespace py remusNet
+namespace py remus.thrift
 
 struct InstanceRef {
 	1: required string pipeline,

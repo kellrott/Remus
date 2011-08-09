@@ -1,18 +1,27 @@
 {
 "org.remus.js.JSWorker" : {
 
-}
-"org.remus.server.WebServer" : {
+},
+"org.remus.server.JettyServer" : {
 
-}
+},
 "org.remus.cassandra.Server" : {
-	"org.mpstore.ThriftStore.columnFamily" : "remusTable",
-	"org.mpstore.ThriftStore.keySpace" : "remus",
-	"org.mpstore.ThriftStore.instColumns" : "false"
-}
+	"server" : {
+		"port" : 16018
+	},
+	"config" : {
+		"columnFamily" : "remusTable",
+		"keySpace" : "remus",
+	}
+},
 "org.remus.fs.FileServer" : {
-	"org.mpstore.FileAttachStore.dir" : "/opt/remus",
-	"org.mpstore.FileAttachStore.shared" : "false"
+	"server" : {
+		"port" : 16019
+	},
+	"config" : {
+		"dir" : "/opt/remus",
+		"shared" : "false"
+	}
 }
 
 }
