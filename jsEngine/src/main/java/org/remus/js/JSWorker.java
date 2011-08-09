@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusWorker;
 import org.remus.mapred.WorkEngine;
@@ -50,10 +51,11 @@ public class JSWorker extends RemusWorker {
 	public String jobRequest(String dataServer, WorkDesc work)
 			throws TException {
 		logger.info("Received job request: " + work.mode + " " + work.workStack);
-		RemusDB db = plugins.getDataServer();		
+		RemusDB db = plugins.getDataServer();
+		RemusAttach attach = plugins.getAttachStore();
 		
 		JSFunctionCall js = new JSFunctionCall();
-		WorkEngine we = new WorkEngine(work, db, js);		
+		WorkEngine we = new WorkEngine(work, db, attach, js);		
 		executor.submit(we);
 		String jobName = UUID.randomUUID().toString();
 		workMap.put(jobName, we);

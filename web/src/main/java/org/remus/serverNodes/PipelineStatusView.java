@@ -148,7 +148,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			} while ( len >= 0 );
 
 			
-			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback() {				
+			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback(null, null, null, null) {
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();
@@ -181,12 +181,12 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	@Override
 	public Iterable<Object> getData(String key) {
 		String [] tmp = key.split(":");
-		if ( tmp.length == 2 ) {
+		if (tmp.length == 2) {
 			RemusInstance inst = new RemusInstance(tmp[0]);
 			LinkedList<Object> out = new LinkedList<Object>();
 			try { 
-				RemusApplet applet = pipeline.getApplet( tmp[1] );
-				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
+				RemusApplet applet = pipeline.getApplet(tmp[1]);
+				AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
 
 				for (Object obj : applet.getDataStore().get(arInstance, inst.toString())) {
 					out.add(obj);
@@ -208,10 +208,10 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	@Override
 	public Iterable<String> getKeys() {
 		LinkedList<String> list = new LinkedList<String>();
-		for ( String appletName : pipeline.getMembers() ) {
-			AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
-			for ( String key : datastore.listKeys(arInstance) ) {
-				list.add( key + ":" + appletName );	
+		for (String appletName : pipeline.getMembers()) {
+			AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
+			for (String key : datastore.listKeys(arInstance)) {
+				list.add(key + ":" + appletName);
 			}
 		}
 		return list;

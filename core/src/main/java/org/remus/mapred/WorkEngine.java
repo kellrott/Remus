@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
@@ -13,13 +14,15 @@ import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
 
 public class WorkEngine implements Runnable {
-	WorkDesc work;
-	RemusDB db;
-	MapReduceFunction mapred;
-	JobStatus status;
-	public WorkEngine(WorkDesc work, RemusDB db, MapReduceFunction mapred) {
+	private WorkDesc work;
+	private RemusDB db;
+	private MapReduceFunction mapred;
+	private JobStatus status;
+	private RemusAttach attach;
+	public WorkEngine(WorkDesc work, RemusDB db, RemusAttach attach, MapReduceFunction mapred) {
 		this.work = work;
 		this.db = db;
+		this.attach = attach;
 		this.mapred = mapred;
 		status = JobStatus.QUEUED;
 	}
@@ -50,11 +53,11 @@ public class WorkEngine implements Runnable {
 				);
 				for (long jobID : work.jobs) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
-						MapReduceCallback cb = new MapReduceCallback();
+						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, stackInfo, db, attach);
 						for (Object value : db.get(ar, (String) key)) {
 							mapred.map((String) key, value, cb);
 						}
-						cb.writeEmits(db, outRef, jobID);
+						cb.writeEmits(outRef, jobID);
 					}
 				}
 				status = JobStatus.DONE;

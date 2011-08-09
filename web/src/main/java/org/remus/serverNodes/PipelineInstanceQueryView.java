@@ -27,7 +27,8 @@ public class PipelineInstanceQueryView implements BaseNode {
 	RemusPipeline pipeline;
 	RemusInstance inst;
 	private Logger logger;
-	public PipelineInstanceQueryView(RemusWeb web, RemusPipeline pipeline, RemusInstance inst) {
+	public PipelineInstanceQueryView(RemusWeb web,
+			RemusPipeline pipeline, RemusInstance inst) {
 		this.web = web;
 		this.pipeline = pipeline;
 		this.inst = inst;
@@ -78,7 +79,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
 
 			web.jsRequest( sb.toString(), WorkMode.MAP, appletView, 
-					new MapReduceCallback() {				
+					new MapReduceCallback(null, null, null, null) {
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();
@@ -93,7 +94,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 				}
 			});
 		} catch (IOException e) {
-			logger.debug( e.toString() );
+			logger.debug(e.toString());
 			e.printStackTrace();
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block

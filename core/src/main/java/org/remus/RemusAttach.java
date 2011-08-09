@@ -59,8 +59,7 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 	private class BlockReader extends InputStream {
 		long fileSize;
 		byte [] buffer;
-		long offset;
-		long readLen;
+		long offset, fileOffset;
 		AppletRef stack;
 		String key;
 		String name;
@@ -70,17 +69,17 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 			this.key = key;
 			fileSize = getAttachmentSize(stack, key, name);
 			offset = 0;
-			readLen = 0;
+			fileOffset = 0;
 			buffer = null;
 		}
 		@Override
 		public int read() throws IOException {
-			if (readLen >= fileSize) {
+			if (fileOffset >= fileSize) {
 				return -1;
 			}
 			if (buffer == null || offset >= buffer.length) {
 				try {
-					ByteBuffer buf = readBlock(stack, key, name, offset, BLOCK_SIZE);
+					ByteBuffer buf = readBlock(stack, key, name, fileOffset, BLOCK_SIZE);
 					buffer = buf.array();
 					offset = 0;
 				} catch (TException e) {
@@ -91,6 +90,7 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 			}
 			byte out = buffer[(int) offset];
 			offset++;
+			fileOffset++;
 			return out;
 		}
 
