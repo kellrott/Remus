@@ -1,5 +1,7 @@
 package org.remus.mapred;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,11 +35,13 @@ public class MapReduceCallback {
 	private RemusAttach attach;
 	private Map jobInfo;
 	private String pipeline;
+	private String applet;
 
-	public MapReduceCallback(String pipeline, Map jobInfo, RemusDB db, RemusAttach attach) {
+	public MapReduceCallback(String pipeline, String applet, Map jobInfo, RemusDB db, RemusAttach attach) {
 		emitCount = 0;
 		this.jobInfo = jobInfo;
 		this.pipeline = pipeline;
+		this.applet = applet;
 		outList = new LinkedList<MapReduceEmit>();
 		this.db = db;
 		this.attach = attach;
@@ -54,7 +58,7 @@ public class MapReduceCallback {
 		}
 	}
 
-	public InputStream open(String key, String name) {
+	public InputStream openInput(String key, String name) {
 		Map inMap = (Map)jobInfo.get(Submission.InputField);
 		try {
 			RemusInstance inst = RemusInstance.getInstance(db, pipeline, (String) inMap.get(Submission.InstanceField));
@@ -69,5 +73,23 @@ public class MapReduceCallback {
 		}		
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public void copyTo(String key, String name, File file) {
+		RemusInstance inst;
+		try {
+			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(Submission.InstanceField));
+			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), applet);
+			attach.copyTo(arAttach, key, name, file);
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

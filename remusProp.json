@@ -1,9 +1,9 @@
 {
 "org.remus.js.JSWorker" : {
-
+	"config" : {}
 },
 "org.remus.server.JettyServer" : {
-
+	"config" : {}
 },
 "org.remus.cassandra.Server" : {
 	"server" : {

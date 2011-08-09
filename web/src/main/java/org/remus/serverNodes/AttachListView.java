@@ -26,6 +26,7 @@ public class AttachListView implements BaseNode {
 	public AttachListView(RemusAttach attach, RemusPipeline pipeline, RemusInstance inst, String applet, String key) {
 		this.attach = attach;
 		this.instance = inst;
+		this.pipeline = pipeline;
 		this.key = key;
 		this.applet = applet;
 	}

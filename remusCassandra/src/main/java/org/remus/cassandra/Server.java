@@ -55,32 +55,35 @@ public class Server extends RemusDB {
 
 	private Logger logger;
 
-	public static final String COLUMN_FAMILY = "org.mpstore.ThriftStore.columnFamily";
-	public static final String KEY_SPACE = "org.mpstore.ThriftStore.keySpace";
-	public static final String SERVER = "org.mpstore.ThriftStore.server";
-	public static final String PORT = "org.mpstore.ThriftStore.port";
-	public static final String INST_COLUMNS = "org.mpstore.ThriftStore.instColumns";
-
+	public static final String COLUMN_FAMILY = "columnFamily";
+	public static final String KEY_SPACE = "keySpace";
+	public static final String SERVER = "server";
+	public static final String PORT = "port";
+	public static final String INST_COLUMNS = "instColumns";
+	public static final int CASSANDRA_PORT = 9160;
+	
 	@Override
 	public void init( Map paramMap) throws ConnectionException {
 
 		logger = LoggerFactory.getLogger(Server.class);
 
-		columnFamily = (String)paramMap.get(COLUMN_FAMILY);
-		keySpace     = (String)paramMap.get(KEY_SPACE);
+		columnFamily = (String) paramMap.get(COLUMN_FAMILY);
+		keySpace     = (String) paramMap.get(KEY_SPACE);
 		serverName = "localhost";
-		if ( paramMap.containsKey(SERVER))
-			serverName   = (String)paramMap.get(SERVER);
-		serverPort = 9160;
-		if ( paramMap.containsKey(PORT) )
-			serverPort   = Integer.parseInt((String)paramMap.get(PORT));
+		if (paramMap.containsKey(SERVER)) {
+			serverName   = (String) paramMap.get(SERVER);
+		}
+		serverPort = CASSANDRA_PORT;
+		if (paramMap.containsKey(PORT)) {
+			serverPort   = Integer.parseInt((String) paramMap.get(PORT));
+		}
+		logger.info("CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace);
 
-		logger.info( "CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace );
+		clientPool = new ThriftClientPool(serverName, serverPort, keySpace);
 
-		clientPool = new ThriftClientPool(serverName,serverPort,keySpace );
-
-		if ( paramMap.containsKey( INST_COLUMNS ) ) {
-			instanceColumns = Boolean.valueOf((String)paramMap.get(INST_COLUMNS) );
+		instanceColumns = false;
+		if (paramMap.containsKey(INST_COLUMNS)) {
+			instanceColumns = Boolean.valueOf((String) paramMap.get(INST_COLUMNS));
 		}
 
 		try {
@@ -93,16 +96,16 @@ public class Server extends RemusDB {
 			KsDef ksDesc = null;
 			try {
 				ksDesc = client.describe_keyspace(keySpace);				
-			} catch ( NotFoundException e ) {
+			} catch (NotFoundException e) {
 				String strategy = "org.apache.cassandra.locator.SimpleStrategy";				
-				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>() );
+				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>());
 				Map stOpts = new HashMap();
 				stOpts.put("replication_factor", "1"); //BUG: need to tune this
-				ksDesc.setStrategy_options( stOpts );
+				ksDesc.setStrategy_options(stOpts);
 				try {
-					client.system_add_keyspace( ksDesc  );
-				} catch ( Exception e2 ) {
-					throw new ConnectionException( "Unable to connect or create keyspace " + keySpace + "\n" + e2.toString() );
+					client.system_add_keyspace(ksDesc);
+				} catch (Exception e2) {
+					throw new ConnectionException("Unable to connect or create keyspace " + keySpace + "\n" + e2.toString());
 				}
 			} catch (InvalidRequestException e) {
 				// TODO Auto-generated catch block
@@ -131,15 +134,15 @@ public class Server extends RemusDB {
 	}
 
 	private String getColumnFamily( String inst ) throws ConnectionException {
-		if ( columns.containsKey(inst) ) 
+		if (columns.containsKey(inst)) {
 			return columns.get(inst);		
-
+		}
 		String cfName;
-		if ( instanceColumns )
-			cfName = columnFamily + "_" + inst.replaceAll("-", "" );		
-		else
+		if (instanceColumns) {
+			cfName = columnFamily + "_" + inst.replaceAll("-", "");
+		} else {
 			cfName = columnFamily;
-
+		}
 		TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
 		TFramedTransport tf = new TFramedTransport(tr);	 
 		try {
@@ -148,12 +151,12 @@ public class Server extends RemusDB {
 			Client client = new Client(proto);
 			KsDef ksDesc = client.describe_keyspace(keySpace);				
 			Boolean found = false;
-			for ( CfDef cfdef : ksDesc.getCf_defs() ) {
-				if ( cfdef.name.compareTo( cfName ) == 0 ) {
+			for (CfDef cfdef : ksDesc.getCf_defs()) {
+				if (cfdef.name.compareTo(cfName) == 0) {
 					found = true;
 				}
 			}
-			if ( !found ) {				
+			if (!found) {
 				CfDef cfDesc = new CfDef(keySpace, cfName);
 				cfDesc.comparator_type =  "UTF8Type";
 				cfDesc.column_type = "Super";
@@ -161,8 +164,8 @@ public class Server extends RemusDB {
 				try { 
 					client.set_keyspace(keySpace);
 					client.system_add_column_family(cfDesc);
-				} catch ( Exception e2 ) {
-					throw new ConnectionException( "Unable to find or create columnFamily " + cfName + "\n" + e2.toString() );
+				} catch (Exception e2) {
+					throw new ConnectionException("Unable to find or create columnFamily " + cfName + "\n" + e2.toString());
 				}
 			}
 			columns.put(inst, cfName);
@@ -210,21 +213,21 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnParent cp = new ColumnParent( curCF );
+		final ColumnParent cp = new ColumnParent(curCF);
 
 		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>(clientPool)  {
 			@Override
 			protected Boolean request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
-				cp.setSuper_column( superColumn );
-				long clock = System.currentTimeMillis() * 1000;				
+				cp.setSuper_column(superColumn);
+				long clock = System.currentTimeMillis() * 1000;
 				//Column col = new Column(ByteBuffer.wrap(colName.getBytes()), 
 				//		colData , clock);	
 				Column col = new Column(ByteBuffer.wrap(colName.getBytes()));
-				col.setValue( colData );
+				col.setValue(colData);
 				col.setTimestamp(clock);	
-				client.insert(ByteBuffer.wrap( column.getBytes() ), cp, col, CL);
+				client.insert(ByteBuffer.wrap(column.getBytes()), cp, col, CL);
 				return true;
 			}			
 		};
@@ -247,9 +250,9 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnPath cp = new ColumnPath( curCF );
+		final ColumnPath cp = new ColumnPath(curCF);
 
-		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));
+		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 
 		ThriftCaller<Boolean> containsCall = new ThriftCaller<Boolean>(clientPool) {
 			@Override
@@ -259,9 +262,10 @@ public class Server extends RemusDB {
 
 				boolean returnVal = false;
 				try {
-					ColumnOrSuperColumn res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
-					if ( res != null )
+					ColumnOrSuperColumn res = client.get(ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
+					if (res != null) {
 						returnVal = true;
+					}
 				} catch (NoSuchElementException e) {
 				} catch (NotFoundException e) {
 				}
@@ -294,7 +298,7 @@ public class Server extends RemusDB {
 			TimedOutException, TException {
 
 				long clock = System.currentTimeMillis() * 1000;
-				client.remove( ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
 
 				return null;
 			}
@@ -319,7 +323,7 @@ public class Server extends RemusDB {
 		}
 		final ColumnPath cp = new ColumnPath( curCF );
 
-		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()) );
+		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
 			@Override
@@ -328,7 +332,7 @@ public class Server extends RemusDB {
 			TimedOutException, TException {
 
 				long clock = System.currentTimeMillis() * 1000;
-				client.remove(ByteBuffer.wrap( column.getBytes() ), cp, clock, CL);
+				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
 				return null;
 			}
 		};
@@ -354,17 +358,18 @@ public class Server extends RemusDB {
 		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, curCF, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
-				for ( Column col : scol.getSuper_column().getColumns() ) {
-					addElement( col.timestamp );
+				for (Column col : scol.getSuper_column().getColumns()) {
+					addElement(col.timestamp);
 				}
 			}
 		};
 
 		long timestamp = 0;
-		while ( out.hasNext() ) {
+		while (out.hasNext()) {
 			long cur = out.next();
-			if ( cur > timestamp )
+			if (cur > timestamp) {
 				timestamp = cur;
+			}
 		}
 		return timestamp;
 	}
@@ -379,9 +384,9 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnPath cp = new ColumnPath( curCF );
+		final ColumnPath cp = new ColumnPath(curCF);
 
-		cp.setSuper_column( ByteBuffer.wrap(key.getBytes()));			
+		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 		ThriftCaller<List<String>> getCall = new ThriftCaller<List<String>>(clientPool) {
 
 			@Override
@@ -391,11 +396,11 @@ public class Server extends RemusDB {
 				List<String> out = new LinkedList<String>();
 				ColumnOrSuperColumn res;
 				try {
-					res = client.get( ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
-					for ( Column col : res.getSuper_column().columns ) {
-						out.add( new String(col.getValue()) );
+					res = client.get(ByteBuffer.wrap(superColumn.getBytes()), cp, CL);
+					for (Column col : res.getSuper_column().columns) {
+						out.add(new String(col.getValue()));
 					}
-				} catch (NotFoundException e) {					
+				} catch (NotFoundException e) {
 				}
 				return out;
 			}
@@ -420,17 +425,17 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnParent cp = new ColumnParent( curCF );
+		final ColumnParent cp = new ColumnParent(curCF);
 
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>(clientPool) {
 			@Override
 			protected Long request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
-				SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()),ByteBuffer.wrap("".getBytes()), false, maxCount);
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap("".getBytes()), ByteBuffer.wrap("".getBytes()), false, maxCount);
 				SlicePredicate slice = new SlicePredicate();	 
 				slice.setSlice_range(sRange);
-				long count = client.get_count( ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
+				long count = client.get_count(ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
 
 				return count;
 			}
@@ -455,7 +460,7 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnParent cp = new ColumnParent( curCF );
+		final ColumnParent cp = new ColumnParent(curCF);
 
 		ThriftCaller<List<String>> keySliceCall = new ThriftCaller<List<String>>(clientPool) {
 			@Override
@@ -463,12 +468,12 @@ public class Server extends RemusDB {
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
 				List<String> out = new ArrayList<String>();
-				SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart.getBytes()),ByteBuffer.wrap("".getBytes()), false, count);
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap(keyStart.getBytes()), ByteBuffer.wrap("".getBytes()), false, count);
 				SlicePredicate slice = new SlicePredicate();	 
 				slice.setSlice_range(sRange);
-				List<ColumnOrSuperColumn> res = client.get_slice( ByteBuffer.wrap( superColumn.getBytes() ), cp, slice, CL);
-				for ( ColumnOrSuperColumn col : res ) {		
-					String curKey = new String( col.getSuper_column().getName() );
+				List<ColumnOrSuperColumn> res = client.get_slice(ByteBuffer.wrap(superColumn.getBytes()), cp, slice, CL);
+				for (ColumnOrSuperColumn col : res) {
+					String curKey = new String(col.getSuper_column().getName());
 					out.add(curKey);
 				}	
 				return out;
@@ -494,7 +499,7 @@ public class Server extends RemusDB {
 		} catch (ConnectionException e1) {
 			e1.printStackTrace();
 		}
-		final ColumnParent cp = new ColumnParent( curCF );
+		final ColumnParent cp = new ColumnParent(curCF);
 
 		ThriftCaller<List<KeyValJSONPair>> keyValSlice = new ThriftCaller<List<KeyValJSONPair>>(clientPool) {			
 			@Override

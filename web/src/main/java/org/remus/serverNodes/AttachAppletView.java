@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.remus.JSON;
+import org.remus.RemusAttach;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -19,11 +20,13 @@ public class AttachAppletView implements BaseNode {
 	RemusPipeline pipeline;
 	RemusApplet applet;
 	RemusInstance inst;
-
-	public AttachAppletView(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
+	RemusAttach attachstore;
+	
+	public AttachAppletView(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst, RemusAttach attachstore) {
 		this.pipeline = pipeline;
 		this.applet = applet;
 		this.inst = inst;
+		this.attachstore = attachstore;
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class AttachAppletView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {	
-		return new AttachListView(applet.getAttachStore(), pipeline, inst, applet.getID(), name );
+		return new AttachListView(attachstore, pipeline, inst, applet.getID(), name );
 	}
 
 }

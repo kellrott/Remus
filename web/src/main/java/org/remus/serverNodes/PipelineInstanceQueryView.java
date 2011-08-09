@@ -79,7 +79,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
 
 			web.jsRequest( sb.toString(), WorkMode.MAP, appletView, 
-					new MapReduceCallback(null, null, null, null) {
+					new MapReduceCallback(null, null, null, null, null) {
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();

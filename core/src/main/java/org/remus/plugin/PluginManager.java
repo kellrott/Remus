@@ -22,10 +22,15 @@ public class PluginManager {
 
 		for (String className : params.keySet()) {
 			try {
+				Map pMap = (Map)params.get(className);
 				Class<PluginInterface> pClass = 
 					(Class<PluginInterface>) Class.forName(className);
 				PluginInterface plug = (PluginInterface) pClass.newInstance();
-				plug.init((Map)params.get(className));
+				Map config = null;
+				if (pMap.containsKey("config")) {
+					config = (Map)pMap.get("config");
+				}				
+				plug.init(config);
 				plugins.add(plug);
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block

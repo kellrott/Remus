@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.remus.JSON;
+import org.remus.RemusAttach;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
@@ -17,10 +18,11 @@ public class AttachInstanceView implements BaseNode {
 
 	RemusPipeline pipe;
 	RemusInstance inst;
-
-	public AttachInstanceView(RemusPipeline pipeline, RemusInstance inst) {
+	RemusAttach attachstore;
+	public AttachInstanceView(RemusPipeline pipeline, RemusInstance inst, RemusAttach attachstore) {
 		this.pipe = pipeline;
 		this.inst = inst;
+		this.attachstore = attachstore;
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class AttachInstanceView implements BaseNode {
 		try {
 			RemusApplet applet = pipe.getApplet(name);
 			if ( applet != null ) {
-				return new AttachAppletView( pipe, applet, inst );
+				return new AttachAppletView( pipe, applet, inst, attachstore );
 			}
 		} catch (RemusDatabaseException e) {
 			e.printStackTrace();

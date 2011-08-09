@@ -53,7 +53,7 @@ public class WorkEngine implements Runnable {
 				);
 				for (long jobID : work.jobs) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
-						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, stackInfo, db, attach);
+						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
 						for (Object value : db.get(ar, (String) key)) {
 							mapred.map((String) key, value, cb);
 						}

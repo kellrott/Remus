@@ -454,6 +454,6 @@ public class RemusApplet {
 	}
 
 	public RemusAttach getAttachStore() {
-		return getAttachStore();
+		return attachstore;
 	}
 }

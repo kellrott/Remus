@@ -148,7 +148,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			} while ( len >= 0 );
 
 			
-			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback(null, null, null, null) {
+			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback(null, null, null, null, null) {
 				@Override
 				public void emit(String key, Object val) {
 					Map out = new HashMap();

@@ -15,10 +15,7 @@ import org.remus.PeerInfo;
 import org.remus.RemusAttach;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
-import org.remus.thrift.KeyValJSONPair;
-import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
-import org.remus.thrift.WorkDesc;
 
 public class FileServer extends RemusAttach {
 
@@ -30,8 +27,8 @@ public class FileServer extends RemusAttach {
 	 * Is the directory shared?
 	 */
 	private Boolean dirShared;
-	public final static String DIR_NAME    = "org.mpstore.FileAttachStore.dir";
-	public final static String DIR_SHARED  = "org.mpstore.FileAttachStore.shared";
+	public final static String DIR_NAME    = "dir";
+	public final static String DIR_SHARED  = "shared";
 
 	@Override
 	public void init(Map params) {
