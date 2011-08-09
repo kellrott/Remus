@@ -1,4 +1,4 @@
-package org.remusNet;
+package org.remus.test;
 
 import java.io.File;
 import java.io.FileInputStream;

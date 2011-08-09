@@ -42,9 +42,10 @@ enum PeerType {
 struct PeerInfoThrift {
 	1:required PeerType peerType;
 	2:required string name;
-	3:optional list<string> workTypes;
-	6:optional string address;
-	7:optional i32    port;
+	3:optional string peerID;
+	4:optional list<string> workTypes;
+	5:optional string host;
+	6:optional i32    port;
 }
 
 struct WorkDesc {
@@ -64,6 +65,10 @@ struct KeyValJSONPair {
 
 
 exception NotImplemented {
+
+}
+
+exception BadPeerName {
 
 }
 
@@ -133,17 +138,9 @@ service RemusNet {
 	 */
 	void scheduleRequest() throws (1:NotImplemented e); 
 
-}
-
-exception BadPeerName {
-
-}
-
-
-service RemusGossip {
-	void addPeer( 1:PeerInfoThrift info ) throws (1:BadPeerName e);
-	void delPeer( 1:string peerName );
-	list<PeerInfoThrift> getPeers();
-	void ping( 1:list<PeerInfoThrift> workers );
+	void addPeer( 1:PeerInfoThrift info ) throws (1:NotImplemented notImp, 2:BadPeerName badName);
+	void delPeer( 1:string peerName ) throws (1:NotImplemented e);
+	list<PeerInfoThrift> getPeers() throws (1:NotImplemented e);
 
 }
+

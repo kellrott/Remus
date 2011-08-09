@@ -36,7 +36,7 @@ public class JSWorker extends RemusWorker {
 		PeerInfo out = new PeerInfo();
 		out.peerType = PeerType.WORKER;
 		out.name = "Rhino JavaScript";
-		out.workTypes =  Arrays.asList("javascript");
+		out.workTypes = Arrays.asList("javascript");
 		return out;
 	}
 
@@ -74,6 +74,7 @@ public class JSWorker extends RemusWorker {
 
 	@Override
 	public void start(PluginManager pluginManager) {
+		logger.info("Starting JavaScript engine");
 		plugins = pluginManager;
 	}
 

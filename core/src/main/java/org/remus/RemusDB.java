@@ -8,9 +8,11 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.RemusNet.Iface;
 
@@ -133,4 +135,23 @@ public abstract class RemusDB implements Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 
+	
+	@Override
+	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
+		throw new NotImplemented();
+	}
+
+
+	@Override
+	public void delPeer(String peerName) throws TException, NotImplemented {
+		throw new NotImplemented();
+	}
+
+
+	@Override
+	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
+		throw new NotImplemented();
+	}
+
+	
 }

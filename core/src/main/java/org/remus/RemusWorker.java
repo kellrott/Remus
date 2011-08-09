@@ -6,8 +6,10 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.BadPeerName;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet.Iface;
 
 abstract public class RemusWorker implements Iface, PluginInterface{
@@ -109,6 +111,25 @@ abstract public class RemusWorker implements Iface, PluginInterface{
 	@Override
 	public void writeBlock(AppletRef stack, String key, String name,
 			long offset, ByteBuffer data) throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+	
+
+
+	@Override
+	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
+		throw new NotImplemented();
+	}
+
+
+	@Override
+	public void delPeer(String peerName) throws TException, NotImplemented {
+		throw new NotImplemented();
+	}
+
+
+	@Override
+	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
 		throw new NotImplemented();
 	}
 }

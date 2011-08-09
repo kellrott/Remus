@@ -25,9 +25,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
 
   private static final org.apache.thrift.protocol.TField PEER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("peerType", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField ADDRESS_FIELD_DESC = new org.apache.thrift.protocol.TField("address", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField PEER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("peerID", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)6);
 
   /**
    * 
@@ -35,8 +36,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
    */
   public PeerType peerType;
   public String name;
+  public String peerID;
   public List<String> workTypes;
-  public String address;
+  public String host;
   public int port;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -47,9 +49,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
      */
     PEER_TYPE((short)1, "peerType"),
     NAME((short)2, "name"),
-    WORK_TYPES((short)3, "workTypes"),
-    ADDRESS((short)6, "address"),
-    PORT((short)7, "port");
+    PEER_ID((short)3, "peerID"),
+    WORK_TYPES((short)4, "workTypes"),
+    HOST((short)5, "host"),
+    PORT((short)6, "port");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,11 +71,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
           return PEER_TYPE;
         case 2: // NAME
           return NAME;
-        case 3: // WORK_TYPES
+        case 3: // PEER_ID
+          return PEER_ID;
+        case 4: // WORK_TYPES
           return WORK_TYPES;
-        case 6: // ADDRESS
-          return ADDRESS;
-        case 7: // PORT
+        case 5: // HOST
+          return HOST;
+        case 6: // PORT
           return PORT;
         default:
           return null;
@@ -124,10 +129,12 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, PeerType.class)));
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PEER_ID, new org.apache.thrift.meta_data.FieldMetaData("peerID", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.WORK_TYPES, new org.apache.thrift.meta_data.FieldMetaData("workTypes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.ADDRESS, new org.apache.thrift.meta_data.FieldMetaData("address", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.HOST, new org.apache.thrift.meta_data.FieldMetaData("host", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PORT, new org.apache.thrift.meta_data.FieldMetaData("port", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
@@ -159,6 +166,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     if (other.isSetName()) {
       this.name = other.name;
     }
+    if (other.isSetPeerID()) {
+      this.peerID = other.peerID;
+    }
     if (other.isSetWorkTypes()) {
       List<String> __this__workTypes = new ArrayList<String>();
       for (String other_element : other.workTypes) {
@@ -166,8 +176,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       this.workTypes = __this__workTypes;
     }
-    if (other.isSetAddress()) {
-      this.address = other.address;
+    if (other.isSetHost()) {
+      this.host = other.host;
     }
     this.port = other.port;
   }
@@ -180,8 +190,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   public void clear() {
     this.peerType = null;
     this.name = null;
+    this.peerID = null;
     this.workTypes = null;
-    this.address = null;
+    this.host = null;
     setPortIsSet(false);
     this.port = 0;
   }
@@ -242,6 +253,30 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     }
   }
 
+  public String getPeerID() {
+    return this.peerID;
+  }
+
+  public PeerInfoThrift setPeerID(String peerID) {
+    this.peerID = peerID;
+    return this;
+  }
+
+  public void unsetPeerID() {
+    this.peerID = null;
+  }
+
+  /** Returns true if field peerID is set (has been assigned a value) and false otherwise */
+  public boolean isSetPeerID() {
+    return this.peerID != null;
+  }
+
+  public void setPeerIDIsSet(boolean value) {
+    if (!value) {
+      this.peerID = null;
+    }
+  }
+
   public int getWorkTypesSize() {
     return (this.workTypes == null) ? 0 : this.workTypes.size();
   }
@@ -281,27 +316,27 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     }
   }
 
-  public String getAddress() {
-    return this.address;
+  public String getHost() {
+    return this.host;
   }
 
-  public PeerInfoThrift setAddress(String address) {
-    this.address = address;
+  public PeerInfoThrift setHost(String host) {
+    this.host = host;
     return this;
   }
 
-  public void unsetAddress() {
-    this.address = null;
+  public void unsetHost() {
+    this.host = null;
   }
 
-  /** Returns true if field address is set (has been assigned a value) and false otherwise */
-  public boolean isSetAddress() {
-    return this.address != null;
+  /** Returns true if field host is set (has been assigned a value) and false otherwise */
+  public boolean isSetHost() {
+    return this.host != null;
   }
 
-  public void setAddressIsSet(boolean value) {
+  public void setHostIsSet(boolean value) {
     if (!value) {
-      this.address = null;
+      this.host = null;
     }
   }
 
@@ -346,6 +381,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       break;
 
+    case PEER_ID:
+      if (value == null) {
+        unsetPeerID();
+      } else {
+        setPeerID((String)value);
+      }
+      break;
+
     case WORK_TYPES:
       if (value == null) {
         unsetWorkTypes();
@@ -354,11 +397,11 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       break;
 
-    case ADDRESS:
+    case HOST:
       if (value == null) {
-        unsetAddress();
+        unsetHost();
       } else {
-        setAddress((String)value);
+        setHost((String)value);
       }
       break;
 
@@ -381,11 +424,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     case NAME:
       return getName();
 
+    case PEER_ID:
+      return getPeerID();
+
     case WORK_TYPES:
       return getWorkTypes();
 
-    case ADDRESS:
-      return getAddress();
+    case HOST:
+      return getHost();
 
     case PORT:
       return new Integer(getPort());
@@ -405,10 +451,12 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       return isSetPeerType();
     case NAME:
       return isSetName();
+    case PEER_ID:
+      return isSetPeerID();
     case WORK_TYPES:
       return isSetWorkTypes();
-    case ADDRESS:
-      return isSetAddress();
+    case HOST:
+      return isSetHost();
     case PORT:
       return isSetPort();
     }
@@ -446,6 +494,15 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return false;
     }
 
+    boolean this_present_peerID = true && this.isSetPeerID();
+    boolean that_present_peerID = true && that.isSetPeerID();
+    if (this_present_peerID || that_present_peerID) {
+      if (!(this_present_peerID && that_present_peerID))
+        return false;
+      if (!this.peerID.equals(that.peerID))
+        return false;
+    }
+
     boolean this_present_workTypes = true && this.isSetWorkTypes();
     boolean that_present_workTypes = true && that.isSetWorkTypes();
     if (this_present_workTypes || that_present_workTypes) {
@@ -455,12 +512,12 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return false;
     }
 
-    boolean this_present_address = true && this.isSetAddress();
-    boolean that_present_address = true && that.isSetAddress();
-    if (this_present_address || that_present_address) {
-      if (!(this_present_address && that_present_address))
+    boolean this_present_host = true && this.isSetHost();
+    boolean that_present_host = true && that.isSetHost();
+    if (this_present_host || that_present_host) {
+      if (!(this_present_host && that_present_host))
         return false;
-      if (!this.address.equals(that.address))
+      if (!this.host.equals(that.host))
         return false;
     }
 
@@ -509,6 +566,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetPeerID()).compareTo(typedOther.isSetPeerID());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPeerID()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.peerID, typedOther.peerID);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetWorkTypes()).compareTo(typedOther.isSetWorkTypes());
     if (lastComparison != 0) {
       return lastComparison;
@@ -519,12 +586,12 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAddress()).compareTo(typedOther.isSetAddress());
+    lastComparison = Boolean.valueOf(isSetHost()).compareTo(typedOther.isSetHost());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAddress()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.address, typedOther.address);
+    if (isSetHost()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.host, typedOther.host);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -570,7 +637,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // WORK_TYPES
+        case 3: // PEER_ID
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.peerID = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 4: // WORK_TYPES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
@@ -587,14 +661,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // ADDRESS
+        case 5: // HOST
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.address = iprot.readString();
+            this.host = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 7: // PORT
+        case 6: // PORT
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.port = iprot.readI32();
             setPortIsSet(true);
@@ -627,6 +701,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
+    if (this.peerID != null) {
+      if (isSetPeerID()) {
+        oprot.writeFieldBegin(PEER_ID_FIELD_DESC);
+        oprot.writeString(this.peerID);
+        oprot.writeFieldEnd();
+      }
+    }
     if (this.workTypes != null) {
       if (isSetWorkTypes()) {
         oprot.writeFieldBegin(WORK_TYPES_FIELD_DESC);
@@ -641,10 +722,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         oprot.writeFieldEnd();
       }
     }
-    if (this.address != null) {
-      if (isSetAddress()) {
-        oprot.writeFieldBegin(ADDRESS_FIELD_DESC);
-        oprot.writeString(this.address);
+    if (this.host != null) {
+      if (isSetHost()) {
+        oprot.writeFieldBegin(HOST_FIELD_DESC);
+        oprot.writeString(this.host);
         oprot.writeFieldEnd();
       }
     }
@@ -677,6 +758,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       sb.append(this.name);
     }
     first = false;
+    if (isSetPeerID()) {
+      if (!first) sb.append(", ");
+      sb.append("peerID:");
+      if (this.peerID == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.peerID);
+      }
+      first = false;
+    }
     if (isSetWorkTypes()) {
       if (!first) sb.append(", ");
       sb.append("workTypes:");
@@ -687,13 +778,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       first = false;
     }
-    if (isSetAddress()) {
+    if (isSetHost()) {
       if (!first) sb.append(", ");
-      sb.append("address:");
-      if (this.address == null) {
+      sb.append("host:");
+      if (this.host == null) {
         sb.append("null");
       } else {
-        sb.append(this.address);
+        sb.append(this.host);
       }
       first = false;
     }
