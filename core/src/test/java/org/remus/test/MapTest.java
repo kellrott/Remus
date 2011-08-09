@@ -1,4 +1,4 @@
-package org.remusNet;
+package org.remus.test;
 
 
 import java.io.InputStream;
@@ -31,10 +31,12 @@ public class MapTest {
 
 		Map initMap = new HashMap();
 
+		Map configMap = new HashMap();
+		configMap.put("columnFamily", "remusTable");
+		configMap.put("keySpace", "remus");
+		configMap.put("instColumns", "false");
 		Map dbMap = new HashMap();
-		dbMap.put("org.mpstore.ThriftStore.columnFamily", "remusTable");
-		dbMap.put("org.mpstore.ThriftStore.keySpace", "remus");
-		dbMap.put("org.mpstore.ThriftStore.instColumns", "false");
+		dbMap.put("config", configMap);
 		initMap.put("org.remus.cassandra.Server", dbMap);
 
 		Map manMap = new HashMap();
