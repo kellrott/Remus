@@ -12,10 +12,11 @@ import org.apache.thrift.TEnum;
 
 public enum PeerType implements org.apache.thrift.TEnum {
   MANAGER(0),
-  DB_SERVER(1),
-  ATTACH_SERVER(2),
-  WORKER(3),
-  WEB_SERVER(4);
+  NAME_SERVER(1),
+  DB_SERVER(2),
+  ATTACH_SERVER(3),
+  WORKER(4),
+  WEB_SERVER(5);
 
   private final int value;
 
@@ -39,12 +40,14 @@ public enum PeerType implements org.apache.thrift.TEnum {
       case 0:
         return MANAGER;
       case 1:
-        return DB_SERVER;
+        return NAME_SERVER;
       case 2:
-        return ATTACH_SERVER;
+        return DB_SERVER;
       case 3:
-        return WORKER;
+        return ATTACH_SERVER;
       case 4:
+        return WORKER;
+      case 5:
         return WEB_SERVER;
       default:
         return null;

@@ -17,6 +17,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusIDServer;
 import org.remus.RemusManager;
 import org.remus.RemusRemote;
 import org.remus.RemusWorker;
@@ -84,7 +85,7 @@ public class PluginManager {
 					PluginInterface plug = (PluginInterface) pClass.newInstance();
 					plug.init(config);
 					plugins.add(plug);
-					int port = ((Long) serverConf.get("port")).intValue();
+					int port = Integer.parseInt(serverConf.get("port").toString());
 					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
 					sThread.start();
 					servers.put(plug, sThread);
@@ -164,6 +165,15 @@ public class PluginManager {
 		return null;		
 	}
 
+	
+	public RemusIDServer getIDServer() {
+		for (PluginInterface pi : plugins) {
+			if (pi.getPeerInfo().peerType == PeerType.NAME_SERVER) {
+				return (RemusIDServer) pi;
+			}
+		}
+		return null;		
+	}
 	public Set<RemusWorker> getWorkers() {
 		Set<RemusWorker> out = new HashSet<RemusWorker>();
 		for (PluginInterface pi : plugins) {
@@ -186,6 +196,7 @@ public class PluginManager {
 		return 0;
 	}
 
+	/*
 	public void setRemotePeers(List<PeerInfoThrift> rPeers) {
 		try {
 			for (PeerInfoThrift pi : rPeers) {
@@ -199,14 +210,14 @@ public class PluginManager {
 			e.printStackTrace();
 		}
 	}
-
+	 */
 
 	public RemusNet.Iface getPeer(String peerID) {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);
 		}
 		try {
-			List<PeerInfoThrift> out = getManager().getPeers();
+			List<PeerInfoThrift> out = getIDServer().getPeers();
 			for (PeerInfoThrift p : out) {
 				if (p.peerID.compareTo(peerID) == 0) {
 					return RemusRemote.getClient(p.host, p.port);

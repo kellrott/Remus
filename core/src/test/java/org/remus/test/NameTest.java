@@ -26,7 +26,7 @@ public class NameTest {
 		Map manConfigMap = new HashMap();
 		manConfigMap.put("port", 17999);
 		manMap.put("server", manConfigMap);
-		initMap.put("org.remus.manage.WorkManager", manMap);
+		initMap.put("org.remus.RemusIDMain", manMap);
 		
 		//JSONBuilder init = new JSONBuilder();
 		//init.map().put('init', init.map().put( 'server', init.map() ));
@@ -45,7 +45,7 @@ public class NameTest {
 		Map manMap2 = new HashMap();
 		manConfigMap.put("host", "localhost");
 		manMap2.put("client", manConfigMap);		
-		initMap2.put("org.remus.manage.WorkClient", manMap2);
+		initMap2.put("org.remus.RemusIDClient", manMap2);
 		System.out.println(initMap2);		
 		pm2 = new PluginManager(initMap2);
 		pm2.start();
@@ -53,7 +53,7 @@ public class NameTest {
 	}
 
 	@Test public void testNaming() throws NotImplemented, TException {		
-		for (PeerInfoThrift peer : pm2.getManager().getPeers()) {
+		for (PeerInfoThrift peer : pm2.getIDServer().getPeers()) {
 			if (peer.peerType == PeerType.WORKER) {
 				System.out.println(peer.peerID + " " + peer.workTypes + " " + peer.host + ":" + peer.port);
 				RemusNet.Iface p = pm2.getPeer(peer.peerID);

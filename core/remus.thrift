@@ -33,6 +33,7 @@ enum JobStatus {
 
 enum PeerType {
 	MANAGER,
+	NAME_SERVER,
 	DB_SERVER,
 	ATTACH_SERVER,
 	WORKER,

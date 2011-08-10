@@ -1,4 +1,4 @@
-package org.remus.manage;
+package org.remus;
 
 import java.util.List;
 import java.util.Map;
@@ -7,8 +7,7 @@ import java.util.UUID;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
-import org.remus.PeerInfo;
-import org.remus.RemusManager;
+import org.remus.manage.Util;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.BadPeerName;
@@ -19,7 +18,7 @@ import org.remus.thrift.RemusNet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WorkClient extends RemusManager {
+public class RemusIDClient extends RemusIDServer {
 
 	private Logger logger;
 	String server;
@@ -29,14 +28,14 @@ public class WorkClient extends RemusManager {
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo p = new PeerInfo();
-		p.name = "Work Client";
-		p.peerType = PeerType.MANAGER;
+		p.name = "Client ID Server";
+		p.peerType = PeerType.NAME_SERVER;
 		return p;
 	}
 
 	@Override
 	public void init(Map params) throws Exception {
-		logger = LoggerFactory.getLogger(WorkClient.class);
+		logger = LoggerFactory.getLogger(RemusIDClient.class);
 		server = (String) params.get("host");
 		port =  Integer.parseInt(params.get("port").toString());
 	}
@@ -57,12 +56,6 @@ public class WorkClient extends RemusManager {
 	@Override
 	public void stop() {
 		
-	}
-
-	@Override
-	public void scheduleRequest() throws NotImplemented, TException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -102,6 +95,5 @@ public class WorkClient extends RemusManager {
 		transport.close();
 		return out;
 	}
-
-
+	
 }
