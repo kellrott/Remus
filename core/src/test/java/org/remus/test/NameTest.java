@@ -3,15 +3,18 @@ package org.remus.test;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.remus.PeerInfo;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.RemusNet;
 
 public class NameTest {
 
@@ -53,8 +56,8 @@ public class NameTest {
 		for (PeerInfoThrift peer : pm2.getManager().getPeers()) {
 			if (peer.peerType == PeerType.WORKER) {
 				System.out.println(peer.peerID + " " + peer.workTypes + " " + peer.host + ":" + peer.port);
-				//RemusNet.Iface p = pm2.getPeer(peer.peerID);
-				//System.out.println(p);
+				RemusNet.Iface p = pm2.getPeer(peer.peerID);
+				Assert.assertEquals(p.jobStatus("--THIS_JOB_DOESN'T_EXISTS--"), JobStatus.UNKNOWN); 
 			}
 		}
 	}

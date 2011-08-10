@@ -76,9 +76,9 @@ public class WorkManager extends RemusManager {
 		plugins = pluginManager;		
 		for (PluginInterface pi : pluginManager.getPlugins()) {
 			PeerInfo info = pi.getPeerInfo();
-			info.peerID = UUID.randomUUID().toString();
-			info.host = Util.getDefaultAddress();
-			info.port = pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi);
+			info.setPeerID(UUID.randomUUID().toString());
+			info.setHost(Util.getDefaultAddress());
+			info.setPort(pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
 			logger.info("Local Peer:" + info.name + " " + info.host + " " + info.port);
 			addPeer(info);
 		}		
