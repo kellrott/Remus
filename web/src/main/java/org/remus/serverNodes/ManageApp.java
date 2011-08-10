@@ -20,17 +20,18 @@ public class ManageApp implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 		
-		if ( name.compareTo("") == 0 )
+		if (name.compareTo("") == 0) {
 			name = "manage.html";
-		InputStream is = ManageApp.class.getResourceAsStream( name );
-		if ( is == null ) {
+		}
+		InputStream is = ManageApp.class.getResourceAsStream(name);
+		if (is == null) {
 			throw new FileNotFoundException();
 		} else {
 			try {
 				byte [] buffer = new byte[1024];
 				int len;
-				while ( (len = is.read(buffer)) >= 0 ) {
-					os.write( buffer, 0, len );
+				while ((len = is.read(buffer)) >= 0) {
+					os.write(buffer, 0, len);
 				}
 				os.flush();
 				os.close();

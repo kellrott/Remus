@@ -83,8 +83,9 @@ public class PluginManager {
 						(Class<PluginInterface>) Class.forName(className);
 					PluginInterface plug = (PluginInterface) pClass.newInstance();
 					plug.init(config);
-					plugins.add(plug);					
-					ServerThread sThread = new ServerThread((Integer) serverConf.get("port"), (RemusNet.Iface) plug);
+					plugins.add(plug);
+					int port = ((Long) serverConf.get("port")).intValue();
+					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
 					sThread.start();
 					servers.put(plug, sThread);
 				} else {
@@ -217,6 +218,15 @@ public class PluginManager {
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getPeerID(RemusNet.Iface plug) {
+		for (String key : peerList.keySet()) {
+			if (peerList.get(key) == plug) {
+				return key;
+			}
 		}
 		return null;
 	}

@@ -126,7 +126,8 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public void jsRequest(String string, WorkMode mode,
 			BaseStackNode appletView, MapReduceCallback mapReduceCallback) {
-		logger.info("Javascript Query");
+		String peerID = pm.getPeerID(this);
+		logger.info("Javascript Query: " + peerID);
 		RemusWorker jsWorker = null;
 		//RemusManager manager = pm.getManager();
 		//jsWorker = manager.getWorker("javascript");

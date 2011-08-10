@@ -1,5 +1,8 @@
 package org.remus.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -358,6 +361,22 @@ public class RemusPipeline {
 		} while (added);
 		logger.info("submission " + name + " started as " + inst);
 		return inst;		
+	}
+
+
+	public OutputStream writeAttachment(String name) throws IOException {
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		return attachStore.writeAttachment(stack, null, name);
+	}
+
+	public InputStream readAttachment(String name) throws NotImplemented {
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		return attachStore.readAttachement(stack, null, name);
+	}
+
+	public boolean hasAttachment(String name) throws NotImplemented, TException {
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		return attachStore.hasAttachment(stack, null, name);
 	}
 
 }
