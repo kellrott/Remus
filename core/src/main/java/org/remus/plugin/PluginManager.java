@@ -78,7 +78,6 @@ public class PluginManager {
 					plugins.add(plug);
 				} else if (pMap.containsKey("server")) {
 					Map serverConf = (Map) pMap.get("server");
-
 					Map config = (Map) pMap.get("config");
 					Class<PluginInterface> pClass = 
 						(Class<PluginInterface>) Class.forName(className);

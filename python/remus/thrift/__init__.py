@@ -1,1 +1,1 @@
-__all__ = ['ttypes', 'constants', 'RemusNet', 'RemusGossip']
+__all__ = ['ttypes', 'constants', 'RemusNet']

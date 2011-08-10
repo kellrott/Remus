@@ -63,13 +63,13 @@ public class WorkManager extends RemusManager {
 		
 		
 		//lastAccess = new HashMap<String, Date>();
-		finishTimes = new HashMap<String,Date>();
+		finishTimes = new HashMap<String, Date>();
 	}
 
 	PluginManager plugins;
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
-		
+		plugins = pluginManager;
 	}
 
 

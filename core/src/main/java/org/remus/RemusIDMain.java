@@ -34,10 +34,10 @@ public class RemusIDMain extends RemusIDServer {
 				if (info.name == null) {
 					throw new BadPeerName();
 				}
-				logger.info("Adding peer: "
+				logger.info("Adding peer: " + info.peerID + " " 
 						+ info.name + " (" + info.host + ":" + info.port + ")");
-				peerMap.put(info.name, info);
-				lastPing.put(info.name, (new Date()).getTime());
+				peerMap.put(info.peerID, info);
+				lastPing.put(info.peerID, (new Date()).getTime());
 			}			
 		}	
 	}
@@ -46,6 +46,7 @@ public class RemusIDMain extends RemusIDServer {
 	@Override
 	public void delPeer(String peerName) throws TException, NotImplemented {
 		synchronized (peerMap) {
+			logger.info("Removing Peer: " + peerName);
 			peerMap.remove(peerName);
 		}	
 	}

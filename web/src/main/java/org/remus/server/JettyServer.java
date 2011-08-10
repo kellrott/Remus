@@ -1,6 +1,5 @@
 package org.remus.server;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +14,6 @@ import org.remus.PeerInfo;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.RemusManager;
 import org.remus.RemusWeb;
 import org.remus.RemusWorker;
 import org.remus.core.BaseStackNode;
@@ -23,12 +21,10 @@ import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
-import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
-import org.remus.thrift.RemusNet.keySlice_args;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +43,7 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
+		out.name = "Jetty Remus Web Server";
 		out.peerType = PeerType.WEB_SERVER;
 		return out;
 	}

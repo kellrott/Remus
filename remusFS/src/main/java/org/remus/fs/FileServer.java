@@ -148,6 +148,7 @@ public class FileServer extends RemusAttach {
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
 		out.peerType = PeerType.ATTACH_SERVER;
+		out.name = "Remus FileSystem";
 		return out;
 	}
 

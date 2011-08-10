@@ -567,6 +567,7 @@ public class Server extends RemusDB {
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
 		out.peerType = PeerType.DB_SERVER;
+		out.name = "Remus Cassandra Link";
 		return out;
 	}
 

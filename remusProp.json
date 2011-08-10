@@ -22,6 +22,16 @@
 		"dir" : "/opt/remus",
 		"shared" : "false"
 	}
+},
+"org.remus.RemusIDMain" : {
+	"server" : {
+		"port" : 16020
+	}
+},
+"org.remus.manage.WorkManager" : {
+	"server" : {
+		"port" : 16021
+	}
 }
 
 }
