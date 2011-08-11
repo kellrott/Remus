@@ -157,6 +157,18 @@ public class WorkManager extends RemusManager {
 						wdesc.mode = WorkMode.SPLIT;
 						break;
 					}
+					case RemusApplet.MATCHER: {
+						wdesc.mode = WorkMode.MATCH;
+						break;						
+					}
+					case RemusApplet.MERGER: {
+						wdesc.mode = WorkMode.MATCH;
+						break;						
+					}
+					case RemusApplet.PIPE: {
+						wdesc.mode = WorkMode.PIPE;
+						break;						
+					}
 					default: {}
 					}
 
