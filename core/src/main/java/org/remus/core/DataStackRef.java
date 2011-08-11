@@ -10,7 +10,6 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.Submission;
 
 public class DataStackRef {
 
@@ -37,16 +36,16 @@ public class DataStackRef {
 		
 		if ( applet.getInput().compareTo("?") == 0 ) {
 			for ( Object instObj : out.ds.get( arInstance, instance.toString() ) ) {
-				Map inputInfo = (Map)((Map)instObj).get(Submission.InputField);
+				Map inputInfo = (Map)((Map)instObj).get(PipelineSubmission.InputField);
 				if (inputInfo == null) {
 					throw new RemusDatabaseException("Submission missing _input field");
 				}
-				String instanceStr = (String) inputInfo.get(Submission.InstanceField);
+				String instanceStr = (String) inputInfo.get(PipelineSubmission.InstanceField);
 				String appletStr = (String) inputInfo.get( "_applet" );				
 				for ( Object subObj : out.ds.get( arSubmit, instanceStr) ) {
-					instanceStr = (String)((Map)subObj).get(Submission.InstanceField);
+					instanceStr = (String)((Map)subObj).get(PipelineSubmission.InstanceField);
 				}
-				if ( inputInfo.containsKey( Submission.KeysField ) ) {
+				if ( inputInfo.containsKey( PipelineSubmission.KeysField ) ) {
 					out.keys = new ArrayList<String>();
 					for ( Object key : (List)inputInfo.get( "_keys" ) ) {
 						out.keys.add( (String) key);

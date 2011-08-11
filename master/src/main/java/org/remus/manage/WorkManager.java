@@ -118,7 +118,7 @@ public class WorkManager extends RemusManager {
 
 		Set<WorkStatus> fullList = new HashSet();
 		try {
-			RemusApp app = new RemusApp(plugins.getDataServer(),plugins.getAttachStore());
+			RemusApp app = new RemusApp(plugins.getDataServer(), plugins.getAttachStore());
 			for (String name : app.getPipelines()) {
 				RemusPipeline pipe = app.getPipeline(name);
 				Set<WorkStatus> curSet = pipe.getWorkQueue();

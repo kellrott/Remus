@@ -13,12 +13,12 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
+import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.Submission;
 
 public class SubmitView implements BaseNode {
 
@@ -42,13 +42,13 @@ public class SubmitView implements BaseNode {
 		Map out = new HashMap();
 		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
 		try {
-			if ( name.length() == 0 ) {
-				for ( KeyValPair kv : datasource.listKeyPairs(ar)) {
-					out.put(kv.getKey(), kv.getValue() );
+			if (name.length() == 0) {
+				for (KeyValPair kv : datasource.listKeyPairs(ar)) {
+					out.put(kv.getKey(), kv.getValue());
 				}
 			} else {
-				for ( Object obj : datasource.get(ar, name )) {
-					out.put(name, obj );
+				for (Object obj : datasource.get(ar, name)) {
+					out.put(name, obj);
 				}
 			}
 		} catch (TException e) {
@@ -57,7 +57,7 @@ public class SubmitView implements BaseNode {
 			e.printStackTrace();
 		}
 		try {
-			os.write( JSON.dumps(out).getBytes() );
+			os.write(JSON.dumps(out).getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -75,17 +75,17 @@ public class SubmitView implements BaseNode {
 	@Override
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		if ( name.length() != 0 ) {
+		if (name.length() != 0) {
 			try {
 				StringBuilder sb = new StringBuilder();
 				byte [] buffer = new byte[1024];
 				int len;
-				while( (len=is.read(buffer)) > 0 ) {
+				while ((len = is.read(buffer)) > 0) {
 					sb.append(new String(buffer, 0, len));
 				}
 				Object data = JSON.loads(sb.toString());
-				RemusInstance inst = pipe.handleSubmission(name, (Map)data);
-				os.write( JSON.dumps( inst.toString() + " created" ).getBytes() );
+				RemusInstance inst = pipe.handleSubmission(name, new PipelineSubmission(data));
+				os.write(JSON.dumps(inst.toString() + " created").getBytes());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

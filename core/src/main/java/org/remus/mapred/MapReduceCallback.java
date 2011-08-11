@@ -10,10 +10,10 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.Submission;
 
 
 public class MapReduceCallback {
@@ -59,9 +59,9 @@ public class MapReduceCallback {
 	}
 
 	public InputStream openInput(String key, String name) {
-		Map inMap = (Map)jobInfo.get(Submission.InputField);
+		Map inMap = (Map)jobInfo.get(PipelineSubmission.InputField);
 		try {
-			RemusInstance inst = RemusInstance.getInstance(db, pipeline, (String) inMap.get(Submission.InstanceField));
+			RemusInstance inst = RemusInstance.getInstance(db, pipeline, (String) inMap.get(PipelineSubmission.InstanceField));
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), (String) inMap.get("_applet"));
 			return attach.readAttachement(arAttach, key, name);
 		} catch (TException e) {
@@ -78,7 +78,7 @@ public class MapReduceCallback {
 	public void copyTo(String key, String name, File file) {
 		RemusInstance inst;
 		try {
-			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(Submission.InstanceField));
+			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.InstanceField));
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), applet);
 			attach.copyTo(arAttach, key, name, file);
 		} catch (TException e) {

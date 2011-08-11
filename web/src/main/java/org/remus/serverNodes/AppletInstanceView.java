@@ -20,6 +20,7 @@ import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.core.BaseStackNode;
 import org.remus.core.DataStackInfo;
+import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -297,7 +298,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 
 					//instance requested applets
 					System.err.println("AGENT SUBMISSION:" + key );
-					pipeline.handleSubmission( key, value ); 				
+					pipeline.handleSubmission( key, new PipelineSubmission(value) ); 				
 
 				}				
 			} catch (NumberFormatException e) {

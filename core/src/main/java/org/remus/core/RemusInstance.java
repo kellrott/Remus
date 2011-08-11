@@ -7,7 +7,6 @@ import org.apache.thrift.TException;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.Submission;
 
 //import org.mpstore.MPStore;
 
@@ -28,8 +27,8 @@ public class RemusInstance implements Comparable<RemusInstance> {
 		AppletRef arInst = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@instance");
 
 		for (Object subObj : store.get(arSubmit, id)) {
-			if (((Map) subObj).containsKey(Submission.InstanceField)) {
-				out = new RemusInstance((String) ((Map) subObj).get(Submission.InstanceField));
+			if (((Map) subObj).containsKey(PipelineSubmission.InstanceField)) {
+				out = new RemusInstance((String) ((Map) subObj).get(PipelineSubmission.InstanceField));
 			}
 		}
 		for (Object instObj : store.get(arInst, id)) {

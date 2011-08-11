@@ -18,7 +18,6 @@ import org.remus.RemusDatabaseException;
 
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.Submission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +101,7 @@ public class RemusPipeline {
 			AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 			for (Object subObject : datastore.get(arSubmit, name)) {
 				Map subMap = (Map) subObject;
-				return new RemusInstance((String)subMap.get(Submission.InstanceField));
+				return new RemusInstance((String)subMap.get(PipelineSubmission.InstanceField));
 			}
 			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
 			for (Object instObject : datastore.get( arInstance, name)) {
@@ -227,50 +226,44 @@ public class RemusPipeline {
 			sMap = (Map)sMap;
 		}
 		if (sMap != null) {
-			String instStr = (String) sMap.get(Submission.InstanceField);
+			String instStr = (String) sMap.get(PipelineSubmission.InstanceField);
 			RemusInstance inst = new RemusInstance(instStr);
 			deleteInstance(inst);
 		}
 		datastore.deleteValue(arSubmit, key);
 	}
 
-	public RemusInstance handleSubmission(String key, Map value) {
+	public RemusInstance handleSubmission(String key, PipelineSubmission value) {
 
 		RemusInstance inst;
 
-		if ( ((Map)value).containsKey( Submission.AppletField ) ) {
-			List<String> aList = (List)((Map)value).get(Submission.AppletField);
-			inst = setupInstance( key, (Map)value, aList );					
-		} else {
-			inst = setupInstance( key, (Map)value, new LinkedList() );	
-		}					
+		inst = setupInstance(key, value, value.getInitApplets());
 
 		//only add the main submission/instance records if they don't already exist
 		//we've already fired off the setupInstance requests to the applets, so if new applets are
 		//to be instanced in an exisiting pipeline instance, they will be, but the original submisison 
 		//will remain
 
-		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
+		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 
 
 		try {
-			if ( ! datastore.containsKey(arSubmit, key) ) {
-				((Map)value).put(Submission.SubmitKeyField, key );	
-
-				((Map)value).put(Submission.InstanceField, inst.toString());	
-				datastore.add( arSubmit, 
-						(Long)0L, 
-						(Long)0L, 
+			if (!datastore.containsKey(arSubmit, key)) {
+				value.setSubmitKey(key);
+				value.setInstance(inst);
+				datastore.add(arSubmit,
+						(Long) 0L,
+						(Long) 0L,
 						key,
-						value );
+						value);
 			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch ( NotImplemented e) {
+		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-		AppletRef arInstance= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance" );
+		AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
 
 		try {
 			datastore.add(arInstance,
@@ -287,7 +280,7 @@ public class RemusPipeline {
 	}
 
 
-	public RemusInstance setupInstance(String name, Map params, List<String> appletList) {
+	public RemusInstance setupInstance(String name, PipelineSubmission params, List<String> appletList) {
 		logger.info("Init submission " + name);
 		Set<String> activeSet = new HashSet<String>();
 		RemusInstance inst = new RemusInstance();
@@ -296,7 +289,7 @@ public class RemusPipeline {
 
 		try {
 			for (Object subObject : datastore.get(arSubmit, name)) {
-				inst = new RemusInstance((String)((Map)subObject).get(Submission.InstanceField));
+				inst = new RemusInstance((String) ((Map) subObject).get(PipelineSubmission.InstanceField));
 			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
@@ -311,7 +304,7 @@ public class RemusPipeline {
 				if (applet != null) {
 					activeSet.add(appletName);
 					try {
-						applet.createInstance(name, params, inst);
+						applet.createInstance(name, params.base, inst);
 					} catch (TException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -339,7 +332,7 @@ public class RemusPipeline {
 									RemusApplet srcApplet = getApplet(iRef);
 									if (activeSet.contains(iRef)) {
 										try {
-											if (applet.createInstance(name, params, inst)) {
+											if (applet.createInstance(name, params.base, inst)) {
 												added = true;
 											}
 										} catch (TException e) {

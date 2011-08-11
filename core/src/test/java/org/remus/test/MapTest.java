@@ -17,6 +17,8 @@ import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
+import org.remus.core.PipelineDesc;
+import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -55,13 +57,13 @@ public class MapTest {
 		InputStream is = MapTest.class.getResourceAsStream("jsPipeline.json");
 		Object pipelineDesc = JSONValue.parse(new InputStreamReader(is));
 
-		app.putPipeline("testPipeline", pipelineDesc);
+		app.putPipeline("testPipeline", new PipelineDesc(pipelineDesc));
 		RemusPipeline pipe = app.getPipeline("testPipeline");
 		System.err.println(pipe.getMembers());
 
-		Map subMap = (Map)JSONValue.parse("{ \"_applets\" : [\"testMap\", \"inputStack\"]  }");
+		Map subMap = (Map) JSONValue.parse("{ \"_applets\" : [\"testMap\", \"inputStack\"]  }");
 		
-		RemusInstance inst = pipe.handleSubmission("testSubmit", subMap);
+		RemusInstance inst = pipe.handleSubmission("testSubmit", new PipelineSubmission(subMap));
 
 		AppletRef ar = new AppletRef("testPipeline", inst.toString(), "inputStack");
 

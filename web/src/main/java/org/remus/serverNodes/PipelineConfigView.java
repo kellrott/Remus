@@ -12,6 +12,7 @@ import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
+import org.remus.core.PipelineDesc;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -30,9 +31,9 @@ public class PipelineConfigView implements BaseNode {
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		RemusPipeline pipeline = app.getPipeline(name);
-		if ( pipeline != null ) {
+		if (pipeline != null) {
 			try {
-				app.deletePipeline( pipeline );
+				app.deletePipeline(pipeline);
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -48,11 +49,11 @@ public class PipelineConfigView implements BaseNode {
 	throws FileNotFoundException {
 		Map out = new HashMap();		
 		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		for ( KeyValPair kv : datastore.listKeyPairs( ar ) ) {
+		for (KeyValPair kv : datastore.listKeyPairs(ar)) {
 			out.put(kv.getKey(), kv.getValue());
 		}		
 		try {
-			os.write( JSON.dumps(out).getBytes() );
+			os.write(JSON.dumps(out).getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,12 +67,12 @@ public class PipelineConfigView implements BaseNode {
 			StringBuilder sb = new StringBuilder();
 			byte [] buffer = new byte[1024];
 			int len;
-			while( (len=is.read(buffer)) > 0 ) {
+			while ((len = is.read(buffer)) > 0) {
 				sb.append(new String(buffer, 0, len));
 			}
-			System.err.println( sb.toString() );
+			System.err.println(sb.toString());
 			Object data = JSON.loads(sb.toString());
-			app.putPipeline(name, data);
+			app.putPipeline(name, new PipelineDesc(data));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

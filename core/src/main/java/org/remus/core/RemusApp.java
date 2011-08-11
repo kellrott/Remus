@@ -52,15 +52,14 @@ public class RemusApp {
 	}
 
 	
-	public void putPipeline(String pipelineName, Object data) throws TException, NotImplemented {
+	public void putPipeline(String pipelineName, PipelineDesc pDesc) throws TException, NotImplemented {
 		AppletRef arPipeline = new AppletRef( null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
 		rootStore.add(arPipeline, 0L, 0L, pipelineName, new HashMap() );		
-		for ( Object key : ((Map) data).keySet() ) {
-			String appletName = (String)key;
+		for ( String appletName : pDesc.getApplets() ) {
 			AppletRef arApplet = new AppletRef( pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
 			try {
-				Map appletData = (Map)((Map)data).get(key);
-				rootStore.add(arApplet, 0, 0, appletName, appletData );
+				Map appletData = pDesc.getApplet(appletName);
+				rootStore.add(arApplet, 0, 0, appletName, appletData);
 			} catch (ClassCastException e) {}
 		}		
 	}
