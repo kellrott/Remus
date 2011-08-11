@@ -46,4 +46,8 @@ public class PipelineSubmission implements JSONAware {
 		base.put(InputField, inst.toString());		
 	}
 
+	public void setInitApplets(List<String> asList) {
+		base.put(AppletField, asList);		
+	}
+
 }
