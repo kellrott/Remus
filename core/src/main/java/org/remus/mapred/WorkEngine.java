@@ -61,6 +61,20 @@ public class WorkEngine implements Runnable {
 					}
 				}
 				status = JobStatus.DONE;
+			} else if (work.mode == WorkMode.SPLIT) {
+				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+				mapred.split(stackInfo, cb);
+				status = JobStatus.DONE;
+			} else if (work.mode == WorkMode.REDUCE) {
+				status = JobStatus.DONE;
+			} else if (work.mode == WorkMode.MATCH) {
+				status = JobStatus.DONE;
+			} else if (work.mode == WorkMode.MERGE) {
+				status = JobStatus.DONE;
+			} else if (work.mode == WorkMode.PIPE) {
+				status = JobStatus.DONE;
+			} else {
+				status = JobStatus.ERROR;
 			}
 		} catch (TException e) {
 			status = JobStatus.ERROR;

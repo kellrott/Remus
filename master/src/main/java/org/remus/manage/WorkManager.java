@@ -153,6 +153,10 @@ public class WorkManager extends RemusManager {
 						wdesc.mode = WorkMode.REDUCE;
 						break;
 					}
+					case RemusApplet.SPLITTER: {
+						wdesc.mode = WorkMode.SPLIT;
+						break;
+					}
 					default: {}
 					}
 

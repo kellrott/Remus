@@ -98,15 +98,8 @@ public class RemusPipeline {
 
 	public RemusInstance getInstance(String name) {
 		try {
-			AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
-			for (Object subObject : datastore.get(arSubmit, name)) {
-				Map subMap = (Map) subObject;
-				return new RemusInstance((String)subMap.get(PipelineSubmission.InstanceField));
-			}
-			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
-			for (Object instObject : datastore.get( arInstance, name)) {
-				return  new RemusInstance(name);
-			}
+			RemusInstance inst = RemusInstance.getInstance(datastore, getID(), name);
+			return inst;
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -193,7 +186,7 @@ public class RemusPipeline {
 			applet.deleteInstance(inst);
 		}
 		AppletRef arPipeline = 
-			new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID());
+				new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID());
 		datastore.deleteStack(arPipeline);
 	}
 	/*
