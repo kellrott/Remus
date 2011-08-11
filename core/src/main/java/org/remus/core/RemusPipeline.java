@@ -365,4 +365,11 @@ public class RemusPipeline {
 		return attachStore.hasAttachment(stack, null, name);
 	}
 
+
+
+	public List<String> listAttachments() throws NotImplemented, TException {
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		return attachStore.listAttachments(stack, null);
+	}
+
 }

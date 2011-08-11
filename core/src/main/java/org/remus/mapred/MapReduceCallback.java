@@ -38,6 +38,10 @@ public class MapReduceCallback {
 	private String applet;
 
 	public MapReduceCallback(String pipeline, String applet, Map jobInfo, RemusDB db, RemusAttach attach) {
+		init(pipeline,applet,jobInfo,db,attach);
+	}
+	
+	public void init(String pipeline, String applet, Map jobInfo, RemusDB db, RemusAttach attach) {
 		emitCount = 0;
 		this.jobInfo = jobInfo;
 		this.pipeline = pipeline;
