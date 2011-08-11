@@ -1,5 +1,7 @@
 package org.remus;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -14,7 +16,23 @@ import org.remus.thrift.WorkDesc;
 
 abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 
+	public static String getDefaultAddress() throws UnknownHostException, SocketException {
 
+		return "127.0.0.1";
+
+		/*
+		for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+			NetworkInterface ifc = ifaces.nextElement();
+			if(ifc.isUp()) {
+				for( Enumeration<InetAddress> addres = ifc.getInetAddresses(); addres.hasMoreElements(); ) {
+					InetAddress addr = addres.nextElement();
+					return addr.getHostAddress();
+				}
+			}
+		}
+		return null;
+		 */
+	}
 
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,

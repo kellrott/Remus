@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
-import org.remus.manage.Util;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.BadPeerName;
@@ -47,7 +46,7 @@ public class RemusIDClient extends RemusIDServer {
 		for (PluginInterface pi : pluginManager.getPlugins()) {
 			PeerInfo info = pi.getPeerInfo();
 			info.setPeerID(UUID.randomUUID().toString());
-			info.setHost(Util.getDefaultAddress());
+			info.setHost(getDefaultAddress());
 			info.setPort(pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
 			addPeer(info);
 		}

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.thrift.TException;
-import org.remus.manage.Util;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.PeerType;
@@ -90,7 +89,7 @@ public class RemusIDMain extends RemusIDServer {
 		for (PluginInterface pi : pluginManager.getPlugins()) {
 			PeerInfo info = pi.getPeerInfo();
 			info.setPeerID(UUID.randomUUID().toString());
-			info.setHost(Util.getDefaultAddress());
+			info.setHost(getDefaultAddress());
 			info.setPort(pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
 			logger.info("Local Peer:" + info.name + " " + info.host + " " + info.port);
 			addPeer(info);
