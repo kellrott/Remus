@@ -48,7 +48,7 @@ public class PipelineView implements BaseNode {
 
 		children.put("@error", new PipelineErrorView(pipe));
 		children.put("@reset", new ResetInstanceView(pipe));
-		
+
 		children.put("@attach", new PipelineAttachmentList(pipe));
 	}
 
@@ -62,26 +62,8 @@ public class PipelineView implements BaseNode {
 	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 		Map out = new HashMap();
 		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		try {
-			if (name.length() == 0) {
-				for (KeyValPair kv : datastore.listKeyPairs(ar)) {
-					out.put(kv.getKey(), kv.getValue());
-				}
-			} else {
-				boolean found = false;
-				for (Object obj : datastore.get(ar, name)) {
-					out.put(name, obj);
-					found = true;
-				}
-				if (!found) {
-					throw new FileNotFoundException();
-				}
-			}
-		} catch (TException e) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for (KeyValPair kv : pipe.getSubmits()) {
+			out.put(kv.getKey(), kv.getValue());
 		}
 		try {
 			os.write(JSON.dumps(out).getBytes());
@@ -195,7 +177,7 @@ public class PipelineView implements BaseNode {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * A node to handle requests to specific file attachments.
 	 * @author kellrott

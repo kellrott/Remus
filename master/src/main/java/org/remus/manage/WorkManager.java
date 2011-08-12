@@ -116,7 +116,7 @@ public class WorkManager extends RemusManager {
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
 	private ScheduleThread sThread;
-	
+
 	private class ScheduleThread extends Thread {
 		boolean quit = false;
 
@@ -132,7 +132,9 @@ public class WorkManager extends RemusManager {
 						Set<WorkStatus> curSet = pipe.getWorkQueue();
 						fullList.addAll(curSet);
 					}
-					logger.info("MANAGER found " + fullList.size() + " active stacks");
+					if (fullList.size() > 0) {
+						logger.info("MANAGER found " + fullList.size() + " active stacks");
+					}
 				} catch (RemusDatabaseException e) {
 					e.printStackTrace();
 				} catch (TException e) {
@@ -220,14 +222,14 @@ public class WorkManager extends RemusManager {
 					}
 				}
 				try {
-					sleep(1000);
+					sleep(10000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
-		
+
 		public void quit() {
 			quit = true;
 		}
@@ -237,7 +239,7 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public void scheduleRequest() throws TException, NotImplemented {
-		
+
 	}
 
 

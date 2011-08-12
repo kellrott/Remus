@@ -43,7 +43,7 @@ public class PipelineSubmission implements JSONAware {
 	}
 
 	public void setInstance(RemusInstance inst) {
-		base.put(InputField, inst.toString());		
+		base.put(InstanceField, inst.toString());		
 	}
 
 	public void setInitApplets(List<String> asList) {

@@ -47,18 +47,27 @@ public class PipelineConfigView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os)
 	throws FileNotFoundException {
-		Map out = new HashMap();		
-		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		for (KeyValPair kv : datastore.listKeyPairs(ar)) {
-			out.put(kv.getKey(), kv.getValue());
-		}		
-		try {
-			os.write(JSON.dumps(out).getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-
+		if (name.length() == 0) {
+			Map out = new HashMap();		
+			AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+			for (KeyValPair kv : datastore.listKeyPairs(ar)) {
+				out.put(kv.getKey(), kv.getValue());
+			}		
+			try {
+				os.write(JSON.dumps(out).getBytes());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		} else {
+			RemusPipeline pipe = app.getPipeline(name);
+			try {
+				os.write(JSON.dumps(pipe.getMembers()).getBytes());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override

@@ -231,7 +231,6 @@ public class RemusPipeline {
 		RemusInstance inst;
 
 		inst = setupInstance(key, value, value.getInitApplets());
-
 		//only add the main submission/instance records if they don't already exist
 		//we've already fired off the setupInstance requests to the applets, so if new applets are
 		//to be instanced in an exisiting pipeline instance, they will be, but the original submisison 
@@ -239,9 +238,8 @@ public class RemusPipeline {
 
 		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 
-
 		try {
-			if (!datastore.containsKey(arSubmit, key)) {
+			//if (!datastore.containsKey(arSubmit, key)) {
 				value.setSubmitKey(key);
 				value.setInstance(inst);
 				datastore.add(arSubmit,
@@ -249,7 +247,7 @@ public class RemusPipeline {
 						(Long) 0L,
 						key,
 						value);
-			}
+			//}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
