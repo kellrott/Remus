@@ -60,8 +60,8 @@ public class WorkManager extends RemusManager {
 		activeSet = new HashSet<Long>();
 		assignSet = new HashSet<Long>();
 		assignRate = 1;
-		
-		
+
+
 		//lastAccess = new HashMap<String, Date>();
 		finishTimes = new HashMap<String, Date>();
 	}
@@ -70,10 +70,12 @@ public class WorkManager extends RemusManager {
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		plugins = pluginManager;
+		sThread = new ScheduleThread();
+		sThread.start();
 	}
 
 
-	
+
 	/*
 	public void ping(List<PeerInfoThrift> workers) throws TException {
 		logger.info( local.name + " PINGED with " + workers.size() + " records" );
@@ -96,9 +98,9 @@ public class WorkManager extends RemusManager {
 			callback.reqPing();
 		}
 	}
-	*/
-	
-	
+	 */
+
+
 	/**
 	 * 
 	 */
@@ -113,94 +115,129 @@ public class WorkManager extends RemusManager {
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
-	@Override
-	public void scheduleRequest() throws TException, NotImplemented {
+	private ScheduleThread sThread;
+	
+	private class ScheduleThread extends Thread {
+		boolean quit = false;
 
-		Set<WorkStatus> fullList = new HashSet();
-		try {
-			RemusApp app = new RemusApp(plugins.getDataServer(), plugins.getAttachStore());
-			for (String name : app.getPipelines()) {
-				RemusPipeline pipe = app.getPipeline(name);
-				Set<WorkStatus> curSet = pipe.getWorkQueue();
-				fullList.addAll(curSet);
-			}
-			logger.info("MANAGER found " + fullList.size() + " active stacks");
-		} catch (RemusDatabaseException e) {
-			throw new TException(e);
-		}
+		@Override
+		public void run() {
 
-		for (RemusWorker worker : plugins.getWorkers()) {
-			PeerInfo pi = worker.getPeerInfo();
-			List<String> langs = pi.workTypes;
-			logger.info("Worker " + pi.name + " offers " + langs);
-			for (WorkStatus stat : fullList){
-				if (langs.contains(stat.getApplet().getType())) {
-					logger.info("Assigning " + stat + " to " + pi.name);
-					WorkDesc wdesc = new WorkDesc();
-					wdesc.workStack = new AppletRef(
-							stat.getPipeline().getID(), 
-							stat.getInstance().toString(), 
-							stat.getApplet().getID());
-					wdesc.lang = stat.getApplet().getType();
-					wdesc.infoJSON = JSON.dumps(stat.getInstanceInfo());
+			while (!quit) {
+				Set<WorkStatus> fullList = new HashSet();
+				try {
+					RemusApp app = new RemusApp(plugins.getDataServer(), plugins.getAttachStore());
+					for (String name : app.getPipelines()) {
+						RemusPipeline pipe = app.getPipeline(name);
+						Set<WorkStatus> curSet = pipe.getWorkQueue();
+						fullList.addAll(curSet);
+					}
+					logger.info("MANAGER found " + fullList.size() + " active stacks");
+				} catch (RemusDatabaseException e) {
+					e.printStackTrace();
+				} catch (TException e) {
+					e.printStackTrace();
+				} catch (NotImplemented e) {
+					e.printStackTrace();
+				}
 
-					switch (stat.getApplet().getMode()) {
-					case RemusApplet.MAPPER: {
-						wdesc.mode = WorkMode.MAP;
-						break;
-					}
-					case RemusApplet.REDUCER: {
-						wdesc.mode = WorkMode.REDUCE;
-						break;
-					}
-					case RemusApplet.SPLITTER: {
-						wdesc.mode = WorkMode.SPLIT;
-						break;
-					}
-					case RemusApplet.MATCHER: {
-						wdesc.mode = WorkMode.MATCH;
-						break;						
-					}
-					case RemusApplet.MERGER: {
-						wdesc.mode = WorkMode.MATCH;
-						break;						
-					}
-					case RemusApplet.PIPE: {
-						wdesc.mode = WorkMode.PIPE;
-						break;						
-					}
-					default: {}
-					}
+				for (RemusWorker worker : plugins.getWorkers()) {
+					PeerInfo pi = worker.getPeerInfo();
+					List<String> langs = pi.workTypes;
+					//logger.info("Worker " + pi.name + " offers " + langs);
+					for (WorkStatus stat : fullList){
+						if (langs.contains(stat.getApplet().getType())) {
+							logger.info("Assigning " + stat + " to " + pi.name);
+							WorkDesc wdesc = new WorkDesc();
+							wdesc.workStack = new AppletRef(
+									stat.getPipeline().getID(), 
+									stat.getInstance().toString(), 
+									stat.getApplet().getID());
+							wdesc.lang = stat.getApplet().getType();
+							wdesc.infoJSON = JSON.dumps(stat.getInstanceInfo());
 
-					Collection<Long> jobs;
-					do {
-						jobs = stat.getReadyJobs(10);
-						logger.info("Found " + jobs.size() + " jobs");
-						if (jobs.size() > 0) {
-							wdesc.jobs = new ArrayList(jobs);
-							String jobID = worker.jobRequest("test", wdesc);
+							switch (stat.getApplet().getMode()) {
+							case RemusApplet.MAPPER: {
+								wdesc.mode = WorkMode.MAP;
+								break;
+							}
+							case RemusApplet.REDUCER: {
+								wdesc.mode = WorkMode.REDUCE;
+								break;
+							}
+							case RemusApplet.SPLITTER: {
+								wdesc.mode = WorkMode.SPLIT;
+								break;
+							}
+							case RemusApplet.MATCHER: {
+								wdesc.mode = WorkMode.MATCH;
+								break;						
+							}
+							case RemusApplet.MERGER: {
+								wdesc.mode = WorkMode.MERGE;
+								break;						
+							}
+							case RemusApplet.PIPE: {
+								wdesc.mode = WorkMode.PIPE;
+								break;						
+							}
+							default: {}
+							}
 
-							boolean done = false;
+							Collection<Long> jobs;
 							do {
-								JobStatus s = worker.jobStatus(jobID);
-								if (s == JobStatus.DONE) {
-									for (long job : jobs) {
-										stat.finishJob(job, pi.name);
+								jobs = stat.getReadyJobs(10);
+								//logger.info("Found " + jobs.size() + " jobs");
+								if (jobs.size() > 0) {
+									wdesc.jobs = new ArrayList(jobs);
+									try  {
+										String jobID = worker.jobRequest("test", wdesc);
+										boolean done = false;
+										do {
+											JobStatus s = worker.jobStatus(jobID);
+											if (s == JobStatus.DONE) {
+												for (long job : jobs) {
+													stat.finishJob(job, pi.name);
+												}
+												done = true;
+											} else if (s == JobStatus.ERROR) {
+												for (long job : jobs) {
+													stat.errorJob(job, "javascript error");
+												}
+												done = true;
+											}
+										} while (!done);
+									} catch (TException e) {
+										e.printStackTrace();
+									} catch (NotImplemented e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
 									}
-									done = true;
-								} else if (s == JobStatus.ERROR) {
-									for (long job : jobs) {
-										stat.errorJob(job, "javascript error");
-									}
-									done = true;
 								}
-							} while (!done);
-						}
-					} while (jobs.size() > 0);
+							} while (jobs.size() > 0);
 
+						}
+					}
+				}
+				try {
+					sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
+		
+		public void quit() {
+			quit = true;
+		}
+
+	}
+
+
+	@Override
+	public void scheduleRequest() throws TException, NotImplemented {
+		
 	}
 
 
@@ -239,8 +276,7 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-
+		sThread.quit();
 	}
 
 	/*

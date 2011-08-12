@@ -50,4 +50,14 @@ public class PipelineSubmission implements JSONAware {
 		base.put(AppletField, asList);		
 	}
 
+	public String getInputInstance() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) inputInfo.get("_instance");
+	}
+
+	public String getInputApplet() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) inputInfo.get("_applet");
+	}
+
 }

@@ -28,12 +28,14 @@ class IDInterface:
 		self.transport.close()
 		return self.peers
 
-	def addSelf(self):
+	def addSelf(self, port):
 		self.localID = str(uuid.uuid1())
 		p = PeerInfoThrift( peerType=PeerType.WORKER, 
 			name="Python Worker",
 			peerID=self.localID,
-			workTypes=["python"] )
+			workTypes=["python"],
+			host="localhost", 
+			port=port)
 		
 		self.transport.open()
 		self.idServer.addPeer( p )
@@ -51,6 +53,11 @@ class RemusWorker(RemusNet.Iface):
 		
 class ServerThread(threading.Thread):
 	def __init__(self, server):
+		threading.Thread.__init__(self)
+		self.server = server
+	
+	def run(self):
+		self.server.serve()
 		
 class RemusWorkerServer:
 	
@@ -58,26 +65,30 @@ class RemusWorkerServer:
 		self.processor = RemusNet.Processor(RemusWorker())
 		
 		self.socket = TSocket.TServerSocket()
+		self.port = self.socket.port
 		pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 		tfactory = TTransport.TBufferedTransportFactory()
 
-		server = TServer.TThreadPoolServer( self.processor, self.socket, tfactory, pfactory)
-		server.serve()		
-		print self.socket
+		self.server = TServer.TThreadPoolServer( self.processor, self.socket, tfactory, pfactory)
+		self.t = ServerThread(self.server)
+		self.t.start()
+	
+	def stop(self):
+		self.server.close()
 
 if __name__ == "__main__":
 	tmp = sys.argv[1].split(':')
 	
-	"""
+	r = RemusWorkerServer()
+	
 	ns = IDInterface(tmp[0], tmp[1])	
-	print ns.getPeers()
-	ns.addSelf()
+	ns.addSelf(r.port)
+
+
 	print ns.getPeers()
 	ns.close()
 	print ns.getPeers()
-	"""
-	
-	r = RemusWorkerServer()
+	r.stop()	
 	
 	#for p in ns.getPeers():
 	#	if p.peerType == PeerType.MANAGER:
