@@ -75,7 +75,7 @@ public class JobTreeManager extends RemusWorker {
 			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String id = br.readLine();
 			logger.info("JobTreeServer JobID: " + id);
-			logger.info("JobType: " + work.getApplet().getType() );
+			//logger.info("JobType: " + work.getApplet().getType() );
 
 			/*
 			 * Send job parameters
@@ -94,7 +94,7 @@ public class JobTreeManager extends RemusWorker {
 					subConn.getOutputStream());
 
 			Map<String,String> subData = new HashMap<String,String>();
-			subData.put("instance", work.getInstance().toString() );
+			//subData.put("instance", work.getInstance().toString() );
 			out.write(  JSONValue.toJSONString(subData) );
 			out.flush();
 			out.close();

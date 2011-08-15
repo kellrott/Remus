@@ -260,15 +260,15 @@ public class RemusApplet {
 
 
 
-	public Set<WorkStatus> getWorkList() {
-		HashSet<WorkStatus> out = new HashSet<WorkStatus>();		
+	public Set<AppletInstance> getActiveApplets() {
+		HashSet<AppletInstance> out = new HashSet<AppletInstance>();		
 		for (RemusInstance inst : getInstanceList()) {
 			AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore);
-			if (!WorkStatus.isComplete(pipeline, this, inst)) {
+			if (!ai.isComplete()) {
 				if (ai.isReady()) {
 					if (workGenerator != null) {
-						long infoTime = WorkStatus.getTimeStamp(pipeline, this, inst);
 						try {
+							long infoTime = ai.getStatusTimeStamp();
 							long dataTime = ai.getDataTimeStamp();
 							if ( infoTime < dataTime || !WorkStatus.hasStatus( pipeline, this, inst ) ) {
 								try {
@@ -285,7 +285,7 @@ public class RemusApplet {
 							} else {
 								logger.info( "Active Work Stack: " + inst.toString() + ":" + this.getID());
 							}
-							out.add(new WorkStatus(pipeline, inst, this));
+							out.add(ai);
 						} catch (TException e) {
 							e.printStackTrace();
 						} catch (NotImplemented e) {
@@ -296,12 +296,19 @@ public class RemusApplet {
 				}
 			} else {
 				if (hasInputs()) {
-					long thisTime = WorkStatus.getTimeStamp(pipeline, this, inst);
-					long inTime = ai.inputTimeStamp();
-					//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
-					if (inTime > thisTime) {
-						logger.info("YOUNG INPUT (applet reset):" + getID());
-						WorkStatus.unsetComplete(pipeline, this, inst);
+					try {
+						long thisTime = ai.getStatusTimeStamp();
+						long inTime = ai.inputTimeStamp();
+						//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
+						if (inTime > thisTime) {
+							logger.info("YOUNG INPUT (applet reset):" + getID());
+							WorkStatus.unsetComplete(pipeline, this, inst);
+						}
+					} catch (TException e){
+						e.printStackTrace();
+					} catch (NotImplemented e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 				}
 			}
@@ -374,6 +381,7 @@ public class RemusApplet {
 		if (baseMap == null) {
 			baseMap = new HashMap();
 		}
+		
 		baseMap.put("_instance", inst.toString());
 		baseMap.put("_submitKey", submitKey);
 
@@ -416,7 +424,10 @@ public class RemusApplet {
 			//	baseMap.put(WORKDONE_OP, true);
 		}
 
-		AppletInstance.updateStatus(pipeline, this, inst, baseMap, datastore);
+		PipelineSubmission instInfo = new PipelineSubmission(baseMap);
+
+		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore);
+		ai.updateInstanceInfo(instInfo);
 		return true;
 	};
 

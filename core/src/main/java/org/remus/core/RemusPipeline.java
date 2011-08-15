@@ -48,11 +48,11 @@ public class RemusPipeline {
 	}	
 
 
-	public Set<WorkStatus> getWorkQueue( ) throws TException, NotImplemented, RemusDatabaseException {
-		Set<WorkStatus> out = new HashSet<WorkStatus>();
+	public Set<AppletInstance> getActiveApplets( ) throws TException, NotImplemented, RemusDatabaseException {
+		Set<AppletInstance> out = new HashSet<AppletInstance>();
 		for ( String appletName : getMembers() ) {
 			RemusApplet applet = new RemusApplet(this, appletName, datastore);
-			out.addAll(applet.getWorkList());
+			out.addAll(applet.getActiveApplets());
 		}
 		return out;
 	}

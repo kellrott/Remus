@@ -65,7 +65,31 @@ public class RemusIDMain extends RemusIDServer {
 		return out;
 	}
 
+	/*
+	public void ping(List<PeerInfoThrift> workers) throws TException {
+		logger.info( local.name + " PINGED with " + workers.size() + " records" );
+		boolean added = false;
+		synchronized (peerMap) {
+			synchronized (lastPing) {
+				for (PeerInfoThrift worker : workers) {
+					if (!peerMap.containsKey(worker.name)) {
+						peerMap.put(worker.name, worker);
+						added = true;
+					}
+					if (peerMap.get(worker.name) != null) {
+						lastPing.put(worker.name, (new Date()).getTime());
+					}
+				}
+			}
+		}
+		if (added) {
+			logger.info( local.name + " learned about new peers" );
+			callback.reqPing();
+		}
+	}
+	 */
 
+	
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
