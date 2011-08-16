@@ -1,0 +1,26 @@
+{
+"org.remus.js.JSWorker" : {
+	"config" : {
+	}
+},
+"org.remus.cassandra.Server" : {
+	"config" : {
+		"columnFamily" : "remusTable",
+		"keySpace" : "remus",
+		"instColumns" : "false"
+	}
+},
+"org.remus.fs.FileServer" : {
+	"config" : {
+		"dir" : "/opt/remus",
+		"shared" : "false"
+	}
+},
+"org.remus.manage.WorkManager" : {
+
+},
+"org.remus.RemusIDMain" : {
+
+}
+
+}

@@ -3,7 +3,6 @@ package org.remus.test;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -31,34 +30,28 @@ public class MapTest {
 
 	@Before public void setup() throws Exception {
 
-		Map initMap = new HashMap();
-
-		Map configMap = new HashMap();
-		configMap.put("columnFamily", "remusTable");
-		configMap.put("keySpace", "remus");
-		configMap.put("instColumns", "false");
-		Map dbMap = new HashMap();
-		dbMap.put("config", configMap);
-		initMap.put("org.remus.cassandra.Server", dbMap);
-
-		Map manMap = new HashMap();
-		initMap.put("org.remus.manage.WorkManager", manMap);
+		InputStream is = MapTest.class.getResourceAsStream("config.json");
 		
-		Map jsMap = new HashMap();
-		initMap.put("org.remus.js.JSWorker", jsMap);
-		pm = new PluginManager(initMap);
+		Object initMap = JSONValue.parse(new InputStreamReader(is));
+		
+		pm = new PluginManager((Map) initMap);
 		pm.start();
 
 	}
 
-	@Test public void mapTest() throws RemusDatabaseException, TException, NotImplemented {
+	@Test public void mapTest() throws RemusDatabaseException, TException, NotImplemented, InterruptedException {
 
 		RemusApp app = new RemusApp(pm.getDataServer(), pm.getAttachStore());
+		
+		RemusPipeline pipe = app.getPipeline("testPipeline");
+		if (pipe != null) {
+			app.deletePipeline(pipe);
+		}
 		InputStream is = MapTest.class.getResourceAsStream("jsPipeline.json");
 		Object pipelineDesc = JSONValue.parse(new InputStreamReader(is));
 
 		app.putPipeline("testPipeline", new PipelineDesc(pipelineDesc));
-		RemusPipeline pipe = app.getPipeline("testPipeline");
+		pipe = app.getPipeline("testPipeline");
 		System.err.println(pipe.getMembers());
 
 		Map subMap = (Map) JSONValue.parse("{ \"_applets\" : [\"testMap\", \"inputStack\"]  }");
@@ -76,15 +69,22 @@ public class MapTest {
 		dataServer.add(ar, 0, 0, "f", "ago");
 		
 		RemusManager manage = pm.getManager();
-		manage.scheduleRequest();
-		//app.setupPipeline( )
 
-		
+		boolean done = false;
+		do {
+			manage.scheduleRequest();		
+			Thread.sleep(10000);
+			Map<String, String> info = manage.scheduleInfo();
+			if (info.get("activeCount").compareTo("0") == 0) {
+				done = true;
+			}
+			System.out.println(info);
+		} while (!done);
 		AppletRef dr = new AppletRef("testPipeline", inst.toString(), "testMap");
-		for ( KeyValPair kv : dataServer.listKeyPairs(dr) ) {
-			Map data = (Map)kv.getValue();
-			Assert.assertTrue( data.get("word").toString().length() == (Long)data.get("len") );
-			System.err.println(kv.getKey() + " " + kv.getValue() );
+		for (KeyValPair kv : dataServer.listKeyPairs(dr)) {
+			Map data = (Map) kv.getValue();
+			Assert.assertTrue(data.get("word").toString().length() == (Long) data.get("len"));
+			System.err.println(kv.getKey() + " " + kv.getValue());
 		}
 		
 

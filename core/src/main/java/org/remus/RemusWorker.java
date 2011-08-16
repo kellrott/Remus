@@ -2,6 +2,7 @@ package org.remus;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
@@ -132,4 +133,10 @@ abstract public class RemusWorker implements Iface, PluginInterface{
 	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
 		throw new NotImplemented();
 	}
+	@Override
+
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
 }

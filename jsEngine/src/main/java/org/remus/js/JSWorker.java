@@ -19,8 +19,12 @@ import org.remus.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 public class JSWorker extends RemusWorker {
@@ -44,7 +48,7 @@ public class JSWorker extends RemusWorker {
 	@Override
 	public void init(Map params) {
 		logger = LoggerFactory.getLogger(JSWorker.class);	
-		executor = Executors.newFixedThreadPool(NTHREDS);
+		executor = new ThreadPoolTracker(); //Executors.newFixedThreadPool(NTHREDS);
 		workMap = new HashMap<String, WorkEngine>();
 	}
 
@@ -89,5 +93,24 @@ public class JSWorker extends RemusWorker {
 
 		}		
 	}	
+	
+	
+	public class ThreadPoolTracker extends ThreadPoolExecutor {
+
+		public ThreadPoolTracker() {
+			super(1, NTHREDS, 1, TimeUnit.MINUTES, new LinkedBlockingQueue());
+		}
+		
+		
+		@Override
+		protected void afterExecute(Runnable r, Throwable t) {
+			logger.info("Work done");
+			super.afterExecute(r, t);
+			if (t != null) {
+				t.printStackTrace();
+			}
+		}
+	}
+	
 
 }

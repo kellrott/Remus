@@ -57,8 +57,6 @@ public class WorkManager extends RemusManager {
 		activeStacks = new HashMap<AppletInstance, Set<RemoteJob>>();
 		peerStacks = new HashMap<String, Set<RemoteJob>>();
 		assignRate = new HashMap<AppletInstance, Integer>();
-		//lastAccess = new HashMap<String, Date>();
-		finishTimes = new HashMap<String, Date>();
 	}
 
 	PluginManager plugins;
@@ -117,24 +115,23 @@ public class WorkManager extends RemusManager {
 	private Map<String, Set<RemoteJob>> peerStacks;
 	private Map<AppletInstance, Integer> assignRate;
 
-	private HashMap<String, Date> finishTimes;
-
-
 	private void syncAppletList(Set<AppletInstance> aiSet) {
-		for (AppletInstance ai : aiSet) {
-			if (!activeStacks.containsKey(ai)) {
-				activeStacks.put(ai, new HashSet<RemoteJob>());
-				assignRate.put(ai, 1);
+		synchronized (activeStacks) {		
+			for (AppletInstance ai : aiSet) {
+				if (!activeStacks.containsKey(ai)) {
+					activeStacks.put(ai, new HashSet<RemoteJob>());
+					assignRate.put(ai, 1);
+				}
 			}
-		}
-		Set<AppletInstance> removeSet = new HashSet<AppletInstance>();
-		for (AppletInstance ai : activeStacks.keySet()) {
-			if (!aiSet.contains(ai)) {
-				removeSet.add(ai);
+			Set<AppletInstance> removeSet = new HashSet<AppletInstance>();
+			for (AppletInstance ai : activeStacks.keySet()) {
+				if (!aiSet.contains(ai)) {
+					removeSet.add(ai);
+				}
 			}
-		}
-		for (AppletInstance ai : removeSet) {
-			activeStacks.remove(ai);
+			for (AppletInstance ai : removeSet) {
+				activeStacks.remove(ai);
+			}
 		}
 	}
 
@@ -147,6 +144,16 @@ public class WorkManager extends RemusManager {
 	}
 
 	private void removeRemoteJob(AppletInstance ai, RemoteJob rj, boolean adjustAssignRate) {
+		if (adjustAssignRate) {
+			int newAssignRate = assignRate.get(ai);
+			long runTime = (new Date()).getTime() - rj.startTime;
+			if (runTime > MAX_REFRESH_TIME) {
+				newAssignRate /= 2;
+			}
+			newAssignRate++;
+			logger.info("ASSIGN RATE: " + ai + " " + newAssignRate);
+			assignRate.put(ai, newAssignRate);
+		}
 		activeStacks.get(ai).remove(rj);
 	}
 
@@ -158,18 +165,22 @@ public class WorkManager extends RemusManager {
 
 	private class ScheduleThread extends Thread {
 		boolean quit = false;
-
+		Integer waitLock = new Integer(0);
 		@Override
 		public void run() {
 			while (!quit) {
+				Boolean workChange = false;
 				//First, scan all of the stacks to find active worksets
 				scanJobs();
 				//scan the workers, start assigning untouched work to workers that aren't over limit
-				workSchedule();
+				if (workSchedule()) {
+					workChange = true;
+				}
 				//collect and clean finished jobs
-				Boolean jobsDone = false;
 				try {
-					jobsDone = cleanJobs();
+					if (cleanJobs()) {
+						workChange = true;
+					}
 				} catch (TException e) {
 					e.printStackTrace();
 				} catch (NotImplemented e) {
@@ -177,13 +188,23 @@ public class WorkManager extends RemusManager {
 					e.printStackTrace();
 				}
 				try {
-					if (!jobsDone) {
-						sleep(INACTIVE_SLEEP_TIME);
+					if (!workChange) {
+						synchronized (waitLock) {			
+							waitLock.wait(INACTIVE_SLEEP_TIME);
+						}
+					} else {
+						sleep(500);
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			}
+		}
+
+		public void touch() {
+			synchronized (waitLock) {
+				waitLock.notifyAll();	
 			}
 		}
 
@@ -219,135 +240,154 @@ public class WorkManager extends RemusManager {
 
 	private boolean cleanJobs() throws TException, NotImplemented {
 		boolean found = false;
-		for (AppletInstance ai : activeStacks.keySet()) {			
-			for (RemoteJob rj : activeStacks.get(ai)) {
-				RemusNet.Iface worker = plugins.getPeer(rj.peerID);
-				JobStatus s = worker.jobStatus(rj.jobID);
-				if (s.status == JobState.DONE) {
-					found = true;
-					for (long i = rj.workStart; i < rj.workEnd; i++) {
-						ai.finishWork(i, rj.peerID, s.emitCount);
+		synchronized (activeStacks) {
+			for (AppletInstance ai : activeStacks.keySet()) {			
+				Map<RemoteJob,Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
+				for (RemoteJob rj : activeStacks.get(ai)) {
+					logger.debug("Checking " + rj.peerID + " for " + rj.jobID);
+					RemusNet.Iface worker = plugins.getPeer(rj.peerID);
+					JobStatus s = worker.jobStatus(rj.jobID);
+					if (s.status == JobState.DONE) {
+						found = true;
+						for (long i = rj.workStart; i < rj.workEnd; i++) {
+							ai.finishWork(i, rj.peerID, s.emitCount);
+						}
+						removeSet.put(rj, true);
+						logger.info("Worker Finished: " + rj.jobID);
+					} else if (s.status == JobState.ERROR) {
+						found = true;
+						for (long i = rj.workStart; i < rj.workEnd; i++) {
+							ai.errorWork(i, s.errorMsg);
+						}
+						removeSet.put(rj, false);
+						logger.warn("JOB ERROR: " + rj.jobID);
+					} else if (s.status == JobState.UNKNOWN) {
+						logger.warn("Worker lost job: " + rj.jobID);
 					}
-					removeRemoteJob(ai, rj, true);
-				} else if (s.status == JobState.ERROR) {
-					found = true;
-					for (long i = rj.workStart; i < rj.workEnd; i++) {
-						ai.errorWork(i, s.errorMsg);
-					}
-					removeRemoteJob(ai, rj, false);
+				}
+				for (RemoteJob rj : removeSet.keySet()) {
+					removeRemoteJob(ai, rj, removeSet.get(rj));
 				}
 			}
+			
 		}
 		return found;
 	}
 
-	private void workSchedule() {
-		for (AppletInstance ai : activeStacks.keySet()) {	
-			try {
-				String workType = ai.getApplet().getType();
-				Set<String> peers = plugins.getWorkers(workType);			
-				long [] workIDs = ai.getReadyJobs(assignRate.get(ai) * peers.size());
+	private boolean workSchedule() {
+		boolean workAdded = false;
+		synchronized (activeStacks) {
+			for (AppletInstance ai : activeStacks.keySet()) {	
+				try {
+					String workType = ai.getApplet().getType();
+					Set<String> peers = plugins.getWorkers(workType);			
+					long [] workIDs = ai.getReadyJobs(assignRate.get(ai) * peers.size());
 
-				final HashMap<String, Long> peerBase = new HashMap<String, Long>();
-				TreeMap<String, Long> peerCount = new TreeMap<String, Long>(new Comparator<String>() {
-					@Override
-					public int compare(String o1, String o2) {
-						return (int) (peerBase.get(o1) - peerBase.get(o2));
-					}
-				});
-				
-				for (String peerID : peers) {
-					long workCount = 0;
-					for (RemoteJob rj : peerStacks.get(peerID)) {
-						workCount += rj.workEnd - rj.workStart;
-						for (int i = 0; i < workIDs.length; i++) {
-							if (workIDs[i] >= rj.workStart && workIDs[i] < rj.workEnd) {
-								workIDs[i] = -1;
+					final HashMap<String, Long> peerBase = new HashMap<String, Long>();
+					TreeMap<String, Long> peerCount = new TreeMap<String, Long>(new Comparator<String>() {
+						@Override
+						public int compare(String o1, String o2) {
+							return (int) (peerBase.get(o1) - peerBase.get(o2));
+						}
+					});
+
+					for (String peerID : peers) {
+						long workCount = 0;
+						if (peerStacks.containsKey(peerID)) {
+							for (RemoteJob rj : peerStacks.get(peerID)) {
+								workCount += rj.workEnd - rj.workStart;
+								for (int i = 0; i < workIDs.length; i++) {
+									if (workIDs[i] >= rj.workStart && workIDs[i] < rj.workEnd) {
+										workIDs[i] = -1;
+									}
+								}
 							}
+						} else {
+							peerStacks.put(peerID, new HashSet<RemoteJob>());
+						}
+						peerBase.put(peerID, workCount);
+					}
+					peerCount.putAll(peerBase);
+
+					Arrays.sort(workIDs);
+					int curPos = 0;
+					while (curPos < workIDs.length) {
+						if (workIDs[curPos] == -1) {
+							curPos++;
+						} else {
+							int last = curPos;
+							do {
+								curPos++;
+							} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
+							String peerID = peerCount.firstKey();
+							workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
+							peerBase.put(peerID, peerBase.get(peerID) + (curPos - last));
+							peerCount.clear();
+							peerCount.putAll(peerBase);
+							workAdded = true;
 						}
 					}
-					peerBase.put(peerID, workCount);
-				}
-				peerCount.putAll(peerBase);
-				
-				Arrays.sort(workIDs);
-				int curPos = 0;
-				do {
-					if (workIDs[curPos] == -1) {
-						curPos++;
-					} else {
-						int last = curPos;
-						do {
-							curPos++;
-						} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
-						String peerID = peerCount.firstKey();
-						workAssign(ai, peerID, last, curPos);
-						peerBase.put(peerID, peerBase.get(peerID) + (curPos - last));
-						peerCount.clear();
-						peerCount.putAll(peerBase);
-					}
-				} while (curPos < workIDs.length);
-				
 
-			} catch (TException e) {
-				e.printStackTrace();
-			} catch (NotImplemented e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+				} catch (TException e) {
+					e.printStackTrace();
+				} catch (NotImplemented e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
+		return workAdded;
 	}
 
 
 
 
 	private void workAssign(AppletInstance ai, String peerID, long workStart, long workEnd) {
-		logger.info("Assigning " + ai + " to " + peerID);
-		WorkDesc wdesc = new WorkDesc();
-		wdesc.workStack = new AppletRef(
-				ai.getPipeline().getID(), 
-				ai.getInstance().toString(), 
-				ai.getApplet().getID());
-		wdesc.lang = ai.getApplet().getType();
 		try {
+			WorkDesc wdesc = new WorkDesc();
+			wdesc.setWorkStack(new AppletRef());		
+			wdesc.workStack.setPipeline(ai.getPipeline().getID());
+			wdesc.workStack.setInstance(ai.getInstance().toString());
+			wdesc.workStack.setApplet(ai.getApplet().getID());
+			wdesc.setWorkStart(workStart);
+			wdesc.setWorkEnd(workEnd);
+			wdesc.setLang(ai.getApplet().getType());
+			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
 			wdesc.infoJSON = JSON.dumps(ai.getInstanceInfo());
 
 			switch (ai.getApplet().getMode()) {
 			case RemusApplet.MAPPER: {
-				wdesc.mode = WorkMode.MAP;
+				wdesc.setMode(WorkMode.MAP);
 				break;
 			}
 			case RemusApplet.REDUCER: {
-				wdesc.mode = WorkMode.REDUCE;
+				wdesc.setMode(WorkMode.REDUCE);
 				break;
 			}
 			case RemusApplet.SPLITTER: {
-				wdesc.mode = WorkMode.SPLIT;
+				wdesc.setMode(WorkMode.SPLIT);
 				break;
 			}
 			case RemusApplet.MATCHER: {
-				wdesc.mode = WorkMode.MATCH;
+				wdesc.setMode(WorkMode.MATCH);
 				break;						
 			}
 			case RemusApplet.MERGER: {
-				wdesc.mode = WorkMode.MERGE;
+				wdesc.setMode(WorkMode.MERGE);
 				break;						
 			}
 			case RemusApplet.PIPE: {
-				wdesc.mode = WorkMode.PIPE;
+				wdesc.setMode(WorkMode.PIPE);
 				break;						
 			}
 			default: {}
 			}
-
-			RemusNet.Iface worker = plugins.getPeer(peerID);			
-
-			wdesc.workStart = workStart;
-			wdesc.workEnd = workEnd;
+			RemusNet.Iface worker = plugins.getPeer(peerID);
 			String jobID = worker.jobRequest("test", wdesc);
-
-
-
+			synchronized (activeStacks) {
+				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
+			}
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -361,47 +401,23 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public void scheduleRequest() throws TException, NotImplemented {
-
+		sThread.touch();
 	}
 
-	/*
-	void fillWorkerSet(String workerID) {
-		do {
-			if ( activeStack == null ) {
-				//activeStack = parent.requestWorkStack(this, codeTypes);
-				if ( activeStack == null )
-					return;
-			}
-			if (activeStack.isComplete()) {
-				//parent.completeWorkStack(activeStack);
-				activeStack = null;
-			}
-		} while ( activeStack == null );
-
-		if ( activeStack != null ) {
-			Set<Long> workerMap = workerSets.get( workerID );
-			if ( workerMap == null ) {
-				workerMap = new HashSet<Long>();
-				workerSets.put(workerID, workerMap);
-			}
-			if ( activeSet.size() + assignSet.size() < assignRate ) {
-				Collection<Long> workSet = activeStack.getReadyJobs( workerSets.size() * assignRate );
-				activeSet.addAll( workSet );
-				activeSet.removeAll( assignSet );
-			}
-			while ( workerMap.size() < assignRate && activeSet.size() > 0) {
-				long id = activeSet.iterator().next();
-				workerMap.add( id );
-				activeSet.remove( id );
-				assignSet.add( id );
-			}
-		}
-	}
-	 */
 
 	@Override
 	public void stop() {
 		sThread.quit();
+	}
+
+	@Override
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		Map<String, String> out = new HashMap<String, String>();
+		synchronized (activeStacks) {
+			int outCount = activeStacks.size();
+			out.put("activeCount", Integer.toString(outCount));
+		}
+		return out;
 	}
 
 	/*

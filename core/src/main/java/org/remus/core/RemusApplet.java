@@ -270,9 +270,9 @@ public class RemusApplet {
 						try {
 							long infoTime = ai.getStatusTimeStamp();
 							long dataTime = ai.getDataTimeStamp();
-							if ( infoTime < dataTime || !WorkStatus.hasStatus( pipeline, this, inst ) ) {
+							if (infoTime > dataTime || !WorkStatus.hasStatus(pipeline, this, inst)) {
 								try {
-									logger.info("GENERATE WORK: " + pipeline.getID() +"/" + getID() + " " + inst.toString());
+									logger.info("GENERATE WORK: " + pipeline.getID() + "/" + getID() + " " + inst.toString());
 									WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
 									gen.writeWorkTable(pipeline, this, inst, datastore);
 								} catch (InstantiationException e1) {
@@ -283,7 +283,7 @@ public class RemusApplet {
 									e1.printStackTrace();
 								}	
 							} else {
-								logger.info( "Active Work Stack: " + inst.toString() + ":" + this.getID());
+								logger.info("Active Work Stack: " + inst.toString() + ":" + this.getID());
 							}
 							out.add(ai);
 						} catch (TException e) {

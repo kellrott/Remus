@@ -134,7 +134,7 @@ public class WorkStatus implements JSONAware {
 		}
 		try {
 			applet.getDataStore().add(arWork, 0L, 0L, inst.toString(), statObj);
-		} catch (TException e ) {
+		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
 			e.printStackTrace();
@@ -179,7 +179,7 @@ public class WorkStatus implements JSONAware {
 	public static boolean hasStatus(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
 		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID()+ WorkStatusName );
 		try {
-			return applet.getDataStore().containsKey( ar, inst.toString() );
+			return applet.getDataStore().containsKey(ar, inst.toString());
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -190,8 +190,13 @@ public class WorkStatus implements JSONAware {
 	}
 
 
-	public Long getJobStart() {
-		return (Long)base.get(JOBSTART_FIELD);
+	public String getJobStart() {
+		if (base.containsKey(JOBSTART_FIELD)) {
+			return base.get(JOBSTART_FIELD).toString();
+		} else {
+			return "";
+		}
+			
 	}
 
 
@@ -203,13 +208,18 @@ public class WorkStatus implements JSONAware {
 	}
 
 	
-	public void setJobStart(long newJobStart) {
+	public void setJobStart(String newJobStart) {
 		base.put(JOBSTART_FIELD, newJobStart);
 	}
 
 	@Override
 	public String toJSONString() {
 		return JSONValue.toJSONString(base);
+	}
+
+
+	public void setWorkDone(boolean b) {
+		base.put(WORKDONE_FIELD, b);
 	}
 
 }

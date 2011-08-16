@@ -4,6 +4,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
@@ -162,5 +163,9 @@ abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 	
-	
+	@Override
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
 }

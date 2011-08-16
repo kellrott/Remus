@@ -144,7 +144,12 @@ service RemusNet {
 	 * Manager methods
 	 */
 	void scheduleRequest() throws (1:NotImplemented e); 
+	map<string,string> scheduleInfo() throws (1:NotImplemented e);
 
+	/**
+	 * Name serverice methods
+	 *
+	 */
 	void addPeer( 1:PeerInfoThrift info ) throws (1:NotImplemented notImp, 2:BadPeerName badName);
 	void delPeer( 1:string peerName ) throws (1:NotImplemented e);
 	list<PeerInfoThrift> getPeers() throws (1:NotImplemented e);

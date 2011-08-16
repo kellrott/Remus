@@ -153,5 +153,10 @@ public abstract class RemusDB implements Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 
+	@Override
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
 	
 }

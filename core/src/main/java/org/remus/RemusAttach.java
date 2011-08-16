@@ -246,5 +246,10 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 
+	@Override
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
 	
 }

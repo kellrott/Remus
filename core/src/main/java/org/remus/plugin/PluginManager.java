@@ -202,8 +202,10 @@ public class PluginManager {
 		Set<String> out = new HashSet<String>();
 		List<PeerInfoThrift> list = getIDServer().getPeers();
 		for (PeerInfoThrift p : list) {
-			if (p.workTypes.contains(type)) {
-				out.add(p.peerID);
+			if (p.peerType == PeerType.WORKER) {
+				if (p.workTypes.contains(type)) {
+					out.add(p.peerID);
+				}
 			}
 		}
 		return out;

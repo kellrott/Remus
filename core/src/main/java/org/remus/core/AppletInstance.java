@@ -86,7 +86,7 @@ public class AppletInstance {
 		return true;
 	}
 
-	
+
 
 	public long inputTimeStamp( ) {
 		long out = 0;
@@ -161,51 +161,72 @@ public class AppletInstance {
 		int curPos = 0;
 		WorkStatus status = getStatus();
 
-		Long jobStart = status.getJobStart();
+		String jobStart = status.getJobStart();
 		if (jobStart == null) {
-			jobStart = 0L;
+			jobStart = "";
 		}
-		boolean found = false;
-		long newJobStart = jobStart;
+		String newJobStart = jobStart;
 
 		AppletRef arStatus = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + WorkStatusName);
 		AppletRef arDone = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + WorkDoneName);
 
 		try {
-			for (String key : applet.getDataStore().keySlice(arStatus, String.valueOf(jobStart), count + 1)) {
-				if (!applet.getDataStore().containsKey(arDone, key)) {
-					out[curPos] = Long.valueOf(key);
-					curPos++;
-					found = true;
-				} else {
-					if (!found) {
-						newJobStart = Long.valueOf(key);
+			boolean found = true;
+			boolean allDone = true;
+			boolean firstSlice = true;
+			String sliceStart = jobStart;
+			while (found && curPos < count) {
+				found = false;
+				for (String key : applet.getDataStore().keySlice(arStatus, sliceStart, count - curPos)) {
+					if (firstSlice || key.compareTo(sliceStart) != 0) {
+						found = true;
+						if (!applet.getDataStore().containsKey(arDone, key)) {
+							out[curPos] = Long.valueOf(key);
+							curPos++;
+						} else {
+							if (allDone) {
+								newJobStart = key;
+							}
+							allDone = false;
+						}
+						sliceStart = key;
+						firstSlice = false;
 					}
 				}
-			}
-			if (newJobStart != jobStart) {
-				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
-				status.setJobStart(newJobStart);
-				setWorkStat(status);
+				if (newJobStart != jobStart) {
+					logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
+					status.setJobStart(newJobStart);
+					setWorkStat(status);
+				}
 			}
 			if (count > 0 && curPos == 0) {
 				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
 				setComplete();
 			}
+			logger.debug("Found : " + curPos + " jobs");
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-				
+
 		long [] a = Arrays.copyOf(out, curPos);
 		Arrays.sort(a);
 		return a;
 	}
 
-	public void setComplete() {
-		// TODO Auto-generated method stub
 
+	public void setComplete() {
+		WorkStatus stat = getStatus();
+		stat.setWorkDone(true);
+		try {
+			setWorkStat(stat);
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void setWorkStat(WorkStatus status) throws TException, NotImplemented {
@@ -290,8 +311,8 @@ public class AppletInstance {
 		return found;
 	}
 
-	public RemusApplet getPipeline() {
-		return applet;
+	public RemusPipeline getPipeline() {
+		return pipeline;
 	}
 
 	public RemusInstance getInstance() {
@@ -301,7 +322,7 @@ public class AppletInstance {
 	public RemusApplet getApplet() {
 		return applet;
 	}
-	
+
 	public PipelineSubmission getInstanceInfo() throws TException, NotImplemented {
 		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );		
 		for (Object obj : datastore.get(ar, instance.toString())) {

@@ -2,6 +2,7 @@ package org.remus;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.core.BaseStackNode;
@@ -154,5 +155,9 @@ public abstract class RemusWeb implements PluginInterface, RemusNet.Iface {
 		throw new NotImplemented();
 	}
 
-
+	@Override
+	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+	
 }
