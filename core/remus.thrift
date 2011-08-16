@@ -23,7 +23,7 @@ enum WorkMode {
 	MERGE
 }
 
-enum JobStatus {
+enum JobState {
 	QUEUED,
 	WORKING,
 	DONE,
@@ -54,7 +54,8 @@ struct WorkDesc {
 	2: required WorkMode mode;
 	3: required string infoJSON;
 	4: required AppletRef workStack;
-	5: required list<i64> jobs;
+	5: required i64 workStart;
+	6: required i64 workEnd;
 }
 
 struct KeyValJSONPair {
@@ -64,6 +65,11 @@ struct KeyValJSONPair {
 	4:required i64 emitID
 }
 
+struct JobStatus {
+	1:required JobState status;
+	2:optional i64 emitCount;
+	3:optional string errorMsg;
+}
 
 exception NotImplemented {
 

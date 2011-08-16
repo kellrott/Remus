@@ -11,6 +11,7 @@ import org.remus.RemusDB;
 import org.remus.RemusWorker;
 import org.remus.mapred.WorkEngine;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.WorkDesc;
@@ -68,8 +69,10 @@ public class JSWorker extends RemusWorker {
 		WorkEngine a = workMap.get(jobID);
 		if (a != null) {
 			return a.getStatus();
-		}			
-		return JobStatus.UNKNOWN;
+		}
+		JobStatus out = new JobStatus();
+		out.status = JobState.UNKNOWN;
+		return out;
 	}
 
 	@Override

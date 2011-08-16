@@ -4322,13 +4322,13 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list12 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list12.size);
-                for (int _i13 = 0; _i13 < _list12.size; ++_i13)
+                org.apache.thrift.protocol.TList _list8 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list8.size);
+                for (int _i9 = 0; _i9 < _list8.size; ++_i9)
                 {
-                  String _elem14;
-                  _elem14 = iprot.readString();
-                  this.success.add(_elem14);
+                  String _elem10;
+                  _elem10 = iprot.readString();
+                  this.success.add(_elem10);
                 }
                 iprot.readListEnd();
               }
@@ -4362,9 +4362,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter15 : this.success)
+          for (String _iter11 : this.success)
           {
-            oprot.writeString(_iter15);
+            oprot.writeString(_iter11);
           }
           oprot.writeListEnd();
         }
@@ -5131,13 +5131,13 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list16.size);
-                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
+                org.apache.thrift.protocol.TList _list12 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list12.size);
+                for (int _i13 = 0; _i13 < _list12.size; ++_i13)
                 {
-                  String _elem18;
-                  _elem18 = iprot.readString();
-                  this.success.add(_elem18);
+                  String _elem14;
+                  _elem14 = iprot.readString();
+                  this.success.add(_elem14);
                 }
                 iprot.readListEnd();
               }
@@ -5171,9 +5171,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter19 : this.success)
+          for (String _iter15 : this.success)
           {
-            oprot.writeString(_iter19);
+            oprot.writeString(_iter15);
           }
           oprot.writeListEnd();
         }
@@ -7747,14 +7747,14 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
-                this.success = new ArrayList<KeyValJSONPair>(_list20.size);
-                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+                org.apache.thrift.protocol.TList _list16 = iprot.readListBegin();
+                this.success = new ArrayList<KeyValJSONPair>(_list16.size);
+                for (int _i17 = 0; _i17 < _list16.size; ++_i17)
                 {
-                  KeyValJSONPair _elem22;
-                  _elem22 = new KeyValJSONPair();
-                  _elem22.read(iprot);
-                  this.success.add(_elem22);
+                  KeyValJSONPair _elem18;
+                  _elem18 = new KeyValJSONPair();
+                  _elem18.read(iprot);
+                  this.success.add(_elem18);
                 }
                 iprot.readListEnd();
               }
@@ -7788,9 +7788,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (KeyValJSONPair _iter23 : this.success)
+          for (KeyValJSONPair _iter19 : this.success)
           {
-            _iter23.write(oprot);
+            _iter19.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -14249,13 +14249,13 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list20.size);
+                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
                 {
-                  String _elem26;
-                  _elem26 = iprot.readString();
-                  this.success.add(_elem26);
+                  String _elem22;
+                  _elem22 = iprot.readString();
+                  this.success.add(_elem22);
                 }
                 iprot.readListEnd();
               }
@@ -14289,9 +14289,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter27 : this.success)
+          for (String _iter23 : this.success)
           {
-            oprot.writeString(_iter27);
+            oprot.writeString(_iter23);
           }
           oprot.writeListEnd();
         }
@@ -17057,22 +17057,14 @@ public class RemusNet {
   public static class jobStatus_result implements org.apache.thrift.TBase<jobStatus_result, jobStatus_result._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("jobStatus_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    /**
-     * 
-     * @see JobStatus
-     */
     public JobStatus success;
     public NotImplemented e;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      /**
-       * 
-       * @see JobStatus
-       */
       SUCCESS((short)0, "success"),
       E((short)1, "e");
 
@@ -17138,7 +17130,7 @@ public class RemusNet {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, JobStatus.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, JobStatus.class)));
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -17162,7 +17154,7 @@ public class RemusNet {
      */
     public jobStatus_result(jobStatus_result other) {
       if (other.isSetSuccess()) {
-        this.success = other.success;
+        this.success = new JobStatus(other.success);
       }
       if (other.isSetE()) {
         this.e = new NotImplemented(other.e);
@@ -17179,18 +17171,10 @@ public class RemusNet {
       this.e = null;
     }
 
-    /**
-     * 
-     * @see JobStatus
-     */
     public JobStatus getSuccess() {
       return this.success;
     }
 
-    /**
-     * 
-     * @see JobStatus
-     */
     public jobStatus_result setSuccess(JobStatus success) {
       this.success = success;
       return this;
@@ -17368,8 +17352,9 @@ public class RemusNet {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == org.apache.thrift.protocol.TType.I32) {
-              this.success = JobStatus.findByValue(iprot.readI32());
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.success = new JobStatus();
+              this.success.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -17398,7 +17383,7 @@ public class RemusNet {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI32(this.success.getValue());
+        this.success.write(oprot);
         oprot.writeFieldEnd();
       } else if (this.isSetE()) {
         oprot.writeFieldBegin(E_FIELD_DESC);
@@ -19754,14 +19739,14 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                this.success = new ArrayList<PeerInfoThrift>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                this.success = new ArrayList<PeerInfoThrift>(_list24.size);
+                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
                 {
-                  PeerInfoThrift _elem30;
-                  _elem30 = new PeerInfoThrift();
-                  _elem30.read(iprot);
-                  this.success.add(_elem30);
+                  PeerInfoThrift _elem26;
+                  _elem26 = new PeerInfoThrift();
+                  _elem26.read(iprot);
+                  this.success.add(_elem26);
                 }
                 iprot.readListEnd();
               }
@@ -19795,9 +19780,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (PeerInfoThrift _iter31 : this.success)
+          for (PeerInfoThrift _iter27 : this.success)
           {
-            _iter31.write(oprot);
+            _iter27.write(oprot);
           }
           oprot.writeListEnd();
         }

@@ -134,13 +134,6 @@ public class PluginManager {
 		return null;
 	}
 
-	/*
-	public RemusDB getServiceByAddress(String address) {
-
-	}
-	/(
-	 * 
-	 */
 	public RemusAttach getAttachStore() {
 		for (PluginInterface pi : plugins) {
 			if (pi.getPeerInfo().peerType == PeerType.ATTACH_SERVER) {
@@ -159,6 +152,7 @@ public class PluginManager {
 		}
 	}
 
+
 	public RemusManager getManager() {
 		for (PluginInterface pi : plugins) {
 			if (pi.getPeerInfo().peerType == PeerType.MANAGER) {
@@ -168,7 +162,7 @@ public class PluginManager {
 		return null;		
 	}
 
-	
+
 	public RemusIDServer getIDServer() {
 		for (PluginInterface pi : plugins) {
 			if (pi.getPeerInfo().peerType == PeerType.NAME_SERVER) {
@@ -177,6 +171,10 @@ public class PluginManager {
 		}
 		return null;		
 	}
+
+
+
+	/*
 	public Set<RemusWorker> getWorkers() {
 		Set<RemusWorker> out = new HashSet<RemusWorker>();
 		for (PluginInterface pi : plugins) {
@@ -186,6 +184,7 @@ public class PluginManager {
 		}
 		return out;
 	}
+	 */
 
 	Map<String,RemusNet.Iface> peerList;
 	Set<String> localPeers;
@@ -199,6 +198,16 @@ public class PluginManager {
 		return 0;
 	}
 
+	public Set<String> getWorkers(String type) throws NotImplemented, TException {
+		Set<String> out = new HashSet<String>();
+		List<PeerInfoThrift> list = getIDServer().getPeers();
+		for (PeerInfoThrift p : list) {
+			if (p.workTypes.contains(type)) {
+				out.add(p.peerID);
+			}
+		}
+		return out;
+	}
 	/*
 	public void setRemotePeers(List<PeerInfoThrift> rPeers) {
 		try {

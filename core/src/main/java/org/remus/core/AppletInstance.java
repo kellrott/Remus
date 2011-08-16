@@ -1,6 +1,7 @@
 package org.remus.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -138,12 +139,12 @@ public class AppletInstance {
 
 
 
-	public void finishWork(RemusInstance remusInstance, long jobID, String workerName, long emitCount) throws TException, NotImplemented {
-		AppletRef ar = new AppletRef(pipeline.getID(), remusInstance.toString(), applet.getID() + "/@done" );
+	public void finishWork(long jobID, String workerName, long emitCount) throws TException, NotImplemented {
+		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@done" );
 		datastore.add(ar, 0L, 0L, Long.toString(jobID), workerName);
 	}
 
-	public void errorJob(long jobID, String errorMsg) {
+	public void errorWork(long jobID, String errorMsg) {
 		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@error");
 		try {
 			applet.getDataStore().add(arWork, 0, 0,
@@ -155,23 +156,26 @@ public class AppletInstance {
 		}
 	}
 
-	public Collection<Long> getReadyJobs(int count) {
-		ArrayList<Long> out = new ArrayList<Long>(count);
+	public long [] getReadyJobs(int count) {
+		long [] out = new long[count];
+		int curPos = 0;
 		WorkStatus status = getStatus();
 
 		Long jobStart = status.getJobStart();
-		if ( jobStart == null )
-			jobStart = 0L;		
+		if (jobStart == null) {
+			jobStart = 0L;
+		}
 		boolean found = false;
 		long newJobStart = jobStart;
 
-		AppletRef arStatus = new AppletRef( pipeline.getID(), instance.toString(), applet.getID() + WorkStatusName );
-		AppletRef arDone = new AppletRef( pipeline.getID(), instance.toString(), applet.getID() + WorkDoneName );
+		AppletRef arStatus = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + WorkStatusName);
+		AppletRef arDone = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + WorkDoneName);
 
 		try {
-			for ( String key : applet.getDataStore().keySlice( arStatus, String.valueOf(jobStart), count + 1) ) {
-				if ( ! applet.getDataStore().containsKey( arDone, key) ) {
-					out.add( Long.valueOf( key ) );
+			for (String key : applet.getDataStore().keySlice(arStatus, String.valueOf(jobStart), count + 1)) {
+				if (!applet.getDataStore().containsKey(arDone, key)) {
+					out[curPos] = Long.valueOf(key);
+					curPos++;
 					found = true;
 				} else {
 					if (!found) {
@@ -180,12 +184,12 @@ public class AppletInstance {
 				}
 			}
 			if (newJobStart != jobStart) {
-				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart );
+				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
 				status.setJobStart(newJobStart);
-				setWorkStat( status );
+				setWorkStat(status);
 			}
-			if ( count > 0 && out.size() == 0 ) {
-				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID() );
+			if (count > 0 && curPos == 0) {
+				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
 				setComplete();
 			}
 		} catch (TException e) {
@@ -193,8 +197,10 @@ public class AppletInstance {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-
-		return out;		
+				
+		long [] a = Arrays.copyOf(out, curPos);
+		Arrays.sort(a);
+		return a;
 	}
 
 	public void setComplete() {

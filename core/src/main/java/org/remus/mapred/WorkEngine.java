@@ -9,6 +9,7 @@ import org.remus.RemusDB;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkDesc;
@@ -20,7 +21,7 @@ public class WorkEngine implements Runnable {
 	private WorkDesc work;
 	private RemusDB db;
 	private MapReduceFunction mapred;
-	private JobStatus status;
+	private JobState status;
 	private RemusAttach attach;
 	private Logger logger;
 	public WorkEngine(WorkDesc work, RemusDB db, RemusAttach attach, MapReduceFunction mapred) {
@@ -28,7 +29,7 @@ public class WorkEngine implements Runnable {
 		this.db = db;
 		this.attach = attach;
 		this.mapred = mapred;
-		status = JobStatus.QUEUED;
+		status = JobState.QUEUED;
 		logger = LoggerFactory.getLogger(WorkEngine.class);
 	}
 
@@ -36,7 +37,7 @@ public class WorkEngine implements Runnable {
 	public void run() {
 		AppletRef arWork = new AppletRef(work.workStack.pipeline, 
 				work.workStack.instance, work.workStack.applet + "/@work");
-		status = JobStatus.WORKING;
+		status = JobState.WORKING;
 
 		Map stackInfo = (Map) JSON.loads(work.infoJSON);
 		mapred.init(stackInfo);
@@ -57,7 +58,7 @@ public class WorkEngine implements Runnable {
 						work.workStack.instance,
 						work.workStack.applet
 						);
-				for (long jobID : work.jobs) {
+				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
 						for (Object value : db.get(ar, (String) key)) {
@@ -67,7 +68,7 @@ public class WorkEngine implements Runnable {
 						logger.info("Emiting: " + cb.emitCount);
 					}
 				}
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else if (work.mode == WorkMode.SPLIT) {
 				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
 
@@ -81,7 +82,7 @@ public class WorkEngine implements Runnable {
 				cb.writeEmits(outRef, 0);
 				logger.info("Emiting: " + cb.emitCount);
 
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else if (work.mode == WorkMode.REDUCE) {
 				String inputInstStr = sub.getInputInstance();				
 				RemusInstance inst = RemusInstance.getInstance(db, 
@@ -98,7 +99,7 @@ public class WorkEngine implements Runnable {
 						work.workStack.applet
 						);
 				
-				for (long jobID : work.jobs) {
+				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						mapred.reduce((String) key, db.get(ar, (String) key), cb);
@@ -106,27 +107,29 @@ public class WorkEngine implements Runnable {
 					cb.writeEmits(outRef, jobID);
 					logger.info("Emiting: " + cb.emitCount);
 				}
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else if (work.mode == WorkMode.MATCH) {
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else if (work.mode == WorkMode.MERGE) {
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else if (work.mode == WorkMode.PIPE) {
-				status = JobStatus.DONE;
+				status = JobState.DONE;
 			} else {
-				status = JobStatus.ERROR;
+				status = JobState.ERROR;
 			}
 		} catch (TException e) {
-			status = JobStatus.ERROR;
+			status = JobState.ERROR;
 		} catch (NotImplemented e) {
-			status = JobStatus.ERROR;
+			status = JobState.ERROR;
 		} catch (NotSupported e) {
-			status = JobStatus.ERROR;
+			status = JobState.ERROR;
 		}
 	}
 
 	public JobStatus getStatus() {
-		return status;
+		JobStatus out = new JobStatus();
+		out.status = status;
+		return out;
 	}
 
 }

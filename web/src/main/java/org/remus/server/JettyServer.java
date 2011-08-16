@@ -20,9 +20,11 @@ import org.remus.core.BaseStackNode;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
 import org.slf4j.Logger;
@@ -34,7 +36,7 @@ public class JettyServer extends RemusWeb {
 	Server server;
 
 	public static final int DEFAULT_PORT = 16016;
-	
+
 	RemusDB datastore;
 	RemusAttach attachstore;
 	private Logger logger;
@@ -119,34 +121,39 @@ public class JettyServer extends RemusWeb {
 		return datastore;
 	}
 
-	
+
 	@Override
 	public void jsRequest(String string, WorkMode mode,
 			BaseStackNode appletView, MapReduceCallback mapReduceCallback) {
 		String peerID = pm.getPeerID(this);
 		logger.info("Javascript Query: " + peerID);
-		RemusWorker jsWorker = null;
+		RemusNet.Iface jsWorker = null;
 		//RemusManager manager = pm.getManager();
 		//jsWorker = manager.getWorker("javascript");
-		
-		for (RemusWorker worker : pm.getWorkers()) {
-			if (worker.getPeerInfo().workTypes.contains("javascript")) {
-				jsWorker = worker;
+
+		try {
+			for (String worker : pm.getWorkers("javascript")) {
+				jsWorker = pm.getPeer(worker);
 			}
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
 		WorkDesc work = new WorkDesc();
 		work.mode = mode;
 		work.infoJSON = JSON.dumps(new HashMap());
-		work.jobs = Arrays.asList(0L);
+		work.workStart = 0;
+		work.workEnd = 1;
 		work.lang = "javascript";
-		
+
 		try {
 			String jobID = jsWorker.jobRequest("this", work);			
 			boolean done = false;
 			do {
 				JobStatus stat = jsWorker.jobStatus(jobID);
-				if (stat == JobStatus.QUEUED || stat == JobStatus.WORKING) {
+				if (stat.status == JobState.QUEUED || stat.status == JobState.WORKING) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -166,12 +173,12 @@ public class JettyServer extends RemusWeb {
 		}		
 	}
 
-	
+
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		logger.info("WEB_DB GET: " + stack + " " + key);
 		return Arrays.asList("test");
 	}
-	
+
 }

@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
@@ -57,7 +58,7 @@ public class NameTest {
 			if (peer.peerType == PeerType.WORKER) {
 				System.out.println(peer.peerID + " " + peer.workTypes + " " + peer.host + ":" + peer.port);
 				RemusNet.Iface p = pm2.getPeer(peer.peerID);
-				Assert.assertEquals(p.jobStatus("--THIS_JOB_DOESN'T_EXISTS--"), JobStatus.UNKNOWN); 
+				Assert.assertEquals(p.jobStatus("--THIS_JOB_DOESN'T_EXISTS--"), JobState.UNKNOWN); 
 			}
 		}
 	}
