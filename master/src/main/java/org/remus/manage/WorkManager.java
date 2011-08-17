@@ -76,7 +76,6 @@ public class WorkManager extends RemusManager {
 		private long workStart;
 		private long workEnd;
 		private long startTime;
-
 		RemoteJob(String peerID, String jobID, long workStart, long workEnd) {
 			this.peerID = peerID;
 			this.jobID = jobID;
@@ -154,6 +153,7 @@ public class WorkManager extends RemusManager {
 			logger.info("ASSIGN RATE: " + ai + " " + newAssignRate);
 			assignRate.put(ai, newAssignRate);
 		}
+		peerStacks.get(rj.peerID).remove(rj);
 		activeStacks.get(ai).remove(rj);
 	}
 
@@ -166,6 +166,8 @@ public class WorkManager extends RemusManager {
 	private class ScheduleThread extends Thread {
 		boolean quit = false;
 		Integer waitLock = new Integer(0);
+		private int sleepTime = 300;
+
 		@Override
 		public void run() {
 			while (!quit) {
@@ -189,11 +191,14 @@ public class WorkManager extends RemusManager {
 				}
 				try {
 					if (!workChange) {
+						if (sleepTime < INACTIVE_SLEEP_TIME) {
+							sleepTime += 100;
+						}
 						synchronized (waitLock) {			
-							waitLock.wait(INACTIVE_SLEEP_TIME);
+							waitLock.wait(sleepTime);
 						}
 					} else {
-						sleep(500);
+						sleep(300);
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -241,6 +246,7 @@ public class WorkManager extends RemusManager {
 	private boolean cleanJobs() throws TException, NotImplemented {
 		boolean found = false;
 		synchronized (activeStacks) {
+			int activeCount = 0;
 			for (AppletInstance ai : activeStacks.keySet()) {			
 				Map<RemoteJob,Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
 				for (RemoteJob rj : activeStacks.get(ai)) {
@@ -263,12 +269,15 @@ public class WorkManager extends RemusManager {
 						logger.warn("JOB ERROR: " + rj.jobID);
 					} else if (s.status == JobState.UNKNOWN) {
 						logger.warn("Worker lost job: " + rj.jobID);
+					} else {
+						activeCount += 1;
 					}
 				}
 				for (RemoteJob rj : removeSet.keySet()) {
 					removeRemoteJob(ai, rj, removeSet.get(rj));
 				}
 			}
+			logger.info("Active RemoteJobs: " + activeCount);			
 			
 		}
 		return found;
@@ -354,7 +363,7 @@ public class WorkManager extends RemusManager {
 			wdesc.setWorkEnd(workEnd);
 			wdesc.setLang(ai.getApplet().getType());
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
-			wdesc.infoJSON = JSON.dumps(ai.getInstanceInfo());
+			wdesc.setInfoJSON(JSON.dumps(ai.getInstanceInfo()));
 
 			switch (ai.getApplet().getMode()) {
 			case RemusApplet.MAPPER: {
