@@ -11,7 +11,7 @@ import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 
 
-abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T> {
+public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T> {
 	boolean hasMore = true, firstSlice = true, elemAdded;
 	int maxFetch = 100;
 	Integer maxCount = null;
@@ -80,9 +80,9 @@ abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T> {
 		return elemAdded;
 	}
 
-	abstract void processKeyValue(String key, Object val, long jobID, long emitID);
+	public abstract void processKeyValue(String key, Object val, long jobID, long emitID);
 
-	void addElement( T elem ) {
+	public void addElement( T elem ) {
 		elemAdded = true;
 		outList.add( elem );
 	}

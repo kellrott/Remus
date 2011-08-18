@@ -11,12 +11,17 @@ import org.json.simple.JSONValue;
 public class PipelineSubmission implements JSONAware {
 
 	Map base;
-	public static final String SubmitKeyField = "_submitKey";
+	public static final String SUBMIT_KEY_FIELD = "_submitKey";
 	public static final Object WorkDoneField = "_workdone";
 	public static final String KeysField = "_keys";
 	public static final String InstanceField = "_instance";
 	public static final String InputField = "_input";
 	public static final String AppletField = "_applets";
+	public static final String AXIS_FIELD = "_axis";
+	
+	public static final int RIGHT_AXIS = 1;
+	public static final int LEFT_AXIS = -1;
+	
 	public PipelineSubmission(Object subMap) {
 		base = (Map) subMap;
 	}
@@ -39,7 +44,7 @@ public class PipelineSubmission implements JSONAware {
 	}
 
 	public void setSubmitKey(String key) {
-		base.put(SubmitKeyField, key);
+		base.put(SUBMIT_KEY_FIELD, key);
 	}
 
 	public void setInstance(RemusInstance inst) {
@@ -60,4 +65,42 @@ public class PipelineSubmission implements JSONAware {
 		return (String) inputInfo.get("_applet");
 	}
 
+	public String getLeftInputInstance() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) ((Map)inputInfo.get("_left")).get("_instance");
+	}
+
+	public String getRightInputInstance() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) ((Map)inputInfo.get("_right")).get("_instance");
+	}
+
+	public String getLeftInputApplet() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) ((Map)inputInfo.get("_left")).get("_applet");
+	}
+
+	public String getRightInputApplet() {
+		Map inputInfo = (Map) base.get("_input");
+		return (String) ((Map)inputInfo.get("_right")).get("_applet");
+	}
+
+	public int getAxis() {
+		Map inputInfo = (Map) base.get("_input");
+		String axis = (String)inputInfo.get(AXIS_FIELD);
+		if (axis.compareTo("_left") == 0) {
+			return LEFT_AXIS;
+		}
+		if (axis.compareTo("_right") == 0) {
+			return RIGHT_AXIS;
+		}
+		return 0;
+	}
+
+	public List getInputList() {
+		List inputInfo = (List) base.get("_input");
+		return inputInfo;
+	}
+
+	
 }

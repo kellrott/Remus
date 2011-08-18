@@ -51,7 +51,7 @@ public abstract class RemusDB implements Iface, PluginInterface {
 	public Iterable<String> listKeys(AppletRef applet) {
 		return new RemusDBSliceIterator<String>(this, applet, "", "", false) {
 			@Override
-			void processKeyValue(String key, Object val, long jobID, long emitID) {
+			public void processKeyValue(String key, Object val, long jobID, long emitID) {
 				addElement(key);
 			}			
 		};		
@@ -60,7 +60,7 @@ public abstract class RemusDB implements Iface, PluginInterface {
 	public Iterable<KeyValPair> listKeyPairs(AppletRef applet) {	
 		return new RemusDBSliceIterator<KeyValPair>(this, applet, "", "", true) {
 			@Override
-			void processKeyValue(String key, Object val, long jobID, long emitID) {
+			public void processKeyValue(String key, Object val, long jobID, long emitID) {
 				addElement(new KeyValPair(key, val, jobID, emitID));
 			}			
 		};		
