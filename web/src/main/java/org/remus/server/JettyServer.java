@@ -65,7 +65,7 @@ public class JettyServer extends RemusWeb {
 		System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "0");		
 
 		int serverPort = DEFAULT_PORT;
-		if (params.containsKey("org.remus.port")) {
+		if (params != null && params.containsKey("org.remus.port")) {
 			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
 		}
 

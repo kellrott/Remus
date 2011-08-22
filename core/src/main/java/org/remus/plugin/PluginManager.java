@@ -73,14 +73,14 @@ public class PluginManager {
 		for (String className : params.keySet()) {
 			try {
 				Map pMap = (Map) params.get(className);
-				if (pMap.containsKey("client")) {
+				if (pMap != null && pMap.containsKey("client")) {
 					Class<PluginInterface> pClass = 
 						(Class<PluginInterface>) Class.forName(className);
 					PluginInterface plug = (PluginInterface) pClass.newInstance();
 					Map config = (Map) pMap.get("client");
 					plug.init(config);
 					plugins.add(plug);
-				} else if (pMap.containsKey("server")) {
+				} else if (pMap != null && pMap.containsKey("server")) {
 					Map serverConf = (Map) pMap.get("server");
 					Map config = (Map) pMap.get("config");
 					Class<PluginInterface> pClass = 
@@ -97,7 +97,7 @@ public class PluginManager {
 						(Class<PluginInterface>) Class.forName(className);
 					PluginInterface plug = (PluginInterface) pClass.newInstance();
 					Map config = null;
-					if (pMap.containsKey("config")) {
+					if (pMap != null && pMap.containsKey("config")) {
 						config = (Map) pMap.get("config");
 					}
 					plug.init(config);

@@ -33,7 +33,7 @@ public class FileServer extends RemusAttach {
 	@Override
 	public void init(Map params) {
 		this.basePath = new File((String) params.get(DIR_NAME));
-		this.dirShared = Boolean.valueOf((String) params.get(DIR_SHARED)); 		
+		this.dirShared = Boolean.valueOf(params.get(DIR_SHARED).toString());
 	}
 
 	@Override

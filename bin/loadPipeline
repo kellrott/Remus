@@ -33,10 +33,6 @@ def parseRemusJSON(server, pipelineName, path):
 	pipelineData = json.loads( handle.read() )
 
 	url = server + "/@pipeline/" + pipelineName 
-	data = json.dumps( pipelineData )
-
-	print url
-	print putData( url, data ).read()
 
 	if '_include' in pipelineData:
 		fileList = copy( pipelineData['_include'] )
@@ -44,7 +40,7 @@ def parseRemusJSON(server, pipelineName, path):
 		fileList = []
 
 	initData = {}
-	
+	initApplet = {}
 	for name in pipelineData:
 		if name not in [ "_id", "_include" ]:
 			node = pipelineData[ name ]
@@ -52,18 +48,28 @@ def parseRemusJSON(server, pipelineName, path):
 				if node.has_key( "_code" ):
 					if os.path.exists(  node[ "_code" ] ):
 						fileList.append( node[ "_code" ] )				
-				"""
+				
 				if node.has_key( "_init" ):					
 					if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
 						initData[ node[ "_init" ][ "_submitKey" ] ] = {}
+						initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
+						
 					initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data", {}) )
+					initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
 					del node[ "_init" ]
-				
+
+				"""
 				url = server + "/" + pipelineName + "/@pipeline/" + name  				
 				print url
 				data = json.dumps( node )
 				print putData( url, data ).read()
 				"""
+
+	data = json.dumps( pipelineData )
+
+	print url
+	print putData( url, data ).read()
+
 				
 	for file in fileList:
 		srcPath = os.path.join( baseDir, file ) 
@@ -74,9 +80,9 @@ def parseRemusJSON(server, pipelineName, path):
 		handle.close()
 
 	for subKey in initData:
-		submitData = "{}"
-		print "INIT: ", subKey, initData[ subKey ].keys()
-		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), submitData ).read()
+		submitData = { "_applets" : initApplet[subKey] }
+		print "INIT: ", subKey, initData[ subKey ].keys(), json.dumps(submitData)
+		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), json.dumps(submitData) ).read()
 		for applet in initData[ subKey ]:
 			print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
 

@@ -260,7 +260,7 @@ public class WorkManager extends RemusManager {
 		synchronized (activeStacks) {
 			int activeCount = 0;
 			for (AppletInstance ai : activeStacks.keySet()) {			
-				Map<RemoteJob,Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
+				Map<RemoteJob, Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
 				for (RemoteJob rj : activeStacks.get(ai)) {
 					logger.debug("Checking " + rj.peerID + " for " + rj.jobID);
 					RemusNet.Iface worker = plugins.getPeer(rj.peerID);
@@ -289,8 +289,9 @@ public class WorkManager extends RemusManager {
 					removeRemoteJob(ai, rj, removeSet.get(rj));
 				}
 			}
-			logger.info("Active RemoteJobs: " + activeCount);			
-
+			if (activeCount > 0) {
+				logger.info("Active RemoteJobs: " + activeCount);			
+			}
 		}
 		return found;
 	}
