@@ -31,7 +31,7 @@ public abstract class RemusDB implements Iface, PluginInterface {
 		List<String> i = getValueJSON(stack, key);
 
 		List<Object> out = new ArrayList<Object>(i.size());
-		for ( String j : i ) {
+		for (String j : i) {
 			out.add(JSON.loads(j));
 		}
 		return out;
@@ -41,9 +41,9 @@ public abstract class RemusDB implements Iface, PluginInterface {
 			String startKey, int count) throws TException, NotImplemented {
 		List<KeyValJSONPair> i = keyValJSONSlice(stack, startKey, count);
 		
-		List<KeyValPair> out = new ArrayList<KeyValPair>( i.size() );
-		for ( KeyValJSONPair kv : i ) {
-			out.add( new KeyValPair(kv) );
+		List<KeyValPair> out = new ArrayList<KeyValPair>(i.size());
+		for (KeyValJSONPair kv : i) {
+			out.add(new KeyValPair(kv));
 		}
 		return out;
 	}
@@ -158,5 +158,9 @@ public abstract class RemusDB implements Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 
+	@Override
+	public int jobCancel(String jobID) throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
 	
 }

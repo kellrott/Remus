@@ -269,8 +269,8 @@ public class RemusApplet {
 					if (workGenerator != null) {
 						try {
 							long infoTime = ai.getStatusTimeStamp();
-							long dataTime = ai.getDataTimeStamp();
-							if (infoTime > dataTime || !WorkStatus.hasStatus(pipeline, this, inst)) {
+							long dataTime = ai.inputTimeStamp();
+							if (infoTime < dataTime || !WorkStatus.hasStatus(pipeline, this, inst)) {
 								try {
 									logger.info("GENERATE WORK: " + pipeline.getID() + "/" + getID() + " " + inst.toString());
 									WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
@@ -341,6 +341,8 @@ public class RemusApplet {
 
 		applet.instance = RemusInstance.STATIC_INSTANCE_STR;
 		applet.applet = getID() + "/@instance";
+		datastore.deleteStack(applet);
+		applet.applet = getID() + "/@work";
 		datastore.deleteStack(applet);
 		applet.applet = getID() + WorkStatus.WorkStatusName;
 		datastore.deleteStack(applet);

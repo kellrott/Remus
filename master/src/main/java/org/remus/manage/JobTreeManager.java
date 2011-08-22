@@ -196,5 +196,12 @@ public class JobTreeManager extends RemusWorker {
 		// TODO Auto-generated method stub
 		
 	}
+
+
+	@Override
+	public int jobCancel(String jobID) throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 }

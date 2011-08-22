@@ -139,6 +139,7 @@ service RemusNet {
 	
 	string jobRequest( 1:string dataServer, 2:WorkDesc work ) throws (1:NotImplemented e);
 	JobStatus jobStatus( 1:string jobID ) throws (1:NotImplemented e);
+	i32 jobCancel( 1:string jobID ) throws (1:NotImplemented e);
 
 	/**
 	 * Manager methods
@@ -147,7 +148,7 @@ service RemusNet {
 	map<string,string> scheduleInfo() throws (1:NotImplemented e);
 
 	/**
-	 * Name serverice methods
+	 * Name service methods
 	 *
 	 */
 	void addPeer( 1:PeerInfoThrift info ) throws (1:NotImplemented notImp, 2:BadPeerName badName);

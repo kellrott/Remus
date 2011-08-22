@@ -168,4 +168,11 @@ abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 
+	
+
+	@Override
+	public int jobCancel(String jobID) throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
+
 }

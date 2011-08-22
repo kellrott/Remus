@@ -13,15 +13,14 @@ import org.remus.mapred.WorkEngine;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.WorkDesc;
 import org.remus.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -110,6 +109,13 @@ public class JSWorker extends RemusWorker {
 				t.printStackTrace();
 			}
 		}
+	}
+
+
+	@Override
+	public int jobCancel(String jobID) throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 

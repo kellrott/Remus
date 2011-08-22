@@ -14,4 +14,5 @@ public interface MapReduceFunction {
 	void match(String key, List<Object> left_vals,
 			List<Object> right_vals, MapReduceCallback cb) throws NotSupported;
 	void pipe(List<Object> handles, MapReduceCallback cb) throws NotSupported;
+	void cleanup();
 }

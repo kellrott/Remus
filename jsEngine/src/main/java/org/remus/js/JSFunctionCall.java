@@ -168,4 +168,10 @@ public class JSFunctionCall implements MapReduceFunction {
 		throw new NotSupported();
 	}
 
+	@Override
+	public void cleanup() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

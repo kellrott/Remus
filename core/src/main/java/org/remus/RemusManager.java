@@ -137,4 +137,9 @@ abstract public class RemusManager implements RemusNet.Iface, PluginInterface {
 	public List<PeerInfoThrift> getPeers() throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
+	
+	@Override
+	public int jobCancel(String jobID) throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
 }

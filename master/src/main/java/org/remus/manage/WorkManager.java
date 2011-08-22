@@ -15,6 +15,7 @@ import org.remus.PeerInfo;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.core.AppletInstance;
+import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusPipeline;
@@ -129,6 +130,9 @@ public class WorkManager extends RemusManager {
 				}
 			}
 			for (AppletInstance ai : removeSet) {
+				for (RemoteJob rj : activeStacks.get(ai)) {
+					removeRemoteJob(ai, rj, false);
+				}
 				activeStacks.remove(ai);
 			}
 		}
@@ -152,6 +156,14 @@ public class WorkManager extends RemusManager {
 			newAssignRate++;
 			logger.info("ASSIGN RATE: " + ai + " " + newAssignRate);
 			assignRate.put(ai, newAssignRate);
+		}
+		RemusNet.Iface worker = plugins.getPeer(rj.peerID);					
+		try {
+			worker.jobCancel(rj.jobID);						
+		} catch (NotImplemented e) {
+			e.printStackTrace();
+		} catch (TException e) {
+			e.printStackTrace();
 		}
 		peerStacks.get(rj.peerID).remove(rj);
 		activeStacks.get(ai).remove(rj);
@@ -198,7 +210,7 @@ public class WorkManager extends RemusManager {
 							waitLock.wait(sleepTime);
 						}
 					} else {
-						sleep(300);
+						sleep(1);
 					}
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -278,7 +290,7 @@ public class WorkManager extends RemusManager {
 				}
 			}
 			logger.info("Active RemoteJobs: " + activeCount);			
-			
+
 		}
 		return found;
 	}
@@ -354,6 +366,10 @@ public class WorkManager extends RemusManager {
 
 	private void workAssign(AppletInstance ai, String peerID, long workStart, long workEnd) {
 		try {
+			PipelineSubmission instanceInfo = ai.getInstanceInfo();
+			if (instanceInfo == null) {
+				return;
+			}
 			WorkDesc wdesc = new WorkDesc();
 			wdesc.setWorkStack(new AppletRef());		
 			wdesc.workStack.setPipeline(ai.getPipeline().getID());
@@ -363,7 +379,7 @@ public class WorkManager extends RemusManager {
 			wdesc.setWorkEnd(workEnd);
 			wdesc.setLang(ai.getApplet().getType());
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
-			wdesc.setInfoJSON(JSON.dumps(ai.getInstanceInfo()));
+			wdesc.setInfoJSON(JSON.dumps(instanceInfo));
 
 			switch (ai.getApplet().getMode()) {
 			case RemusApplet.MAPPER: {

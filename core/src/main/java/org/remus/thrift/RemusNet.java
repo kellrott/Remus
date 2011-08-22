@@ -83,6 +83,8 @@ public class RemusNet {
 
     public JobStatus jobStatus(String jobID) throws NotImplemented, org.apache.thrift.TException;
 
+    public int jobCancel(String jobID) throws NotImplemented, org.apache.thrift.TException;
+
     /**
      * Manager methods
      */
@@ -141,6 +143,8 @@ public class RemusNet {
     public void jobRequest(String dataServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobRequest_call> resultHandler) throws org.apache.thrift.TException;
 
     public void jobStatus(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobStatus_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void jobCancel(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobCancel_call> resultHandler) throws org.apache.thrift.TException;
 
     public void scheduleRequest(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleRequest_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -904,6 +908,45 @@ public class RemusNet {
         throw result.e;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "jobStatus failed: unknown result");
+    }
+
+    public int jobCancel(String jobID) throws NotImplemented, org.apache.thrift.TException
+    {
+      send_jobCancel(jobID);
+      return recv_jobCancel();
+    }
+
+    public void send_jobCancel(String jobID) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      jobCancel_args args = new jobCancel_args();
+      args.setJobID(jobID);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public int recv_jobCancel() throws NotImplemented, org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "jobCancel failed: out of sequence response");
+      }
+      jobCancel_result result = new jobCancel_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "jobCancel failed: unknown result");
     }
 
     public void scheduleRequest() throws NotImplemented, org.apache.thrift.TException
@@ -1779,6 +1822,38 @@ public class RemusNet {
       }
     }
 
+    public void jobCancel(String jobID, org.apache.thrift.async.AsyncMethodCallback<jobCancel_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      jobCancel_call method_call = new jobCancel_call(jobID, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class jobCancel_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String jobID;
+      public jobCancel_call(String jobID, org.apache.thrift.async.AsyncMethodCallback<jobCancel_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.jobID = jobID;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        jobCancel_args args = new jobCancel_args();
+        args.setJobID(jobID);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public int getResult() throws NotImplemented, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_jobCancel();
+      }
+    }
+
     public void scheduleRequest(org.apache.thrift.async.AsyncMethodCallback<scheduleRequest_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       scheduleRequest_call method_call = new scheduleRequest_call(resultHandler, this, protocolFactory, transport);
@@ -1955,6 +2030,7 @@ public class RemusNet {
       processMap_.put("deleteAttachment", new deleteAttachment());
       processMap_.put("jobRequest", new jobRequest());
       processMap_.put("jobStatus", new jobStatus());
+      processMap_.put("jobCancel", new jobCancel());
       processMap_.put("scheduleRequest", new scheduleRequest());
       processMap_.put("scheduleInfo", new scheduleInfo());
       processMap_.put("addPeer", new addPeer());
@@ -2669,6 +2745,45 @@ public class RemusNet {
           return;
         }
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobStatus", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class jobCancel implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        jobCancel_args args = new jobCancel_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        jobCancel_result result = new jobCancel_result();
+        try {
+          result.success = iface_.jobCancel(args.jobID);
+          result.setSuccessIsSet(true);
+        } catch (NotImplemented e) {
+          result.e = e;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing jobCancel", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing jobCancel");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -17521,6 +17636,688 @@ public class RemusNet {
       } else {
         sb.append(this.success);
       }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class jobCancel_args implements org.apache.thrift.TBase<jobCancel_args, jobCancel_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("jobCancel_args");
+
+    private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobID", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    public String jobID;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      JOB_ID((short)1, "jobID");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // JOB_ID
+            return JOB_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("jobID", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(jobCancel_args.class, metaDataMap);
+    }
+
+    public jobCancel_args() {
+    }
+
+    public jobCancel_args(
+      String jobID)
+    {
+      this();
+      this.jobID = jobID;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public jobCancel_args(jobCancel_args other) {
+      if (other.isSetJobID()) {
+        this.jobID = other.jobID;
+      }
+    }
+
+    public jobCancel_args deepCopy() {
+      return new jobCancel_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.jobID = null;
+    }
+
+    public String getJobID() {
+      return this.jobID;
+    }
+
+    public jobCancel_args setJobID(String jobID) {
+      this.jobID = jobID;
+      return this;
+    }
+
+    public void unsetJobID() {
+      this.jobID = null;
+    }
+
+    /** Returns true if field jobID is set (has been assigned a value) and false otherwise */
+    public boolean isSetJobID() {
+      return this.jobID != null;
+    }
+
+    public void setJobIDIsSet(boolean value) {
+      if (!value) {
+        this.jobID = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case JOB_ID:
+        if (value == null) {
+          unsetJobID();
+        } else {
+          setJobID((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case JOB_ID:
+        return getJobID();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case JOB_ID:
+        return isSetJobID();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof jobCancel_args)
+        return this.equals((jobCancel_args)that);
+      return false;
+    }
+
+    public boolean equals(jobCancel_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_jobID = true && this.isSetJobID();
+      boolean that_present_jobID = true && that.isSetJobID();
+      if (this_present_jobID || that_present_jobID) {
+        if (!(this_present_jobID && that_present_jobID))
+          return false;
+        if (!this.jobID.equals(that.jobID))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(jobCancel_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      jobCancel_args typedOther = (jobCancel_args)other;
+
+      lastComparison = Boolean.valueOf(isSetJobID()).compareTo(typedOther.isSetJobID());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetJobID()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.jobID, typedOther.jobID);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // JOB_ID
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.jobID = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.jobID != null) {
+        oprot.writeFieldBegin(JOB_ID_FIELD_DESC);
+        oprot.writeString(this.jobID);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("jobCancel_args(");
+      boolean first = true;
+
+      sb.append("jobID:");
+      if (this.jobID == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.jobID);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class jobCancel_result implements org.apache.thrift.TBase<jobCancel_result, jobCancel_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("jobCancel_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public int success;
+    public NotImplemented e;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __SUCCESS_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(jobCancel_result.class, metaDataMap);
+    }
+
+    public jobCancel_result() {
+    }
+
+    public jobCancel_result(
+      int success,
+      NotImplemented e)
+    {
+      this();
+      this.success = success;
+      setSuccessIsSet(true);
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public jobCancel_result(jobCancel_result other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.success = other.success;
+      if (other.isSetE()) {
+        this.e = new NotImplemented(other.e);
+      }
+    }
+
+    public jobCancel_result deepCopy() {
+      return new jobCancel_result(this);
+    }
+
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = 0;
+      this.e = null;
+    }
+
+    public int getSuccess() {
+      return this.success;
+    }
+
+    public jobCancel_result setSuccess(int success) {
+      this.success = success;
+      setSuccessIsSet(true);
+      return this;
+    }
+
+    public void unsetSuccess() {
+      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+    }
+
+    public NotImplemented getE() {
+      return this.e;
+    }
+
+    public jobCancel_result setE(NotImplemented e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Integer)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((NotImplemented)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return new Integer(getSuccess());
+
+      case E:
+        return getE();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof jobCancel_result)
+        return this.equals((jobCancel_result)that);
+      return false;
+    }
+
+    public boolean equals(jobCancel_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(jobCancel_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      jobCancel_result typedOther = (jobCancel_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.I32) {
+              this.success = iprot.readI32();
+              setSuccessIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // E
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.e = new NotImplemented();
+              this.e.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeI32(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetE()) {
+        oprot.writeFieldBegin(E_FIELD_DESC);
+        this.e.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("jobCancel_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
       first = false;
       if (!first) sb.append(", ");
       sb.append("e:");

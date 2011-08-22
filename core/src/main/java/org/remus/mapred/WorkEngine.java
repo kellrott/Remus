@@ -27,6 +27,7 @@ public class WorkEngine implements Runnable {
 	private JobState status;
 	private RemusAttach attach;
 	private Logger logger;
+	private boolean canceled = false; 
 	public WorkEngine(WorkDesc work, RemusDB db, RemusAttach attach, MapReduceFunction mapred) {
 		this.work = work;
 		this.db = db;
@@ -67,8 +68,10 @@ public class WorkEngine implements Runnable {
 						for (Object value : db.get(ar, (String) key)) {
 							mapred.map((String) key, value, cb);
 						}
-						cb.writeEmits(outRef, jobID);
-						logger.info("Emiting: " + cb.emitCount);
+						if (!canceled) {
+							cb.writeEmits(outRef, jobID);
+							logger.info("Emiting: " + cb.emitCount);
+						}
 					}
 				}
 				status = JobState.DONE;
@@ -80,11 +83,11 @@ public class WorkEngine implements Runnable {
 						work.workStack.instance,
 						work.workStack.applet
 				);
-
-				mapred.split(stackInfo, cb);
-				cb.writeEmits(outRef, 0);
-				logger.info("Emiting: " + cb.emitCount);
-
+				if (!canceled) {
+					mapred.split(stackInfo, cb);
+					cb.writeEmits(outRef, 0);
+					logger.info("Emiting: " + cb.emitCount);
+				}
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.REDUCE) {
 				String inputInstStr = sub.getInputInstance();				
@@ -107,8 +110,10 @@ public class WorkEngine implements Runnable {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						mapred.reduce((String) key, db.get(ar, (String) key), cb);
 					}
-					cb.writeEmits(outRef, jobID);
-					logger.info("Emiting: " + cb.emitCount);
+					if (!canceled) {
+						cb.writeEmits(outRef, jobID);
+						logger.info("Emiting: " + cb.emitCount);
+					}
 				}
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.MATCH) {
@@ -144,8 +149,10 @@ public class WorkEngine implements Runnable {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						mapred.match((String) key, db.get(leftAr, (String) key), db.get(rightAr, (String) key), cb);
 					}
-					cb.writeEmits(outRef, jobID);
-					logger.info("Emiting: " + cb.emitCount);
+					if (!canceled) {
+						cb.writeEmits(outRef, jobID);
+						logger.info("Emiting: " + cb.emitCount);
+					}
 				}
 				status = JobState.DONE;
 
@@ -196,10 +203,11 @@ public class WorkEngine implements Runnable {
 										cb);
 							}
 						}
-
 					}
-					cb.writeEmits(outRef, jobID);
-					logger.info("Emiting: " + cb.emitCount);
+					if (!canceled) {
+						cb.writeEmits(outRef, jobID);
+						logger.info("Emiting: " + cb.emitCount);
+					}
 				}
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.PIPE) {
@@ -219,7 +227,7 @@ public class WorkEngine implements Runnable {
 					siList.add(new StackIterator(db, ar));
 					i++;
 				}
-				
+
 				AppletRef outRef = new AppletRef(
 						work.workStack.pipeline,
 						work.workStack.instance,
@@ -227,8 +235,10 @@ public class WorkEngine implements Runnable {
 				);
 				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
 				mapred.pipe(siList, cb);
-				cb.writeEmits(outRef, 0);
-				logger.info("Emiting: " + cb.emitCount);				
+				if (!canceled) {
+					cb.writeEmits(outRef, 0);
+					logger.info("Emiting: " + cb.emitCount);
+				}
 				status = JobState.DONE;
 			} else {
 				status = JobState.ERROR;
@@ -240,6 +250,7 @@ public class WorkEngine implements Runnable {
 		} catch (NotSupported e) {
 			status = JobState.ERROR;
 		}
+		cleanup();
 	}
 
 	public JobStatus getStatus() {
@@ -248,6 +259,16 @@ public class WorkEngine implements Runnable {
 		return out;
 	}
 
+	public void cancel() {
+		canceled = true;
+		if (status != JobState.WORKING) {
+			cleanup();
+		}
+	}
+	
+	public void cleanup() {
+		mapred.cleanup();
+	}
 
 	public class StackIterator extends RemusDBSliceIterator<Object []> {
 		public StackIterator(RemusDB db, AppletRef stack) {
@@ -259,4 +280,9 @@ public class WorkEngine implements Runnable {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return work.workStack.instance + ":" + work.workStack.applet;
+	}
+	
 }
