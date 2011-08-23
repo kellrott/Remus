@@ -104,20 +104,25 @@ public class RemusIDMain extends RemusIDServer {
 		logger = LoggerFactory.getLogger(RemusIDMain.class);		
 	}
 
-
 	@Override
-	public void start(PluginManager pluginManager) throws Exception {
+	public void preStart(PluginManager pm) throws Exception {
 		peerMap = new HashMap<String, PeerInfoThrift>();
 		lastPing = new HashMap<String, Long>();
-		plugins = pluginManager;		
-		for (PluginInterface pi : pluginManager.getPlugins()) {
+		plugins = pm;		
+		for (PluginInterface pi : pm.getPlugins()) {
 			PeerInfo info = pi.getPeerInfo();
 			info.setPeerID(UUID.randomUUID().toString());
 			info.setHost(getDefaultAddress());
-			info.setPort(pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
+			info.setPort(pm.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
 			logger.info("Local Peer:" + info.name + " " + info.host + " " + info.port);
 			addPeer(info);
-		}		
+		}
+	}
+	
+
+	@Override
+	public void start(PluginManager pluginManager) throws Exception {
+		
 	}
 
 	public void flushOld(long oldest) {

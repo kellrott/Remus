@@ -34,7 +34,7 @@ public class JSWorker extends RemusWorker {
 	private static final int NTHREDS = 10;
 	ExecutorService executor;
 	
-	Map<String,WorkEngine> workMap;
+	Map<String, WorkEngine> workMap;
 	
 	@Override
 	public PeerInfo getPeerInfo() {

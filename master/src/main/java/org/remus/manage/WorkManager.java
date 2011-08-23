@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -69,9 +70,6 @@ public class WorkManager extends RemusManager {
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
-
-
-
 
 	private class RemoteJob {
 		private String peerID;
@@ -384,43 +382,44 @@ public class WorkManager extends RemusManager {
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
 			wdesc.setInfoJSON(JSON.dumps(instanceInfo));
 
+			RemusNet.Iface worker = plugins.getPeer(peerID);
+
 			switch (ai.getApplet().getMode()) {
-			case RemusApplet.MAPPER: {
+			case RemusApplet.MAPPER:
 				wdesc.setMode(WorkMode.MAP);
 				break;
-			}
-			case RemusApplet.REDUCER: {
+			case RemusApplet.REDUCER:
 				wdesc.setMode(WorkMode.REDUCE);
 				break;
-			}
-			case RemusApplet.SPLITTER: {
+			case RemusApplet.SPLITTER:
 				wdesc.setMode(WorkMode.SPLIT);
 				break;
-			}
-			case RemusApplet.MATCHER: {
+			case RemusApplet.MATCHER:
 				wdesc.setMode(WorkMode.MATCH);
-				break;						
-			}
-			case RemusApplet.MERGER: {
+				break;
+			case RemusApplet.MERGER:
 				wdesc.setMode(WorkMode.MERGE);
-				break;						
-			}
-			case RemusApplet.PIPE: {
+				break;
+			case RemusApplet.PIPE:
 				wdesc.setMode(WorkMode.PIPE);
-				break;						
-			}
-			case RemusApplet.AGENT: {
+				break;
+			case RemusApplet.AGENT: 
 				logger.info("Agent Operation");
-				wdesc.setMode(WorkMode.MAP);
-				
+				wdesc.setMode(WorkMode.MAP);				
+				break;
+			default: 
 				break;
 			}
-			default: {}
-			}
-			RemusNet.Iface worker = plugins.getPeer(peerID);
-			String jobID = worker.jobRequest(plugins.getDataServer(), plugins.getAttachStore(), wdesc);
-			synchronized (activeStacks) {
-				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
+			if (ai.getApplet().getMode() == RemusApplet.AGENT) {
+				String jobID = worker.jobRequest(plugins.getPeerID(this), plugins.getPeerID(this), wdesc);
+				synchronized (activeStacks) {
+					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
+				}
+			} else {
+				String jobID = worker.jobRequest(plugins.getDataServer(), plugins.getAttachStore(), wdesc);
+				synchronized (activeStacks) {
+					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
+				}
 			}
 		} catch (TException e) {
 			e.printStackTrace();
@@ -454,6 +453,15 @@ public class WorkManager extends RemusManager {
 		return out;
 	}
 
+	
+	@Override
+	public List<String> keySlice(AppletRef stack, String keyStart, int count)
+			throws NotImplemented, TException {
+		logger.info("Manage DB request: " + stack + " " + keyStart + " " + count);
+		// TODO Auto-generated method stub
+		return super.keySlice(stack, keyStart, count);
+	}
+	
 	/*
 	 while ((curline = br.readLine()) != null) {
 				Map m = (Map)JSON.loads( curline );

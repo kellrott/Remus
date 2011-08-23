@@ -18,6 +18,7 @@ import org.remus.RemusDatabaseException;
 
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public class RemusPipeline {
 	public Set<AppletInstance> getActiveApplets( ) throws TException, NotImplemented, RemusDatabaseException {
 		Set<AppletInstance> out = new HashSet<AppletInstance>();
 		for ( String appletName : getMembers() ) {
-			RemusApplet applet = new RemusApplet(this, appletName, datastore);
+			RemusApplet applet = new RemusApplet(this, appletName, datastore, attachStore);
 			out.addAll(applet.getActiveApplets());
 		}
 		return out;
@@ -83,10 +84,10 @@ public class RemusPipeline {
 	}
 
 	public RemusApplet getApplet(String name) throws RemusDatabaseException {
-		AppletRef arPipeline = new AppletRef( getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		AppletRef arPipeline = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		try {
 			if (datastore.containsKey(arPipeline, name)) {
-				return new RemusApplet(this, name, datastore);
+				return new RemusApplet(this, name, datastore, attachStore);
 			}
 		} catch (TException e) {
 			e.printStackTrace();
@@ -111,8 +112,8 @@ public class RemusPipeline {
 	public String getSubKey(RemusInstance inst) {
 		AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
 		try {
-			for ( Object instObject : datastore.get( arInstance, inst.toString() ) ) {			
-				return (String)instObject;
+			for (Object instObject : datastore.get(arInstance, inst.toString())) {
+				return (String) instObject;
 			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
@@ -126,7 +127,7 @@ public class RemusPipeline {
 	public Map getSubmitData(String subKey) {
 		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 		try {
-			for ( Object subObject : datastore.get( arSubmit, subKey) ) {
+			for (Object subObject : datastore.get(arSubmit, subKey)) {
 				Map subMap = (Map) subObject;
 				return subMap;
 			}
@@ -141,13 +142,13 @@ public class RemusPipeline {
 
 	public void deleteInstance(RemusInstance instance) throws RemusDatabaseException {
 		try { 
-			logger.info( "Deleting Instance " + instance );
-			for ( String appletName : getMembers() ) {
-				RemusApplet applet = new RemusApplet(this, appletName, datastore);
+			logger.info("Deleting Instance " + instance);
+			for (String appletName : getMembers()) {
+				RemusApplet applet = new RemusApplet(this, appletName, datastore, attachStore);
 				applet.deleteInstance(instance);
 			}
 			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
-			datastore.deleteValue( arInstance, instance.toString());
+			datastore.deleteValue(arInstance, instance.toString());
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -160,14 +161,14 @@ public class RemusPipeline {
 
 		AppletRef arPipeline = new AppletRef(pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		Map appletObj = null;
-		for ( Object obj : store.get( arPipeline, name) ) {
-			appletObj = (Map)obj;		
+		for (Object obj : store.get(arPipeline, name)) {
+			appletObj = (Map) obj;
 		}
-		RemusApplet applet = new RemusApplet(this, name, datastore);
+		RemusApplet applet = new RemusApplet(this, name, datastore, attachStore);
 
 		if (appletObj.containsKey(RemusApplet.OUTPUT_FIELD)) {
-			for (Object nameObj : (List)appletObj.get(RemusApplet.OUTPUT_FIELD)) {
-				RemusApplet outApplet = new RemusApplet(this, name + "." + (String)nameObj, datastore);
+			for (Object nameObj : (List) appletObj.get(RemusApplet.OUTPUT_FIELD)) {
+				RemusApplet outApplet = new RemusApplet(this, name + "." + (String) nameObj, datastore, attachStore);
 				outApplet.setMode(RemusApplet.OUTPUT);
 				for (String input : applet.getInputs()) {
 					outApplet.addInput(input);
@@ -208,15 +209,15 @@ public class RemusPipeline {
 
 
 	public Iterable<KeyValPair> getSubmits() {
-		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
-		return datastore.listKeyPairs( arSubmit );
+		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		return datastore.listKeyPairs(arSubmit);
 	}
 
 	public void deleteSubmission(String key) throws TException, NotImplemented, RemusDatabaseException {
-		AppletRef arSubmit= new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
+		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 		Map sMap = null;
 		for (Object obj : datastore.get(arSubmit, key)) {
-			sMap = (Map)sMap;
+			sMap = (Map) sMap;
 		}
 		if (sMap != null) {
 			String instStr = (String) sMap.get(PipelineSubmission.InstanceField);

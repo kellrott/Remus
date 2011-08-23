@@ -37,9 +37,7 @@ import org.remus.RemusDB;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
-import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
-import org.remus.thrift.WorkDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +46,7 @@ public class Server extends RemusDB {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	ThriftClientPool clientPool;
-	String columnFamily,keySpace,serverName;
+	String columnFamily, keySpace, serverName;
 	int serverPort;
 	boolean instanceColumns;
 	Map<String,String> columns = new HashMap<String,String>();

@@ -1,6 +1,5 @@
 package org.remus.plugin;
 
-import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,22 +8,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.TProcessor;
-import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 
-import org.remus.RemusAttach;
-import org.remus.RemusDB;
 import org.remus.RemusIDServer;
 import org.remus.RemusManager;
 import org.remus.RemusRemote;
-import org.remus.RemusWorker;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.PeerType;
@@ -62,7 +54,7 @@ public class PluginManager {
 		}
 	}
 
-	public PluginManager(Map<String,Object> params) {
+	public PluginManager(Map<String, Object> params) {
 		logger = LoggerFactory.getLogger(PluginManager.class);
 
 		peerList = new HashMap<String, RemusNet.Iface>();
@@ -121,6 +113,11 @@ public class PluginManager {
 	}
 
 	public void start() throws Exception {
+		for (PluginInterface p : plugins) {
+			if (p.getPeerInfo().peerType == PeerType.NAME_SERVER) {
+				((RemusIDServer) p).preStart(this);
+			}
+		}
 		for (PluginInterface p : plugins) {
 			p.start(this);
 		}
@@ -188,20 +185,7 @@ public class PluginManager {
 	}
 
 
-
-	/*
-	public Set<RemusWorker> getWorkers() {
-		Set<RemusWorker> out = new HashSet<RemusWorker>();
-		for (PluginInterface pi : plugins) {
-			if (pi.getPeerInfo().peerType == PeerType.WORKER) {
-				out.add((RemusWorker) pi);
-			}
-		}
-		return out;
-	}
-	 */
-
-	Map<String,RemusNet.Iface> peerList;
+	Map<String, RemusNet.Iface> peerList;
 	Set<String> localPeers;
 
 	public int addLocalPeer(String peerID, RemusNet.Iface iface) {
@@ -225,22 +209,7 @@ public class PluginManager {
 		}
 		return out;
 	}
-	/*
-	public void setRemotePeers(List<PeerInfoThrift> rPeers) {
-		try {
-			for (PeerInfoThrift pi : rPeers) {
-				if (!peerList.containsKey(pi.peerID)) {
-					logger.info("Remote Peer" + pi.name + " " + pi.peerID);
-					peerList.put(pi.peerID, RemusRemote.getClient(pi.host, pi.port));
-				}
-			}
-		} catch (TTransportException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	 */
-
+	
 	public RemusNet.Iface getPeer(String peerID) {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);

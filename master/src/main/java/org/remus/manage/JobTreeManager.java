@@ -93,9 +93,9 @@ public class JobTreeManager extends RemusWorker {
 			OutputStreamWriter out = new OutputStreamWriter(
 					subConn.getOutputStream());
 
-			Map<String,String> subData = new HashMap<String,String>();
+			Map<String, String> subData = new HashMap<String, String>();
 			//subData.put("instance", work.getInstance().toString() );
-			out.write(  JSONValue.toJSONString(subData) );
+			out.write(JSONValue.toJSONString(subData));
 			out.flush();
 			out.close();
 			InputStream subIn = subConn.getInputStream();

@@ -29,10 +29,10 @@ public class PipelineErrorView implements BaseNode {
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 	throws FileNotFoundException {
-		for ( String appletName : pipeline.getMembers() ) {
+		for (String appletName : pipeline.getMembers()) {
 			try {
 				RemusApplet applet = pipeline.getApplet(appletName);
-				for ( RemusInstance inst : applet.getInstanceList() ) {
+				for (RemusInstance inst : applet.getInstanceList()) {
 					try {
 						applet.deleteErrors(inst);
 					} catch (TException e) {
@@ -52,25 +52,25 @@ public class PipelineErrorView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
-		for ( String appletName : pipeline.getMembers() ) {
+		for (String appletName : pipeline.getMembers()) {
 			try {
 				RemusApplet applet = pipeline.getApplet(appletName);
-				for ( RemusInstance inst : applet.getInstanceList() ) {
-					Map<String,Map<String,Object>> out = new HashMap<String, Map<String,Object>>();		
+				for (RemusInstance inst : applet.getInstanceList()) {
+					Map<String, Map<String, Object>> out = new HashMap<String, Map<String, Object>>();
 
-					AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + "/@error" );
+					AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + "/@error");
 
-					for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar) ) {
+					for (KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
 						String key = inst.toString() + ":" + applet.getID();
-						if ( ! out.containsKey( key )) {
-							out.put(key, new HashMap<String,Object>() );
+						if (!out.containsKey(key)) {
+							out.put(key, new HashMap<String, Object>());
 						}
-						out.get( key ).put(kv.getKey(), kv.getValue() );
+						out.get(key).put(kv.getKey(), kv.getValue());
 					}
-					if ( out.size() > 0 ) {
+					if (out.size() > 0) {
 						try {
-							os.write( JSON.dumps( out ).getBytes() );
-							os.write( "\n".getBytes() );
+							os.write(JSON.dumps(out).getBytes());
+							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

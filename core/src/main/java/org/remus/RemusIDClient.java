@@ -39,17 +39,21 @@ public class RemusIDClient extends RemusIDServer {
 		port =  Integer.parseInt(params.get("port").toString());
 	}
 
-	
-	@Override	
-	public void start(PluginManager pluginManager) throws Exception {
-		this.plugManager = pluginManager;
-		for (PluginInterface pi : pluginManager.getPlugins()) {
+	@Override
+	public void preStart(PluginManager pm) throws Exception {
+		this.plugManager = pm;
+		for (PluginInterface pi : pm.getPlugins()) {
 			PeerInfo info = pi.getPeerInfo();
 			info.setPeerID(UUID.randomUUID().toString());
 			info.setHost(getDefaultAddress());
-			info.setPort(pluginManager.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
+			info.setPort(pm.addLocalPeer(info.peerID, (RemusNet.Iface) pi));
 			addPeer(info);
-		}
+		}		
+	}
+	
+	@Override	
+	public void start(PluginManager pluginManager) throws Exception {
+		
 	}
 
 	@Override

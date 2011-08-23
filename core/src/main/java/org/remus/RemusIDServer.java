@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
+import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
@@ -35,6 +36,14 @@ abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 		 */
 	}
 
+	/**
+	 * PreStart is called for the name server before the start is called for the 
+	 * rest of the plugins, so it has a chance to map the peers before they start up
+	 * and start making name requests
+	 * @param pm
+	 */
+	abstract public void preStart(PluginManager pm) throws Exception;
+	
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {

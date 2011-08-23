@@ -17,8 +17,8 @@ public class SplitGenerator implements WorkGenerator {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() );
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
-			datastore.add( arWork, 0,0, "0", instance.toString() );
-			long t = datastore.getTimeStamp( ar );
+			datastore.add(arWork, 0, 0, "0", instance.toString());
+			long t = datastore.getTimeStamp(ar);
 			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
 			ai.setWorkStat(0, 0, 0, 1, t);
 		} catch (TException e) {

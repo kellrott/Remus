@@ -7,21 +7,102 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
+import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.RemusNet.Iface;
 
 public abstract class RemusDB implements Iface, PluginInterface {
 
+	
+	public static RemusDB wrap(final RemusNet.Iface db) {
+		if (db instanceof RemusDB) {
+			return (RemusDB) db;
+		}
+		return new RemusDB() {
+			
+			@Override
+			public void init(Map params) throws ConnectionException {}
+
+			@Override
+			public void addData(AppletRef stack, long jobID, long emitID,
+					String key, String data) throws NotImplemented, TException {
+				db.addData(stack, jobID, emitID, key, data);
+			}
+
+			@Override
+			public boolean containsKey(AppletRef stack, String key)
+					throws NotImplemented, TException {
+				return db.containsKey(stack, key);
+			}
+
+			@Override
+			public void deleteStack(AppletRef stack) throws NotImplemented,
+					TException {
+				db.deleteStack(stack);
+			}
+
+			@Override
+			public void deleteValue(AppletRef stack, String key)
+					throws NotImplemented, TException {
+				db.deleteValue(stack, key);				
+			}
+
+			@Override
+			public long getTimeStamp(AppletRef stack) throws NotImplemented,
+					TException {
+				return db.getTimeStamp(stack);
+			}
+
+			@Override
+			public List<String> getValueJSON(AppletRef stack, String key)
+					throws NotImplemented, TException {
+				return db.getValueJSON(stack, key);
+			}
+
+			@Override
+			public long keyCount(AppletRef stack, int maxCount)
+					throws NotImplemented, TException {
+				return db.keyCount(stack, maxCount);
+			}
+
+			@Override
+			public List<String> keySlice(AppletRef stack, String keyStart,
+					int count) throws NotImplemented, TException {
+				return db.keySlice(stack, keyStart, count);
+			}
+
+			@Override
+			public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack,
+					String startKey, int count) throws NotImplemented,
+					TException {
+				return db.keyValJSONSlice(stack, startKey, count);
+			}
+
+			@Override
+			public PeerInfo getPeerInfo() {
+				return ((PluginInterface)db).getPeerInfo();
+			}
+
+			@Override
+			public void start(PluginManager pluginManager) throws Exception {}
+
+			@Override
+			public void stop() {}
+			
+		};		
+	}
+	
 	abstract public void init(Map params) throws ConnectionException;
 
 	public void add( AppletRef stack, long jobID, long emitID, String key, Object object ) throws TException, NotImplemented {
-		addData(stack, jobID,emitID, key, JSON.dumps(object));
+		addData(stack, jobID, emitID, key, JSON.dumps(object));
 	}
 	
 	

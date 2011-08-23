@@ -24,13 +24,13 @@ public class AppView implements BaseNode {
 	RemusDB datastore;
 	private HashMap<String, BaseNode> children;
 	private RemusAttach attachstore;
-	
+
 	public AppView(RemusApp app, RemusWeb web) {
 		this.app = app;
 		this.web = web;
 		this.datastore = web.getDataStore();
 		this.attachstore = web.getAttachStore();
-		children = new HashMap<String,BaseNode>();
+		children = new HashMap<String, BaseNode>();
 		children.put("@pipeline", new PipelineConfigView(app, datastore));
 		children.put("@status", new ServerStatusView(app));
 		children.put("@manage", new ManageApp());
@@ -45,22 +45,22 @@ public class AppView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
 
-		if ( name.length() != 0 ) {
+		if (name.length() != 0) {
 			throw new FileNotFoundException(name);
 		}
 
 		Map out = new HashMap();
 		List<String> oList = new ArrayList<String>();
 		try {
-		for ( String pipeName : app.getPipelines() ) {
-			oList.add( pipeName );
-		}
+			for (String pipeName : app.getPipelines()) {
+				oList.add(pipeName);
+			}
 		} catch (TException e) {
 			e.printStackTrace();
 		}
 		out.put("@", oList);
 		try {
-			os.write( JSON.dumps(out).getBytes() );
+			os.write(JSON.dumps(out).getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +80,7 @@ public class AppView implements BaseNode {
 
 	@Override
 	public BaseNode getChild(String name) {
-		if ( children.containsKey(name)) {
+		if (children.containsKey(name)) {
 			return children.get(name);
 		}
 		if (app.hasPipeline(name)) {
@@ -101,38 +101,47 @@ public class AppView implements BaseNode {
 
 		BaseNode curNode = this;
 		Boolean called = false;
-		for ( int i = 1; i < tmp.length && !called; i++ ) {		
-			BaseNode next = curNode.getChild( tmp[i] );
-			if ( next != null ) {
+		for (int i = 1; i < tmp.length && !called; i++) {		
+			BaseNode next = curNode.getChild(tmp[i]);
+			if (next != null) {
 				curNode = next;
 			} else {
 				StringBuilder sb = new StringBuilder();
-				for ( int j = i; j < tmp.length; j++) {
-					if ( j != i )
+				for (int j = i; j < tmp.length; j++) {
+					if (j != i) {
 						sb.append("/");
-					sb.append( tmp[j] );
+					}
+					sb.append(tmp[j]);
 				}
 				//System.err.println( curNode + " " + sb.toString() );
-				if (type == GET_CALL)
+				if (type == GET_CALL) {
 					curNode.doGet(sb.toString(), parameterMap, workerID, outputStream);
-				if (type == PUT_CALL)
+				}
+				if (type == PUT_CALL) {
 					curNode.doPut(sb.toString(), workerID, inputStream, outputStream);
-				if (type == SUBMIT_CALL)
+				}
+				if (type == SUBMIT_CALL) {
 					curNode.doSubmit(sb.toString(), workerID, inputStream, outputStream);
-				if (type == DELETE_CALL)
+				}
+				if (type == DELETE_CALL) {
 					curNode.doDelete(sb.toString(), parameterMap, workerID);
+				}
 				called = true;
 			}
 		}
-		if ( !called ) {
-			if ( type == GET_CALL )
-				curNode.doGet( "", parameterMap, workerID, outputStream );
-			if ( type == PUT_CALL )
-				curNode.doPut( "", workerID, inputStream, outputStream );
-			if ( type == SUBMIT_CALL )
-				curNode.doSubmit( "", workerID, inputStream, outputStream );
-			if ( type == DELETE_CALL )
-				curNode.doDelete( "", parameterMap, workerID );
+		if (!called) {
+			if (type == GET_CALL) {
+				curNode.doGet("", parameterMap, workerID, outputStream);
+			}
+			if (type == PUT_CALL) {
+				curNode.doPut("", workerID, inputStream, outputStream);
+			}
+			if (type == SUBMIT_CALL) {
+				curNode.doSubmit("", workerID, inputStream, outputStream);
+			}
+			if (type == DELETE_CALL) {
+				curNode.doDelete("", parameterMap, workerID);
+			}
 		}
 	}
 

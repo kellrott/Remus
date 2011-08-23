@@ -15,7 +15,6 @@ import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
-import org.remus.RemusWorker;
 import org.remus.core.BaseStackNode;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PluginManager;
@@ -37,8 +36,6 @@ public class JettyServer extends RemusWeb {
 
 	public static final int DEFAULT_PORT = 16016;
 
-	RemusNet.Iface datastore;
-	RemusNet.Iface attachstore;
 	private Logger logger;
 	private PluginManager pm;
 
@@ -50,7 +47,7 @@ public class JettyServer extends RemusWeb {
 		return out;
 	}
 
-	Map<AppletRef,BaseStackNode> stackMap;
+	Map<AppletRef, BaseStackNode> stackMap;
 
 	@Override
 	public void init(Map params) {
@@ -69,13 +66,9 @@ public class JettyServer extends RemusWeb {
 			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
 		}
 
-		datastore = pluginManager.getPeer(pluginManager.getDataServer());
-		attachstore = pluginManager.getPeer(pluginManager.getAttachStore());
-
 		server = new Server(serverPort);
 		Context root = new Context(server, "/", Context.SESSIONS);
 		ServletHolder sh = new ServletHolder(new MasterServlet(this));
-
 
 		/*
 		for (Map.Entry<Object, Object> propItem : prop.entrySet()) {
@@ -113,12 +106,12 @@ public class JettyServer extends RemusWeb {
 
 	@Override
 	public RemusAttach getAttachStore() {
-		return (RemusAttach) attachstore;
+		return (RemusAttach) pm.getPeer(pm.getAttachStore());
 	}
 
 	@Override
 	public RemusDB getDataStore() {
-		return (RemusDB) datastore;
+		return (RemusDB) pm.getPeer(pm.getDataServer());
 	}
 
 

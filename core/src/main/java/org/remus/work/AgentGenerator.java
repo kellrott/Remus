@@ -15,15 +15,14 @@ public class AgentGenerator implements WorkGenerator {
 	@Override
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 
-		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() );
-		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
+		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
+		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
 		
 		int jobID = 0;
-		System.out.println("AGENT WORK");
-		for ( String input : applet.getInputs() ) {			
+		for (String input : applet.getInputs()) {			
 			String key = instance.toString() + ":" + input;
 			try {
-				datastore.add(ar, 0, 0, Integer.toString(jobID), key);
+				datastore.add(arWork, 0, 0, Integer.toString(jobID), key);
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -34,7 +33,7 @@ public class AgentGenerator implements WorkGenerator {
 			jobID++;							
 		}
 		try {
-			long t = datastore.getTimeStamp( ar );
+			long t = datastore.getTimeStamp(ar);
 			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
 			ai.setWorkStat(0, 0, 0, jobID, t);
 		} catch (TException e) {

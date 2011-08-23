@@ -15,6 +15,7 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 import org.remus.work.AgentGenerator;
 import org.remus.work.MapGenerator;
 import org.remus.work.MatchGenerator;
@@ -52,19 +53,21 @@ public class RemusApplet {
 	Class workGenerator = null;
 	private String id;
 	List<String> inputs = null, lInputs = null, rInputs = null;
-	RemusDB datastore;
 	int mode;
 	private String type;
 	LinkedList<RemusInstance> activeInstances;
-	private RemusAttach attachstore;
 	private RemusPipeline pipeline;
 
+	private RemusDB datastore;
+	private RemusAttach attachstore;
 
-	public RemusApplet(RemusPipeline pipeline, String name, RemusDB datastore) throws TException, NotImplemented, RemusDatabaseException {
+
+	public RemusApplet(RemusPipeline pipeline, String name, RemusDB datastore, RemusAttach attachstore) throws TException, NotImplemented, RemusDatabaseException {
 		logger = LoggerFactory.getLogger(RemusApplet.class);
 		id = name;
 		this.pipeline = pipeline;
 		this.datastore = datastore;
+		this.attachstore = attachstore;
 
 		AppletRef arApplet = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
@@ -204,21 +207,24 @@ public class RemusApplet {
 	}
 
 	public void addInput(String in) {
-		if (inputs == null)
+		if (inputs == null) {
 			inputs = new ArrayList<String>();
+		}
 		inputs.add(in);
 	}	
 
 	public void addLeftInput(String in) {
-		if (lInputs == null)
+		if (lInputs == null) {
 			lInputs = new LinkedList<String>();
+		}
 		lInputs.add(in);
 		addInput(in);
 	}
 
 	public void addRightInput(String in) {
-		if (rInputs == null)
+		if (rInputs == null) {
 			rInputs = new LinkedList<String>();
+		}
 		rInputs.add(in);
 		addInput(in);
 	}
@@ -253,8 +259,9 @@ public class RemusApplet {
 	}
 
 	public boolean hasInputs() {
-		if (inputs == null)
+		if (inputs == null) {
 			return false;
+		}
 		return true;
 	}
 
@@ -320,9 +327,9 @@ public class RemusApplet {
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>();
 		AppletRef applet = new AppletRef(pipeline.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, getID() + 
-				"/@instance");
-		for (String key : datastore.listKeys(applet)){
+				RemusInstance.STATIC_INSTANCE_STR, getID()
+				+ "/@instance");
+		for (String key : datastore.listKeys(applet)) {
 			out.add(new RemusInstance(key));
 		}
 		return out;
@@ -358,18 +365,18 @@ public class RemusApplet {
 	@SuppressWarnings("unchecked")
 	public boolean createInstance(String submitKey, Map params, RemusInstance inst) throws TException, NotImplemented {
 
-		logger.info("Creating instance of " + getID() + " for " + inst.toString() );
-		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + "/@instance" );
+		logger.info("Creating instance of " + getID() + " for " + inst.toString());
+		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + "/@instance");
 
-		if ( datastore.containsKey( instApplet, inst.toString()) ) {
+		if (datastore.containsKey(instApplet, inst.toString())) {
 			return false;
 		}
 
 		Map baseMap = new HashMap();
 
-		if ( params != null ) {
-			for ( Object key : params.keySet() ) {
-				baseMap.put(key, params.get(key) );
+		if (params != null) {
+			for (Object key : params.keySet()) {
+				baseMap.put(key, params.get(key));
 			}
 		}
 
@@ -402,16 +409,16 @@ public class RemusApplet {
 		} else if (getMode() == AGENT) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", "@agent");
-			inMap.put("_applet", getInput() );
+			inMap.put("_applet", getInput());
 			baseMap.put("_input", inMap);
 		} else if (getMode() == PIPE) {
-			if ( getInput().compareTo("?") != 0 ) {
+			if (getInput().compareTo("?") != 0) {
 				List outList = new ArrayList();
-				for ( String input : getInputs() ) {
+				for (String input : getInputs()) {
 					Map inMap = new HashMap();
 					inMap.put("_instance", inst.toString());
-					inMap.put("_applet", input );
-					outList.add( inMap );
+					inMap.put("_applet", input);
+					outList.add(inMap);
 				}
 				baseMap.put("_input", outList);
 			}
@@ -454,7 +461,7 @@ public class RemusApplet {
 
 	@Override
 	public boolean equals(Object obj) {
-		RemusApplet a = (RemusApplet)obj;
+		RemusApplet a = (RemusApplet) obj;
 		return a.getID().equals(getID());
 	}
 
