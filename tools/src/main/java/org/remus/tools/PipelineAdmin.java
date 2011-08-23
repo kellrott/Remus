@@ -212,8 +212,8 @@ public class PipelineAdmin {
 		try {
 			PluginManager pm = new PluginManager(params);
 			pm.start();
-			RemusApp app = new RemusApp(pm.getDataServer(), 
-					pm.getAttachStore());
+			RemusApp app = new RemusApp((RemusDB) pm.getPeer(pm.getDataServer()),
+					(RemusAttach) pm.getPeer(pm.getAttachStore()));
 			String cmd = null;
 			if (args.length > 1) {
 				cmd = args[1];
@@ -256,7 +256,7 @@ public class PipelineAdmin {
 							if (!instDir.exists()) {
 								instDir.mkdirs();
 							}
-							tableDump(pm.getDataServer(), pipe, instance.toString(), instDir);
+							tableDump((RemusDB) pm.getPeer(pm.getDataServer()), pipe, instance.toString(), instDir);
 						}
 					} else {					
 						RemusInstance instance = new RemusInstance(inst);
@@ -264,7 +264,7 @@ public class PipelineAdmin {
 						if (!instDir.exists()) {
 							instDir.mkdirs();	
 						}
-						tableDump(pm.getDataServer(), pipe, instance.toString(), instDir);
+						tableDump((RemusDB) pm.getPeer(pm.getDataServer()), pipe, instance.toString(), instDir);
 					}
 
 				} else if (cmd.compareTo("load") == 0 && args.length > 2) {
@@ -275,7 +275,7 @@ public class PipelineAdmin {
 
 					File srcDir = new File(srcDirPath);
 					RemusInstance instance = new RemusInstance(srcDir.getName());
-					loadTable(pm.getDataServer(), pipe, instance, srcDir);
+					loadTable((RemusDB) pm.getPeer(pm.getDataServer()), pipe, instance, srcDir);
 				}
 			}
 		} finally {

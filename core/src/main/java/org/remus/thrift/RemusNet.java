@@ -77,9 +77,10 @@ public class RemusNet {
      * 
      * 
      * @param dataServer
+     * @param attachServer
      * @param work
      */
-    public String jobRequest(String dataServer, WorkDesc work) throws NotImplemented, org.apache.thrift.TException;
+    public String jobRequest(String dataServer, String attachServer, WorkDesc work) throws NotImplemented, org.apache.thrift.TException;
 
     public JobStatus jobStatus(String jobID) throws NotImplemented, org.apache.thrift.TException;
 
@@ -93,7 +94,7 @@ public class RemusNet {
     public Map<String,String> scheduleInfo() throws NotImplemented, org.apache.thrift.TException;
 
     /**
-     * Name serverice methods
+     * Name service methods
      * 
      * 
      * @param info
@@ -140,7 +141,7 @@ public class RemusNet {
 
     public void deleteAttachment(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.deleteAttachment_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void jobRequest(String dataServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobRequest_call> resultHandler) throws org.apache.thrift.TException;
+    public void jobRequest(String dataServer, String attachServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobRequest_call> resultHandler) throws org.apache.thrift.TException;
 
     public void jobStatus(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobStatus_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -831,17 +832,18 @@ public class RemusNet {
       return;
     }
 
-    public String jobRequest(String dataServer, WorkDesc work) throws NotImplemented, org.apache.thrift.TException
+    public String jobRequest(String dataServer, String attachServer, WorkDesc work) throws NotImplemented, org.apache.thrift.TException
     {
-      send_jobRequest(dataServer, work);
+      send_jobRequest(dataServer, attachServer, work);
       return recv_jobRequest();
     }
 
-    public void send_jobRequest(String dataServer, WorkDesc work) throws org.apache.thrift.TException
+    public void send_jobRequest(String dataServer, String attachServer, WorkDesc work) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobRequest", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       jobRequest_args args = new jobRequest_args();
       args.setDataServer(dataServer);
+      args.setAttachServer(attachServer);
       args.setWork(work);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -1755,19 +1757,21 @@ public class RemusNet {
       }
     }
 
-    public void jobRequest(String dataServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<jobRequest_call> resultHandler) throws org.apache.thrift.TException {
+    public void jobRequest(String dataServer, String attachServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<jobRequest_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      jobRequest_call method_call = new jobRequest_call(dataServer, work, resultHandler, this, protocolFactory, transport);
+      jobRequest_call method_call = new jobRequest_call(dataServer, attachServer, work, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class jobRequest_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String dataServer;
+      private String attachServer;
       private WorkDesc work;
-      public jobRequest_call(String dataServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<jobRequest_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public jobRequest_call(String dataServer, String attachServer, WorkDesc work, org.apache.thrift.async.AsyncMethodCallback<jobRequest_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.dataServer = dataServer;
+        this.attachServer = attachServer;
         this.work = work;
       }
 
@@ -1775,6 +1779,7 @@ public class RemusNet {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobRequest", org.apache.thrift.protocol.TMessageType.CALL, 0));
         jobRequest_args args = new jobRequest_args();
         args.setDataServer(dataServer);
+        args.setAttachServer(attachServer);
         args.setWork(work);
         args.write(prot);
         prot.writeMessageEnd();
@@ -2694,7 +2699,7 @@ public class RemusNet {
         iprot.readMessageEnd();
         jobRequest_result result = new jobRequest_result();
         try {
-          result.success = iface_.jobRequest(args.dataServer, args.work);
+          result.success = iface_.jobRequest(args.dataServer, args.attachServer, args.work);
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
@@ -16220,15 +16225,18 @@ public class RemusNet {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("jobRequest_args");
 
     private static final org.apache.thrift.protocol.TField DATA_SERVER_FIELD_DESC = new org.apache.thrift.protocol.TField("dataServer", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField WORK_FIELD_DESC = new org.apache.thrift.protocol.TField("work", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField ATTACH_SERVER_FIELD_DESC = new org.apache.thrift.protocol.TField("attachServer", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField WORK_FIELD_DESC = new org.apache.thrift.protocol.TField("work", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     public String dataServer;
+    public String attachServer;
     public WorkDesc work;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       DATA_SERVER((short)1, "dataServer"),
-      WORK((short)2, "work");
+      ATTACH_SERVER((short)2, "attachServer"),
+      WORK((short)3, "work");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -16245,7 +16253,9 @@ public class RemusNet {
         switch(fieldId) {
           case 1: // DATA_SERVER
             return DATA_SERVER;
-          case 2: // WORK
+          case 2: // ATTACH_SERVER
+            return ATTACH_SERVER;
+          case 3: // WORK
             return WORK;
           default:
             return null;
@@ -16293,6 +16303,8 @@ public class RemusNet {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.DATA_SERVER, new org.apache.thrift.meta_data.FieldMetaData("dataServer", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.ATTACH_SERVER, new org.apache.thrift.meta_data.FieldMetaData("attachServer", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.WORK, new org.apache.thrift.meta_data.FieldMetaData("work", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, WorkDesc.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -16304,10 +16316,12 @@ public class RemusNet {
 
     public jobRequest_args(
       String dataServer,
+      String attachServer,
       WorkDesc work)
     {
       this();
       this.dataServer = dataServer;
+      this.attachServer = attachServer;
       this.work = work;
     }
 
@@ -16317,6 +16331,9 @@ public class RemusNet {
     public jobRequest_args(jobRequest_args other) {
       if (other.isSetDataServer()) {
         this.dataServer = other.dataServer;
+      }
+      if (other.isSetAttachServer()) {
+        this.attachServer = other.attachServer;
       }
       if (other.isSetWork()) {
         this.work = new WorkDesc(other.work);
@@ -16330,6 +16347,7 @@ public class RemusNet {
     @Override
     public void clear() {
       this.dataServer = null;
+      this.attachServer = null;
       this.work = null;
     }
 
@@ -16354,6 +16372,30 @@ public class RemusNet {
     public void setDataServerIsSet(boolean value) {
       if (!value) {
         this.dataServer = null;
+      }
+    }
+
+    public String getAttachServer() {
+      return this.attachServer;
+    }
+
+    public jobRequest_args setAttachServer(String attachServer) {
+      this.attachServer = attachServer;
+      return this;
+    }
+
+    public void unsetAttachServer() {
+      this.attachServer = null;
+    }
+
+    /** Returns true if field attachServer is set (has been assigned a value) and false otherwise */
+    public boolean isSetAttachServer() {
+      return this.attachServer != null;
+    }
+
+    public void setAttachServerIsSet(boolean value) {
+      if (!value) {
+        this.attachServer = null;
       }
     }
 
@@ -16391,6 +16433,14 @@ public class RemusNet {
         }
         break;
 
+      case ATTACH_SERVER:
+        if (value == null) {
+          unsetAttachServer();
+        } else {
+          setAttachServer((String)value);
+        }
+        break;
+
       case WORK:
         if (value == null) {
           unsetWork();
@@ -16406,6 +16456,9 @@ public class RemusNet {
       switch (field) {
       case DATA_SERVER:
         return getDataServer();
+
+      case ATTACH_SERVER:
+        return getAttachServer();
 
       case WORK:
         return getWork();
@@ -16423,6 +16476,8 @@ public class RemusNet {
       switch (field) {
       case DATA_SERVER:
         return isSetDataServer();
+      case ATTACH_SERVER:
+        return isSetAttachServer();
       case WORK:
         return isSetWork();
       }
@@ -16448,6 +16503,15 @@ public class RemusNet {
         if (!(this_present_dataServer && that_present_dataServer))
           return false;
         if (!this.dataServer.equals(that.dataServer))
+          return false;
+      }
+
+      boolean this_present_attachServer = true && this.isSetAttachServer();
+      boolean that_present_attachServer = true && that.isSetAttachServer();
+      if (this_present_attachServer || that_present_attachServer) {
+        if (!(this_present_attachServer && that_present_attachServer))
+          return false;
+        if (!this.attachServer.equals(that.attachServer))
           return false;
       }
 
@@ -16486,6 +16550,16 @@ public class RemusNet {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetAttachServer()).compareTo(typedOther.isSetAttachServer());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetAttachServer()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.attachServer, typedOther.attachServer);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetWork()).compareTo(typedOther.isSetWork());
       if (lastComparison != 0) {
         return lastComparison;
@@ -16520,7 +16594,14 @@ public class RemusNet {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // WORK
+          case 2: // ATTACH_SERVER
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.attachServer = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // WORK
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.work = new WorkDesc();
               this.work.read(iprot);
@@ -16548,6 +16629,11 @@ public class RemusNet {
         oprot.writeString(this.dataServer);
         oprot.writeFieldEnd();
       }
+      if (this.attachServer != null) {
+        oprot.writeFieldBegin(ATTACH_SERVER_FIELD_DESC);
+        oprot.writeString(this.attachServer);
+        oprot.writeFieldEnd();
+      }
       if (this.work != null) {
         oprot.writeFieldBegin(WORK_FIELD_DESC);
         this.work.write(oprot);
@@ -16567,6 +16653,14 @@ public class RemusNet {
         sb.append("null");
       } else {
         sb.append(this.dataServer);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("attachServer:");
+      if (this.attachServer == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.attachServer);
       }
       first = false;
       if (!first) sb.append(", ");

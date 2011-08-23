@@ -152,19 +152,13 @@ public class JobTreeManager extends RemusWorker {
 					e.printStackTrace();
 					quit = true;
 				}
-			}
-			
+			}			
 		}
-
 	}
-
-
-	
-
 	
 
 	@Override
-	public String jobRequest(String dataServer, WorkDesc work)
+	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws NotImplemented, TException {
 		// TODO Auto-generated method stub
 		return null;

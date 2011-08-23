@@ -97,7 +97,7 @@ public abstract class RemusDB implements Iface, PluginInterface {
 
 
 	@Override
-	public String jobRequest(String dataServer, WorkDesc work)
+	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws TException, NotImplemented {
 		throw new NotImplemented();
 	}

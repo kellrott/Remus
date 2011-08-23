@@ -37,8 +37,8 @@ public class JettyServer extends RemusWeb {
 
 	public static final int DEFAULT_PORT = 16016;
 
-	RemusDB datastore;
-	RemusAttach attachstore;
+	RemusNet.Iface datastore;
+	RemusNet.Iface attachstore;
 	private Logger logger;
 	private PluginManager pm;
 
@@ -69,8 +69,8 @@ public class JettyServer extends RemusWeb {
 			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
 		}
 
-		datastore = pluginManager.getDataServer();
-		attachstore = pluginManager.getAttachStore();
+		datastore = pluginManager.getPeer(pluginManager.getDataServer());
+		attachstore = pluginManager.getPeer(pluginManager.getAttachStore());
 
 		server = new Server(serverPort);
 		Context root = new Context(server, "/", Context.SESSIONS);
@@ -113,12 +113,12 @@ public class JettyServer extends RemusWeb {
 
 	@Override
 	public RemusAttach getAttachStore() {
-		return attachstore;
+		return (RemusAttach) attachstore;
 	}
 
 	@Override
 	public RemusDB getDataStore() {
-		return datastore;
+		return (RemusDB) datastore;
 	}
 
 
@@ -149,7 +149,7 @@ public class JettyServer extends RemusWeb {
 		work.lang = "javascript";
 
 		try {
-			String jobID = jsWorker.jobRequest("this", work);			
+			String jobID = jsWorker.jobRequest(peerID, null, work);			
 			boolean done = false;
 			do {
 				JobStatus stat = jsWorker.jobStatus(jobID);

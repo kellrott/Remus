@@ -76,7 +76,7 @@ abstract public class RemusManager implements RemusNet.Iface, PluginInterface {
 	}
 
 	@Override
-	public String jobRequest(String dataServer, WorkDesc work)
+	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws NotImplemented, TException {
 		throw new NotImplemented();		
 	}

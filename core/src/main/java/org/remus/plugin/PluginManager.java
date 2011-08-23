@@ -89,6 +89,7 @@ public class PluginManager {
 					plug.init(config);
 					plugins.add(plug);
 					int port = Integer.parseInt(serverConf.get("port").toString());
+					logger.info("Opening " + className + " server on port " + port);
 					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
 					sThread.start();
 					servers.put(plug, sThread);
@@ -125,20 +126,34 @@ public class PluginManager {
 		}
 	}
 
-	public RemusDB getDataServer() {
-		for (PluginInterface pi : plugins) {
-			if (pi.getPeerInfo().peerType == PeerType.DB_SERVER) {
-				return (RemusDB) pi;
+	public String getDataServer() {
+		try {
+			List<PeerInfoThrift> piList = getIDServer().getPeers();		
+			for (PeerInfoThrift pi : piList) {
+				if (pi.peerType == PeerType.DB_SERVER) {
+					return pi.peerID;
+				}
 			}
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public RemusAttach getAttachStore() {
-		for (PluginInterface pi : plugins) {
-			if (pi.getPeerInfo().peerType == PeerType.ATTACH_SERVER) {
-				return (RemusAttach) pi;
+	public String getAttachStore() {
+		try {
+			List<PeerInfoThrift> piList = getIDServer().getPeers();		
+			for (PeerInfoThrift pi : piList) {
+				if (pi.peerType == PeerType.ATTACH_SERVER) {
+					return pi.peerID;
+				}
 			}
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			e.printStackTrace();
 		}
 		return null;
 	}

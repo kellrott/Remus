@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.PeerInfo;
+import org.remus.RemusAttach;
+import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.core.AppletInstance;
@@ -233,7 +235,7 @@ public class WorkManager extends RemusManager {
 
 	private void scanJobs() {
 		try {
-			RemusApp app = new RemusApp(plugins.getDataServer(), plugins.getAttachStore());
+			RemusApp app = new RemusApp((RemusDB) plugins.getPeer(plugins.getDataServer()), (RemusAttach)plugins.getPeer(plugins.getAttachStore()));
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
@@ -407,10 +409,16 @@ public class WorkManager extends RemusManager {
 				wdesc.setMode(WorkMode.PIPE);
 				break;						
 			}
+			case RemusApplet.AGENT: {
+				logger.info("Agent Operation");
+				wdesc.setMode(WorkMode.MAP);
+				
+				break;
+			}
 			default: {}
 			}
 			RemusNet.Iface worker = plugins.getPeer(peerID);
-			String jobID = worker.jobRequest("test", wdesc);
+			String jobID = worker.jobRequest(plugins.getDataServer(), plugins.getAttachStore(), wdesc);
 			synchronized (activeStacks) {
 				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 			}

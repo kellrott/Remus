@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.remus.KeyValPair;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
@@ -41,7 +42,7 @@ public class MapTest {
 
 	@Test public void mapTest() throws RemusDatabaseException, TException, NotImplemented, InterruptedException {
 
-		RemusApp app = new RemusApp(pm.getDataServer(), pm.getAttachStore());
+		RemusApp app = new RemusApp((RemusDB) pm.getPeer(pm.getDataServer()), (RemusAttach) pm.getPeer(pm.getAttachStore()));
 		
 		RemusPipeline pipe = app.getPipeline("testPipeline");
 		if (pipe != null) {
@@ -60,7 +61,7 @@ public class MapTest {
 
 		AppletRef ar = new AppletRef("testPipeline", inst.toString(), "inputStack");
 
-		RemusDB dataServer = pm.getDataServer();
+		RemusDB dataServer = (RemusDB) pm.getPeer(pm.getDataServer());
 		dataServer.add(ar, 0, 0, "a", "four");
 		dataServer.add(ar, 0, 0, "b", "score");
 		dataServer.add(ar, 0, 0, "c", "and");
@@ -92,7 +93,7 @@ public class MapTest {
 
 	@After public void tearDown() throws RemusDatabaseException, TException {
 		
-		RemusApp app = new RemusApp(pm.getDataServer(), pm.getAttachStore());
+		RemusApp app = new RemusApp((RemusDB) pm.getPeer(pm.getDataServer()), (RemusAttach) pm.getPeer(pm.getAttachStore()));
 		RemusPipeline pipe = app.getPipeline("testPipeline");
 		app.deletePipeline(pipe);
 		

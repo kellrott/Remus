@@ -15,6 +15,7 @@ import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.PeerInfo;
 import org.slf4j.Logger;
@@ -52,14 +53,14 @@ public class JSWorker extends RemusWorker {
 	}
 
 	@Override
-	public String jobRequest(String dataServer, WorkDesc work)
+	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws TException {
 		logger.info("Received job request: " + work.mode + " " + work.workStack);
-		RemusDB db = plugins.getDataServer();
-		RemusAttach attach = plugins.getAttachStore();
+		RemusNet.Iface db = plugins.getPeer(dataServer);
+		RemusNet.Iface attach = plugins.getPeer(attachServer);
 		
 		JSFunctionCall js = new JSFunctionCall();
-		WorkEngine we = new WorkEngine(work, db, attach, js);		
+		WorkEngine we = new WorkEngine(work, (RemusDB) db, (RemusAttach) attach, js);		
 		executor.submit(we);
 		String jobName = UUID.randomUUID().toString();
 		workMap.put(jobName, we);

@@ -137,7 +137,7 @@ service RemusNet {
 	 *
 	 */
 	
-	string jobRequest( 1:string dataServer, 2:WorkDesc work ) throws (1:NotImplemented e);
+	string jobRequest( 1:string dataServer, 2:string attachServer, 3:WorkDesc work ) throws (1:NotImplemented e);
 	JobStatus jobStatus( 1:string jobID ) throws (1:NotImplemented e);
 	i32 jobCancel( 1:string jobID ) throws (1:NotImplemented e);
 
