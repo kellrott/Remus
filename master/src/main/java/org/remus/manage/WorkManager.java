@@ -21,6 +21,7 @@ import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
+import org.remus.core.RemusMiniDB;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
@@ -42,7 +43,15 @@ import org.slf4j.LoggerFactory;
  */
 public class WorkManager extends RemusManager {
 
-	Logger logger;
+	/**
+	 * A map of active applet instances to the peerIDs
+	 * of the workers doing jobs for this applet.
+	 */
+	private Map<AppletInstance, Set<RemoteJob>> activeStacks;
+	private Map<String, Set<RemoteJob>> peerStacks;
+	private Map<AppletInstance, Integer> assignRate;
+	private Logger logger;
+	private RemusMiniDB miniDB;
 
 
 	public static int INACTIVE_SLEEP_TIME = 10000;
@@ -67,6 +76,14 @@ public class WorkManager extends RemusManager {
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		plugins = pluginManager;
+		/**
+		 * The miniDB is a shim placed infront of the database, that will allow you
+		 * to add additional, dynamic, applets to the database. For the work manager
+		 * it is used to create the '/@agent' applets, which view all the applet instance
+		 * records as a single stack
+		 */
+		miniDB = new RemusMiniDB(plugins.getPeer(plugins.getDataServer()));
+		miniDB.addBaseStack("/@applet", new AppletInstanceStack(plugins));
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
@@ -107,13 +124,7 @@ public class WorkManager extends RemusManager {
 
 	}
 
-	/**
-	 * A map of active applet instances to the peerIDs
-	 * of the workers doing jobs for this applet.
-	 */
-	private Map<AppletInstance, Set<RemoteJob>> activeStacks;
-	private Map<String, Set<RemoteJob>> peerStacks;
-	private Map<AppletInstance, Integer> assignRate;
+
 
 	private void syncAppletList(Set<AppletInstance> aiSet) {
 		synchronized (activeStacks) {		
@@ -278,7 +289,7 @@ public class WorkManager extends RemusManager {
 							ai.errorWork(i, s.errorMsg);
 						}
 						removeSet.put(rj, false);
-						logger.warn("JOB ERROR: " + rj.jobID);
+						logger.warn("JOB ERROR: " + rj.jobID + " " + s.errorMsg);
 					} else if (s.status == JobState.UNKNOWN) {
 						logger.warn("Worker lost job: " + rj.jobID);
 					} else {
@@ -411,7 +422,7 @@ public class WorkManager extends RemusManager {
 				break;
 			}
 			if (ai.getApplet().getMode() == RemusApplet.AGENT) {
-				String jobID = worker.jobRequest(plugins.getPeerID(this), plugins.getPeerID(this), wdesc);
+				String jobID = worker.jobRequest(plugins.getPeerID(this), plugins.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 				}
@@ -453,13 +464,26 @@ public class WorkManager extends RemusManager {
 		return out;
 	}
 
-	
+
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		logger.info("Manage DB request: " + stack + " " + keyStart + " " + count);
-		// TODO Auto-generated method stub
-		return super.keySlice(stack, keyStart, count);
+		return miniDB.keySlice(stack, keyStart, count);
+	}
+
+	@Override
+	public boolean containsKey(AppletRef stack, String key)
+	throws NotImplemented, TException {
+		logger.info("Manage DB request: " + stack + " " + key);
+		return miniDB.containsKey(stack, key);	
+	}
+
+	@Override
+	public List<String> getValueJSON(AppletRef stack, String key)
+			throws NotImplemented, TException {
+		logger.info("Manage DB request: " + stack + " " + key);
+		return miniDB.getValueJSON(stack, key);
 	}
 	
 	/*

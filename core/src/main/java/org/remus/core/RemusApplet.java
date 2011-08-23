@@ -408,8 +408,8 @@ public class RemusApplet {
 			baseMap.put("_input", inMap);
 		} else if (getMode() == AGENT) {
 			Map inMap = new HashMap();
-			inMap.put("_instance", "@agent");
-			inMap.put("_applet", getInput());
+			inMap.put("_instance", RemusInstance.STATIC_INSTANCE_STR);
+			inMap.put("_applet", "/@agent");
 			baseMap.put("_input", inMap);
 		} else if (getMode() == PIPE) {
 			if (getInput().compareTo("?") != 0) {

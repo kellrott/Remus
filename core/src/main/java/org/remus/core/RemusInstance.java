@@ -22,6 +22,11 @@ public class RemusInstance implements Comparable<RemusInstance> {
 
 
 	static public RemusInstance getInstance(RemusDB store, String pipeline, String id) throws TException, NotImplemented {
+		
+		if ( id.compareTo(STATIC_INSTANCE_STR) == 0) {
+			return STATIC_INSTANCE;
+		}
+		
 		RemusInstance out = null;
 		AppletRef arSubmit = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@submit");
 		AppletRef arInst = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@instance");

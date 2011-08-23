@@ -277,7 +277,7 @@ public class RemusPipeline {
 		Set<String> activeSet = new HashSet<String>();
 		RemusInstance inst = new RemusInstance();
 
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@subit");
+		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 
 		try {
 			for (Object subObject : datastore.get(arSubmit, name)) {
@@ -350,24 +350,24 @@ public class RemusPipeline {
 
 
 	public OutputStream writeAttachment(String name) throws IOException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		return attachStore.writeAttachment(stack, null, name);
 	}
 
 	public InputStream readAttachment(String name) throws NotImplemented {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		return attachStore.readAttachement(stack, null, name);
 	}
 
 	public boolean hasAttachment(String name) throws NotImplemented, TException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		return attachStore.hasAttachment(stack, null, name);
 	}
 
 
 
 	public List<String> listAttachments() throws NotImplemented, TException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "@pipeline");
+		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		return attachStore.listAttachments(stack, null);
 	}
 

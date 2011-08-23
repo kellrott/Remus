@@ -1,5 +1,7 @@
 package org.remus.mapred;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,24 +16,28 @@ import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
 import org.remus.RemusDBSliceIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sun.net.idn.StringPrep;
+
 public class WorkEngine implements Runnable {
 	private WorkDesc work;
 	private RemusDB db;
 	private MapReduceFunction mapred;
 	private JobState status;
+	private String message;
 	private RemusAttach attach;
 	private Logger logger;
 	private boolean canceled = false; 
-	public WorkEngine(WorkDesc work, RemusDB db, RemusAttach attach, MapReduceFunction mapred) {
+	public WorkEngine(WorkDesc work, RemusNet.Iface db, RemusNet.Iface attach, MapReduceFunction mapred) {
 		this.work = work;
-		this.db = db;
-		this.attach = attach;
+		this.db = RemusDB.wrap(db);
+		this.attach = RemusAttach.wrap(attach);
 		this.mapred = mapred;
 		status = JobState.QUEUED;
 		logger = LoggerFactory.getLogger(WorkEngine.class);
@@ -42,7 +48,7 @@ public class WorkEngine implements Runnable {
 		AppletRef arWork = new AppletRef(work.workStack.pipeline, 
 				work.workStack.instance, work.workStack.applet + "/@work");
 		status = JobState.WORKING;
-
+		message = null;
 		Map stackInfo = (Map) JSON.loads(work.infoJSON);
 		mapred.init(stackInfo);
 		PipelineSubmission sub = new PipelineSubmission(stackInfo);
@@ -245,10 +251,22 @@ public class WorkEngine implements Runnable {
 			}
 		} catch (TException e) {
 			status = JobState.ERROR;
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			message = sw.toString();
 		} catch (NotImplemented e) {
 			status = JobState.ERROR;
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			message = sw.toString();
 		} catch (NotSupported e) {
 			status = JobState.ERROR;
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			message = sw.toString();
 		}
 		cleanup();
 	}
@@ -256,6 +274,7 @@ public class WorkEngine implements Runnable {
 	public JobStatus getStatus() {
 		JobStatus out = new JobStatus();
 		out.status = status;
+		out.errorMsg = message;
 		return out;
 	}
 

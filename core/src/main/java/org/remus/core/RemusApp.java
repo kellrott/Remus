@@ -45,8 +45,10 @@ public class RemusApp {
 				pipe.deleteApplet(pipe.getApplet(appletName));
 			}
 			rootStore.deleteValue(new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"), pipe.getID());
+			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit"));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance"));
+			rootAttachStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"));
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
