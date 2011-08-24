@@ -485,6 +485,13 @@ public class WorkManager extends RemusManager {
 		return miniDB.getValueJSON(stack, key);
 	}
 	
+	@Override
+	public void addData(AppletRef stack, long jobID, long emitID, String key,
+			String data) throws NotImplemented, TException {
+		logger.info("Manage DB add: " + stack + " " + key);
+		miniDB.addData(stack, jobID, emitID, key, data);
+	}
+	
 	/*
 	 while ((curline = br.readLine()) != null) {
 				Map m = (Map)JSON.loads( curline );

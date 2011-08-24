@@ -76,7 +76,7 @@ public class AppletInstanceStack implements BaseStackNode {
 
 	@Override
 	public void add(AppletRef stack, long jobID, long emitID, String key, String data) {
-
+		logger.info("Adding Instance:" + key + " " + data); 
 	}
 
 	@Override
@@ -90,6 +90,7 @@ public class AppletInstanceStack implements BaseStackNode {
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key) {
+		loadPipeline(stack);
 		List<String> out = new LinkedList<String>();
 		TreeMap<String, String> o = aiMap.get(stack.pipeline);
 		if (o != null) {
@@ -102,6 +103,7 @@ public class AppletInstanceStack implements BaseStackNode {
 
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count) {
+		loadPipeline(stack);
 		TreeMap<String, String> o = aiMap.get(stack.pipeline);
 		if (o != null) {
 			NavigableSet<String> a = o.descendingKeySet();
