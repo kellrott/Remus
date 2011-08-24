@@ -74,7 +74,7 @@ public class RemusMiniDB extends RemusDB {
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
 	throws NotImplemented, TException {
-		if (nodes.containsKey(stack)) {
+		if (nodes.containsKey(stack.applet)) {
 			return nodes.get(stack.applet).getValueJSON(stack,key);
 		}
 		return base.getValueJSON(stack, key);

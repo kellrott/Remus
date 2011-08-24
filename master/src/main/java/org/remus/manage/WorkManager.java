@@ -53,7 +53,6 @@ public class WorkManager extends RemusManager {
 	private Logger logger;
 	private RemusMiniDB miniDB;
 
-
 	public static int INACTIVE_SLEEP_TIME = 10000;
 
 	@Override
@@ -83,7 +82,7 @@ public class WorkManager extends RemusManager {
 		 * records as a single stack
 		 */
 		miniDB = new RemusMiniDB(plugins.getPeer(plugins.getDataServer()));
-		miniDB.addBaseStack("/@applet", new AppletInstanceStack(plugins));
+		miniDB.addBaseStack("/@agent", new AppletInstanceStack(plugins));
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
@@ -244,7 +243,7 @@ public class WorkManager extends RemusManager {
 
 	private void scanJobs() {
 		try {
-			RemusApp app = new RemusApp((RemusDB) plugins.getPeer(plugins.getDataServer()), (RemusAttach)plugins.getPeer(plugins.getAttachStore()));
+			RemusApp app = new RemusApp((RemusDB) plugins.getPeer(plugins.getDataServer()), (RemusAttach) plugins.getPeer(plugins.getAttachStore()));
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
@@ -468,21 +467,21 @@ public class WorkManager extends RemusManager {
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
 	throws NotImplemented, TException {
-		logger.info("Manage DB request: " + stack + " " + keyStart + " " + count);
+		logger.info("Manage DB keySlice: " + stack + " " + keyStart + " " + count);
 		return miniDB.keySlice(stack, keyStart, count);
 	}
 
 	@Override
 	public boolean containsKey(AppletRef stack, String key)
 	throws NotImplemented, TException {
-		logger.info("Manage DB request: " + stack + " " + key);
+		logger.info("Manage DB containsKey: " + stack + " " + key);
 		return miniDB.containsKey(stack, key);	
 	}
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
 			throws NotImplemented, TException {
-		logger.info("Manage DB request: " + stack + " " + key);
+		logger.info("Manage DB getValueJSON: " + stack + " " + key);
 		return miniDB.getValueJSON(stack, key);
 	}
 	

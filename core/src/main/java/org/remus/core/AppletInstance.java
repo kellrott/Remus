@@ -42,6 +42,12 @@ public class AppletInstance {
 		this.datastore = datastore;
 	}
 
+	
+	@Override
+	public String toString() {
+		return instance.toString() + ":" + applet.getID();
+	}
+	
 	@Override
 	public int hashCode() {
 		return instance.hashCode() + applet.hashCode();	

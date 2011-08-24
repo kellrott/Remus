@@ -28,7 +28,7 @@ import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
-public class AppletInstanceView implements BaseNode, BaseStackNode {
+public class AppletInstanceView implements BaseNode {
 
 	RemusPipeline pipeline;
 	RemusApplet applet;
@@ -344,6 +344,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 		return null;
 	}
 
+	/*
 	@Override
 	public Iterable<String> getKeys() {
 		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
@@ -365,5 +366,7 @@ public class AppletInstanceView implements BaseNode, BaseStackNode {
 		}
 		return null;
 	}
-
+	 */
+	
+	
 }

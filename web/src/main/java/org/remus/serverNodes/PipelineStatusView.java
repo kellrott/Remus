@@ -27,7 +27,7 @@ import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkMode;
 
-public class PipelineStatusView implements BaseNode, BaseStackNode {
+public class PipelineStatusView implements BaseNode {
 
 	RemusWeb web;
 	RemusPipeline pipeline;
@@ -48,9 +48,9 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		if ( params.containsKey( DataStackInfo.PARAM_FLAG ) ) {
+		if (params.containsKey(DataStackInfo.PARAM_FLAG)) {
 			try {
-				os.write( JSON.dumps( DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline ) ).getBytes() );
+				os.write(JSON.dumps(DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline)).getBytes());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -58,14 +58,14 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			return;
 		}
 
-		if ( name.length() == 0 ) {
-			for ( String appletName : pipeline.getMembers() ) {
-				AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
-				for ( KeyValPair kv : datastore.listKeyPairs( arInstance ) ) {
+		if (name.length() == 0) {
+			for (String appletName : pipeline.getMembers()) {
+				AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
+				for (KeyValPair kv : datastore.listKeyPairs(arInstance)) {
 					Map out = new HashMap();
-					out.put( kv.getKey() + ":" + appletName, kv.getValue() );	
+					out.put(kv.getKey() + ":" + appletName, kv.getValue());
 					try {
-						os.write( JSON.dumps( out ).getBytes() );
+						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
@@ -75,15 +75,15 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			}
 		} else {
 			String [] tmp = name.split(":");
-			if ( tmp.length == 1 ) {
-				for ( String appletName : pipeline.getMembers() ) {
+			if (tmp.length == 1) {
+				for (String appletName : pipeline.getMembers()) {
 					try {
-						AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
-						for ( Object obj : datastore.get(arInstance, tmp[0]) ) {
+						AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
+						for (Object obj : datastore.get(arInstance, tmp[0])) {
 							Map out = new HashMap();
-							out.put( appletName, obj );	
+							out.put(appletName, obj);
 							try {
-								os.write( JSON.dumps( out ).getBytes() );
+								os.write(JSON.dumps(out).getBytes());
 								os.write("\n".getBytes());
 							} catch (IOException e) {
 								// TODO Auto-generated catch block
@@ -97,15 +97,15 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 						e.printStackTrace();
 					}
 				}
-			} else if ( tmp.length == 2 ) {
+			} else if (tmp.length == 2) {
 				try {
 					RemusApplet applet = pipeline.getApplet(tmp[1]);
-					AppletRef arInstance = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
-					for ( Object obj : applet.getDataStore().get(arInstance, tmp[0]) ) {
+					AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
+					for (Object obj : applet.getDataStore().get(arInstance, tmp[0])) {
 						Map out = new HashMap();
-						out.put( applet.getID(), obj );	
+						out.put(applet.getID(), obj);	
 						try {
-							os.write( JSON.dumps( out ).getBytes() );
+							os.write(JSON.dumps(out).getBytes());
 							os.write("\n".getBytes());
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -142,12 +142,12 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 			Reader in = new InputStreamReader(is);
 			do {
 				len = in.read(buffer);
-				if ( len > 0 ) {
+				if (len > 0) {
 					sb.append(buffer, 0, len);
 				}
-			} while ( len >= 0 );
+			} while (len >= 0);
 
-			
+			/*
 			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback(null, null, null, null, null) {
 				@Override
 				public void emit(String key, Object val) {
@@ -163,7 +163,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 				}
 			}
 			);
-
+			 */
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -178,6 +178,7 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		return null;
 	}
 
+	/*
 	@Override
 	public Iterable<Object> getData(String key) {
 		String [] tmp = key.split(":");
@@ -216,5 +217,5 @@ public class PipelineStatusView implements BaseNode, BaseStackNode {
 		}
 		return list;
 	}
-
+	 */
 }

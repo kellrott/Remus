@@ -62,7 +62,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 
 		try { 
 			RemusApplet applet = pipeline.getApplet(name);
-			if ( applet == null ) {
+			if (applet == null) {
 				throw new FileNotFoundException();
 			}
 			char [] buffer = new char[1024];
@@ -71,13 +71,13 @@ public class PipelineInstanceQueryView implements BaseNode {
 			Reader in = new InputStreamReader(is);
 			do {
 				len = in.read(buffer);
-				if ( len > 0 ) {
+				if (len > 0) {
 					sb.append(buffer, 0, len);
 				}
-			} while ( len >= 0 );
+			} while (len >= 0);
 
 			AppletInstanceView appletView = new AppletInstanceView(pipeline, applet, inst);
-
+			/*
 			web.jsRequest( sb.toString(), WorkMode.MAP, appletView, 
 					new MapReduceCallback(null, null, null, null, null) {
 				@Override
@@ -93,6 +93,7 @@ public class PipelineInstanceQueryView implements BaseNode {
 					}
 				}
 			});
+			*/
 		} catch (IOException e) {
 			logger.debug(e.toString());
 			e.printStackTrace();
