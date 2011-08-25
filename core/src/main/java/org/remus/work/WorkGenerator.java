@@ -22,4 +22,7 @@ import org.remus.core.RemusPipeline;
 
 public interface WorkGenerator {
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore);
+
+	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore);
 }

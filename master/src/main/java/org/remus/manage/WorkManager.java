@@ -123,8 +123,6 @@ public class WorkManager extends RemusManager {
 
 	}
 
-
-
 	private void syncAppletList(Set<AppletInstance> aiSet) {
 		synchronized (activeStacks) {		
 			for (AppletInstance ai : aiSet) {
@@ -372,9 +370,6 @@ public class WorkManager extends RemusManager {
 		return workAdded;
 	}
 
-
-
-
 	private void workAssign(AppletInstance ai, String peerID, long workStart, long workEnd) {
 		try {
 			PipelineSubmission instanceInfo = ai.getInstanceInfo();
@@ -439,9 +434,6 @@ public class WorkManager extends RemusManager {
 		}
 	}
 
-
-
-
 	@Override
 	public void scheduleRequest() throws TException, NotImplemented {
 		sThread.touch();
@@ -462,7 +454,6 @@ public class WorkManager extends RemusManager {
 		}
 		return out;
 	}
-
 
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
@@ -492,37 +483,4 @@ public class WorkManager extends RemusManager {
 		miniDB.addData(stack, jobID, emitID, key, data);
 	}
 	
-	/*
-	 while ((curline = br.readLine()) != null) {
-				Map m = (Map)JSON.loads( curline );
-				for ( Object instObj : m.keySet() ) {
-					for ( Object appletObj : ((Map)m.get(instObj)).keySet() ) {
-						List jobList = (List)((Map)m.get(instObj)).get(appletObj);
-						for ( Object key2 : jobList ) {
-							long jobID = Long.parseLong( key2.toString() );
-							//TODO:add emit id count check
-							activeStack.finishJob( jobID, workerID );
-							synchronized ( finishTimes ) {			
-								Date d = new Date();		
-								Date last = finishTimes.get( workerID );
-								if ( last != null ) {
-									if ( d.getTime() - last.getTime() > MAX_REFRESH_TIME ) {
-										assignRate /= 2;
-									}
-									assignRate++;
-								}
-								finishTimes.put(workerID, d);
-							}
-
-						}
-
-					}
-				}
-			}
-
-	 */
-
-
-
-
 }

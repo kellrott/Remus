@@ -15,8 +15,8 @@ public class SplitGenerator implements WorkGenerator {
 	@Override
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 		try {
-			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() );
-			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work" );
+			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
 			datastore.add(arWork, 0, 0, "0", instance.toString());
 			long t = datastore.getTimeStamp(ar);
 			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
@@ -27,5 +27,12 @@ public class SplitGenerator implements WorkGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore) {
+		// TODO Auto-generated method stub
+		
 	}
 }

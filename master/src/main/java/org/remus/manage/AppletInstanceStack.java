@@ -1,9 +1,7 @@
 package org.remus.manage;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -28,19 +26,16 @@ import org.slf4j.LoggerFactory;
 public class AppletInstanceStack implements BaseStackNode {
 
 	private RemusApp app;
-
 	TreeMap<String, TreeMap<String, String>> aiMap;
-
 	private RemusNet.Iface datastore;
-
 	private Logger logger; 
-
+	
 	public AppletInstanceStack(PluginManager plugins) {
 		try {
 			logger = LoggerFactory.getLogger(AppletInstanceStack.class);
 			datastore = plugins.getPeer(plugins.getDataServer());
 			app = new RemusApp(datastore, null);
-			aiMap = new TreeMap<String, TreeMap<String,String>>();
+			aiMap = new TreeMap<String, TreeMap<String, String>>();
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

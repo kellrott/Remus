@@ -41,4 +41,11 @@ public class ReduceGenerator implements WorkGenerator {
 		}
 	}
 
+	@Override
+	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

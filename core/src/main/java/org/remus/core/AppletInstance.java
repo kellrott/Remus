@@ -12,6 +12,7 @@ import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet.Iface;
+import org.remus.work.WorkGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,6 +152,18 @@ public class AppletInstance {
 	public void finishWork(long jobID, String workerName, long emitCount) throws TException, NotImplemented {
 		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@done" );
 		datastore.add(ar, 0L, 0L, Long.toString(jobID), workerName);
+		if (applet.workGenerator != null) {
+			try {
+				WorkGenerator gen = (WorkGenerator) applet.workGenerator.newInstance();
+				gen.finalizeWork(pipeline, applet, instance, datastore);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void errorWork(long jobID, String errorMsg) {

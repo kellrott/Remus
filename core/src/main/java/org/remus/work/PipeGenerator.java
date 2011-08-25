@@ -26,7 +26,7 @@ public class PipeGenerator implements WorkGenerator {
 				String iRef = DataStackRef.pathFromSubmission(pipeline, applet, ref, instance);
 				arrayList.add(iRef);
 			}
-			datastore.add(arWork, 0, 0, "0", arrayList );
+			datastore.add(arWork, 0, 0, "0", arrayList);
 
 			long t = datastore.getTimeStamp(ar);
 			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
@@ -37,5 +37,12 @@ public class PipeGenerator implements WorkGenerator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore) {
+		// TODO Auto-generated method stub
+		
 	}
 }
