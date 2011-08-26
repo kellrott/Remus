@@ -96,4 +96,12 @@ public class MapReduceCallback {
 			e.printStackTrace();
 		}
 	}
+
+	public RemusDB getDatabase() {
+		return db;
+	}
+	
+	public String getPipeline() {
+		return pipeline;
+	}
 }

@@ -267,6 +267,12 @@ public class WorkEngine implements Runnable {
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
 			message = sw.toString();
+		} catch (Exception e) {
+			status = JobState.ERROR;
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			message = sw.toString();
 		}
 		cleanup();
 	}
