@@ -23,8 +23,6 @@ import org.remus.RemusDBSliceIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import sun.net.idn.StringPrep;
-
 public class WorkEngine implements Runnable {
 	private WorkDesc work;
 	private RemusDB db;
@@ -70,7 +68,9 @@ public class WorkEngine implements Runnable {
 				);
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
-						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
+								work.workStack.instance, work.workStack.applet,
+								new PipelineSubmission(stackInfo), db, attach);
 						for (Object value : db.get(ar, (String) key)) {
 							mapred.map((String) key, value, cb);
 						}
@@ -82,7 +82,9 @@ public class WorkEngine implements Runnable {
 				}
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.SPLIT) {
-				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
+						work.workStack.instance, work.workStack.applet,
+						new PipelineSubmission(stackInfo), db, attach);
 
 				AppletRef outRef = new AppletRef(
 						work.workStack.pipeline,
@@ -112,7 +114,11 @@ public class WorkEngine implements Runnable {
 				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
-					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
+							work.workStack.instance,
+							work.workStack.applet,
+							new PipelineSubmission(stackInfo),
+							db, attach);
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						mapred.reduce((String) key, db.get(ar, (String) key), cb);
 					}
@@ -151,7 +157,8 @@ public class WorkEngine implements Runnable {
 				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
-					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.instance,
+							work.workStack.applet, new PipelineSubmission(stackInfo), db, attach);
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						mapred.match((String) key, db.get(leftAr, (String) key), db.get(rightAr, (String) key), cb);
 					}
@@ -190,7 +197,12 @@ public class WorkEngine implements Runnable {
 				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
-					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+					MapReduceCallback cb = new MapReduceCallback(
+							work.workStack.pipeline, 
+							work.workStack.instance,
+							work.workStack.applet,
+							new PipelineSubmission(stackInfo),
+							db, attach);
 					if (sub.getAxis() == PipelineSubmission.LEFT_AXIS) {
 						for (Object leftKey : db.get(arWork, Long.toString(jobID))) {
 							for (String rightKey : db.listKeys(rightAr)) {
@@ -239,7 +251,11 @@ public class WorkEngine implements Runnable {
 						work.workStack.instance,
 						work.workStack.applet
 				);
-				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.applet, stackInfo, db, attach);
+				MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
+						work.workStack.instance,
+						work.workStack.applet,
+						new PipelineSubmission(stackInfo),
+						db, attach);
 				mapred.pipe(siList, cb);
 				if (!canceled) {
 					cb.writeEmits(outRef, 0);

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
@@ -23,7 +24,6 @@ import org.remus.thrift.PeerType;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Processor;
 import org.slf4j.LoggerFactory;
-
 
 public class PluginManager {
 
@@ -54,60 +54,66 @@ public class PluginManager {
 		}
 	}
 
-	public PluginManager(Map<String, Object> params) {
+	public PluginManager(Map<String, Object> params) {		
 		logger = LoggerFactory.getLogger(PluginManager.class);
-
 		peerList = new HashMap<String, RemusNet.Iface>();
 		localPeers = new HashSet<String>();
 
 		plugins = new LinkedList<PluginInterface>();
 		servers = new HashMap<PluginInterface, ServerThread>();
 		for (String className : params.keySet()) {
-			try {
+			if (className.compareTo("config") == 0) {
 				Map pMap = (Map) params.get(className);
-				if (pMap != null && pMap.containsKey("client")) {
-					Class<PluginInterface> pClass = 
-						(Class<PluginInterface>) Class.forName(className);
-					PluginInterface plug = (PluginInterface) pClass.newInstance();
-					Map config = (Map) pMap.get("client");
-					plug.init(config);
-					plugins.add(plug);
-				} else if (pMap != null && pMap.containsKey("server")) {
-					Map serverConf = (Map) pMap.get("server");
-					Map config = (Map) pMap.get("config");
-					Class<PluginInterface> pClass = 
-						(Class<PluginInterface>) Class.forName(className);
-					PluginInterface plug = (PluginInterface) pClass.newInstance();
-					plug.init(config);
-					plugins.add(plug);
-					int port = Integer.parseInt(serverConf.get("port").toString());
-					logger.info("Opening " + className + " server on port " + port);
-					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
-					sThread.start();
-					servers.put(plug, sThread);
-				} else {
-					Class<PluginInterface> pClass = 
-						(Class<PluginInterface>) Class.forName(className);
-					PluginInterface plug = (PluginInterface) pClass.newInstance();
-					Map config = null;
-					if (pMap != null && pMap.containsKey("config")) {
-						config = (Map) pMap.get("config");
-					}
-					plug.init(config);
-					plugins.add(plug);
+				if (pMap.containsKey("log4jParamFile")) {
+					PropertyConfigurator.configure((String)pMap.get("log4jParamFile"));
 				}
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} else {
+				try {
+					Map pMap = (Map) params.get(className);
+					if (pMap != null && pMap.containsKey("client")) {
+						Class<PluginInterface> pClass = 
+							(Class<PluginInterface>) Class.forName(className);
+						PluginInterface plug = (PluginInterface) pClass.newInstance();
+						Map config = (Map) pMap.get("client");
+						plug.init(config);
+						plugins.add(plug);
+					} else if (pMap != null && pMap.containsKey("server")) {
+						Map serverConf = (Map) pMap.get("server");
+						Map config = (Map) pMap.get("config");
+						Class<PluginInterface> pClass = 
+							(Class<PluginInterface>) Class.forName(className);
+						PluginInterface plug = (PluginInterface) pClass.newInstance();
+						plug.init(config);
+						plugins.add(plug);
+						int port = Integer.parseInt(serverConf.get("port").toString());
+						logger.info("Opening " + className + " server on port " + port);
+						ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
+						sThread.start();
+						servers.put(plug, sThread);
+					} else {
+						Class<PluginInterface> pClass = 
+							(Class<PluginInterface>) Class.forName(className);
+						PluginInterface plug = (PluginInterface) pClass.newInstance();
+						Map config = null;
+						if (pMap != null && pMap.containsKey("config")) {
+							config = (Map) pMap.get("config");
+						}
+						plug.init(config);
+						plugins.add(plug);
+					}
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -209,7 +215,7 @@ public class PluginManager {
 		}
 		return out;
 	}
-	
+
 	public RemusNet.Iface getPeer(String peerID) {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);

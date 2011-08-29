@@ -102,5 +102,9 @@ public class PipelineSubmission implements JSONAware {
 		return inputInfo;
 	}
 
+	public Object get(String key) {
+		return base.get(key);
+	}
+
 	
 }

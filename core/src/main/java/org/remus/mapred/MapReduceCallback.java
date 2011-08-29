@@ -33,19 +33,21 @@ public class MapReduceCallback {
 	List<MapReduceEmit> outList;
 	private RemusDB db;
 	private RemusAttach attach;
-	private Map jobInfo;
+	private PipelineSubmission jobInfo;
 	private String pipeline;
 	private String applet;
+	private String instance;
 
-	public MapReduceCallback(String pipeline, String applet, Map jobInfo, RemusDB db, RemusAttach attach) {
-		init(pipeline, applet, jobInfo, db, attach);
+	public MapReduceCallback(String pipeline, String instance, String applet, PipelineSubmission jobInfo, RemusDB db, RemusAttach attach) {
+		init(pipeline, instance, applet, jobInfo, db, attach);
 	}
 	
-	public void init(String pipeline, String applet, Map jobInfo, RemusDB db, RemusAttach attach) {
+	public void init(String pipeline, String instance, String applet, PipelineSubmission jobInfo, RemusDB db, RemusAttach attach) {
 		emitCount = 0;
 		this.jobInfo = jobInfo;
 		this.pipeline = pipeline;
 		this.applet = applet;
+		this.instance = instance;
 		outList = new LinkedList<MapReduceEmit>();
 		this.db = db;
 		this.attach = attach;
@@ -103,5 +105,21 @@ public class MapReduceCallback {
 	
 	public String getPipeline() {
 		return pipeline;
+	}
+
+	public String getApplet() {
+		return applet;
+	}
+
+	public PipelineSubmission getJobInfo() {
+		return jobInfo;
+	}
+
+	public RemusAttach getAttachStore() {
+		return attach;		
+	}
+
+	public String getInstance() {
+		return instance;
 	}
 }

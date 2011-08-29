@@ -41,6 +41,10 @@ public class AppletInstanceStack implements BaseStackNode {
 			e.printStackTrace();
 		}
 	}
+	
+	public void reset() {
+		aiMap.clear();
+	}
 
 	void loadPipeline(AppletRef stack) {
 		try {

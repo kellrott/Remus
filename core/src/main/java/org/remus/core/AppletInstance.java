@@ -225,7 +225,7 @@ public class AppletInstance {
 				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
 				setComplete();
 			}
-			logger.debug("Found : " + curPos + " jobs");
+			//logger.debug("Found : " + curPos + " jobs");
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {

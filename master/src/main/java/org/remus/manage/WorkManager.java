@@ -53,6 +53,9 @@ public class WorkManager extends RemusManager {
 	private Logger logger;
 	private RemusMiniDB miniDB;
 
+	PluginManager plugins;
+	private AppletInstanceStack aiStack;
+	
 	public static int INACTIVE_SLEEP_TIME = 10000;
 
 	@Override
@@ -71,7 +74,6 @@ public class WorkManager extends RemusManager {
 		assignRate = new HashMap<AppletInstance, Integer>();
 	}
 
-	PluginManager plugins;
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		plugins = pluginManager;
@@ -82,7 +84,8 @@ public class WorkManager extends RemusManager {
 		 * records as a single stack
 		 */
 		miniDB = new RemusMiniDB(plugins.getPeer(plugins.getDataServer()));
-		miniDB.addBaseStack("/@agent", new AppletInstanceStack(plugins));
+		aiStack = new AppletInstanceStack(plugins);
+		miniDB.addBaseStack("/@agent", aiStack);
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
@@ -416,6 +419,7 @@ public class WorkManager extends RemusManager {
 				break;
 			}
 			if (ai.getApplet().getMode() == RemusApplet.AGENT) {
+				aiStack.reset();
 				String jobID = worker.jobRequest(plugins.getPeerID(this), plugins.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
