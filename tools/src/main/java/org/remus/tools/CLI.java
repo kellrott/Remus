@@ -1,7 +1,6 @@
 package org.remus.tools;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +9,7 @@ import jline.ConsoleReader;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
+import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
@@ -95,6 +95,10 @@ public class CLI {
 			return app.getPipeline(curPipeline);
 		}
 		return null;
+	}
+
+	public RemusDB getDataSource() {
+		return RemusDB.wrap(pm.getPeer(pm.getDataServer()));
 	}
 
 }

@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-08-29 21:33:10
+// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-08-30 11:19:17
 
 package org.remus.tools.antlr;
 
@@ -12,19 +12,30 @@ import java.util.ArrayList;
 
 public class RemusCliParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'list'", "'servers'", "'pipelines'", "'instances'", "'applets'", "'use'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "QUOTESTR", "QUOTE", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'show'", "'servers'", "'pipelines'", "'stacks'", "'applets'", "'use'", "'select'", "'from'", "'drop'", "'pipeline'", "'load'", "'infile'", "'into'", "':'", "'*'"
     };
+    public static final int QUOTESTR=5;
+    public static final int T__25=25;
+    public static final int T__24=24;
+    public static final int T__23=23;
+    public static final int T__22=22;
+    public static final int T__21=21;
+    public static final int T__20=20;
+    public static final int WHITESPACE=8;
+    public static final int SEMICOLON=7;
+    public static final int EOF=-1;
+    public static final int T__19=19;
+    public static final int QUOTE=6;
+    public static final int T__16=16;
+    public static final int T__15=15;
+    public static final int T__18=18;
+    public static final int T__17=17;
     public static final int T__12=12;
     public static final int T__11=11;
     public static final int T__14=14;
     public static final int T__13=13;
     public static final int T__10=10;
-    public static final int WHITESPACE=6;
-    public static final int SEMICOLON=5;
-    public static final int DIGIT=7;
-    public static final int EOF=-1;
-    public static final int T__9=9;
-    public static final int T__8=8;
+    public static final int DIGIT=9;
     public static final int STRING=4;
 
     // delegates
@@ -46,7 +57,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "cmd"
-    // RemusCli.g:19:1: cmd returns [CLICommand cmd] : (qc= quitCmd | lc= listCmd | uc= useCmd );
+    // RemusCli.g:19:1: cmd returns [CLICommand cmd] : (qc= quitCmd | lc= showCmd | uc= useCmd | sc= selectCmd | dc= dropCmd | lc= loadCmd );
     public final CLICommand cmd() throws RecognitionException {
         CLICommand cmd = null;
 
@@ -56,24 +67,43 @@ public class RemusCliParser extends Parser {
 
         CLICommand uc = null;
 
+        CLICommand sc = null;
+
+        CLICommand dc = null;
+
 
         try {
-            // RemusCli.g:20:2: (qc= quitCmd | lc= listCmd | uc= useCmd )
-            int alt1=3;
+            // RemusCli.g:20:2: (qc= quitCmd | lc= showCmd | uc= useCmd | sc= selectCmd | dc= dropCmd | lc= loadCmd )
+            int alt1=6;
             switch ( input.LA(1) ) {
-            case 8:
+            case 10:
                 {
                 alt1=1;
                 }
                 break;
-            case 9:
+            case 11:
                 {
                 alt1=2;
                 }
                 break;
-            case 14:
+            case 16:
                 {
                 alt1=3;
+                }
+                break;
+            case 17:
+                {
+                alt1=4;
+                }
+                break;
+            case 19:
+                {
+                alt1=5;
+                }
+                break;
+            case 21:
+                {
+                alt1=6;
                 }
                 break;
             default:
@@ -97,10 +127,10 @@ public class RemusCliParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // RemusCli.g:21:4: lc= listCmd
+                    // RemusCli.g:21:4: lc= showCmd
                     {
-                    pushFollow(FOLLOW_listCmd_in_cmd58);
-                    lc=listCmd();
+                    pushFollow(FOLLOW_showCmd_in_cmd58);
+                    lc=showCmd();
 
                     state._fsp--;
 
@@ -120,6 +150,42 @@ public class RemusCliParser extends Parser {
 
                     }
                     break;
+                case 4 :
+                    // RemusCli.g:23:4: sc= selectCmd
+                    {
+                    pushFollow(FOLLOW_selectCmd_in_cmd77);
+                    sc=selectCmd();
+
+                    state._fsp--;
+
+                    cmd =sc;
+
+                    }
+                    break;
+                case 5 :
+                    // RemusCli.g:24:4: dc= dropCmd
+                    {
+                    pushFollow(FOLLOW_dropCmd_in_cmd86);
+                    dc=dropCmd();
+
+                    state._fsp--;
+
+                    cmd =dc;
+
+                    }
+                    break;
+                case 6 :
+                    // RemusCli.g:25:4: lc= loadCmd
+                    {
+                    pushFollow(FOLLOW_loadCmd_in_cmd95);
+                    lc=loadCmd();
+
+                    state._fsp--;
+
+                    cmd =lc;
+
+                    }
+                    break;
 
             }
         }
@@ -135,15 +201,15 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "quitCmd"
-    // RemusCli.g:25:1: quitCmd returns [CLICommand cmd] : 'quit' ;
+    // RemusCli.g:28:1: quitCmd returns [CLICommand cmd] : 'quit' ;
     public final CLICommand quitCmd() throws RecognitionException {
         CLICommand cmd = null;
 
         try {
-            // RemusCli.g:26:2: ( 'quit' )
-            // RemusCli.g:26:4: 'quit'
+            // RemusCli.g:29:2: ( 'quit' )
+            // RemusCli.g:29:4: 'quit'
             {
-            match(input,8,FOLLOW_8_in_quitCmd84); 
+            match(input,10,FOLLOW_10_in_quitCmd111); 
             cmd = new CLICommand(CLICommand.QUIT);
 
             }
@@ -160,34 +226,34 @@ public class RemusCliParser extends Parser {
     // $ANTLR end "quitCmd"
 
 
-    // $ANTLR start "listCmd"
-    // RemusCli.g:30:1: listCmd returns [CLICommand cmd] : ( 'list' 'servers' | 'list' 'pipelines' | 'list' 'instances' | 'list' 'applets' );
-    public final CLICommand listCmd() throws RecognitionException {
+    // $ANTLR start "showCmd"
+    // RemusCli.g:33:1: showCmd returns [CLICommand cmd] : ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'stacks' | 'show' 'applets' );
+    public final CLICommand showCmd() throws RecognitionException {
         CLICommand cmd = null;
 
         try {
-            // RemusCli.g:31:2: ( 'list' 'servers' | 'list' 'pipelines' | 'list' 'instances' | 'list' 'applets' )
+            // RemusCli.g:34:2: ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'stacks' | 'show' 'applets' )
             int alt2=4;
             int LA2_0 = input.LA(1);
 
-            if ( (LA2_0==9) ) {
+            if ( (LA2_0==11) ) {
                 switch ( input.LA(2) ) {
-                case 10:
+                case 12:
                     {
                     alt2=1;
                     }
                     break;
-                case 11:
+                case 13:
                     {
                     alt2=2;
                     }
                     break;
-                case 12:
+                case 14:
                     {
                     alt2=3;
                     }
                     break;
-                case 13:
+                case 15:
                     {
                     alt2=4;
                     }
@@ -208,37 +274,37 @@ public class RemusCliParser extends Parser {
             }
             switch (alt2) {
                 case 1 :
-                    // RemusCli.g:31:4: 'list' 'servers'
+                    // RemusCli.g:34:4: 'show' 'servers'
                     {
-                    match(input,9,FOLLOW_9_in_listCmd101); 
-                    match(input,10,FOLLOW_10_in_listCmd103); 
+                    match(input,11,FOLLOW_11_in_showCmd128); 
+                    match(input,12,FOLLOW_12_in_showCmd130); 
                     cmd = new CLICommand(CLICommand.LIST); cmd.setSystem(CLICommand.SERVERS);
 
                     }
                     break;
                 case 2 :
-                    // RemusCli.g:32:4: 'list' 'pipelines'
+                    // RemusCli.g:35:4: 'show' 'pipelines'
                     {
-                    match(input,9,FOLLOW_9_in_listCmd110); 
-                    match(input,11,FOLLOW_11_in_listCmd112); 
+                    match(input,11,FOLLOW_11_in_showCmd137); 
+                    match(input,13,FOLLOW_13_in_showCmd139); 
                     cmd = new CLICommand(CLICommand.LIST); cmd.setSystem(CLICommand.PIPELINES);
 
                     }
                     break;
                 case 3 :
-                    // RemusCli.g:33:4: 'list' 'instances'
+                    // RemusCli.g:36:4: 'show' 'stacks'
                     {
-                    match(input,9,FOLLOW_9_in_listCmd119); 
-                    match(input,12,FOLLOW_12_in_listCmd121); 
-                    cmd = new CLICommand(CLICommand.LIST); cmd.setSystem(CLICommand.INSTANCES);
+                    match(input,11,FOLLOW_11_in_showCmd146); 
+                    match(input,14,FOLLOW_14_in_showCmd148); 
+                    cmd = new CLICommand(CLICommand.LIST); cmd.setSystem(CLICommand.STACKS);
 
                     }
                     break;
                 case 4 :
-                    // RemusCli.g:34:4: 'list' 'applets'
+                    // RemusCli.g:37:4: 'show' 'applets'
                     {
-                    match(input,9,FOLLOW_9_in_listCmd128); 
-                    match(input,13,FOLLOW_13_in_listCmd130); 
+                    match(input,11,FOLLOW_11_in_showCmd155); 
+                    match(input,15,FOLLOW_15_in_showCmd157); 
                     cmd = new CLICommand(CLICommand.LIST); cmd.setSystem(CLICommand.APPLETS);
 
                     }
@@ -254,11 +320,11 @@ public class RemusCliParser extends Parser {
         }
         return cmd;
     }
-    // $ANTLR end "listCmd"
+    // $ANTLR end "showCmd"
 
 
     // $ANTLR start "useCmd"
-    // RemusCli.g:37:1: useCmd returns [CLICommand cmd] : 'use' pn= pipelineName ;
+    // RemusCli.g:40:1: useCmd returns [CLICommand cmd] : 'use' pn= pipelineName ;
     public final CLICommand useCmd() throws RecognitionException {
         CLICommand cmd = null;
 
@@ -266,11 +332,11 @@ public class RemusCliParser extends Parser {
 
 
         try {
-            // RemusCli.g:38:2: ( 'use' pn= pipelineName )
-            // RemusCli.g:38:4: 'use' pn= pipelineName
+            // RemusCli.g:41:2: ( 'use' pn= pipelineName )
+            // RemusCli.g:41:4: 'use' pn= pipelineName
             {
-            match(input,14,FOLLOW_14_in_useCmd146); 
-            pushFollow(FOLLOW_pipelineName_in_useCmd150);
+            match(input,16,FOLLOW_16_in_useCmd173); 
+            pushFollow(FOLLOW_pipelineName_in_useCmd177);
             pn=pipelineName();
 
             state._fsp--;
@@ -291,18 +357,170 @@ public class RemusCliParser extends Parser {
     // $ANTLR end "useCmd"
 
 
+    // $ANTLR start "selectCmd"
+    // RemusCli.g:45:1: selectCmd returns [CLICommand cmd] : 'select' f= fieldSelect 'from' s= stackName ;
+    public final CLICommand selectCmd() throws RecognitionException {
+        CLICommand cmd = null;
+
+        String f = null;
+
+        String s = null;
+
+
+        try {
+            // RemusCli.g:46:2: ( 'select' f= fieldSelect 'from' s= stackName )
+            // RemusCli.g:46:4: 'select' f= fieldSelect 'from' s= stackName
+            {
+            match(input,17,FOLLOW_17_in_selectCmd194); 
+            pushFollow(FOLLOW_fieldSelect_in_selectCmd198);
+            f=fieldSelect();
+
+            state._fsp--;
+
+            match(input,18,FOLLOW_18_in_selectCmd200); 
+            pushFollow(FOLLOW_stackName_in_selectCmd204);
+            s=stackName();
+
+            state._fsp--;
+
+            cmd = new CLICommand(CLICommand.SELECT); cmd.setField(f); cmd.setStack(s);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return cmd;
+    }
+    // $ANTLR end "selectCmd"
+
+
+    // $ANTLR start "dropCmd"
+    // RemusCli.g:50:1: dropCmd returns [CLICommand cmd] : 'drop' 'pipeline' n= pipelineName ;
+    public final CLICommand dropCmd() throws RecognitionException {
+        CLICommand cmd = null;
+
+        String n = null;
+
+
+        try {
+            // RemusCli.g:51:2: ( 'drop' 'pipeline' n= pipelineName )
+            // RemusCli.g:51:4: 'drop' 'pipeline' n= pipelineName
+            {
+            match(input,19,FOLLOW_19_in_dropCmd221); 
+            match(input,20,FOLLOW_20_in_dropCmd223); 
+            pushFollow(FOLLOW_pipelineName_in_dropCmd227);
+            n=pipelineName();
+
+            state._fsp--;
+
+            cmd = new CLICommand(CLICommand.DROP); cmd.setPipeline(n);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return cmd;
+    }
+    // $ANTLR end "dropCmd"
+
+
+    // $ANTLR start "loadCmd"
+    // RemusCli.g:54:1: loadCmd returns [CLICommand cmd] : 'load' 'pipeline' 'infile' pa= quoteStr 'into' p= pipelineName ;
+    public final CLICommand loadCmd() throws RecognitionException {
+        CLICommand cmd = null;
+
+        String pa = null;
+
+        String p = null;
+
+
+        try {
+            // RemusCli.g:55:2: ( 'load' 'pipeline' 'infile' pa= quoteStr 'into' p= pipelineName )
+            // RemusCli.g:55:4: 'load' 'pipeline' 'infile' pa= quoteStr 'into' p= pipelineName
+            {
+            match(input,21,FOLLOW_21_in_loadCmd243); 
+            match(input,20,FOLLOW_20_in_loadCmd245); 
+            match(input,22,FOLLOW_22_in_loadCmd247); 
+            pushFollow(FOLLOW_quoteStr_in_loadCmd251);
+            pa=quoteStr();
+
+            state._fsp--;
+
+            match(input,23,FOLLOW_23_in_loadCmd253); 
+            pushFollow(FOLLOW_pipelineName_in_loadCmd257);
+            p=pipelineName();
+
+            state._fsp--;
+
+            cmd = new CLICommand(CLICommand.LOAD); cmd.setPipeline(p); cmd.setPath(pa);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return cmd;
+    }
+    // $ANTLR end "loadCmd"
+
+
+    // $ANTLR start "stackName"
+    // RemusCli.g:58:1: stackName returns [String name] : n= STRING ':' m= STRING ;
+    public final String stackName() throws RecognitionException {
+        String name = null;
+
+        Token n=null;
+        Token m=null;
+
+        try {
+            // RemusCli.g:59:2: (n= STRING ':' m= STRING )
+            // RemusCli.g:59:4: n= STRING ':' m= STRING
+            {
+            n=(Token)match(input,STRING,FOLLOW_STRING_in_stackName275); 
+            match(input,24,FOLLOW_24_in_stackName277); 
+            m=(Token)match(input,STRING,FOLLOW_STRING_in_stackName281); 
+            name =n.getText() + ":" + m.getText();
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return name;
+    }
+    // $ANTLR end "stackName"
+
+
     // $ANTLR start "pipelineName"
-    // RemusCli.g:41:1: pipelineName returns [String name] : n= STRING ;
+    // RemusCli.g:62:1: pipelineName returns [String name] : n= STRING ;
     public final String pipelineName() throws RecognitionException {
         String name = null;
 
         Token n=null;
 
         try {
-            // RemusCli.g:42:2: (n= STRING )
-            // RemusCli.g:42:4: n= STRING
+            // RemusCli.g:63:2: (n= STRING )
+            // RemusCli.g:63:4: n= STRING
             {
-            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName168); 
+            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName299); 
             name =n.getText();
 
             }
@@ -318,25 +536,130 @@ public class RemusCliParser extends Parser {
     }
     // $ANTLR end "pipelineName"
 
+
+    // $ANTLR start "fieldSelect"
+    // RemusCli.g:66:1: fieldSelect returns [String field] : (n= STRING | '*' );
+    public final String fieldSelect() throws RecognitionException {
+        String field = null;
+
+        Token n=null;
+
+        try {
+            // RemusCli.g:67:2: (n= STRING | '*' )
+            int alt3=2;
+            int LA3_0 = input.LA(1);
+
+            if ( (LA3_0==STRING) ) {
+                alt3=1;
+            }
+            else if ( (LA3_0==25) ) {
+                alt3=2;
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 3, 0, input);
+
+                throw nvae;
+            }
+            switch (alt3) {
+                case 1 :
+                    // RemusCli.g:67:4: n= STRING
+                    {
+                    n=(Token)match(input,STRING,FOLLOW_STRING_in_fieldSelect317); 
+                    field =n.getText();
+
+                    }
+                    break;
+                case 2 :
+                    // RemusCli.g:68:4: '*'
+                    {
+                    match(input,25,FOLLOW_25_in_fieldSelect324); 
+                    field ="*";
+
+                    }
+                    break;
+
+            }
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return field;
+    }
+    // $ANTLR end "fieldSelect"
+
+
+    // $ANTLR start "quoteStr"
+    // RemusCli.g:71:1: quoteStr returns [String str] : s= QUOTESTR ;
+    public final String quoteStr() throws RecognitionException {
+        String str = null;
+
+        Token s=null;
+
+        try {
+            // RemusCli.g:72:2: (s= QUOTESTR )
+            // RemusCli.g:72:4: s= QUOTESTR
+            {
+            s=(Token)match(input,QUOTESTR,FOLLOW_QUOTESTR_in_quoteStr342); 
+            String t=s.getText(); str =t.substring(1,t.length()-1);
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        return str;
+    }
+    // $ANTLR end "quoteStr"
+
     // Delegated rules
 
 
  
 
     public static final BitSet FOLLOW_quitCmd_in_cmd49 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_listCmd_in_cmd58 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_showCmd_in_cmd58 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_useCmd_in_cmd67 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_8_in_quitCmd84 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_9_in_listCmd101 = new BitSet(new long[]{0x0000000000000400L});
-    public static final BitSet FOLLOW_10_in_listCmd103 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_9_in_listCmd110 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_11_in_listCmd112 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_9_in_listCmd119 = new BitSet(new long[]{0x0000000000001000L});
-    public static final BitSet FOLLOW_12_in_listCmd121 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_9_in_listCmd128 = new BitSet(new long[]{0x0000000000002000L});
-    public static final BitSet FOLLOW_13_in_listCmd130 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_14_in_useCmd146 = new BitSet(new long[]{0x0000000000000010L});
-    public static final BitSet FOLLOW_pipelineName_in_useCmd150 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_pipelineName168 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_selectCmd_in_cmd77 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_dropCmd_in_cmd86 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_loadCmd_in_cmd95 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_10_in_quitCmd111 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_11_in_showCmd128 = new BitSet(new long[]{0x0000000000001000L});
+    public static final BitSet FOLLOW_12_in_showCmd130 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_11_in_showCmd137 = new BitSet(new long[]{0x0000000000002000L});
+    public static final BitSet FOLLOW_13_in_showCmd139 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_11_in_showCmd146 = new BitSet(new long[]{0x0000000000004000L});
+    public static final BitSet FOLLOW_14_in_showCmd148 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_11_in_showCmd155 = new BitSet(new long[]{0x0000000000008000L});
+    public static final BitSet FOLLOW_15_in_showCmd157 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_16_in_useCmd173 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_pipelineName_in_useCmd177 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_17_in_selectCmd194 = new BitSet(new long[]{0x0000000002000010L});
+    public static final BitSet FOLLOW_fieldSelect_in_selectCmd198 = new BitSet(new long[]{0x0000000000040000L});
+    public static final BitSet FOLLOW_18_in_selectCmd200 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_stackName_in_selectCmd204 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_19_in_dropCmd221 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_20_in_dropCmd223 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_pipelineName_in_dropCmd227 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_21_in_loadCmd243 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_20_in_loadCmd245 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_22_in_loadCmd247 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_quoteStr_in_loadCmd251 = new BitSet(new long[]{0x0000000000800000L});
+    public static final BitSet FOLLOW_23_in_loadCmd253 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_pipelineName_in_loadCmd257 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_stackName275 = new BitSet(new long[]{0x0000000001000000L});
+    public static final BitSet FOLLOW_24_in_stackName277 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_STRING_in_stackName281 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_pipelineName299 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_fieldSelect317 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_25_in_fieldSelect324 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTESTR_in_quoteStr342 = new BitSet(new long[]{0x0000000000000002L});
 
 }
