@@ -24,7 +24,7 @@ import org.remus.thrift.WorkDesc;
 
 public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 
-	static public final int BLOCK_SIZE=4048; 
+	static public final int BLOCK_SIZE=1048576; 
 	
 	
 	public static RemusAttach wrap(final RemusNet.Iface attach) {
