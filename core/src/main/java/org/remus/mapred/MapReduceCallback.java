@@ -22,10 +22,12 @@ public class MapReduceCallback {
 		String key;
 		Object val;
 		long emitID;
-		public MapReduceEmit(String key, Object val, long emitID) {
+		String outStack = null;
+		public MapReduceEmit(String key, Object val, long emitID, String outStack) {
 			this.key = key;
 			this.val = val;
 			this.emitID = emitID;
+			this.outStack = outStack;
 		}
 	}
 
@@ -54,14 +56,28 @@ public class MapReduceCallback {
 	}
 
 	public void emit(String key, Object val) {
-		outList.add(new MapReduceEmit(key, val, emitCount));
+		outList.add(new MapReduceEmit(key, val, emitCount, null));
 		emitCount++;
 	}
 
+	public void emit(String key, Object val, String outStack) {
+		outList.add(new MapReduceEmit(key, val, emitCount, outStack));
+		emitCount++;
+	}
+
+	
 	public void writeEmits(AppletRef ar, long jobID) throws TException, NotImplemented {
 		for (MapReduceEmit mpe : outList) {
-			db.add(ar, jobID, mpe.emitID, mpe.key, mpe.val);
+			if (mpe.outStack == null) {
+				db.add(ar, jobID, mpe.emitID, mpe.key, mpe.val);
+			} else {
+				//BUG: no validation done to make sure that outstack was actually decalared in the 
+				//pipeline description 
+				AppletRef or = new AppletRef(pipeline, instance, applet + "." + mpe.outStack);
+				db.add(or, jobID, mpe.emitID, mpe.key, mpe.val);				
+			}
 		}
+		outList.clear();
 	}
 
 	public InputStream openInput(String key, String name) {

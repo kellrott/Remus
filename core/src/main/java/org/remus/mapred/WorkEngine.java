@@ -76,7 +76,7 @@ public class WorkEngine implements Runnable {
 						}
 						if (!canceled) {
 							cb.writeEmits(outRef, jobID);
-							logger.info("Emiting: " + cb.emitCount);
+							logger.debug(work.workStack.instance + ":" + work.workStack.applet + ":" + jobID + " EmitTotal: " + cb.emitCount);
 						}
 					}
 				}

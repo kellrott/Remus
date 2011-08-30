@@ -290,7 +290,7 @@ public class RemusApplet {
 									e1.printStackTrace();
 								}	
 							} else {
-								logger.info("Active Work Stack: " + inst.toString() + ":" + this.getID());
+								//logger.info("Active Work Stack: " + inst.toString() + ":" + this.getID());
 							}
 							out.add(ai);
 						} catch (TException e) {
@@ -475,5 +475,10 @@ public class RemusApplet {
 
 	public RemusAttach getAttachStore() {
 		return attachstore;
+	}
+
+	public AppletInstance getAppletInstance(String inst) throws TException, NotImplemented {
+		AppletInstance ai = new AppletInstance(pipeline, RemusInstance.getInstance(datastore, pipeline.getID(), inst), this, datastore);
+		return ai;
 	}
 }

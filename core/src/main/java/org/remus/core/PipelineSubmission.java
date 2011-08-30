@@ -106,5 +106,10 @@ public class PipelineSubmission implements JSONAware {
 		return base.get(key);
 	}
 
+	public RemusInstance getInstance() {
+		String instStr = (String) base.get("_instance");
+		return new RemusInstance(instStr);
+	}
+
 	
 }
