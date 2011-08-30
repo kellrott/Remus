@@ -44,7 +44,7 @@ public class RemusApp {
 			for (String appletName : pipe.getMembers()) {
 				pipe.deleteApplet(pipe.getApplet(appletName));
 			}
-			rootStore.deleteValue(new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"), pipe.getID());
+			rootStore.deleteValue(new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"), pipe.getID());
 			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline"));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit"));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance"));
@@ -56,7 +56,7 @@ public class RemusApp {
 
 	
 	public void putPipeline(String pipelineName, PipelineDesc pDesc) throws TException, NotImplemented {
-		AppletRef arPipeline = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef arPipeline = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		rootStore.add(arPipeline, 0L, 0L, pipelineName, new HashMap());
 		for (String appletName : pDesc.getApplets()) {
 			AppletRef arApplet = new AppletRef(pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
@@ -76,7 +76,7 @@ public class RemusApp {
 	}
 
 	public Collection<String> getPipelines() throws TException {
-		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef ar = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		List out = new LinkedList();
 		for (String key : rootStore.listKeys(ar)) {
 			out.add(key);
@@ -86,7 +86,7 @@ public class RemusApp {
 
 
 	public boolean hasPipeline(String name) {
-		AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef ar = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		try {
 			return rootStore.containsKey(ar, name);
 		} catch (TException e) {

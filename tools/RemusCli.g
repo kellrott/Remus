@@ -19,6 +19,7 @@ import org.remus.tools.CLICommand;
 cmd  returns [CLICommand cmd] 
 	: qc=quitCmd {$cmd=qc;}
 	| lc=listCmd {$cmd=lc;}
+	| uc=useCmd  {$cmd=uc;}
 ;
 
 quitCmd returns [CLICommand cmd]
@@ -27,11 +28,24 @@ quitCmd returns [CLICommand cmd]
 
 
 listCmd returns [CLICommand cmd]
-	: 'list' {$cmd = new CLICommand(CLICommand.LIST);}
+	: 'list' 'servers' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.SERVERS);}
+	| 'list' 'pipelines' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.PIPELINES);}
+	| 'list' 'instances' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.INSTANCES);}
+	| 'list' 'applets' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.APPLETS);}
+;
+
+useCmd returns [CLICommand cmd]
+	: 'use' pn=pipelineName {$cmd = new CLICommand(CLICommand.USE); $cmd.setPipeline(pn);}
+;
+
+pipelineName returns [String name]
+	: n=STRING {$name=n.getText();}
 ;
 
 
-NUMBER	: (DIGIT)+ ;
+STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_')+ ;
+
+SEMICOLON : ';';
 
 WHITESPACE : ( '\t' | ' ' | '\r' | '\n'| '\u000C' )+ 	{ $channel = HIDDEN; } ;
 
