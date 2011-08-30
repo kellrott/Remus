@@ -67,6 +67,9 @@ public class AppletInstance {
 		if (applet.getMode() == RemusApplet.STORE) {
 			return true;
 		}
+		if (isInError()) {
+			return false;
+		}
 		if (applet.hasInputs()) {
 			boolean allReady = true;
 			for (String iRef : applet.getInputs()) {
@@ -136,9 +139,9 @@ public class AppletInstance {
 	}
 
 
-	public boolean isInError(  RemusInstance remusInstance ) {
+	public boolean isInError() {
 		boolean found = false;
-		AppletRef ar = new AppletRef(pipeline.getID(), remusInstance.toString(), applet.getID() + "/@error");
+		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@error");
 
 		for (@SuppressWarnings("unused") String key : datastore.listKeys(ar)) {
 			found = true;
@@ -358,6 +361,9 @@ public class AppletInstance {
 		datastore.add(ar, 0, 0, instance.toString(), instInfo);		
 	}
 
-
-
+	public AppletRef getAppletRef() {
+		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
+		return arWork;
+	}
+	
 }
