@@ -1,5 +1,7 @@
 package org.remus.tools;
 
+import java.io.IOException;
+
 import org.apache.thrift.TException;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -38,7 +40,7 @@ public class CLICommand {
 		return type;
 	}
 
-	public void runCommand(PluginManager pm, CLI cli) throws NotImplemented, TException, RemusDatabaseException {
+	public void runCommand(PluginManager pm, CLI cli) throws NotImplemented, TException, RemusDatabaseException, IOException {
 		switch (type) {
 		case SHOW: {
 			switch (system) {
