@@ -57,6 +57,7 @@ loadCmd returns [CLICommand cmd]
 
 stackName returns [String name]
 	: n=STRING ':' m=STRING {$name=n.getText() + ":" + m.getText();}
+	| n1=STRING ':' m1=STRING ':' o1=STRING {$name=n1.getText() + ":" + m1.getText() + ":" + o1.getText();}
 ;
 
 pipelineName returns [String name]
@@ -72,7 +73,7 @@ quoteStr returns [String str]
 	: s=QUOTESTR {String t=s.getText(); $str=t.substring(1,t.length()-1);}
 ;
 
-STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_')+ ;
+STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'\.')+ ;
 
 
 QUOTE : '"';

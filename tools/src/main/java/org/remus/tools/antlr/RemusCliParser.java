@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-08-30 11:19:17
+// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-09-01 15:26:34
 
 package org.remus.tools.antlr;
 
@@ -479,24 +479,88 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "stackName"
-    // RemusCli.g:58:1: stackName returns [String name] : n= STRING ':' m= STRING ;
+    // RemusCli.g:58:1: stackName returns [String name] : (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING );
     public final String stackName() throws RecognitionException {
         String name = null;
 
         Token n=null;
         Token m=null;
+        Token n1=null;
+        Token m1=null;
+        Token o1=null;
 
         try {
-            // RemusCli.g:59:2: (n= STRING ':' m= STRING )
-            // RemusCli.g:59:4: n= STRING ':' m= STRING
-            {
-            n=(Token)match(input,STRING,FOLLOW_STRING_in_stackName275); 
-            match(input,24,FOLLOW_24_in_stackName277); 
-            m=(Token)match(input,STRING,FOLLOW_STRING_in_stackName281); 
-            name =n.getText() + ":" + m.getText();
+            // RemusCli.g:59:2: (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING )
+            int alt3=2;
+            int LA3_0 = input.LA(1);
+
+            if ( (LA3_0==STRING) ) {
+                int LA3_1 = input.LA(2);
+
+                if ( (LA3_1==24) ) {
+                    int LA3_2 = input.LA(3);
+
+                    if ( (LA3_2==STRING) ) {
+                        int LA3_3 = input.LA(4);
+
+                        if ( (LA3_3==24) ) {
+                            alt3=2;
+                        }
+                        else if ( (LA3_3==EOF) ) {
+                            alt3=1;
+                        }
+                        else {
+                            NoViableAltException nvae =
+                                new NoViableAltException("", 3, 3, input);
+
+                            throw nvae;
+                        }
+                    }
+                    else {
+                        NoViableAltException nvae =
+                            new NoViableAltException("", 3, 2, input);
+
+                        throw nvae;
+                    }
+                }
+                else {
+                    NoViableAltException nvae =
+                        new NoViableAltException("", 3, 1, input);
+
+                    throw nvae;
+                }
+            }
+            else {
+                NoViableAltException nvae =
+                    new NoViableAltException("", 3, 0, input);
+
+                throw nvae;
+            }
+            switch (alt3) {
+                case 1 :
+                    // RemusCli.g:59:4: n= STRING ':' m= STRING
+                    {
+                    n=(Token)match(input,STRING,FOLLOW_STRING_in_stackName275); 
+                    match(input,24,FOLLOW_24_in_stackName277); 
+                    m=(Token)match(input,STRING,FOLLOW_STRING_in_stackName281); 
+                    name =n.getText() + ":" + m.getText();
+
+                    }
+                    break;
+                case 2 :
+                    // RemusCli.g:60:4: n1= STRING ':' m1= STRING ':' o1= STRING
+                    {
+                    n1=(Token)match(input,STRING,FOLLOW_STRING_in_stackName290); 
+                    match(input,24,FOLLOW_24_in_stackName292); 
+                    m1=(Token)match(input,STRING,FOLLOW_STRING_in_stackName296); 
+                    match(input,24,FOLLOW_24_in_stackName298); 
+                    o1=(Token)match(input,STRING,FOLLOW_STRING_in_stackName302); 
+                    name =n1.getText() + ":" + m1.getText() + ":" + o1.getText();
+
+                    }
+                    break;
 
             }
-
         }
         catch (RecognitionException re) {
             reportError(re);
@@ -510,17 +574,17 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "pipelineName"
-    // RemusCli.g:62:1: pipelineName returns [String name] : n= STRING ;
+    // RemusCli.g:63:1: pipelineName returns [String name] : n= STRING ;
     public final String pipelineName() throws RecognitionException {
         String name = null;
 
         Token n=null;
 
         try {
-            // RemusCli.g:63:2: (n= STRING )
-            // RemusCli.g:63:4: n= STRING
+            // RemusCli.g:64:2: (n= STRING )
+            // RemusCli.g:64:4: n= STRING
             {
-            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName299); 
+            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName320); 
             name =n.getText();
 
             }
@@ -538,42 +602,42 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "fieldSelect"
-    // RemusCli.g:66:1: fieldSelect returns [String field] : (n= STRING | '*' );
+    // RemusCli.g:67:1: fieldSelect returns [String field] : (n= STRING | '*' );
     public final String fieldSelect() throws RecognitionException {
         String field = null;
 
         Token n=null;
 
         try {
-            // RemusCli.g:67:2: (n= STRING | '*' )
-            int alt3=2;
-            int LA3_0 = input.LA(1);
+            // RemusCli.g:68:2: (n= STRING | '*' )
+            int alt4=2;
+            int LA4_0 = input.LA(1);
 
-            if ( (LA3_0==STRING) ) {
-                alt3=1;
+            if ( (LA4_0==STRING) ) {
+                alt4=1;
             }
-            else if ( (LA3_0==25) ) {
-                alt3=2;
+            else if ( (LA4_0==25) ) {
+                alt4=2;
             }
             else {
                 NoViableAltException nvae =
-                    new NoViableAltException("", 3, 0, input);
+                    new NoViableAltException("", 4, 0, input);
 
                 throw nvae;
             }
-            switch (alt3) {
+            switch (alt4) {
                 case 1 :
-                    // RemusCli.g:67:4: n= STRING
+                    // RemusCli.g:68:4: n= STRING
                     {
-                    n=(Token)match(input,STRING,FOLLOW_STRING_in_fieldSelect317); 
+                    n=(Token)match(input,STRING,FOLLOW_STRING_in_fieldSelect338); 
                     field =n.getText();
 
                     }
                     break;
                 case 2 :
-                    // RemusCli.g:68:4: '*'
+                    // RemusCli.g:69:4: '*'
                     {
-                    match(input,25,FOLLOW_25_in_fieldSelect324); 
+                    match(input,25,FOLLOW_25_in_fieldSelect345); 
                     field ="*";
 
                     }
@@ -593,17 +657,17 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "quoteStr"
-    // RemusCli.g:71:1: quoteStr returns [String str] : s= QUOTESTR ;
+    // RemusCli.g:72:1: quoteStr returns [String str] : s= QUOTESTR ;
     public final String quoteStr() throws RecognitionException {
         String str = null;
 
         Token s=null;
 
         try {
-            // RemusCli.g:72:2: (s= QUOTESTR )
-            // RemusCli.g:72:4: s= QUOTESTR
+            // RemusCli.g:73:2: (s= QUOTESTR )
+            // RemusCli.g:73:4: s= QUOTESTR
             {
-            s=(Token)match(input,QUOTESTR,FOLLOW_QUOTESTR_in_quoteStr342); 
+            s=(Token)match(input,QUOTESTR,FOLLOW_QUOTESTR_in_quoteStr363); 
             String t=s.getText(); str =t.substring(1,t.length()-1);
 
             }
@@ -657,9 +721,14 @@ public class RemusCliParser extends Parser {
     public static final BitSet FOLLOW_STRING_in_stackName275 = new BitSet(new long[]{0x0000000001000000L});
     public static final BitSet FOLLOW_24_in_stackName277 = new BitSet(new long[]{0x0000000000000010L});
     public static final BitSet FOLLOW_STRING_in_stackName281 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_pipelineName299 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_fieldSelect317 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_25_in_fieldSelect324 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTESTR_in_quoteStr342 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_stackName290 = new BitSet(new long[]{0x0000000001000000L});
+    public static final BitSet FOLLOW_24_in_stackName292 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_STRING_in_stackName296 = new BitSet(new long[]{0x0000000001000000L});
+    public static final BitSet FOLLOW_24_in_stackName298 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_STRING_in_stackName302 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_pipelineName320 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_fieldSelect338 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_25_in_fieldSelect345 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTESTR_in_quoteStr363 = new BitSet(new long[]{0x0000000000000002L});
 
 }

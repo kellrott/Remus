@@ -95,14 +95,20 @@ public class CLICommand {
 		String [] tmp = stack.split(":");
 
 		RemusPipeline pipeline = cli.getPipeline();
-		RemusApplet applet = pipeline.getApplet(tmp[1]);
-		AppletInstance ai = applet.getAppletInstance(tmp[0]);
-		AppletRef ar = ai.getAppletRef();
-		RemusDB db = cli.getDataSource();		
-		for (String key : db.listKeys(ar)) {
-			cli.println(key);
+		RemusApplet applet = null;
+		if (tmp.length == 2) {
+			applet = pipeline.getApplet(tmp[1]);
+		} else if (tmp.length == 3) {
+			applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
 		}
-
+		if (applet != null) {
+			AppletInstance ai = applet.getAppletInstance(tmp[0]);
+			AppletRef ar = ai.getAppletRef();
+			RemusDB db = cli.getDataSource();		
+			for (String key : db.listKeys(ar)) {
+				cli.println(key);
+			}
+		}
 	}
 
 	private void doShow(PluginManager pm, CLI cli) throws NotImplemented, TException, IOException, RemusDatabaseException {

@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-08-30 11:19:17
+// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-09-01 15:26:34
 
 package org.remus.tools.antlr;
 
@@ -387,17 +387,17 @@ public class RemusCliLexer extends Lexer {
         try {
             int _type = STRING;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // RemusCli.g:75:8: ( ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )+ )
-            // RemusCli.g:75:10: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )+
+            // RemusCli.g:76:8: ( ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\\.' )+ )
+            // RemusCli.g:76:10: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\\.' )+
             {
-            // RemusCli.g:75:10: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' )+
+            // RemusCli.g:76:10: ( 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '_' | '\\.' )+
             int cnt1=0;
             loop1:
             do {
                 int alt1=2;
                 int LA1_0 = input.LA(1);
 
-                if ( ((LA1_0>='0' && LA1_0<='9')||(LA1_0>='A' && LA1_0<='Z')||LA1_0=='_'||(LA1_0>='a' && LA1_0<='z')) ) {
+                if ( (LA1_0=='.'||(LA1_0>='0' && LA1_0<='9')||(LA1_0>='A' && LA1_0<='Z')||LA1_0=='_'||(LA1_0>='a' && LA1_0<='z')) ) {
                     alt1=1;
                 }
 
@@ -406,7 +406,7 @@ public class RemusCliLexer extends Lexer {
             	case 1 :
             	    // RemusCli.g:
             	    {
-            	    if ( (input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
+            	    if ( input.LA(1)=='.'||(input.LA(1)>='0' && input.LA(1)<='9')||(input.LA(1)>='A' && input.LA(1)<='Z')||input.LA(1)=='_'||(input.LA(1)>='a' && input.LA(1)<='z') ) {
             	        input.consume();
 
             	    }
@@ -444,8 +444,8 @@ public class RemusCliLexer extends Lexer {
         try {
             int _type = QUOTE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // RemusCli.g:78:7: ( '\"' )
-            // RemusCli.g:78:9: '\"'
+            // RemusCli.g:79:7: ( '\"' )
+            // RemusCli.g:79:9: '\"'
             {
             match('\"'); 
 
@@ -464,11 +464,11 @@ public class RemusCliLexer extends Lexer {
         try {
             int _type = QUOTESTR;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // RemusCli.g:80:10: ( QUOTE ( options {greedy=false; } : . )* QUOTE )
-            // RemusCli.g:80:12: QUOTE ( options {greedy=false; } : . )* QUOTE
+            // RemusCli.g:81:10: ( QUOTE ( options {greedy=false; } : . )* QUOTE )
+            // RemusCli.g:81:12: QUOTE ( options {greedy=false; } : . )* QUOTE
             {
             mQUOTE(); 
-            // RemusCli.g:80:18: ( options {greedy=false; } : . )*
+            // RemusCli.g:81:18: ( options {greedy=false; } : . )*
             loop2:
             do {
                 int alt2=2;
@@ -484,7 +484,7 @@ public class RemusCliLexer extends Lexer {
 
                 switch (alt2) {
             	case 1 :
-            	    // RemusCli.g:80:45: .
+            	    // RemusCli.g:81:45: .
             	    {
             	    matchAny(); 
 
@@ -513,8 +513,8 @@ public class RemusCliLexer extends Lexer {
         try {
             int _type = SEMICOLON;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // RemusCli.g:82:11: ( ';' )
-            // RemusCli.g:82:13: ';'
+            // RemusCli.g:83:11: ( ';' )
+            // RemusCli.g:83:13: ';'
             {
             match(';'); 
 
@@ -533,10 +533,10 @@ public class RemusCliLexer extends Lexer {
         try {
             int _type = WHITESPACE;
             int _channel = DEFAULT_TOKEN_CHANNEL;
-            // RemusCli.g:84:12: ( ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+ )
-            // RemusCli.g:84:14: ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+
+            // RemusCli.g:85:12: ( ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+ )
+            // RemusCli.g:85:14: ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+
             {
-            // RemusCli.g:84:14: ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+
+            // RemusCli.g:85:14: ( '\\t' | ' ' | '\\r' | '\\n' | '\\u000C' )+
             int cnt3=0;
             loop3:
             do {
@@ -589,8 +589,8 @@ public class RemusCliLexer extends Lexer {
     // $ANTLR start "DIGIT"
     public final void mDIGIT() throws RecognitionException {
         try {
-            // RemusCli.g:86:16: ( '0' .. '9' )
-            // RemusCli.g:86:18: '0' .. '9'
+            // RemusCli.g:87:16: ( '0' .. '9' )
+            // RemusCli.g:87:18: '0' .. '9'
             {
             matchRange('0','9'); 
 
@@ -771,11 +771,11 @@ public class RemusCliLexer extends Lexer {
     static final String DFA4_minS =
         "\1\11\1\165\1\145\1\151\1\160\1\163\2\162\1\157\1\156\3\uffff\1"+
         "\0\2\uffff\1\151\1\157\1\154\1\141\2\160\1\145\2\157\1\141\1\146"+
-        "\2\uffff\1\164\1\167\1\166\1\145\1\143\1\145\1\154\1\60\1\155\1"+
-        "\160\1\144\1\151\1\157\2\60\1\145\1\143\1\153\1\154\1\145\1\uffff"+
-        "\3\60\1\154\1\60\2\uffff\1\162\1\164\1\163\1\151\1\164\3\uffff\1"+
-        "\145\1\uffff\1\163\2\60\1\156\1\163\2\60\2\uffff\1\145\1\60\2\uffff"+
-        "\1\60\1\uffff\1\60\2\uffff";
+        "\2\uffff\1\164\1\167\1\166\1\145\1\143\1\145\1\154\1\56\1\155\1"+
+        "\160\1\144\1\151\1\157\2\56\1\145\1\143\1\153\1\154\1\145\1\uffff"+
+        "\3\56\1\154\1\56\2\uffff\1\162\1\164\1\163\1\151\1\164\3\uffff\1"+
+        "\145\1\uffff\1\163\2\56\1\156\1\163\2\56\2\uffff\1\145\1\56\2\uffff"+
+        "\1\56\1\uffff\1\56\2\uffff";
     static final String DFA4_maxS =
         "\1\172\1\165\1\164\1\151\1\160\1\163\2\162\1\157\1\156\3\uffff\1"+
         "\uffff\2\uffff\1\151\1\157\1\162\1\141\2\160\1\145\2\157\1\141\1"+
@@ -791,10 +791,10 @@ public class RemusCliLexer extends Lexer {
     static final String DFA4_specialS =
         "\15\uffff\1\0\107\uffff}>";
     static final String[] DFA4_transitionS = {
-            "\2\17\1\uffff\2\17\22\uffff\1\17\1\uffff\1\15\7\uffff\1\13\5"+
-            "\uffff\12\14\1\12\1\16\5\uffff\32\14\4\uffff\1\14\1\uffff\1"+
-            "\4\2\14\1\7\1\14\1\6\2\14\1\11\2\14\1\10\3\14\1\3\1\1\1\14\1"+
-            "\2\1\14\1\5\5\14",
+            "\2\17\1\uffff\2\17\22\uffff\1\17\1\uffff\1\15\7\uffff\1\13\3"+
+            "\uffff\1\14\1\uffff\12\14\1\12\1\16\5\uffff\32\14\4\uffff\1"+
+            "\14\1\uffff\1\4\2\14\1\7\1\14\1\6\2\14\1\11\2\14\1\10\3\14\1"+
+            "\3\1\1\1\14\1\2\1\14\1\5\5\14",
             "\1\20",
             "\1\22\2\uffff\1\21\13\uffff\1\23",
             "\1\24",
@@ -830,25 +830,25 @@ public class RemusCliLexer extends Lexer {
             "\1\56",
             "\1\57",
             "\1\60",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "\1\62",
             "\1\63",
             "\1\64",
             "\1\65",
             "\1\66",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "\1\71",
             "\1\72",
             "\1\73",
             "\1\74",
             "\1\75",
             "",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "\1\101",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "",
             "",
             "\1\103",
@@ -862,21 +862,22 @@ public class RemusCliLexer extends Lexer {
             "\1\110",
             "",
             "\1\111",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "\1\114",
             "\1\115",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "",
             "",
             "\1\120",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "",
             "",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\22\14\1\122\7\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\22\14"+
+            "\1\122\7\14",
             "",
-            "\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
+            "\1\14\1\uffff\12\14\7\uffff\32\14\4\uffff\1\14\1\uffff\32\14",
             "",
             ""
     };

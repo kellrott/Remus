@@ -27,9 +27,7 @@ public class CLI {
 	}
 
 	public void start() throws IOException {
-
-		reader = new ConsoleReader();
-		
+		reader = new ConsoleReader();		
 		boolean quit = false;
 		do {
 			String userInput = null;
@@ -38,22 +36,24 @@ public class CLI {
 			} else {
 				userInput = reader.readLine("remus:" + curPipeline + ">");
 			}
-			ANTLRStringStream sstream = new ANTLRStringStream(userInput);
-			RemusCliLexer lex = new RemusCliLexer(sstream);
-			TokenStream tokens = new CommonTokenStream(lex);
-			RemusCliParser parser = new RemusCliParser(tokens);
-			try { 
-				if (!parser.failed()) {
-					CLICommand cmd = parser.cmd();
-					if (cmd.getType() == CLICommand.QUIT) {
-						quit = true;	
-					} else {
-						cmd.runCommand(pm, this);
+			if (userInput.length() > 0) {
+				ANTLRStringStream sstream = new ANTLRStringStream(userInput);
+				RemusCliLexer lex = new RemusCliLexer(sstream);
+				TokenStream tokens = new CommonTokenStream(lex);
+				RemusCliParser parser = new RemusCliParser(tokens);
+				try { 
+					if (!parser.failed()) {
+						CLICommand cmd = parser.cmd();
+						if (cmd.getType() == CLICommand.QUIT) {
+							quit = true;	
+						} else {
+							cmd.runCommand(pm, this);
+						}
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					reader.printString("UNKNOWN COMMAND\n");
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				reader.printString("UNKNOWN COMMAND\n");
 			}
 		} while (!quit);
 	}		
@@ -65,8 +65,11 @@ public class CLI {
 		Map client  = new HashMap();
 		client.put("host", args[0]);
 		client.put("port", Integer.parseInt(args[1]));
+		client.put("silent", true);
 		conf.put("client", client);		
 		params.put("org.remus.RemusIDClient", conf);
+
+		System.err.println("Connecting: " + client.get("host") + client.get("port"));
 
 		PluginManager pm = new PluginManager(params);				
 		pm.start();
