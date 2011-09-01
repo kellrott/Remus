@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 //import junit
@@ -14,6 +16,7 @@ import org.junit.*;
 import org.remus.ConnectionException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
+import org.remus.RemusDBSliceIterator;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 
@@ -23,16 +26,15 @@ public class MPStoreTest {
 
 
 	@Before public void setUp() throws FileNotFoundException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ConnectionException {
-		Properties prop = new Properties();
-		prop.load( new FileInputStream( new File( "cassandra.prop" ) ) );
+		String CLASS_NAME = "org.remus.cassandra.Server";
+		Class<RemusDB> cls = (Class<RemusDB>) Class.forName( CLASS_NAME );
 		
-		Class<RemusDB> cls = (Class<RemusDB>) Class.forName( prop.getProperty( "org.remus.DB_DRIVER" ) );
+		Map config = new HashMap();
+		config.put("columnFamily", "remusTest");
+		config.put("keySpace", "remus");		
 		
 		ds = cls.newInstance();
-		ds.init(prop);
-		
-		//ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
-		//ds.initMPStore(new JsonSerializer(), prop );
+		ds.init(config);		
 	}
 
 	@Test public void insertTest() throws TException, NotImplemented {
@@ -142,6 +144,32 @@ public class MPStoreTest {
 		Assert.assertTrue( !ds.containsKey(aRef1, key2) );
 	}
 
+	
+	@Test public void slicerTest() throws TException, NotImplemented {
+		String instance1 = "00-testing-01";
+		String applet1 = "@testfile_1";
+		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
+		String key = "key_";
+		for (long i = 0; i < 10000; i++) {
+			ds.add(aRef1, 0L, i, key + Long.toString(i), "value_" + Long.toString(i));
+		}
+	
+		RemusDBSliceIterator<Object []> out = new RemusDBSliceIterator<Object []>(ds, aRef1, "", "", true) {
+			
+			@Override
+			public void processKeyValue(String key, Object val, long jobID, long emitID) {
+				addElement(new Object []  {key, val});
+			}
+		};
+		
+		int count = 0;
+		for (Object [] pair : out) {
+			System.out.println(pair);
+			count++;
+		}		
+		Assert.assertEquals(count, 10000);
+		ds.deleteStack(aRef1);
+	}
 	
 	@After public void shutdown() {
 
