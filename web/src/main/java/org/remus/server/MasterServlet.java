@@ -13,12 +13,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.remus.RemusAttach;
-import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
-import org.remus.plugin.PluginManager;
 import org.remus.serverNodes.AppView;
 
 /**
@@ -63,14 +60,13 @@ public class MasterServlet extends HttpServlet {
 		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
-			//if ( workerID != null ) {
-			//	app.getWorkManager().touchWorkerStatus( workerID );
-			//}
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
-			appView.passCall( AppView.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
-		} catch ( FileNotFoundException e ) {
-			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+			appView.passCall(AppView.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			os.close();
+			is.close();
+		} catch (FileNotFoundException e) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		
 	}
 
@@ -83,15 +79,13 @@ public class MasterServlet extends HttpServlet {
 		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
-			//TODO: make sure correct worker is returning assigned results before putting them in the database....
-			//if ( workerID != null ) {
-			//	app.getWorkManager().touchWorkerStatus( workerID );
-			//}			
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appView.passCall( AppView.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
-		} catch ( FileNotFoundException e ) {
-			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+			appView.passCall(AppView.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			os.close();
+			is.close();
+		} catch (FileNotFoundException e) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}	
 		
 		
@@ -107,9 +101,11 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appView.passCall( AppView.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
-		} catch ( FileNotFoundException e ) {
-			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+			appView.passCall(AppView.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			os.close();
+			is.close();
+		} catch (FileNotFoundException e) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}		
 	}
 
@@ -123,9 +119,11 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appView.passCall( AppView.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
-		} catch ( FileNotFoundException e ) {
-			resp.sendError( HttpServletResponse.SC_NOT_FOUND );
+			appView.passCall(AppView.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
+			os.close();
+			is.close();
+		} catch (FileNotFoundException e) {
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}					
 	}
 }
