@@ -1,5 +1,6 @@
 package org.remus.core;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,12 @@ public class PipelineDesc implements JSONAware {
 			if (obj instanceof Map) {
 				if (((Map) obj).containsKey("_mode")) {
 					out.add((String) key);
+					if (((Map) obj).containsKey("_output")) {
+						List output = (List) ((Map) obj).get("_output");
+						for (Object name : output) {
+							out.add((String) key + ":" + (String) name);
+						}
+					}
 				}
 			}
 		}
@@ -33,6 +40,11 @@ public class PipelineDesc implements JSONAware {
 	}
 
 	public Map getApplet(String appletName) {
+		if (appletName.contains(":")) {
+			Map info = new HashMap();
+			info.put("_mode", "output");
+			return info;
+		} 
 		return (Map) base.get(appletName);
 	}
 

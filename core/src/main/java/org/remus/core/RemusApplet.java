@@ -15,7 +15,6 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.RemusNet;
 import org.remus.work.AgentGenerator;
 import org.remus.work.MapGenerator;
 import org.remus.work.MatchGenerator;
@@ -26,6 +25,7 @@ import org.remus.work.SplitGenerator;
 import org.remus.work.WorkGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class RemusApplet {
 
@@ -60,6 +60,7 @@ public class RemusApplet {
 
 	private RemusDB datastore;
 	private RemusAttach attachstore;
+	private ArrayList<String> outputs;
 
 
 	public RemusApplet(RemusPipeline pipeline, String name, RemusDB datastore, RemusAttach attachstore) throws TException, NotImplemented, RemusDatabaseException {
@@ -161,6 +162,9 @@ public class RemusApplet {
 		if (modeStr.compareTo("agent") == 0) {
 			appletType = AGENT;
 		}
+		if (modeStr.compareTo("output") == 0) {
+			appletType = OUTPUT;
+		}
 		if (appletType == null) {
 			throw new RemusDatabaseException("Invalid Applet Type");
 		}
@@ -204,16 +208,31 @@ public class RemusApplet {
 			//}
 		}
 
+		if (appletObj.containsKey(OUTPUT_FIELD)) {
+			List outs = (List) appletObj.get(OUTPUT_FIELD);
+			for (Object outName : outs) {
+				addOutput((String) outName);
+			}
+		}		
 	}
 
-	public void addInput(String in) {
+
+
+	private void addOutput(String outName) {
+		if (outputs == null) {
+			outputs = new ArrayList<String>();
+		}
+		outputs.add(outName);
+	}
+
+	private void addInput(String in) {
 		if (inputs == null) {
 			inputs = new ArrayList<String>();
 		}
 		inputs.add(in);
 	}	
 
-	public void addLeftInput(String in) {
+	private void addLeftInput(String in) {
 		if (lInputs == null) {
 			lInputs = new LinkedList<String>();
 		}
@@ -221,7 +240,7 @@ public class RemusApplet {
 		addInput(in);
 	}
 
-	public void addRightInput(String in) {
+	private void addRightInput(String in) {
 		if (rInputs == null) {
 			rInputs = new LinkedList<String>();
 		}
@@ -390,7 +409,7 @@ public class RemusApplet {
 		if (baseMap == null) {
 			baseMap = new HashMap();
 		}
-		
+
 		baseMap.put("_instance", inst.toString());
 		baseMap.put("_submitKey", submitKey);
 
@@ -435,6 +454,20 @@ public class RemusApplet {
 
 		PipelineSubmission instInfo = new PipelineSubmission(baseMap);
 
+		if (outputs != null) {
+			for (String output : outputs) {
+				try {
+					PipelineSubmission outputInfo = new PipelineSubmission(new HashMap(baseMap));
+					outputInfo.setInstance(inst);
+					outputInfo.setMode("output");
+					RemusApplet outApplet = new RemusApplet(pipeline, getID() + ":" + output, datastore, attachstore);
+					AppletInstance ai = new AppletInstance(pipeline, inst, outApplet, datastore);
+					ai.updateInstanceInfo(outputInfo);
+					
+				} catch (RemusDatabaseException e) {
+				}
+			}
+		}
 		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore);
 		ai.updateInstanceInfo(instInfo);
 		return true;

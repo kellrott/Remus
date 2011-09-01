@@ -156,6 +156,7 @@ public class RemusPipeline {
 		}
 	}
 
+	/*
 	private List<RemusApplet> loadApplet(String pipelineName, String name, RemusDB store ) throws TException, NotImplemented, RemusDatabaseException {
 		List<RemusApplet> out = new LinkedList<RemusApplet>();
 
@@ -164,11 +165,10 @@ public class RemusPipeline {
 		for (Object obj : store.get(arPipeline, name)) {
 			appletObj = (Map) obj;
 		}
-		RemusApplet applet = new RemusApplet(this, name, datastore, attachStore);
-
+		RemusApplet applet = new RemusApplet(this, name, datastore, attachStore);		
 		if (appletObj.containsKey(RemusApplet.OUTPUT_FIELD)) {
 			for (Object nameObj : (List) appletObj.get(RemusApplet.OUTPUT_FIELD)) {
-				RemusApplet outApplet = new RemusApplet(this, name + "." + (String) nameObj, datastore, attachStore);
+				RemusApplet outApplet = new RemusApplet(this, name + ":" + (String) nameObj, datastore, attachStore);
 				outApplet.setMode(RemusApplet.OUTPUT);
 				for (String input : applet.getInputs()) {
 					outApplet.addInput(input);
@@ -177,11 +177,11 @@ public class RemusPipeline {
 				out.add(outApplet);
 			}
 		}		
-		out.add(applet);
-
+		out.add(applet);		
 		return out;
 	}
-
+*/
+	
 	public void deleteApplet(RemusApplet applet) throws TException, NotImplemented {		
 		for (RemusInstance inst : applet.getInstanceList()) {
 			applet.deleteInstance(inst);

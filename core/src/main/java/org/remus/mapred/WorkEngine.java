@@ -48,9 +48,9 @@ public class WorkEngine implements Runnable {
 		status = JobState.WORKING;
 		message = null;
 		Map stackInfo = (Map) JSON.loads(work.infoJSON);
-		mapred.init(stackInfo);
 		PipelineSubmission sub = new PipelineSubmission(stackInfo);
 		try { 
+			mapred.init(stackInfo);
 			if (work.mode == WorkMode.MAP) {
 				String inputInstStr = sub.getInputInstance();				
 				RemusInstance inst = RemusInstance.getInstance(db, 

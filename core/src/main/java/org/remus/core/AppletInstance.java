@@ -218,16 +218,16 @@ public class AppletInstance {
 						firstSlice = false;
 					}
 				}
-				if (newJobStart != jobStart) {
-					logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
-					status.setJobStart(newJobStart);
-					setWorkStat(status);
-				}
 			}
 			if (count > 0 && curPos == 0) {
 				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
 				setComplete();
+			} else if (newJobStart != jobStart) {
+				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
+				status.setJobStart(newJobStart);
+				setWorkStat(status);
 			}
+
 			//logger.debug("Found : " + curPos + " jobs");
 		} catch (TException e) {
 			e.printStackTrace();

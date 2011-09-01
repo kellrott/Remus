@@ -111,5 +111,9 @@ public class PipelineSubmission implements JSONAware {
 		return new RemusInstance(instStr);
 	}
 
+	public void setMode(String mode) {
+		base.put("_mode", mode);
+	}
+
 	
 }
