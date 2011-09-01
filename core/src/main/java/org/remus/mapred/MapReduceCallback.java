@@ -73,8 +73,8 @@ public class MapReduceCallback {
 			} else {
 				//BUG: no validation done to make sure that outstack was actually decalared in the 
 				//pipeline description 
-				AppletRef or = new AppletRef(pipeline, instance, applet + "." + mpe.outStack);
-				db.add(or, jobID, mpe.emitID, mpe.key, mpe.val);				
+				AppletRef or = new AppletRef(pipeline, instance, applet + ":" + mpe.outStack);
+				db.add(or, jobID, mpe.emitID, mpe.key, mpe.val);
 			}
 		}
 		outList.clear();
