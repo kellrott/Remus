@@ -23,6 +23,7 @@ public class RemusIDClient extends RemusIDServer {
 	String server;
 	int port;
 	private PluginManager plugManager;
+	private boolean silent;
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -35,6 +36,10 @@ public class RemusIDClient extends RemusIDServer {
 	@Override
 	public void init(Map params) throws Exception {
 		logger = LoggerFactory.getLogger(RemusIDClient.class);
+		silent = false;
+		if (params.containsKey("silent")){
+			silent = (Boolean) params.get("silent");
+		}
 		server = (String) params.get("host");
 		port =  Integer.parseInt(params.get("port").toString());
 	}
@@ -50,41 +55,43 @@ public class RemusIDClient extends RemusIDServer {
 			addPeer(info);
 		}		
 	}
-	
+
 	@Override	
 	public void start(PluginManager pluginManager) throws Exception {
-		
+
 	}
 
 	@Override
 	public void stop() {
-		
+
 	}
 
 	@Override
 	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
-		TSocket transport = new TSocket(server, port);
-		TBinaryProtocol protocol = new TBinaryProtocol(transport);
-		transport.open();
-		RemusNet.Client client = new RemusNet.Client(protocol);
-
-		client.addPeer(info);
-
-		transport.close();
+		if (!silent) {
+			TSocket transport = new TSocket(server, port);
+			TBinaryProtocol protocol = new TBinaryProtocol(transport);
+			transport.open();
+			RemusNet.Client client = new RemusNet.Client(protocol);
+			client.addPeer(info);
+			transport.close();
+		}
 	}
 
 
 	@Override
 	public void delPeer(String peerName) throws TException, NotImplemented {
-		TSocket transport = new TSocket(server, port);
-		TBinaryProtocol protocol = new TBinaryProtocol(transport);
-		transport.open();
-		transport.open();
-		RemusNet.Client client = new RemusNet.Client(protocol);
+		if (!silent) {
+			TSocket transport = new TSocket(server, port);
+			TBinaryProtocol protocol = new TBinaryProtocol(transport);
+			transport.open();
+			transport.open();
+			RemusNet.Client client = new RemusNet.Client(protocol);
+			client.delPeer(peerName);
+			transport.close();	
+		}
+	}
 
-		client.delPeer(peerName);
-
-		transport.close();	}
 
 
 	@Override
@@ -98,5 +105,5 @@ public class RemusIDClient extends RemusIDServer {
 		transport.close();
 		return out;
 	}
-	
+
 }
