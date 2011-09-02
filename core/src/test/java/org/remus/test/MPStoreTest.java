@@ -24,6 +24,11 @@ public class MPStoreTest {
 
 	RemusDB ds;
 
+	String instance1 = "00-testing-01";
+	String instance2 = "00-testing-02";
+
+	String applet1 = "@testfile_1";
+	String applet2 = "@testfile_2";
 
 	@Before public void setUp() throws FileNotFoundException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ConnectionException {
 		String CLASS_NAME = "org.remus.cassandra.Server";
@@ -39,12 +44,7 @@ public class MPStoreTest {
 
 	@Test public void insertTest() throws TException, NotImplemented {
 
-		String instance1 = "00-testing-01";
-		String instance2 = "00-testing-02";
-
-		String applet1 = "@testfile_1";
-		String applet2 = "@testfile_2";
-
+		
 		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
 		AppletRef aRef2 = new AppletRef("unitTest", instance2, applet2);
 		
@@ -145,17 +145,19 @@ public class MPStoreTest {
 	}
 
 	
+	private static final int CYCLE_1 = 2000;
+	private static final int CYCLE_2 = 100;
+	
 	@Test public void slicerTest() throws TException, NotImplemented {
-		String instance1 = "00-testing-01";
-		String applet1 = "@testfile_1";
 		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
 		String key = "key_";
-		for (long i = 0; i < 10000; i++) {
-			ds.add(aRef1, 0L, i, key + Long.toString(i), "value_" + Long.toString(i));
+		for (long i = 0; i < CYCLE_1; i++) {
+			for (long j = 0; j < CYCLE_2; j++) {
+				ds.add(aRef1, i, j, key + Long.toString(i), "value_" + Long.toString(i) + "_" + Long.toString(j));
+			}
 		}
 	
-		RemusDBSliceIterator<Object []> out = new RemusDBSliceIterator<Object []>(ds, aRef1, "", "", true) {
-			
+		RemusDBSliceIterator<Object []> out = new RemusDBSliceIterator<Object []>(ds, aRef1, "", "", true) {			
 			@Override
 			public void processKeyValue(String key, Object val, long jobID, long emitID) {
 				addElement(new Object []  {key, val});
@@ -164,14 +166,15 @@ public class MPStoreTest {
 		
 		int count = 0;
 		for (Object [] pair : out) {
-			System.out.println(pair);
+			System.out.println(pair[0] + " " + pair[1]);
 			count++;
 		}		
-		Assert.assertEquals(count, 10000);
+		Assert.assertEquals(count, CYCLE_1 * CYCLE_2);
 		ds.deleteStack(aRef1);
 	}
 	
-	@After public void shutdown() {
-
+	@After public void shutdown() throws NotImplemented, TException {
+		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
+		ds.deleteStack(aRef1);
 	}
 }

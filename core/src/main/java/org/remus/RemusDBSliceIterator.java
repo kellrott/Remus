@@ -52,12 +52,14 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 
 	private boolean getNextSlice() {
 		try {
+			String lastKey = null;
+			elemAdded = false;
 			if (loadVal) {
 				List<KeyValJSONPair> curlist = db.keyValJSONSlice(stack, keyStart, maxFetch);
 				for ( KeyValJSONPair kv : curlist ){
 					if ( firstSlice || kv.key.compareTo( new String(keyStart)) != 0 ) {
 						processKeyValue( kv.key, JSON.loads(kv.valueJson), kv.jobID, kv.emitID );
-						keyStart = kv.key;
+						lastKey = kv.key;
 						elemAdded = true;
 					}
 				}
@@ -66,11 +68,12 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 				for ( String key : curlist ){
 					if ( firstSlice || key.compareTo( new String(keyStart)) != 0 ) {
 						processKeyValue( key, null, 0, 0 );
-						keyStart = key;
+						lastKey = key;
 						elemAdded = true;
 					}
 				}
 			}
+			keyStart = lastKey;
 			firstSlice = false;
 		} catch (TException e) {
 			e.printStackTrace();
