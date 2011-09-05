@@ -18,6 +18,7 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 	LinkedList<T> outList;
 	String keyStart,  keyEnd;
 	ByteBuffer superColumn;
+	protected boolean stop = false;
 
 	RemusDB db;
 	private AppletRef stack;
@@ -38,6 +39,9 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 
 	@Override
 	public boolean hasNext() {		
+		if (stop) {
+			return false;
+		}
 		if (hasMore && outList.size() < maxFetch) {
 			hasMore = getNextSlice();
 		}
@@ -57,6 +61,9 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 			if (loadVal) {
 				List<KeyValJSONPair> curlist = db.keyValJSONSlice(stack, keyStart, maxFetch);
 				for ( KeyValJSONPair kv : curlist ){
+					if (stop) {
+						return false;
+					}
 					if ( firstSlice || kv.key.compareTo( new String(keyStart)) != 0 ) {
 						processKeyValue( kv.key, JSON.loads(kv.valueJson), kv.jobID, kv.emitID );
 						lastKey = kv.key;
@@ -66,6 +73,9 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 			} else {
 				List<String> curlist = db.keySlice(stack, keyStart, maxFetch);
 				for ( String key : curlist ){
+					if (stop) {
+						return false;
+					}
 					if ( firstSlice || key.compareTo( new String(keyStart)) != 0 ) {
 						processKeyValue( key, null, 0, 0 );
 						lastKey = key;
@@ -85,6 +95,10 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 
 	public abstract void processKeyValue(String key, Object val, long jobID, long emitID);
 
+	public void stop() {
+		stop = true;
+	}
+	
 	public void addElement( T elem ) {
 		elemAdded = true;
 		outList.add( elem );
