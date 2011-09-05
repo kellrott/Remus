@@ -2,11 +2,13 @@ package org.remus.tools;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
+import org.remus.RemusDBSliceIterator;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
@@ -40,6 +42,9 @@ public class CLICommand {
 	private String field = null;
 	private String stack = null;
 	private String path;
+	private List<Selection> selection;
+	private List<Conditional> conditional;
+	private Integer limit = null;
 
 	public CLICommand(int cmdType) {
 		this.type = cmdType;
@@ -91,7 +96,7 @@ public class CLICommand {
 		}
 	}
 
-	private void doSelect(PluginManager pm, CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
+	private void doSelect(PluginManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		String [] tmp = stack.split(":");
 
 		RemusPipeline pipeline = cli.getPipeline();
@@ -104,10 +109,47 @@ public class CLICommand {
 		if (applet != null) {
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
 			AppletRef ar = ai.getAppletRef();
-			RemusDB db = cli.getDataSource();		
-			for (String key : db.listKeys(ar)) {
-				cli.println(key);
+			RemusDB db = cli.getDataSource();
+
+			RemusDBSliceIterator<Object> iter = new RemusDBSliceIterator<Object>(db, ar, "", "", true) {				
+				long counter = 0;
+				@Override
+				public void processKeyValue(String key, Object val, long jobID, long emitID) {
+					boolean select = true;
+					if (limit != null && counter >= limit) {
+						stop();
+						return;
+					} else if (conditional != null) {
+						Conditional c = conditional.get(0);						
+						if (!c.evaluate(key, val)) {
+							select = false;
+						}						
+					}
+					if (select) {
+						StringBuilder o = new StringBuilder();
+						boolean first=true;
+						for (Selection sel : selection) {
+							if (!first) {
+								o.append("|");
+							}
+							o.append(sel.getString(key,val));
+						}
+						try {
+							cli.println(o.toString());
+							counter++;
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							//e.printStackTrace();
+						}
+					}
+					addElement(null);
+				}
+			};
+
+			while (iter.hasNext()) {
+				iter.next();
 			}
+
 		}
 	}
 
@@ -173,6 +215,18 @@ public class CLICommand {
 
 	public void setPath(String path) {
 		this.path = path;		
+	}
+
+	public void setSelection(List<Selection> f) {
+		selection = f;
+	}
+
+	public void setConditional(List<Conditional> c) {
+		conditional = c;
+	}
+
+	public void setLimit(int limit) {
+		this.limit  = limit;
 	}
 
 }

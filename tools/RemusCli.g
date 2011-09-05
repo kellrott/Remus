@@ -8,12 +8,18 @@ options {
 package org.remus.tools.antlr;
 
 import org.remus.tools.CLICommand;
+import org.remus.tools.Selection;
+import org.remus.tools.Conditional;
+import java.util.LinkedList;
 } 
 
 @lexer::header {
 package org.remus.tools.antlr;
 
 import org.remus.tools.CLICommand;
+import org.remus.tools.Selection;
+import org.remus.tools.Conditional;
+import java.util.LinkedList;
 }
 
 cmd  returns [CLICommand cmd] 
@@ -43,7 +49,9 @@ useCmd returns [CLICommand cmd]
 
 
 selectCmd returns [CLICommand cmd]
-	: 'select' f=fieldSelect 'from' s=stackName {$cmd = new CLICommand(CLICommand.SELECT); $cmd.setField(f); $cmd.setStack(s);}
+	: 'select' f=selectionList 'from' s=stackName {$cmd = new CLICommand(CLICommand.SELECT); $cmd.setSelection(f); $cmd.setStack(s);}
+	( | 'where' c=conditionalList { $cmd.setConditional(c); } )
+	( | 'limit' st=STRING { $cmd.setLimit(Integer.parseInt(st.getText()));} )
 ;
 
 
@@ -64,10 +72,37 @@ pipelineName returns [String name]
 	: n=STRING {$name=n.getText();}
 ;
 
-fieldSelect returns [String field]
-	: n=STRING {$field=n.getText();}
-	| '*' {$field="*";}
+selectionList returns [List<Selection> out=new LinkedList<Selection>();]
+	: w=selection {$out.add(w);} (',' w=selection {$out.add(w);})*
 ;
+
+selection returns [Selection select]
+	: s=quoteStr {$select=new Selection(s);}
+	| '*' {$select=new Selection(Selection.ALL);}
+	| 'KEY' {$select=new Selection(Selection.KEY);}
+;
+
+conditionalList returns [List<Conditional> out=new LinkedList<Conditional>();]
+	: w=conditional {$out.add(w);}
+;
+
+
+conditional returns [Conditional cond]
+	: 'KEY' '=' e=quoteStr { 
+		$cond=new Conditional(Conditional.EQUALS); 
+		$cond.setLeftType(Conditional.KEY); 
+		$cond.setRightType(Conditional.STRING);
+		$cond.setRight(e);
+	}
+	| e1=quoteStr '=' e2=quoteStr {
+		$cond=new Conditional(Conditional.EQUALS); 
+		$cond.setLeftType(Conditional.FIELD); 
+		$cond.setLeft(e1);
+		$cond.setRightType(Conditional.STRING);
+		$cond.setRight(e2);
+	}
+;
+		
 
 quoteStr returns [String str]
 	: s=QUOTESTR {String t=s.getText(); $str=t.substring(1,t.length()-1);}
