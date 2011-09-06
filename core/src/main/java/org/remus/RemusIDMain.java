@@ -1,5 +1,6 @@
 package org.remus;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,7 +26,7 @@ public class RemusIDMain extends RemusIDServer {
 	private PluginManager plugins;
 	private Logger logger;
 
-	
+
 	@Override
 	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
 		synchronized (peerMap) {
@@ -65,6 +66,52 @@ public class RemusIDMain extends RemusIDServer {
 		return out;
 	}
 
+
+	class PingThread extends Thread {
+		private static final long SLEEPTIME = 30000;
+		boolean quit = false;
+		Integer waitLock = new Integer(0);
+
+		@Override
+		public void run() {
+			while (!quit) {
+				synchronized (peerMap) {
+					List<String> removeList = new ArrayList<String>();
+					for (String peerID : peerMap.keySet()) {
+						try {
+							RemusNet.Iface iface = plugins.getPeer(peerID);
+							iface.status();
+						} catch (TException e) {
+							//upon failure, remove node from peer list
+							removeList.add(peerID);
+						}
+					}
+
+					for (String peerID : removeList) {					
+						logger.error("PeerFailure peer: " + peerID);
+						peerMap.remove(peerID);
+					}
+				}
+				synchronized (waitLock) {			
+					try {
+						waitLock.wait(SLEEPTIME);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+
+		}
+
+		public void quit() {
+			quit = true;
+			synchronized (waitLock) {
+				waitLock.notifyAll();	
+			}
+		}
+	}
+
 	/*
 	public void ping(List<PeerInfoThrift> workers) throws TException {
 		logger.info( local.name + " PINGED with " + workers.size() + " records" );
@@ -89,7 +136,7 @@ public class RemusIDMain extends RemusIDServer {
 	}
 	 */
 
-	
+
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
@@ -118,11 +165,12 @@ public class RemusIDMain extends RemusIDServer {
 			addPeer(info);
 		}
 	}
-	
 
+	PingThread pingThread;
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
-		
+		pingThread = new PingThread();
+		pingThread.start();
 	}
 
 	public void flushOld(long oldest) {
@@ -145,8 +193,12 @@ public class RemusIDMain extends RemusIDServer {
 
 	@Override
 	public void stop() {
-		// TODO Auto-generated method stub
-		
+		pingThread.quit();
 	}
 
+
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 }

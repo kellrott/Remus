@@ -106,4 +106,9 @@ public class RemusIDClient extends RemusIDServer {
 		return out;
 	}
 
+	
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 }

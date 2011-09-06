@@ -9,6 +9,7 @@ import jline.ConsoleReader;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
+import org.apache.thrift.TException;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -87,12 +88,12 @@ public class CLI {
 		curPipeline = pipelineName;
 	}
 
-	public RemusApp getRemusApp() throws RemusDatabaseException {
+	public RemusApp getRemusApp() throws RemusDatabaseException, TException {
 		RemusApp app = new RemusApp(pm.getPeer(pm.getDataServer()), pm.getPeer(pm.getAttachStore()));
 		return app;
 	}
 
-	public RemusPipeline getPipeline() throws RemusDatabaseException {
+	public RemusPipeline getPipeline() throws RemusDatabaseException, TException {
 		if (curPipeline != null) {
 			RemusApp app = getRemusApp();
 			return app.getPipeline(curPipeline);
@@ -100,7 +101,7 @@ public class CLI {
 		return null;
 	}
 
-	public RemusDB getDataSource() {
+	public RemusDB getDataSource() throws TException {
 		return RemusDB.wrap(pm.getPeer(pm.getDataServer()));
 	}
 

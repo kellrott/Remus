@@ -82,6 +82,8 @@ exception BadPeerName {
 
 service RemusNet {
 	
+	string status();
+	
 	/**
 	 * Data access related methods
 	 *

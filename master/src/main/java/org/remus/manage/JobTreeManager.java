@@ -191,6 +191,10 @@ public class JobTreeManager extends RemusWorker {
 		
 	}
 
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 
 	@Override
 	public int jobCancel(String jobID) throws NotImplemented, TException {

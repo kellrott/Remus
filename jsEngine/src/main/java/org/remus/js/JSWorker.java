@@ -119,5 +119,9 @@ public class JSWorker extends RemusWorker {
 		return 0;
 	}
 	
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 
 }

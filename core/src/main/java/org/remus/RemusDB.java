@@ -147,7 +147,10 @@ public abstract class RemusDB implements Iface, PluginInterface {
 		};		
 	}
 	
-
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 
 	@Override
 	public void deleteAttachment(AppletRef stack, String key, String name)

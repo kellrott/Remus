@@ -39,6 +39,9 @@ public class AppletInstanceStack implements BaseStackNode {
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

@@ -236,7 +236,10 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 		return new SendOnClose(stack, key, name);		
 	}
 
-	
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,

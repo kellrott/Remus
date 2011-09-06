@@ -105,13 +105,25 @@ public class JettyServer extends RemusWeb {
 	}
 
 	@Override
-	public RemusAttach getAttachStore() {
-		return (RemusAttach) pm.getPeer(pm.getAttachStore());
+	public RemusAttach getAttachStore() {		
+		try {
+			return (RemusAttach) pm.getPeer(pm.getAttachStore());
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
 	public RemusDB getDataStore() {
-		return (RemusDB) pm.getPeer(pm.getDataServer());
+		try {
+			return (RemusDB) pm.getPeer(pm.getDataServer());
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 
@@ -166,6 +178,10 @@ public class JettyServer extends RemusWeb {
 		}		
 	}
 
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)

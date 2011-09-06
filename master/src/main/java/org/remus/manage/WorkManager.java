@@ -168,8 +168,8 @@ public class WorkManager extends RemusManager {
 			logger.info("ASSIGN RATE: " + ai + " " + newAssignRate);
 			assignRate.put(ai, newAssignRate);
 		}
-		RemusNet.Iface worker = plugins.getPeer(rj.peerID);					
 		try {
+			RemusNet.Iface worker = plugins.getPeer(rj.peerID);					
 			worker.jobCancel(rj.jobID);						
 		} catch (NotImplemented e) {
 			e.printStackTrace();
@@ -487,4 +487,8 @@ public class WorkManager extends RemusManager {
 		miniDB.addData(stack, jobID, emitID, key, data);
 	}
 	
+	@Override
+	public String status() throws TException {
+		return "OK";
+	}
 }

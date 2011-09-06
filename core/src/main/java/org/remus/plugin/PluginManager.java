@@ -216,7 +216,7 @@ public class PluginManager {
 		return out;
 	}
 
-	public RemusNet.Iface getPeer(String peerID) {
+	public RemusNet.Iface getPeer(String peerID) throws TException {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);
 		}
@@ -228,9 +228,6 @@ public class PluginManager {
 				}
 			}
 		} catch (NotImplemented e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

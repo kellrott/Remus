@@ -16,7 +16,7 @@ public class Boot {
 			JSONParser j = new JSONParser();		
 			FileReader read = new FileReader(new File(args[0]));
 			params = j.parse(read);
-		} else if ( args[0].endsWith("yaml")) {
+		} else if ( args[0].endsWith(".yaml")) {
 			Yaml y = new Yaml();
 			FileReader read = new FileReader(new File(args[0]));
 			params = y.load(read);
