@@ -1,5 +1,6 @@
 package org.remus;
 
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -20,7 +21,7 @@ abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 
 	public static String getDefaultAddress() throws UnknownHostException, SocketException {
 
-		return "127.0.0.1";
+		return InetAddress.getByName(InetAddress.getLocalHost().getHostName()).getHostAddress();
 
 		/*
 		for (Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {

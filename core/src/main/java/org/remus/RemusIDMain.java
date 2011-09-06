@@ -34,7 +34,7 @@ public class RemusIDMain extends RemusIDServer {
 				if (info.name == null) {
 					throw new BadPeerName();
 				}
-				logger.info("Adding peer: " + info.peerID + " " 
+				logger.info("Adding peer type " + info.peerType + ": " + info.peerID + " " 
 						+ info.name + " (" + info.host + ":" + info.port + ")");
 				peerMap.put(info.peerID, info);
 				lastPing.put(info.peerID, (new Date()).getTime());

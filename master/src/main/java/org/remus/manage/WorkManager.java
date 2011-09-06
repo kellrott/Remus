@@ -55,8 +55,8 @@ public class WorkManager extends RemusManager {
 
 	PluginManager plugins;
 	private AppletInstanceStack aiStack;
-	
-	public static int INACTIVE_SLEEP_TIME = 10000;
+
+	public static int INACTIVE_SLEEP_TIME = 30000;
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -215,7 +215,7 @@ public class WorkManager extends RemusManager {
 				try {
 					if (!workChange) {
 						if (sleepTime < INACTIVE_SLEEP_TIME) {
-							sleepTime += 100;
+							sleepTime += 1000;
 						}
 						synchronized (waitLock) {			
 							waitLock.wait(sleepTime);
@@ -274,26 +274,31 @@ public class WorkManager extends RemusManager {
 				Map<RemoteJob, Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
 				for (RemoteJob rj : activeStacks.get(ai)) {
 					logger.debug("Checking " + rj.peerID + " for " + rj.jobID + " " + ai);
-					RemusNet.Iface worker = plugins.getPeer(rj.peerID);
-					JobStatus s = worker.jobStatus(rj.jobID);
-					if (s.status == JobState.DONE) {
-						found = true;
-						for (long i = rj.workStart; i < rj.workEnd; i++) {
-							ai.finishWork(i, rj.peerID, s.emitCount);
+					try {
+						RemusNet.Iface worker = plugins.getPeer(rj.peerID);
+						JobStatus s = worker.jobStatus(rj.jobID);
+						if (s.status == JobState.DONE) {
+							found = true;
+							for (long i = rj.workStart; i < rj.workEnd; i++) {
+								ai.finishWork(i, rj.peerID, s.emitCount);
+							}
+							removeSet.put(rj, true);
+							logger.info("Worker Finished: " + rj.jobID);
+						} else if (s.status == JobState.ERROR) {
+							found = true;
+							for (long i = rj.workStart; i < rj.workEnd; i++) {
+								ai.errorWork(i, s.errorMsg);
+							}
+							removeSet.put(rj, false);
+							logger.warn("JOB ERROR: " + ai + " job:" + rj.jobID + " " + s.errorMsg);
+						} else if (s.status == JobState.UNKNOWN) {
+							logger.warn("Worker lost job: " + rj.jobID);
+						} else {
+							activeCount += 1;
 						}
-						removeSet.put(rj, true);
-						logger.info("Worker Finished: " + rj.jobID);
-					} else if (s.status == JobState.ERROR) {
-						found = true;
-						for (long i = rj.workStart; i < rj.workEnd; i++) {
-							ai.errorWork(i, s.errorMsg);
-						}
+					} catch (TException e) {
+						logger.warn("Worker Connection Failed: " + rj.peerID);
 						removeSet.put(rj, false);
-						logger.warn("JOB ERROR: " + ai + " job:" + rj.jobID + " " + s.errorMsg);
-					} else if (s.status == JobState.UNKNOWN) {
-						logger.warn("Worker lost job: " + rj.jobID);
-					} else {
-						activeCount += 1;
 					}
 				}
 				for (RemoteJob rj : removeSet.keySet()) {
@@ -315,7 +320,6 @@ public class WorkManager extends RemusManager {
 					String workType = ai.getApplet().getType();
 					Set<String> peers = plugins.getWorkers(workType);			
 					long [] workIDs = ai.getReadyJobs(assignRate.get(ai) * peers.size());
-
 					final HashMap<String, Long> peerBase = new HashMap<String, Long>();
 					TreeMap<String, Long> peerCount = new TreeMap<String, Long>(new Comparator<String>() {
 						@Override
@@ -475,18 +479,18 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		logger.info("Manage DB getValueJSON: " + stack + " " + key);
 		return miniDB.getValueJSON(stack, key);
 	}
-	
+
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		logger.info("Manage DB add: " + stack + " " + key);
 		miniDB.addData(stack, jobID, emitID, key, data);
 	}
-	
+
 	@Override
 	public String status() throws TException {
 		return "OK";
