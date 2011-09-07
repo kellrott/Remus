@@ -96,7 +96,7 @@ public class RemusIDClient extends RemusIDServer {
 
 	@Override
 	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
-		logger.info("Getting peers from " + server + ":" + port);
+		logger.debug("Getting peers from " + server + ":" + port);
 		TSocket transport = new TSocket(server, port);
 		TBinaryProtocol protocol = new TBinaryProtocol(transport);
 		transport.open();

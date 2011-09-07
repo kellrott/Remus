@@ -21,6 +21,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print 'Usage: ' + sys.argv[0] + ' [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]'
   print ''
   print 'Functions:'
+  print '  string status()'
   print '  bool containsKey(AppletRef stack, string key)'
   print '   keySlice(AppletRef stack, string keyStart, i32 count)'
   print '   getValueJSON(AppletRef stack, string key)'
@@ -37,9 +38,11 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   listAttachments(AppletRef stack, string key)'
   print '  bool hasAttachment(AppletRef stack, string key, string name)'
   print '  void deleteAttachment(AppletRef stack, string key, string name)'
-  print '  string jobRequest(string dataServer, WorkDesc work)'
+  print '  string jobRequest(string dataServer, string attachServer, WorkDesc work)'
   print '  JobStatus jobStatus(string jobID)'
+  print '  i32 jobCancel(string jobID)'
   print '  void scheduleRequest()'
+  print '   scheduleInfo()'
   print '  void addPeer(PeerInfoThrift info)'
   print '  void delPeer(string peerName)'
   print '   getPeers()'
@@ -93,7 +96,13 @@ protocol = TBinaryProtocol.TBinaryProtocol(transport)
 client = RemusNet.Client(protocol)
 transport.open()
 
-if cmd == 'containsKey':
+if cmd == 'status':
+  if len(args) != 0:
+    print 'status requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.status())
+
+elif cmd == 'containsKey':
   if len(args) != 2:
     print 'containsKey requires 2 args'
     sys.exit(1)
@@ -190,10 +199,10 @@ elif cmd == 'deleteAttachment':
   pp.pprint(client.deleteAttachment(eval(args[0]),args[1],args[2],))
 
 elif cmd == 'jobRequest':
-  if len(args) != 2:
-    print 'jobRequest requires 2 args'
+  if len(args) != 3:
+    print 'jobRequest requires 3 args'
     sys.exit(1)
-  pp.pprint(client.jobRequest(args[0],eval(args[1]),))
+  pp.pprint(client.jobRequest(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'jobStatus':
   if len(args) != 1:
@@ -201,11 +210,23 @@ elif cmd == 'jobStatus':
     sys.exit(1)
   pp.pprint(client.jobStatus(args[0],))
 
+elif cmd == 'jobCancel':
+  if len(args) != 1:
+    print 'jobCancel requires 1 args'
+    sys.exit(1)
+  pp.pprint(client.jobCancel(args[0],))
+
 elif cmd == 'scheduleRequest':
   if len(args) != 0:
     print 'scheduleRequest requires 0 args'
     sys.exit(1)
   pp.pprint(client.scheduleRequest())
+
+elif cmd == 'scheduleInfo':
+  if len(args) != 0:
+    print 'scheduleInfo requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.scheduleInfo())
 
 elif cmd == 'addPeer':
   if len(args) != 1:

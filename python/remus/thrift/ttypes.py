@@ -40,7 +40,7 @@ class WorkMode:
     "MERGE": 5,
   }
 
-class JobStatus:
+class JobState:
   QUEUED = 0
   WORKING = 1
   DONE = 2
@@ -412,7 +412,8 @@ class WorkDesc:
    - mode
    - infoJSON
    - workStack
-   - jobs
+   - workStart
+   - workEnd
   """
 
   thrift_spec = (
@@ -421,15 +422,17 @@ class WorkDesc:
     (2, TType.I32, 'mode', None, None, ), # 2
     (3, TType.STRING, 'infoJSON', None, None, ), # 3
     (4, TType.STRUCT, 'workStack', (AppletRef, AppletRef.thrift_spec), None, ), # 4
-    (5, TType.LIST, 'jobs', (TType.I64,None), None, ), # 5
+    (5, TType.I64, 'workStart', None, None, ), # 5
+    (6, TType.I64, 'workEnd', None, None, ), # 6
   )
 
-  def __init__(self, lang=None, mode=None, infoJSON=None, workStack=None, jobs=None,):
+  def __init__(self, lang=None, mode=None, infoJSON=None, workStack=None, workStart=None, workEnd=None,):
     self.lang = lang
     self.mode = mode
     self.infoJSON = infoJSON
     self.workStack = workStack
-    self.jobs = jobs
+    self.workStart = workStart
+    self.workEnd = workEnd
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -462,13 +465,13 @@ class WorkDesc:
         else:
           iprot.skip(ftype)
       elif fid == 5:
-        if ftype == TType.LIST:
-          self.jobs = []
-          (_etype17, _size14) = iprot.readListBegin()
-          for _i18 in xrange(_size14):
-            _elem19 = iprot.readI64();
-            self.jobs.append(_elem19)
-          iprot.readListEnd()
+        if ftype == TType.I64:
+          self.workStart = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I64:
+          self.workEnd = iprot.readI64();
         else:
           iprot.skip(ftype)
       else:
@@ -497,12 +500,13 @@ class WorkDesc:
       oprot.writeFieldBegin('workStack', TType.STRUCT, 4)
       self.workStack.write(oprot)
       oprot.writeFieldEnd()
-    if self.jobs != None:
-      oprot.writeFieldBegin('jobs', TType.LIST, 5)
-      oprot.writeListBegin(TType.I64, len(self.jobs))
-      for iter20 in self.jobs:
-        oprot.writeI64(iter20)
-      oprot.writeListEnd()
+    if self.workStart != None:
+      oprot.writeFieldBegin('workStart', TType.I64, 5)
+      oprot.writeI64(self.workStart)
+      oprot.writeFieldEnd()
+    if self.workEnd != None:
+      oprot.writeFieldBegin('workEnd', TType.I64, 6)
+      oprot.writeI64(self.workEnd)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -515,8 +519,10 @@ class WorkDesc:
         raise TProtocol.TProtocolException(message='Required field infoJSON is unset!')
       if self.workStack is None:
         raise TProtocol.TProtocolException(message='Required field workStack is unset!')
-      if self.jobs is None:
-        raise TProtocol.TProtocolException(message='Required field jobs is unset!')
+      if self.workStart is None:
+        raise TProtocol.TProtocolException(message='Required field workStart is unset!')
+      if self.workEnd is None:
+        raise TProtocol.TProtocolException(message='Required field workEnd is unset!')
       return
 
 
@@ -620,6 +626,91 @@ class KeyValJSONPair:
         raise TProtocol.TProtocolException(message='Required field jobID is unset!')
       if self.emitID is None:
         raise TProtocol.TProtocolException(message='Required field emitID is unset!')
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class JobStatus:
+  """
+  Attributes:
+   - status
+   - emitCount
+   - errorMsg
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'status', None, None, ), # 1
+    (2, TType.I64, 'emitCount', None, None, ), # 2
+    (3, TType.STRING, 'errorMsg', None, None, ), # 3
+  )
+
+  def __init__(self, status=None, emitCount=None, errorMsg=None,):
+    self.status = status
+    self.emitCount = emitCount
+    self.errorMsg = errorMsg
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.status = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I64:
+          self.emitCount = iprot.readI64();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.errorMsg = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('JobStatus')
+    if self.status != None:
+      oprot.writeFieldBegin('status', TType.I32, 1)
+      oprot.writeI32(self.status)
+      oprot.writeFieldEnd()
+    if self.emitCount != None:
+      oprot.writeFieldBegin('emitCount', TType.I64, 2)
+      oprot.writeI64(self.emitCount)
+      oprot.writeFieldEnd()
+    if self.errorMsg != None:
+      oprot.writeFieldBegin('errorMsg', TType.STRING, 3)
+      oprot.writeString(self.errorMsg)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      if self.status is None:
+        raise TProtocol.TProtocolException(message='Required field status is unset!')
       return
 
 

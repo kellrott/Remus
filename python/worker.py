@@ -13,6 +13,9 @@ from thrift.protocol import TBinaryProtocol
 
 from thrift.server import TServer
 
+def log(e):
+	sys.stderr.write("INFO: %s\n" % (e))
+
 class IDInterface:
 	def __init__(self, host, port):
 		self.host = host
@@ -37,6 +40,7 @@ class IDInterface:
 			host="localhost", 
 			port=port)
 		
+		log("Connecting as peer: %s" %(self.localID))
 		self.transport.open()
 		self.idServer.addPeer( p )
 		self.transport.close()
@@ -50,6 +54,10 @@ class RemusWorker(RemusNet.Iface):
 	
 	def __init__(self):
 		pass
+	
+	def status(self):
+		log("Status OK")
+		return "OK"
 		
 class ServerThread(threading.Thread):
 	def __init__(self, server):
@@ -74,7 +82,7 @@ class RemusWorkerServer:
 		self.t.start()
 	
 	def stop(self):
-		self.server.close()
+		pass
 
 if __name__ == "__main__":
 	tmp = sys.argv[1].split(':')
@@ -85,10 +93,10 @@ if __name__ == "__main__":
 	ns.addSelf(r.port)
 
 
-	print ns.getPeers()
-	ns.close()
-	print ns.getPeers()
-	r.stop()	
+	#print ns.getPeers()
+	#ns.close()
+	#print ns.getPeers()
+	#r.stop()	
 	
 	#for p in ns.getPeers():
 	#	if p.peerType == PeerType.MANAGER:

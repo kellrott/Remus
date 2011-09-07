@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.thrift.TException;
@@ -75,18 +76,23 @@ public class RemusIDMain extends RemusIDServer {
 		@Override
 		public void run() {
 			while (!quit) {
+				Set<String> peerList;
 				synchronized (peerMap) {
-					List<String> removeList = new ArrayList<String>();
-					for (String peerID : peerMap.keySet()) {
-						try {
-							RemusNet.Iface iface = plugins.getPeer(peerID);
-							iface.status();
-						} catch (TException e) {
-							//upon failure, remove node from peer list
-							removeList.add(peerID);
-						}
-					}
+					peerList = peerMap.keySet();
+				}
 
+				List<String> removeList = new ArrayList<String>();
+				for (String peerID : peerList) {
+					try {
+						RemusNet.Iface iface = plugins.getPeer(peerID);
+						iface.status();
+					} catch (TException e) {
+						//upon failure, remove node from peer list
+						removeList.add(peerID);
+					}
+				}
+
+				synchronized (peerMap) {
 					for (String peerID : removeList) {					
 						logger.error("PeerFailure peer: " + peerID);
 						peerMap.remove(peerID);
@@ -101,7 +107,6 @@ public class RemusIDMain extends RemusIDServer {
 					}
 				}
 			}
-
 		}
 
 		public void quit() {

@@ -16,6 +16,9 @@ except:
 
 
 class Iface:
+  def status(self, ):
+    pass
+
   def containsKey(self, stack, key):
     """
     Data access related methods
@@ -164,18 +167,26 @@ class Iface:
     """
     pass
 
-  def jobRequest(self, dataServer, work):
+  def jobRequest(self, dataServer, attachServer, work):
     """
     Worker methods
 
 
     Parameters:
      - dataServer
+     - attachServer
      - work
     """
     pass
 
   def jobStatus(self, jobID):
+    """
+    Parameters:
+     - jobID
+    """
+    pass
+
+  def jobCancel(self, jobID):
     """
     Parameters:
      - jobID
@@ -188,8 +199,14 @@ class Iface:
     """
     pass
 
+  def scheduleInfo(self, ):
+    pass
+
   def addPeer(self, info):
     """
+    Name service methods
+
+
     Parameters:
      - info
     """
@@ -212,6 +229,31 @@ class Client(Iface):
     if oprot != None:
       self._oprot = oprot
     self._seqid = 0
+
+  def status(self, ):
+    self.send_status()
+    return self.recv_status()
+
+  def send_status(self, ):
+    self._oprot.writeMessageBegin('status', TMessageType.CALL, self._seqid)
+    args = status_args()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_status(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = status_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success != None:
+      return result.success
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "status failed: unknown result");
 
   def containsKey(self, stack, key):
     """
@@ -779,22 +821,24 @@ class Client(Iface):
       raise result.e
     return
 
-  def jobRequest(self, dataServer, work):
+  def jobRequest(self, dataServer, attachServer, work):
     """
     Worker methods
 
 
     Parameters:
      - dataServer
+     - attachServer
      - work
     """
-    self.send_jobRequest(dataServer, work)
+    self.send_jobRequest(dataServer, attachServer, work)
     return self.recv_jobRequest()
 
-  def send_jobRequest(self, dataServer, work):
+  def send_jobRequest(self, dataServer, attachServer, work):
     self._oprot.writeMessageBegin('jobRequest', TMessageType.CALL, self._seqid)
     args = jobRequest_args()
     args.dataServer = dataServer
+    args.attachServer = attachServer
     args.work = work
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
@@ -848,6 +892,38 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "jobStatus failed: unknown result");
 
+  def jobCancel(self, jobID):
+    """
+    Parameters:
+     - jobID
+    """
+    self.send_jobCancel(jobID)
+    return self.recv_jobCancel()
+
+  def send_jobCancel(self, jobID):
+    self._oprot.writeMessageBegin('jobCancel', TMessageType.CALL, self._seqid)
+    args = jobCancel_args()
+    args.jobID = jobID
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_jobCancel(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = jobCancel_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success != None:
+      return result.success
+    if result.e != None:
+      raise result.e
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "jobCancel failed: unknown result");
+
   def scheduleRequest(self, ):
     """
     Manager methods
@@ -876,8 +952,38 @@ class Client(Iface):
       raise result.e
     return
 
+  def scheduleInfo(self, ):
+    self.send_scheduleInfo()
+    return self.recv_scheduleInfo()
+
+  def send_scheduleInfo(self, ):
+    self._oprot.writeMessageBegin('scheduleInfo', TMessageType.CALL, self._seqid)
+    args = scheduleInfo_args()
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_scheduleInfo(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = scheduleInfo_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success != None:
+      return result.success
+    if result.e != None:
+      raise result.e
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "scheduleInfo failed: unknown result");
+
   def addPeer(self, info):
     """
+    Name service methods
+
+
     Parameters:
      - info
     """
@@ -970,6 +1076,7 @@ class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
+    self._processMap["status"] = Processor.process_status
     self._processMap["containsKey"] = Processor.process_containsKey
     self._processMap["keySlice"] = Processor.process_keySlice
     self._processMap["getValueJSON"] = Processor.process_getValueJSON
@@ -988,7 +1095,9 @@ class Processor(Iface, TProcessor):
     self._processMap["deleteAttachment"] = Processor.process_deleteAttachment
     self._processMap["jobRequest"] = Processor.process_jobRequest
     self._processMap["jobStatus"] = Processor.process_jobStatus
+    self._processMap["jobCancel"] = Processor.process_jobCancel
     self._processMap["scheduleRequest"] = Processor.process_scheduleRequest
+    self._processMap["scheduleInfo"] = Processor.process_scheduleInfo
     self._processMap["addPeer"] = Processor.process_addPeer
     self._processMap["delPeer"] = Processor.process_delPeer
     self._processMap["getPeers"] = Processor.process_getPeers
@@ -1007,6 +1116,17 @@ class Processor(Iface, TProcessor):
     else:
       self._processMap[name](self, seqid, iprot, oprot)
     return True
+
+  def process_status(self, seqid, iprot, oprot):
+    args = status_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = status_result()
+    result.success = self._handler.status()
+    oprot.writeMessageBegin("status", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
 
   def process_containsKey(self, seqid, iprot, oprot):
     args = containsKey_args()
@@ -1238,7 +1358,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = jobRequest_result()
     try:
-      result.success = self._handler.jobRequest(args.dataServer, args.work)
+      result.success = self._handler.jobRequest(args.dataServer, args.attachServer, args.work)
     except NotImplemented, e:
       result.e = e
     oprot.writeMessageBegin("jobRequest", TMessageType.REPLY, seqid)
@@ -1260,6 +1380,20 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
+  def process_jobCancel(self, seqid, iprot, oprot):
+    args = jobCancel_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = jobCancel_result()
+    try:
+      result.success = self._handler.jobCancel(args.jobID)
+    except NotImplemented, e:
+      result.e = e
+    oprot.writeMessageBegin("jobCancel", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
   def process_scheduleRequest(self, seqid, iprot, oprot):
     args = scheduleRequest_args()
     args.read(iprot)
@@ -1270,6 +1404,20 @@ class Processor(Iface, TProcessor):
     except NotImplemented, e:
       result.e = e
     oprot.writeMessageBegin("scheduleRequest", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_scheduleInfo(self, seqid, iprot, oprot):
+    args = scheduleInfo_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = scheduleInfo_result()
+    try:
+      result.success = self._handler.scheduleInfo()
+    except NotImplemented, e:
+      result.e = e
+    oprot.writeMessageBegin("scheduleInfo", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1320,6 +1468,105 @@ class Processor(Iface, TProcessor):
 
 
 # HELPER FUNCTIONS AND STRUCTURES
+
+class status_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('status_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class status_result:
+  """
+  Attributes:
+   - success
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+  )
+
+  def __init__(self, success=None,):
+    self.success = success
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('status_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
 
 class containsKey_args:
   """
@@ -1576,10 +1823,10 @@ class keySlice_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = iprot.readString();
-            self.success.append(_elem26)
+          (_etype17, _size14) = iprot.readListBegin()
+          for _i18 in xrange(_size14):
+            _elem19 = iprot.readString();
+            self.success.append(_elem19)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1602,8 +1849,8 @@ class keySlice_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter27 in self.success:
-        oprot.writeString(iter27)
+      for iter20 in self.success:
+        oprot.writeString(iter20)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
@@ -1727,10 +1974,10 @@ class getValueJSON_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype31, _size28) = iprot.readListBegin()
-          for _i32 in xrange(_size28):
-            _elem33 = iprot.readString();
-            self.success.append(_elem33)
+          (_etype24, _size21) = iprot.readListBegin()
+          for _i25 in xrange(_size21):
+            _elem26 = iprot.readString();
+            self.success.append(_elem26)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -1753,8 +2000,8 @@ class getValueJSON_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter34 in self.success:
-        oprot.writeString(iter34)
+      for iter27 in self.success:
+        oprot.writeString(iter27)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
@@ -2201,11 +2448,11 @@ class keyValJSONSlice_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype38, _size35) = iprot.readListBegin()
-          for _i39 in xrange(_size35):
-            _elem40 = KeyValJSONPair()
-            _elem40.read(iprot)
-            self.success.append(_elem40)
+          (_etype31, _size28) = iprot.readListBegin()
+          for _i32 in xrange(_size28):
+            _elem33 = KeyValJSONPair()
+            _elem33.read(iprot)
+            self.success.append(_elem33)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -2228,8 +2475,8 @@ class keyValJSONSlice_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter41 in self.success:
-        iter41.write(oprot)
+      for iter34 in self.success:
+        iter34.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
@@ -3394,10 +3641,10 @@ class listAttachments_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = iprot.readString();
-            self.success.append(_elem47)
+          (_etype38, _size35) = iprot.readListBegin()
+          for _i39 in xrange(_size35):
+            _elem40 = iprot.readString();
+            self.success.append(_elem40)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3420,8 +3667,8 @@ class listAttachments_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter48 in self.success:
-        oprot.writeString(iter48)
+      for iter41 in self.success:
+        oprot.writeString(iter41)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
@@ -3748,17 +3995,20 @@ class jobRequest_args:
   """
   Attributes:
    - dataServer
+   - attachServer
    - work
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'dataServer', None, None, ), # 1
-    (2, TType.STRUCT, 'work', (WorkDesc, WorkDesc.thrift_spec), None, ), # 2
+    (2, TType.STRING, 'attachServer', None, None, ), # 2
+    (3, TType.STRUCT, 'work', (WorkDesc, WorkDesc.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, dataServer=None, work=None,):
+  def __init__(self, dataServer=None, attachServer=None, work=None,):
     self.dataServer = dataServer
+    self.attachServer = attachServer
     self.work = work
 
   def read(self, iprot):
@@ -3776,6 +4026,11 @@ class jobRequest_args:
         else:
           iprot.skip(ftype)
       elif fid == 2:
+        if ftype == TType.STRING:
+          self.attachServer = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
         if ftype == TType.STRUCT:
           self.work = WorkDesc()
           self.work.read(iprot)
@@ -3795,8 +4050,12 @@ class jobRequest_args:
       oprot.writeFieldBegin('dataServer', TType.STRING, 1)
       oprot.writeString(self.dataServer)
       oprot.writeFieldEnd()
+    if self.attachServer != None:
+      oprot.writeFieldBegin('attachServer', TType.STRING, 2)
+      oprot.writeString(self.attachServer)
+      oprot.writeFieldEnd()
     if self.work != None:
-      oprot.writeFieldBegin('work', TType.STRUCT, 2)
+      oprot.writeFieldBegin('work', TType.STRUCT, 3)
       self.work.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3954,6 +4213,137 @@ class jobStatus_result:
   """
 
   thrift_spec = (
+    (0, TType.STRUCT, 'success', (JobStatus, JobStatus.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, e=None,):
+    self.success = success
+    self.e = e
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRUCT:
+          self.success = JobStatus()
+          self.success.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = NotImplemented()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('jobStatus_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class jobCancel_args:
+  """
+  Attributes:
+   - jobID
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'jobID', None, None, ), # 1
+  )
+
+  def __init__(self, jobID=None,):
+    self.jobID = jobID
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.jobID = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('jobCancel_args')
+    if self.jobID != None:
+      oprot.writeFieldBegin('jobID', TType.STRING, 1)
+      oprot.writeString(self.jobID)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class jobCancel_result:
+  """
+  Attributes:
+   - success
+   - e
+  """
+
+  thrift_spec = (
     (0, TType.I32, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
   )
@@ -3991,7 +4381,7 @@ class jobStatus_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('jobStatus_result')
+    oprot.writeStructBegin('jobCancel_result')
     if self.success != None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
@@ -4097,6 +4487,128 @@ class scheduleRequest_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('scheduleRequest_result')
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class scheduleInfo_args:
+
+  thrift_spec = (
+  )
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('scheduleInfo_args')
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class scheduleInfo_result:
+  """
+  Attributes:
+   - success
+   - e
+  """
+
+  thrift_spec = (
+    (0, TType.MAP, 'success', (TType.STRING,None,TType.STRING,None), None, ), # 0
+    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, e=None,):
+    self.success = success
+    self.e = e
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.MAP:
+          self.success = {}
+          (_ktype43, _vtype44, _size42 ) = iprot.readMapBegin() 
+          for _i46 in xrange(_size42):
+            _key47 = iprot.readString();
+            _val48 = iprot.readString();
+            self.success[_key47] = _val48
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = NotImplemented()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('scheduleInfo_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.MAP, 0)
+      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.success))
+      for kiter49,viter50 in self.success.items():
+        oprot.writeString(kiter49)
+        oprot.writeString(viter50)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)
       self.e.write(oprot)
@@ -4439,11 +4951,11 @@ class getPeers_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype52, _size49) = iprot.readListBegin()
-          for _i53 in xrange(_size49):
-            _elem54 = PeerInfoThrift()
-            _elem54.read(iprot)
-            self.success.append(_elem54)
+          (_etype54, _size51) = iprot.readListBegin()
+          for _i55 in xrange(_size51):
+            _elem56 = PeerInfoThrift()
+            _elem56.read(iprot)
+            self.success.append(_elem56)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4466,8 +4978,8 @@ class getPeers_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter55 in self.success:
-        iter55.write(oprot)
+      for iter57 in self.success:
+        iter57.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
