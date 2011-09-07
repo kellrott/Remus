@@ -6,7 +6,7 @@ import org.apache.commons.pool.impl.SoftReferenceObjectPool;
 
 public class ThriftClientPool {
 	private ObjectPool clientPool;
-	public ThriftClientPool( String serverName, int serverPort, String keySpace ) {
+	public ThriftClientPool( String serverName, int serverPort, String keySpace ) throws Exception {
 		clientPool = new SoftReferenceObjectPool( new ThriftClientFactory(serverName,serverPort,keySpace) );
 	}
 	public Client borrowObject() throws Exception {

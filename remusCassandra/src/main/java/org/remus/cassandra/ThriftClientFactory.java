@@ -1,5 +1,10 @@
 package org.remus.cassandra;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.cassandra.thrift.TokenRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -13,16 +18,33 @@ class ThriftClientFactory extends BasePoolableObjectFactory {
 
 	String serverName, keySpace;
 	int serverPort;
-	
-	public ThriftClientFactory(String serverName, int serverPort, String keySpace) {
+	ArrayList<String> hostList;
+	int curHost = 0;
+
+	public ThriftClientFactory(String serverName, int serverPort, String keySpace) throws Exception {
 		this.serverName = serverName;
 		this.serverPort = serverPort;
 		this.keySpace = keySpace;
+
+		TTransport tr = new TSocket(serverName, serverPort);
+		TFramedTransport tf = new TFramedTransport(tr);	 
+		TProtocol proto = new TBinaryProtocol(tf);	 
+		tf.open();
+		Client client = new Client(proto);	
+		Set<String> tList = new HashSet<String>();
+		for (TokenRange tokr : client.describe_ring(keySpace)) {
+			for (String host : tokr.getEndpoints()) {
+				tList.add(host);
+			}
+		}
+		hostList = new ArrayList<String>(tList);
 	}
-	
+
 	@Override
 	public Object makeObject() throws Exception {
-		TTransport tr = new TSocket(serverName, serverPort);
+		TTransport tr = new TSocket(hostList.get(curHost), serverPort);
+		curHost = (curHost + 1) % hostList.size();
+
 		TFramedTransport tf = new TFramedTransport(tr);	 
 		TProtocol proto = new TBinaryProtocol(tf);	 
 		tf.open();
@@ -33,11 +55,11 @@ class ThriftClientFactory extends BasePoolableObjectFactory {
 
 	@Override
 	public void destroyObject(Object obj) throws Exception {
-		((Client)obj).getInputProtocol().getTransport().close();
+		((Client) obj).getInputProtocol().getTransport().close();
 	}
 	@Override
 	public boolean validateObject(Object obj) {
-		return ((Client)obj).getInputProtocol().getTransport().isOpen();
+		return ((Client) obj).getInputProtocol().getTransport().isOpen();
 	}
 }
 

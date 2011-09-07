@@ -77,8 +77,12 @@ public class Server extends RemusDB {
 		}
 		logger.info("CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace);
 
+		try {
 		clientPool = new ThriftClientPool(serverName, serverPort, keySpace);
-
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ConnectionException(e.getMessage());
+		}
 		instanceColumns = false;
 		if (paramMap.containsKey(INST_COLUMNS)) {
 			instanceColumns = Boolean.valueOf((String) paramMap.get(INST_COLUMNS));
