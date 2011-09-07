@@ -93,7 +93,7 @@ public class RemusNet {
      */
     public void scheduleRequest() throws NotImplemented, org.apache.thrift.TException;
 
-    public Map<String,String> scheduleInfo() throws NotImplemented, org.apache.thrift.TException;
+    public String scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException;
 
     /**
      * Name service methods
@@ -153,7 +153,7 @@ public class RemusNet {
 
     public void scheduleRequest(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleRequest_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void scheduleInfo(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleInfo_call> resultHandler) throws org.apache.thrift.TException;
+    public void scheduleInfoJSON(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleInfoJSON_call> resultHandler) throws org.apache.thrift.TException;
 
     public void addPeer(PeerInfoThrift info, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addPeer_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -1025,22 +1025,22 @@ public class RemusNet {
       return;
     }
 
-    public Map<String,String> scheduleInfo() throws NotImplemented, org.apache.thrift.TException
+    public String scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException
     {
-      send_scheduleInfo();
-      return recv_scheduleInfo();
+      send_scheduleInfoJSON();
+      return recv_scheduleInfoJSON();
     }
 
-    public void send_scheduleInfo() throws org.apache.thrift.TException
+    public void send_scheduleInfoJSON() throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfo", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      scheduleInfo_args args = new scheduleInfo_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      scheduleInfoJSON_args args = new scheduleInfoJSON_args();
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public Map<String,String> recv_scheduleInfo() throws NotImplemented, org.apache.thrift.TException
+    public String recv_scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -1049,9 +1049,9 @@ public class RemusNet {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "scheduleInfo failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "scheduleInfoJSON failed: out of sequence response");
       }
-      scheduleInfo_result result = new scheduleInfo_result();
+      scheduleInfoJSON_result result = new scheduleInfoJSON_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
@@ -1060,7 +1060,7 @@ public class RemusNet {
       if (result.e != null) {
         throw result.e;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "scheduleInfo failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
     }
 
     public void addPeer(PeerInfoThrift info) throws NotImplemented, BadPeerName, org.apache.thrift.TException
@@ -1956,32 +1956,32 @@ public class RemusNet {
       }
     }
 
-    public void scheduleInfo(org.apache.thrift.async.AsyncMethodCallback<scheduleInfo_call> resultHandler) throws org.apache.thrift.TException {
+    public void scheduleInfoJSON(org.apache.thrift.async.AsyncMethodCallback<scheduleInfoJSON_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      scheduleInfo_call method_call = new scheduleInfo_call(resultHandler, this, protocolFactory, transport);
+      scheduleInfoJSON_call method_call = new scheduleInfoJSON_call(resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class scheduleInfo_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public scheduleInfo_call(org.apache.thrift.async.AsyncMethodCallback<scheduleInfo_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class scheduleInfoJSON_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public scheduleInfoJSON_call(org.apache.thrift.async.AsyncMethodCallback<scheduleInfoJSON_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        scheduleInfo_args args = new scheduleInfo_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        scheduleInfoJSON_args args = new scheduleInfoJSON_args();
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public Map<String,String> getResult() throws NotImplemented, org.apache.thrift.TException {
+      public String getResult() throws NotImplemented, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_scheduleInfo();
+        return (new Client(prot)).recv_scheduleInfoJSON();
       }
     }
 
@@ -2106,7 +2106,7 @@ public class RemusNet {
       processMap_.put("jobStatus", new jobStatus());
       processMap_.put("jobCancel", new jobCancel());
       processMap_.put("scheduleRequest", new scheduleRequest());
-      processMap_.put("scheduleInfo", new scheduleInfo());
+      processMap_.put("scheduleInfoJSON", new scheduleInfoJSON());
       processMap_.put("addPeer", new addPeer());
       processMap_.put("delPeer", new delPeer());
       processMap_.put("getPeers", new getPeers());
@@ -2929,37 +2929,37 @@ public class RemusNet {
 
     }
 
-    private class scheduleInfo implements ProcessFunction {
+    private class scheduleInfoJSON implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        scheduleInfo_args args = new scheduleInfo_args();
+        scheduleInfoJSON_args args = new scheduleInfoJSON_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        scheduleInfo_result result = new scheduleInfo_result();
+        scheduleInfoJSON_result result = new scheduleInfoJSON_result();
         try {
-          result.success = iface_.scheduleInfo();
+          result.success = iface_.scheduleInfoJSON();
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing scheduleInfo", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing scheduleInfo");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing scheduleInfoJSON", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing scheduleInfoJSON");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfo", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -19539,8 +19539,8 @@ public class RemusNet {
 
   }
 
-  public static class scheduleInfo_args implements org.apache.thrift.TBase<scheduleInfo_args, scheduleInfo_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfo_args");
+  public static class scheduleInfoJSON_args implements org.apache.thrift.TBase<scheduleInfoJSON_args, scheduleInfoJSON_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfoJSON_args");
 
 
 
@@ -19603,20 +19603,20 @@ public class RemusNet {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfo_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfoJSON_args.class, metaDataMap);
     }
 
-    public scheduleInfo_args() {
+    public scheduleInfoJSON_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public scheduleInfo_args(scheduleInfo_args other) {
+    public scheduleInfoJSON_args(scheduleInfoJSON_args other) {
     }
 
-    public scheduleInfo_args deepCopy() {
-      return new scheduleInfo_args(this);
+    public scheduleInfoJSON_args deepCopy() {
+      return new scheduleInfoJSON_args(this);
     }
 
     @Override
@@ -19649,12 +19649,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof scheduleInfo_args)
-        return this.equals((scheduleInfo_args)that);
+      if (that instanceof scheduleInfoJSON_args)
+        return this.equals((scheduleInfoJSON_args)that);
       return false;
     }
 
-    public boolean equals(scheduleInfo_args that) {
+    public boolean equals(scheduleInfoJSON_args that) {
       if (that == null)
         return false;
 
@@ -19666,13 +19666,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(scheduleInfo_args other) {
+    public int compareTo(scheduleInfoJSON_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      scheduleInfo_args typedOther = (scheduleInfo_args)other;
+      scheduleInfoJSON_args typedOther = (scheduleInfoJSON_args)other;
 
       return 0;
     }
@@ -19712,7 +19712,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleInfo_args(");
+      StringBuilder sb = new StringBuilder("scheduleInfoJSON_args(");
       boolean first = true;
 
       sb.append(")");
@@ -19741,13 +19741,13 @@ public class RemusNet {
 
   }
 
-  public static class scheduleInfo_result implements org.apache.thrift.TBase<scheduleInfo_result, scheduleInfo_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfo_result");
+  public static class scheduleInfoJSON_result implements org.apache.thrift.TBase<scheduleInfoJSON_result, scheduleInfoJSON_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfoJSON_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.MAP, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public Map<String,String> success;
+    public String success;
     public NotImplemented e;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -19817,20 +19817,18 @@ public class RemusNet {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfo_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfoJSON_result.class, metaDataMap);
     }
 
-    public scheduleInfo_result() {
+    public scheduleInfoJSON_result() {
     }
 
-    public scheduleInfo_result(
-      Map<String,String> success,
+    public scheduleInfoJSON_result(
+      String success,
       NotImplemented e)
     {
       this();
@@ -19841,29 +19839,17 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public scheduleInfo_result(scheduleInfo_result other) {
+    public scheduleInfoJSON_result(scheduleInfoJSON_result other) {
       if (other.isSetSuccess()) {
-        Map<String,String> __this__success = new HashMap<String,String>();
-        for (Map.Entry<String, String> other_element : other.success.entrySet()) {
-
-          String other_element_key = other_element.getKey();
-          String other_element_value = other_element.getValue();
-
-          String __this__success_copy_key = other_element_key;
-
-          String __this__success_copy_value = other_element_value;
-
-          __this__success.put(__this__success_copy_key, __this__success_copy_value);
-        }
-        this.success = __this__success;
+        this.success = other.success;
       }
       if (other.isSetE()) {
         this.e = new NotImplemented(other.e);
       }
     }
 
-    public scheduleInfo_result deepCopy() {
-      return new scheduleInfo_result(this);
+    public scheduleInfoJSON_result deepCopy() {
+      return new scheduleInfoJSON_result(this);
     }
 
     @Override
@@ -19872,22 +19858,11 @@ public class RemusNet {
       this.e = null;
     }
 
-    public int getSuccessSize() {
-      return (this.success == null) ? 0 : this.success.size();
-    }
-
-    public void putToSuccess(String key, String val) {
-      if (this.success == null) {
-        this.success = new HashMap<String,String>();
-      }
-      this.success.put(key, val);
-    }
-
-    public Map<String,String> getSuccess() {
+    public String getSuccess() {
       return this.success;
     }
 
-    public scheduleInfo_result setSuccess(Map<String,String> success) {
+    public scheduleInfoJSON_result setSuccess(String success) {
       this.success = success;
       return this;
     }
@@ -19911,7 +19886,7 @@ public class RemusNet {
       return this.e;
     }
 
-    public scheduleInfo_result setE(NotImplemented e) {
+    public scheduleInfoJSON_result setE(NotImplemented e) {
       this.e = e;
       return this;
     }
@@ -19937,7 +19912,7 @@ public class RemusNet {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Map<String,String>)value);
+          setSuccess((String)value);
         }
         break;
 
@@ -19983,12 +19958,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof scheduleInfo_result)
-        return this.equals((scheduleInfo_result)that);
+      if (that instanceof scheduleInfoJSON_result)
+        return this.equals((scheduleInfoJSON_result)that);
       return false;
     }
 
-    public boolean equals(scheduleInfo_result that) {
+    public boolean equals(scheduleInfoJSON_result that) {
       if (that == null)
         return false;
 
@@ -20018,13 +19993,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(scheduleInfo_result other) {
+    public int compareTo(scheduleInfoJSON_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      scheduleInfo_result typedOther = (scheduleInfo_result)other;
+      scheduleInfoJSON_result typedOther = (scheduleInfoJSON_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -20064,20 +20039,8 @@ public class RemusNet {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == org.apache.thrift.protocol.TType.MAP) {
-              {
-                org.apache.thrift.protocol.TMap _map24 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map24.size);
-                for (int _i25 = 0; _i25 < _map24.size; ++_i25)
-                {
-                  String _key26;
-                  String _val27;
-                  _key26 = iprot.readString();
-                  _val27 = iprot.readString();
-                  this.success.put(_key26, _val27);
-                }
-                iprot.readMapEnd();
-              }
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.success = iprot.readString();
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -20106,15 +20069,7 @@ public class RemusNet {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter28 : this.success.entrySet())
-          {
-            oprot.writeString(_iter28.getKey());
-            oprot.writeString(_iter28.getValue());
-          }
-          oprot.writeMapEnd();
-        }
+        oprot.writeString(this.success);
         oprot.writeFieldEnd();
       } else if (this.isSetE()) {
         oprot.writeFieldBegin(E_FIELD_DESC);
@@ -20127,7 +20082,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleInfo_result(");
+      StringBuilder sb = new StringBuilder("scheduleInfoJSON_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -21971,14 +21926,14 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list29 = iprot.readListBegin();
-                this.success = new ArrayList<PeerInfoThrift>(_list29.size);
-                for (int _i30 = 0; _i30 < _list29.size; ++_i30)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                this.success = new ArrayList<PeerInfoThrift>(_list24.size);
+                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
                 {
-                  PeerInfoThrift _elem31;
-                  _elem31 = new PeerInfoThrift();
-                  _elem31.read(iprot);
-                  this.success.add(_elem31);
+                  PeerInfoThrift _elem26;
+                  _elem26 = new PeerInfoThrift();
+                  _elem26.read(iprot);
+                  this.success.add(_elem26);
                 }
                 iprot.readListEnd();
               }
@@ -22012,9 +21967,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (PeerInfoThrift _iter32 : this.success)
+          for (PeerInfoThrift _iter27 : this.success)
           {
-            _iter32.write(oprot);
+            _iter27.write(oprot);
           }
           oprot.writeListEnd();
         }

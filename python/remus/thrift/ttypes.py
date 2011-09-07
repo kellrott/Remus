@@ -280,6 +280,7 @@ class PeerInfoThrift:
    - peerType
    - name
    - peerID
+   - groupName
    - workTypes
    - host
    - port
@@ -290,15 +291,17 @@ class PeerInfoThrift:
     (1, TType.I32, 'peerType', None, None, ), # 1
     (2, TType.STRING, 'name', None, None, ), # 2
     (3, TType.STRING, 'peerID', None, None, ), # 3
-    (4, TType.LIST, 'workTypes', (TType.STRING,None), None, ), # 4
-    (5, TType.STRING, 'host', None, None, ), # 5
-    (6, TType.I32, 'port', None, None, ), # 6
+    (4, TType.STRING, 'groupName', None, None, ), # 4
+    (5, TType.LIST, 'workTypes', (TType.STRING,None), None, ), # 5
+    (6, TType.STRING, 'host', None, None, ), # 6
+    (7, TType.I32, 'port', None, None, ), # 7
   )
 
-  def __init__(self, peerType=None, name=None, peerID=None, workTypes=None, host=None, port=None,):
+  def __init__(self, peerType=None, name=None, peerID=None, groupName=None, workTypes=None, host=None, port=None,):
     self.peerType = peerType
     self.name = name
     self.peerID = peerID
+    self.groupName = groupName
     self.workTypes = workTypes
     self.host = host
     self.port = port
@@ -328,6 +331,11 @@ class PeerInfoThrift:
         else:
           iprot.skip(ftype)
       elif fid == 4:
+        if ftype == TType.STRING:
+          self.groupName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
         if ftype == TType.LIST:
           self.workTypes = []
           (_etype10, _size7) = iprot.readListBegin()
@@ -337,12 +345,12 @@ class PeerInfoThrift:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.STRING:
           self.host = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 6:
+      elif fid == 7:
         if ftype == TType.I32:
           self.port = iprot.readI32();
         else:
@@ -369,19 +377,23 @@ class PeerInfoThrift:
       oprot.writeFieldBegin('peerID', TType.STRING, 3)
       oprot.writeString(self.peerID)
       oprot.writeFieldEnd()
+    if self.groupName != None:
+      oprot.writeFieldBegin('groupName', TType.STRING, 4)
+      oprot.writeString(self.groupName)
+      oprot.writeFieldEnd()
     if self.workTypes != None:
-      oprot.writeFieldBegin('workTypes', TType.LIST, 4)
+      oprot.writeFieldBegin('workTypes', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.workTypes))
       for iter13 in self.workTypes:
         oprot.writeString(iter13)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.host != None:
-      oprot.writeFieldBegin('host', TType.STRING, 5)
+      oprot.writeFieldBegin('host', TType.STRING, 6)
       oprot.writeString(self.host)
       oprot.writeFieldEnd()
     if self.port != None:
-      oprot.writeFieldBegin('port', TType.I32, 6)
+      oprot.writeFieldBegin('port', TType.I32, 7)
       oprot.writeI32(self.port)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

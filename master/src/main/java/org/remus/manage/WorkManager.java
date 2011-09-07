@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -454,13 +455,22 @@ public class WorkManager extends RemusManager {
 	}
 
 	@Override
-	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
-		Map<String, String> out = new HashMap<String, String>();
+	public String scheduleInfoJSON() throws NotImplemented, TException {
+		Map out = new HashMap();
 		synchronized (activeStacks) {
 			int outCount = activeStacks.size();
-			out.put("activeCount", Integer.toString(outCount));
-		}
-		return out;
+			out.put("activeCount", Integer.toString(outCount));			
+			Map aiMap = new HashMap();
+			for (AppletInstance ai : activeStacks.keySet()) {
+				List o = new LinkedList();
+				for ( RemoteJob rj : activeStacks.get(ai) ) {
+					o.add(rj.peerID);
+				}
+				aiMap.put(ai.toString(), o);
+			}
+			out.put("active", aiMap);
+		}		
+		return JSON.dumps(out);
 	}
 
 	@Override

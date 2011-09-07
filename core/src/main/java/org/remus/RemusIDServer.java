@@ -174,7 +174,7 @@ abstract public class RemusIDServer implements RemusNet.Iface, PluginInterface {
 	}
 	
 	@Override
-	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 

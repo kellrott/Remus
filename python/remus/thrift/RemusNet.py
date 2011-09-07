@@ -199,7 +199,7 @@ class Iface:
     """
     pass
 
-  def scheduleInfo(self, ):
+  def scheduleInfoJSON(self, ):
     pass
 
   def addPeer(self, info):
@@ -952,32 +952,32 @@ class Client(Iface):
       raise result.e
     return
 
-  def scheduleInfo(self, ):
-    self.send_scheduleInfo()
-    return self.recv_scheduleInfo()
+  def scheduleInfoJSON(self, ):
+    self.send_scheduleInfoJSON()
+    return self.recv_scheduleInfoJSON()
 
-  def send_scheduleInfo(self, ):
-    self._oprot.writeMessageBegin('scheduleInfo', TMessageType.CALL, self._seqid)
-    args = scheduleInfo_args()
+  def send_scheduleInfoJSON(self, ):
+    self._oprot.writeMessageBegin('scheduleInfoJSON', TMessageType.CALL, self._seqid)
+    args = scheduleInfoJSON_args()
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_scheduleInfo(self, ):
+  def recv_scheduleInfoJSON(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = scheduleInfo_result()
+    result = scheduleInfoJSON_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
     if result.e != None:
       raise result.e
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "scheduleInfo failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
 
   def addPeer(self, info):
     """
@@ -1097,7 +1097,7 @@ class Processor(Iface, TProcessor):
     self._processMap["jobStatus"] = Processor.process_jobStatus
     self._processMap["jobCancel"] = Processor.process_jobCancel
     self._processMap["scheduleRequest"] = Processor.process_scheduleRequest
-    self._processMap["scheduleInfo"] = Processor.process_scheduleInfo
+    self._processMap["scheduleInfoJSON"] = Processor.process_scheduleInfoJSON
     self._processMap["addPeer"] = Processor.process_addPeer
     self._processMap["delPeer"] = Processor.process_delPeer
     self._processMap["getPeers"] = Processor.process_getPeers
@@ -1408,16 +1408,16 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_scheduleInfo(self, seqid, iprot, oprot):
-    args = scheduleInfo_args()
+  def process_scheduleInfoJSON(self, seqid, iprot, oprot):
+    args = scheduleInfoJSON_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = scheduleInfo_result()
+    result = scheduleInfoJSON_result()
     try:
-      result.success = self._handler.scheduleInfo()
+      result.success = self._handler.scheduleInfoJSON()
     except NotImplemented, e:
       result.e = e
-    oprot.writeMessageBegin("scheduleInfo", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("scheduleInfoJSON", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -4508,7 +4508,7 @@ class scheduleRequest_result:
   def __ne__(self, other):
     return not (self == other)
 
-class scheduleInfo_args:
+class scheduleInfoJSON_args:
 
   thrift_spec = (
   )
@@ -4531,7 +4531,7 @@ class scheduleInfo_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('scheduleInfo_args')
+    oprot.writeStructBegin('scheduleInfoJSON_args')
     oprot.writeFieldStop()
     oprot.writeStructEnd()
     def validate(self):
@@ -4549,7 +4549,7 @@ class scheduleInfo_args:
   def __ne__(self, other):
     return not (self == other)
 
-class scheduleInfo_result:
+class scheduleInfoJSON_result:
   """
   Attributes:
    - success
@@ -4557,7 +4557,7 @@ class scheduleInfo_result:
   """
 
   thrift_spec = (
-    (0, TType.MAP, 'success', (TType.STRING,None,TType.STRING,None), None, ), # 0
+    (0, TType.STRING, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
   )
 
@@ -4575,14 +4575,8 @@ class scheduleInfo_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.MAP:
-          self.success = {}
-          (_ktype43, _vtype44, _size42 ) = iprot.readMapBegin() 
-          for _i46 in xrange(_size42):
-            _key47 = iprot.readString();
-            _val48 = iprot.readString();
-            self.success[_key47] = _val48
-          iprot.readMapEnd()
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -4600,14 +4594,10 @@ class scheduleInfo_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('scheduleInfo_result')
+    oprot.writeStructBegin('scheduleInfoJSON_result')
     if self.success != None:
-      oprot.writeFieldBegin('success', TType.MAP, 0)
-      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.success))
-      for kiter49,viter50 in self.success.items():
-        oprot.writeString(kiter49)
-        oprot.writeString(viter50)
-      oprot.writeMapEnd()
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
       oprot.writeFieldEnd()
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)
@@ -4951,11 +4941,11 @@ class getPeers_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype54, _size51) = iprot.readListBegin()
-          for _i55 in xrange(_size51):
-            _elem56 = PeerInfoThrift()
-            _elem56.read(iprot)
-            self.success.append(_elem56)
+          (_etype45, _size42) = iprot.readListBegin()
+          for _i46 in xrange(_size42):
+            _elem47 = PeerInfoThrift()
+            _elem47.read(iprot)
+            self.success.append(_elem47)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4978,8 +4968,8 @@ class getPeers_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter57 in self.success:
-        iter57.write(oprot)
+      for iter48 in self.success:
+        iter48.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:

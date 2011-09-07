@@ -44,9 +44,10 @@ struct PeerInfoThrift {
 	1:required PeerType peerType;
 	2:required string name;
 	3:optional string peerID;
-	4:optional list<string> workTypes;
-	5:optional string host;
-	6:optional i32    port;
+	4:optional string groupName;
+	5:optional list<string> workTypes;
+	6:optional string host;
+	7:optional i32 port;
 }
 
 struct WorkDesc {
@@ -147,7 +148,7 @@ service RemusNet {
 	 * Manager methods
 	 */
 	void scheduleRequest() throws (1:NotImplemented e); 
-	map<string,string> scheduleInfo() throws (1:NotImplemented e);
+	string scheduleInfoJSON() throws (1:NotImplemented e);
 
 	/**
 	 * Name service methods

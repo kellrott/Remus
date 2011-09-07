@@ -156,7 +156,7 @@ public abstract class RemusWeb implements PluginInterface, RemusNet.Iface {
 	}
 
 	@Override
-	public Map<String, String> scheduleInfo() throws NotImplemented, TException {
+	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 	

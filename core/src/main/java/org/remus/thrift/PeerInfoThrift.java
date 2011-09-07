@@ -26,9 +26,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   private static final org.apache.thrift.protocol.TField PEER_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("peerType", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField PEER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("peerID", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField GROUP_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("groupName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)7);
 
   /**
    * 
@@ -37,6 +38,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   public PeerType peerType;
   public String name;
   public String peerID;
+  public String groupName;
   public List<String> workTypes;
   public String host;
   public int port;
@@ -50,9 +52,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     PEER_TYPE((short)1, "peerType"),
     NAME((short)2, "name"),
     PEER_ID((short)3, "peerID"),
-    WORK_TYPES((short)4, "workTypes"),
-    HOST((short)5, "host"),
-    PORT((short)6, "port");
+    GROUP_NAME((short)4, "groupName"),
+    WORK_TYPES((short)5, "workTypes"),
+    HOST((short)6, "host"),
+    PORT((short)7, "port");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -73,11 +76,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
           return NAME;
         case 3: // PEER_ID
           return PEER_ID;
-        case 4: // WORK_TYPES
+        case 4: // GROUP_NAME
+          return GROUP_NAME;
+        case 5: // WORK_TYPES
           return WORK_TYPES;
-        case 5: // HOST
+        case 6: // HOST
           return HOST;
-        case 6: // PORT
+        case 7: // PORT
           return PORT;
         default:
           return null;
@@ -131,6 +136,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.PEER_ID, new org.apache.thrift.meta_data.FieldMetaData("peerID", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.GROUP_NAME, new org.apache.thrift.meta_data.FieldMetaData("groupName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.WORK_TYPES, new org.apache.thrift.meta_data.FieldMetaData("workTypes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -169,6 +176,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     if (other.isSetPeerID()) {
       this.peerID = other.peerID;
     }
+    if (other.isSetGroupName()) {
+      this.groupName = other.groupName;
+    }
     if (other.isSetWorkTypes()) {
       List<String> __this__workTypes = new ArrayList<String>();
       for (String other_element : other.workTypes) {
@@ -191,6 +201,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     this.peerType = null;
     this.name = null;
     this.peerID = null;
+    this.groupName = null;
     this.workTypes = null;
     this.host = null;
     setPortIsSet(false);
@@ -274,6 +285,30 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   public void setPeerIDIsSet(boolean value) {
     if (!value) {
       this.peerID = null;
+    }
+  }
+
+  public String getGroupName() {
+    return this.groupName;
+  }
+
+  public PeerInfoThrift setGroupName(String groupName) {
+    this.groupName = groupName;
+    return this;
+  }
+
+  public void unsetGroupName() {
+    this.groupName = null;
+  }
+
+  /** Returns true if field groupName is set (has been assigned a value) and false otherwise */
+  public boolean isSetGroupName() {
+    return this.groupName != null;
+  }
+
+  public void setGroupNameIsSet(boolean value) {
+    if (!value) {
+      this.groupName = null;
     }
   }
 
@@ -389,6 +424,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       break;
 
+    case GROUP_NAME:
+      if (value == null) {
+        unsetGroupName();
+      } else {
+        setGroupName((String)value);
+      }
+      break;
+
     case WORK_TYPES:
       if (value == null) {
         unsetWorkTypes();
@@ -427,6 +470,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     case PEER_ID:
       return getPeerID();
 
+    case GROUP_NAME:
+      return getGroupName();
+
     case WORK_TYPES:
       return getWorkTypes();
 
@@ -453,6 +499,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       return isSetName();
     case PEER_ID:
       return isSetPeerID();
+    case GROUP_NAME:
+      return isSetGroupName();
     case WORK_TYPES:
       return isSetWorkTypes();
     case HOST:
@@ -500,6 +548,15 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       if (!(this_present_peerID && that_present_peerID))
         return false;
       if (!this.peerID.equals(that.peerID))
+        return false;
+    }
+
+    boolean this_present_groupName = true && this.isSetGroupName();
+    boolean that_present_groupName = true && that.isSetGroupName();
+    if (this_present_groupName || that_present_groupName) {
+      if (!(this_present_groupName && that_present_groupName))
+        return false;
+      if (!this.groupName.equals(that.groupName))
         return false;
     }
 
@@ -576,6 +633,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetGroupName()).compareTo(typedOther.isSetGroupName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGroupName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.groupName, typedOther.groupName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetWorkTypes()).compareTo(typedOther.isSetWorkTypes());
     if (lastComparison != 0) {
       return lastComparison;
@@ -644,7 +711,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // WORK_TYPES
+        case 4: // GROUP_NAME
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.groupName = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 5: // WORK_TYPES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
@@ -661,14 +735,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // HOST
+        case 6: // HOST
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.host = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // PORT
+        case 7: // PORT
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.port = iprot.readI32();
             setPortIsSet(true);
@@ -705,6 +779,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       if (isSetPeerID()) {
         oprot.writeFieldBegin(PEER_ID_FIELD_DESC);
         oprot.writeString(this.peerID);
+        oprot.writeFieldEnd();
+      }
+    }
+    if (this.groupName != null) {
+      if (isSetGroupName()) {
+        oprot.writeFieldBegin(GROUP_NAME_FIELD_DESC);
+        oprot.writeString(this.groupName);
         oprot.writeFieldEnd();
       }
     }
@@ -765,6 +846,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         sb.append("null");
       } else {
         sb.append(this.peerID);
+      }
+      first = false;
+    }
+    if (isSetGroupName()) {
+      if (!first) sb.append(", ");
+      sb.append("groupName:");
+      if (this.groupName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.groupName);
       }
       first = false;
     }

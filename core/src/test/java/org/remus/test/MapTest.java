@@ -12,6 +12,7 @@ import org.json.simple.JSONValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
@@ -75,8 +76,8 @@ public class MapTest {
 		do {
 			manage.scheduleRequest();		
 			Thread.sleep(10000);
-			Map<String, String> info = manage.scheduleInfo();
-			if (info.get("activeCount").compareTo("0") == 0) {
+			Map info = (Map) JSON.loads(manage.scheduleInfoJSON());
+			if (((String) info.get("activeCount")).compareTo("0") == 0) {
 				done = true;
 			}
 			System.out.println(info);
