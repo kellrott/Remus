@@ -58,6 +58,18 @@ class RemusWorker(RemusNet.Iface):
 	def status(self):
 		log("Status OK")
 		return "OK"
+
+	def jobRequest(self, dbServer, attachServer, work):
+		log("work: %s %s %s" % (dbServer, attachServer, str(work)))
+		return "OK"
+		
+	def jobStatus(self, jobID):
+		j = RemusNet.JobStatus(status=RemusNet.JobState.DONE)
+		return j
+		
+	def jobCancel(self,jobID):
+		return 0
+
 		
 class ServerThread(threading.Thread):
 	def __init__(self, server):
@@ -66,6 +78,7 @@ class ServerThread(threading.Thread):
 	
 	def run(self):
 		self.server.serve()
+	
 		
 class RemusWorkerServer:
 	
