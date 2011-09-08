@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransportException;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.BadPeerName;
@@ -63,18 +64,33 @@ public class RemusIDClient extends RemusIDServer {
 
 	@Override
 	public void stop() {
+		synchronized (clientLock) {
+			if (client != null) {
+				client.getInputProtocol().getTransport().close();
+				client = null;
+			}
+		}
+	}
 
+	Byte clientLock = new Byte((byte)0);
+	RemusNet.Client client = null;
+
+	private void openClient() throws TTransportException {
+		if (client == null || !client.getInputProtocol().getTransport().isOpen()) {
+			TSocket transport = new TSocket(server, port);
+			TBinaryProtocol protocol = new TBinaryProtocol(transport);
+			transport.open();
+			client = new RemusNet.Client(protocol);
+		}
 	}
 
 	@Override
 	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
 		if (!silent) {
-			TSocket transport = new TSocket(server, port);
-			TBinaryProtocol protocol = new TBinaryProtocol(transport);
-			transport.open();
-			RemusNet.Client client = new RemusNet.Client(protocol);
-			client.addPeer(info);
-			transport.close();
+			synchronized (clientLock) {
+				openClient();
+				client.addPeer(info);
+			}
 		}
 	}
 
@@ -82,31 +98,25 @@ public class RemusIDClient extends RemusIDServer {
 	@Override
 	public void delPeer(String peerName) throws TException, NotImplemented {
 		if (!silent) {
-			TSocket transport = new TSocket(server, port);
-			TBinaryProtocol protocol = new TBinaryProtocol(transport);
-			transport.open();
-			transport.open();
-			RemusNet.Client client = new RemusNet.Client(protocol);
-			client.delPeer(peerName);
-			transport.close();	
+			synchronized (clientLock) {
+				openClient();
+				client.delPeer(peerName);
+			}	
 		}
 	}
-
 
 
 	@Override
 	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
 		logger.debug("Getting peers from " + server + ":" + port);
-		TSocket transport = new TSocket(server, port);
-		TBinaryProtocol protocol = new TBinaryProtocol(transport);
-		transport.open();
-		RemusNet.Client client = new RemusNet.Client(protocol);
-		List<PeerInfoThrift> out = client.getPeers();
-		transport.close();
-		return out;
+		synchronized (clientLock) {
+			openClient();
+			List<PeerInfoThrift> out = client.getPeers();
+			return out;
+		}
 	}
 
-	
+
 	@Override
 	public String status() throws TException {
 		return "OK";

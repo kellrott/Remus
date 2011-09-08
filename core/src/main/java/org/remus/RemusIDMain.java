@@ -86,6 +86,7 @@ public class RemusIDMain extends RemusIDServer {
 					try {
 						RemusNet.Iface iface = plugins.getPeer(peerID);
 						iface.status();
+						plugins.returnPeer(iface);
 					} catch (TException e) {
 						//upon failure, remove node from peer list
 						removeList.add(peerID);
@@ -116,31 +117,6 @@ public class RemusIDMain extends RemusIDServer {
 			}
 		}
 	}
-
-	/*
-	public void ping(List<PeerInfoThrift> workers) throws TException {
-		logger.info( local.name + " PINGED with " + workers.size() + " records" );
-		boolean added = false;
-		synchronized (peerMap) {
-			synchronized (lastPing) {
-				for (PeerInfoThrift worker : workers) {
-					if (!peerMap.containsKey(worker.name)) {
-						peerMap.put(worker.name, worker);
-						added = true;
-					}
-					if (peerMap.get(worker.name) != null) {
-						lastPing.put(worker.name, (new Date()).getTime());
-					}
-				}
-			}
-		}
-		if (added) {
-			logger.info( local.name + " learned about new peers" );
-			callback.reqPing();
-		}
-	}
-	 */
-
 
 	@Override
 	public PeerInfo getPeerInfo() {

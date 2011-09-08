@@ -25,6 +25,7 @@ import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Processor;
 import org.slf4j.LoggerFactory;
 
+
 public class PluginManager {
 
 	List<PluginInterface> plugins;
@@ -216,6 +217,8 @@ public class PluginManager {
 		return out;
 	}
 
+	Map<String,RemusNet.Iface> remotePeers = new HashMap<String, RemusNet.Iface>();
+	
 	public RemusNet.Iface getPeer(String peerID) throws TException {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);
@@ -224,7 +227,13 @@ public class PluginManager {
 			List<PeerInfoThrift> out = getIDServer().getPeers();
 			for (PeerInfoThrift p : out) {
 				if (p.peerID.compareTo(peerID) == 0) {
-					return RemusRemote.getClient(p.host, p.port);
+					if (remotePeers.containsKey(p.peerID)) {
+						return remotePeers.get(p.peerID);
+					} else {
+						RemusNet.Iface r = RemusRemote.getClient(p.host, p.port);
+						remotePeers.put(p.peerID, r);
+						return r;
+					}
 				}
 			}
 		} catch (NotImplemented e) {
@@ -234,6 +243,12 @@ public class PluginManager {
 		return null;
 	}
 
+	public void returnPeer(RemusNet.Iface iface) {
+		//if (iface instanceof RemusNet.Client) {
+		//	((RemusNet.Client) iface).getInputProtocol().getTransport().close();
+		//}
+	}
+	
 	public String getPeerID(RemusNet.Iface plug) {
 		for (String key : peerList.keySet()) {
 			if (peerList.get(key) == plug) {
