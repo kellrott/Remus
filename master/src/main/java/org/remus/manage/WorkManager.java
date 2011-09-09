@@ -278,27 +278,29 @@ public class WorkManager extends RemusManager {
 					logger.debug("Checking " + rj.peerID + " for " + rj.jobID + " " + ai);
 					try {
 						RemusNet.Iface worker = plugins.getPeer(rj.peerID);
-						JobStatus s = worker.jobStatus(rj.jobID);
-						if (s.status == JobState.DONE) {
-							found = true;
-							for (long i = rj.workStart; i < rj.workEnd; i++) {
-								ai.finishWork(i, rj.peerID, s.emitCount);
+						if (worker != null) {
+							JobStatus s = worker.jobStatus(rj.jobID);
+							if (s.status == JobState.DONE) {
+								found = true;
+								for (long i = rj.workStart; i < rj.workEnd; i++) {
+									ai.finishWork(i, rj.peerID, s.emitCount);
+								}
+								removeSet.put(rj, true);
+								logger.info("Worker Finished: " + rj.jobID);
+							} else if (s.status == JobState.ERROR) {
+								found = true;
+								for (long i = rj.workStart; i < rj.workEnd; i++) {
+									ai.errorWork(i, s.errorMsg);
+								}
+								removeSet.put(rj, false);
+								logger.warn("JOB ERROR: " + ai + " job:" + rj.jobID + " " + s.errorMsg);
+							} else if (s.status == JobState.UNKNOWN) {
+								logger.warn("Worker lost job: " + rj.jobID);
+							} else {
+								activeCount += 1;
 							}
-							removeSet.put(rj, true);
-							logger.info("Worker Finished: " + rj.jobID);
-						} else if (s.status == JobState.ERROR) {
-							found = true;
-							for (long i = rj.workStart; i < rj.workEnd; i++) {
-								ai.errorWork(i, s.errorMsg);
-							}
-							removeSet.put(rj, false);
-							logger.warn("JOB ERROR: " + ai + " job:" + rj.jobID + " " + s.errorMsg);
-						} else if (s.status == JobState.UNKNOWN) {
-							logger.warn("Worker lost job: " + rj.jobID);
-						} else {
-							activeCount += 1;
+							plugins.returnPeer(worker);
 						}
-						plugins.returnPeer(worker);
 					} catch (TException e) {
 						logger.warn("Worker Connection Failed: " + rj.peerID);
 						removeSet.put(rj, false);
@@ -347,13 +349,15 @@ public class WorkManager extends RemusManager {
 						} else {
 							peerStacks.put(peerID, new HashSet<RemoteJob>());
 						}
-						peerBase.put(peerID, workCount);
+						if (peerStacks.get(peerID).size() == 0) {
+							peerBase.put(peerID, workCount);
+						}
 					}
 					peerCount.putAll(peerBase);
 
 					Arrays.sort(workIDs);
 					int curPos = 0;
-					while (curPos < workIDs.length) {
+					while (!peerBase.isEmpty() && curPos < workIDs.length) {
 						if (workIDs[curPos] == -1) {
 							curPos++;
 						} else {
@@ -363,7 +367,8 @@ public class WorkManager extends RemusManager {
 							} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
 							String peerID = peerCount.firstKey();
 							workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
-							peerBase.put(peerID, peerBase.get(peerID) + (curPos - last));
+							peerBase.remove(peerID);
+							//peerBase.put(peerID, peerBase.get(peerID) + (curPos - last));
 							peerCount.clear();
 							peerCount.putAll(peerBase);
 							workAdded = true;
