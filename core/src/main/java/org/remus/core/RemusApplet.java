@@ -321,6 +321,7 @@ public class RemusApplet {
 
 				}
 			} else {
+				/*
 				if (hasInputs()) {
 					try {
 						long thisTime = ai.getStatusTimeStamp();
@@ -337,6 +338,7 @@ public class RemusApplet {
 						e.printStackTrace();
 					}
 				}
+				*/
 			}
 		}
 		return out;

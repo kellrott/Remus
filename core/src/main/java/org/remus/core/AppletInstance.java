@@ -110,7 +110,8 @@ public class AppletInstance {
 					if (iApplet != null) {
 						try {
 							AppletInstance ai = new AppletInstance(pipeline, instance, iApplet, datastore);
-							long val = ai.getDataTimeStamp();
+							//long val = ai.getDataTimeStamp();
+							long val = ai.getStatusTimeStamp();
 							if (out < val) {
 								out = val;
 							}
@@ -200,6 +201,7 @@ public class AppletInstance {
 			boolean allDone = true;
 			boolean firstSlice = true;
 			String sliceStart = jobStart;
+			logger.debug("Starting JobScan: " + instance.toString() + ":" + applet.getID() + " " + jobStart );
 			while (found && curPos < count) {
 				found = false;
 				for (String key : applet.getDataStore().keySlice(arStatus, sliceStart, count - curPos)) {
@@ -219,10 +221,11 @@ public class AppletInstance {
 					}
 				}
 			}
+			logger.debug("Ending JobScan: " + instance.toString() + ":" + applet.getID() + " " + newJobStart );
 			if (count > 0 && curPos == 0) {
 				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
 				setComplete();
-			} else if (newJobStart != jobStart) {
+			} else if (newJobStart.equals(jobStart)) {
 				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);
 				status.setJobStart(newJobStart);
 				setWorkStat(status);

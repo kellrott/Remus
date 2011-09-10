@@ -217,8 +217,30 @@ public class PluginManager {
 		return out;
 	}
 
+	public PeerInfoThrift getPeerInfo(String peerID) throws NotImplemented, TException {
+		List<PeerInfoThrift> list = getIDServer().getPeers();
+		for (PeerInfoThrift p : list) {
+			if (p.peerID.equals(peerID)) {
+				return p;
+			}
+		}	
+		return null;
+	}
+
+	public Set<String> getWorkers() throws NotImplemented, TException {
+		Set<String> out = new HashSet<String>();
+		List<PeerInfoThrift> list = getIDServer().getPeers();
+		for (PeerInfoThrift p : list) {
+			if (p.peerType == PeerType.WORKER) {
+				out.add(p.peerID);
+			}
+		}
+		return out;
+	}
+
+
 	Map<String,RemusNet.Iface> remotePeers = new HashMap<String, RemusNet.Iface>();
-	
+
 	public RemusNet.Iface getPeer(String peerID) throws TException {
 		if (peerList.containsKey(peerID)) {
 			return peerList.get(peerID);
@@ -248,7 +270,7 @@ public class PluginManager {
 		//	((RemusNet.Client) iface).getInputProtocol().getTransport().close();
 		//}
 	}
-	
+
 	public String getPeerID(RemusNet.Iface plug) {
 		for (String key : peerList.keySet()) {
 			if (peerList.get(key) == plug) {

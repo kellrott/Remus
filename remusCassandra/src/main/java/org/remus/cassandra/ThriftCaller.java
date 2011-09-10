@@ -10,12 +10,12 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.thrift.TException;
 
 abstract class ThriftCaller<T> {
-	
+
 	ThriftClientPool clientPool;
 	public ThriftCaller(ThriftClientPool clientPool) {
 		this.clientPool = clientPool;
 	}
-	
+
 	public T call() throws Exception {
 		T out = null;
 		boolean done = false;
@@ -43,6 +43,11 @@ abstract class ThriftCaller<T> {
 				}				
 			} catch (TimedOutException e) {
 				outE = e;
+				try {
+					clientPool.invalidateObject(client);
+				} catch (Exception e2) {						
+				}
+				client = null;
 				try {
 					Thread.sleep(4000);
 				} catch (InterruptedException e1) {						

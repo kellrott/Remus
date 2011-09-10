@@ -1,7 +1,6 @@
 package org.remus.manage;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
@@ -29,6 +27,7 @@ import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.PeerType;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
@@ -128,6 +127,7 @@ public class WorkManager extends RemusManager {
 	}
 
 	private void syncAppletList(Set<AppletInstance> aiSet) {
+		Set<AppletInstance> removeSet = new HashSet<AppletInstance>();		
 		synchronized (activeStacks) {		
 			for (AppletInstance ai : aiSet) {
 				if (!activeStacks.containsKey(ai)) {
@@ -135,19 +135,25 @@ public class WorkManager extends RemusManager {
 					assignRate.put(ai, 1);
 				}
 			}
-			Set<AppletInstance> removeSet = new HashSet<AppletInstance>();
 			for (AppletInstance ai : activeStacks.keySet()) {
 				if (!aiSet.contains(ai)) {
 					removeSet.add(ai);
 				}
 			}
-			for (AppletInstance ai : removeSet) {
-				for (RemoteJob rj : activeStacks.get(ai)) {
-					removeRemoteJob(ai, rj, false);
-				}
-				activeStacks.remove(ai);
+		}
+
+		for (AppletInstance ai : removeSet) {
+			for (RemoteJob rj : activeStacks.get(ai)) {
+				removeRemoteJob(ai, rj, false);
+			}
+			synchronized (activeStacks) {
+				activeStacks.remove(ai);				
+			}
+			synchronized (workIDCache) {
+				workIDCache.remove(ai);				
 			}
 		}
+
 	}
 
 	private void addRemoteJob(AppletInstance ai, RemoteJob rj) {
@@ -189,6 +195,11 @@ public class WorkManager extends RemusManager {
 	private ScheduleThread sThread;
 
 	private class ScheduleThread extends Thread {
+
+		public ScheduleThread() {
+			super("Manager Schedule Thread");
+		}
+
 		boolean quit = false;
 		Integer waitLock = new Integer(0);
 		private int sleepTime = 300;
@@ -219,12 +230,13 @@ public class WorkManager extends RemusManager {
 						if (sleepTime < INACTIVE_SLEEP_TIME) {
 							sleepTime += 1000;
 						}
-						synchronized (waitLock) {			
-							waitLock.wait(sleepTime);
-						}
 					} else {
-						sleep(1);
+						sleepTime = 100;	
 					}
+					logger.debug("Manager SleepTime=" + sleepTime);
+					synchronized (waitLock) {
+						waitLock.wait(sleepTime);
+					}					
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -317,8 +329,107 @@ public class WorkManager extends RemusManager {
 		return found;
 	}
 
+
+	private Map<AppletInstance,long []> workIDCache = new HashMap<AppletInstance, long[]>();
+
+	private long [] getAppletWorkCache(AppletInstance ai) throws NotImplemented, TException {
+		Set<String> peers = plugins.getWorkers();
+		long [] workIDs = null;
+		synchronized (workIDCache) {			
+			if (workIDCache.containsKey(ai) && workIDCache.get(ai) != null) {
+				workIDs = workIDCache.get(ai);
+				Arrays.sort(workIDs);
+			} else {
+				workIDs = ai.getReadyJobs(assignRate.get(ai) * peers.size());				
+				workIDCache.put(ai, workIDs);
+			}
+		}
+		for (String peerID : peers) {
+			if (!peerStacks.containsKey(peerID)) {
+				peerStacks.put(peerID, new HashSet<RemoteJob>());
+			}
+			for (RemoteJob rj : peerStacks.get(peerID)) {
+				if (activeStacks.get(ai).contains(rj)) {
+					for (int i = 0; i < workIDs.length; i++) {
+						if (workIDs[i] >= rj.workStart && workIDs[i] < rj.workEnd) {
+							workIDs[i] = -1;
+						}
+					}
+				}
+			}
+		}
+
+		boolean valid = false;
+		for (int i = 0; i < workIDs.length; i++) {
+			if (workIDs[i] != -1) {
+				valid = true;
+			}
+		}
+		if (valid) {
+			Arrays.sort(workIDs);
+			return workIDs;
+		} 
+		workIDCache.put(ai, null);
+		return null;
+	}
+
 	private boolean workSchedule() {
 		boolean workAdded = false;
+
+		try {
+			Set<String> peers = plugins.getWorkers();
+			for (String peerID : peers) {
+				if (!peerStacks.containsKey(peerID)) {
+					peerStacks.put(peerID, new HashSet<RemoteJob>());
+				}
+				if (peerStacks.get(peerID).size() == 0) {
+					//find an applet stack with a matching worktype					
+					PeerInfoThrift pinfo = plugins.getPeerInfo(peerID);
+					AppletInstance ai = null;
+					long [] workIDs = null;
+					if (pinfo != null && pinfo.workTypes != null) {
+						synchronized (activeStacks) {						
+							for (AppletInstance acur : activeStacks.keySet()) {	
+								if (ai == null && acur.getApplet() != null) {
+									if ( pinfo.workTypes.contains( acur.getApplet().getType() ) ) {
+										workIDs = getAppletWorkCache(acur);
+										if (workIDs != null) {
+											ai = acur;
+										}
+									}
+								}
+							}
+						}
+					}
+					if (ai != null) {
+						if (workIDs != null) {
+							int curPos = 0;
+							while (curPos < workIDs.length) {
+								if (workIDs[curPos] == -1) {
+									curPos++;
+								} else {
+									int last = curPos;
+									do {
+										curPos++;
+									} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
+									workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
+									for (int i=last; i < curPos; i++) {
+										workIDs[i] = -1;
+									}
+									workAdded = true;
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		/*
 		synchronized (activeStacks) {
 			for (AppletInstance ai : activeStacks.keySet()) {	
 				try {
@@ -384,6 +495,7 @@ public class WorkManager extends RemusManager {
 				}
 			}
 		}
+		 */
 		return workAdded;
 	}
 
@@ -486,28 +598,28 @@ public class WorkManager extends RemusManager {
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
 	throws NotImplemented, TException {
-		logger.info("Manage DB keySlice: " + stack + " " + keyStart + " " + count);
+		logger.debug("Manage DB keySlice: " + stack + " " + keyStart + " " + count);
 		return miniDB.keySlice(stack, keyStart, count);
 	}
 
 	@Override
 	public boolean containsKey(AppletRef stack, String key)
 	throws NotImplemented, TException {
-		logger.info("Manage DB containsKey: " + stack + " " + key);
+		logger.debug("Manage DB containsKey: " + stack + " " + key);
 		return miniDB.containsKey(stack, key);	
 	}
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
 	throws NotImplemented, TException {
-		logger.info("Manage DB getValueJSON: " + stack + " " + key);
+		logger.debug("Manage DB getValueJSON: " + stack + " " + key);
 		return miniDB.getValueJSON(stack, key);
 	}
 
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
-		logger.info("Manage DB add: " + stack + " " + key);
+		logger.debug("Manage DB add: " + stack + " " + key);
 		miniDB.addData(stack, jobID, emitID, key, data);
 	}
 
