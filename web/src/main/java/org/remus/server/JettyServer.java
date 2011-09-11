@@ -17,6 +17,7 @@ import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
 import org.remus.core.BaseStackNode;
 import org.remus.mapred.MapReduceCallback;
+import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
@@ -37,7 +38,7 @@ public class JettyServer extends RemusWeb {
 	public static final int DEFAULT_PORT = 16016;
 
 	private Logger logger;
-	private PluginManager pm;
+	private PeerManager pm;
 
 	@Override
 	public PeerInfo getPeerInfo() {
@@ -58,7 +59,7 @@ public class JettyServer extends RemusWeb {
 
 	@Override
 	public void start(PluginManager pluginManager) throws RemusDatabaseException {
-		this.pm = pluginManager;
+		this.pm = pluginManager.getPeerManager();
 		System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "0");		
 
 		int serverPort = DEFAULT_PORT;

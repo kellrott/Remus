@@ -22,7 +22,7 @@ import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 
-public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
+public abstract class RemusAttach extends RemusPeer {
 
 	static public final int BLOCK_SIZE=1048576; 
 	
@@ -93,6 +93,12 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 			
 			@Override
 			public void init(Map params) {}
+
+			@Override
+			public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
+					throws NotImplemented, BadPeerName, TException {
+				return attach.peerInfo(info);
+			}
 		};
 	}
 	
@@ -305,23 +311,6 @@ public abstract class RemusAttach implements RemusNet.Iface, PluginInterface {
 		throw new NotImplemented();
 	}
 	
-	@Override
-	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public void delPeer(String peerName) throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
 	@Override
 	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();

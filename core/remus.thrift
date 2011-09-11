@@ -37,7 +37,13 @@ enum PeerType {
 	DB_SERVER,
 	ATTACH_SERVER,
 	WORKER,
-	WEB_SERVER
+	WEB_SERVER,
+	DEAD
+}
+
+struct PeerAddress {
+	1:required string host;
+	2:required i32 port;
 }
 
 struct PeerInfoThrift {
@@ -46,8 +52,8 @@ struct PeerInfoThrift {
 	3:optional string peerID;
 	4:optional string groupName;
 	5:optional list<string> workTypes;
-	6:optional string host;
-	7:optional i32 port;
+	6:optional PeerAddress addr;
+	7:optional i32 timeDelta;
 }
 
 struct WorkDesc {
@@ -154,9 +160,7 @@ service RemusNet {
 	 * Name service methods
 	 *
 	 */
-	void addPeer( 1:PeerInfoThrift info ) throws (1:NotImplemented notImp, 2:BadPeerName badName);
-	void delPeer( 1:string peerName ) throws (1:NotImplemented e);
-	list<PeerInfoThrift> getPeers() throws (1:NotImplemented e);
+	list<PeerInfoThrift> peerInfo( 1:list<PeerInfoThrift> info ) throws (1:NotImplemented notImp, 2:BadPeerName badName);
 
 }
 

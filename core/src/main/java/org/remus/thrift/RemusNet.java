@@ -101,11 +101,7 @@ public class RemusNet {
      * 
      * @param info
      */
-    public void addPeer(PeerInfoThrift info) throws NotImplemented, BadPeerName, org.apache.thrift.TException;
-
-    public void delPeer(String peerName) throws NotImplemented, org.apache.thrift.TException;
-
-    public List<PeerInfoThrift> getPeers() throws NotImplemented, org.apache.thrift.TException;
+    public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info) throws NotImplemented, BadPeerName, org.apache.thrift.TException;
 
   }
 
@@ -155,11 +151,7 @@ public class RemusNet {
 
     public void scheduleInfoJSON(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleInfoJSON_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void addPeer(PeerInfoThrift info, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addPeer_call> resultHandler) throws org.apache.thrift.TException;
-
-    public void delPeer(String peerName, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.delPeer_call> resultHandler) throws org.apache.thrift.TException;
-
-    public void getPeers(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getPeers_call> resultHandler) throws org.apache.thrift.TException;
+    public void peerInfo(List<PeerInfoThrift> info, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.peerInfo_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -1063,23 +1055,23 @@ public class RemusNet {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
     }
 
-    public void addPeer(PeerInfoThrift info) throws NotImplemented, BadPeerName, org.apache.thrift.TException
+    public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info) throws NotImplemented, BadPeerName, org.apache.thrift.TException
     {
-      send_addPeer(info);
-      recv_addPeer();
+      send_peerInfo(info);
+      return recv_peerInfo();
     }
 
-    public void send_addPeer(PeerInfoThrift info) throws org.apache.thrift.TException
+    public void send_peerInfo(List<PeerInfoThrift> info) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addPeer", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      addPeer_args args = new addPeer_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("peerInfo", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      peerInfo_args args = new peerInfo_args();
       args.setInfo(info);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void recv_addPeer() throws NotImplemented, BadPeerName, org.apache.thrift.TException
+    public List<PeerInfoThrift> recv_peerInfo() throws NotImplemented, BadPeerName, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -1088,92 +1080,21 @@ public class RemusNet {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "addPeer failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "peerInfo failed: out of sequence response");
       }
-      addPeer_result result = new addPeer_result();
+      peerInfo_result result = new peerInfo_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
       if (result.notImp != null) {
         throw result.notImp;
       }
       if (result.badName != null) {
         throw result.badName;
       }
-      return;
-    }
-
-    public void delPeer(String peerName) throws NotImplemented, org.apache.thrift.TException
-    {
-      send_delPeer(peerName);
-      recv_delPeer();
-    }
-
-    public void send_delPeer(String peerName) throws org.apache.thrift.TException
-    {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("delPeer", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      delPeer_args args = new delPeer_args();
-      args.setPeerName(peerName);
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public void recv_delPeer() throws NotImplemented, org.apache.thrift.TException
-    {
-      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
-        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "delPeer failed: out of sequence response");
-      }
-      delPeer_result result = new delPeer_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.e != null) {
-        throw result.e;
-      }
-      return;
-    }
-
-    public List<PeerInfoThrift> getPeers() throws NotImplemented, org.apache.thrift.TException
-    {
-      send_getPeers();
-      return recv_getPeers();
-    }
-
-    public void send_getPeers() throws org.apache.thrift.TException
-    {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getPeers", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      getPeers_args args = new getPeers_args();
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public List<PeerInfoThrift> recv_getPeers() throws NotImplemented, org.apache.thrift.TException
-    {
-      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
-        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getPeers failed: out of sequence response");
-      }
-      getPeers_result result = new getPeers_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      if (result.e != null) {
-        throw result.e;
-      }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getPeers failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "peerInfo failed: unknown result");
     }
 
   }
@@ -1985,96 +1906,35 @@ public class RemusNet {
       }
     }
 
-    public void addPeer(PeerInfoThrift info, org.apache.thrift.async.AsyncMethodCallback<addPeer_call> resultHandler) throws org.apache.thrift.TException {
+    public void peerInfo(List<PeerInfoThrift> info, org.apache.thrift.async.AsyncMethodCallback<peerInfo_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      addPeer_call method_call = new addPeer_call(info, resultHandler, this, protocolFactory, transport);
+      peerInfo_call method_call = new peerInfo_call(info, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class addPeer_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private PeerInfoThrift info;
-      public addPeer_call(PeerInfoThrift info, org.apache.thrift.async.AsyncMethodCallback<addPeer_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+    public static class peerInfo_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private List<PeerInfoThrift> info;
+      public peerInfo_call(List<PeerInfoThrift> info, org.apache.thrift.async.AsyncMethodCallback<peerInfo_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.info = info;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addPeer", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        addPeer_args args = new addPeer_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("peerInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        peerInfo_args args = new peerInfo_args();
         args.setInfo(info);
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public void getResult() throws NotImplemented, BadPeerName, org.apache.thrift.TException {
+      public List<PeerInfoThrift> getResult() throws NotImplemented, BadPeerName, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_addPeer();
-      }
-    }
-
-    public void delPeer(String peerName, org.apache.thrift.async.AsyncMethodCallback<delPeer_call> resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      delPeer_call method_call = new delPeer_call(peerName, resultHandler, this, protocolFactory, transport);
-      this.currentMethod = method_call;
-      manager.call(method_call);
-    }
-
-    public static class delPeer_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String peerName;
-      public delPeer_call(String peerName, org.apache.thrift.async.AsyncMethodCallback<delPeer_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-        this.peerName = peerName;
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("delPeer", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        delPeer_args args = new delPeer_args();
-        args.setPeerName(peerName);
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws NotImplemented, org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_delPeer();
-      }
-    }
-
-    public void getPeers(org.apache.thrift.async.AsyncMethodCallback<getPeers_call> resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      getPeers_call method_call = new getPeers_call(resultHandler, this, protocolFactory, transport);
-      this.currentMethod = method_call;
-      manager.call(method_call);
-    }
-
-    public static class getPeers_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public getPeers_call(org.apache.thrift.async.AsyncMethodCallback<getPeers_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getPeers", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getPeers_args args = new getPeers_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public List<PeerInfoThrift> getResult() throws NotImplemented, org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getPeers();
+        return (new Client(prot)).recv_peerInfo();
       }
     }
 
@@ -2107,9 +1967,7 @@ public class RemusNet {
       processMap_.put("jobCancel", new jobCancel());
       processMap_.put("scheduleRequest", new scheduleRequest());
       processMap_.put("scheduleInfoJSON", new scheduleInfoJSON());
-      processMap_.put("addPeer", new addPeer());
-      processMap_.put("delPeer", new delPeer());
-      processMap_.put("getPeers", new getPeers());
+      processMap_.put("peerInfo", new peerInfo());
     }
 
     protected static interface ProcessFunction {
@@ -2967,115 +2825,39 @@ public class RemusNet {
 
     }
 
-    private class addPeer implements ProcessFunction {
+    private class peerInfo implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        addPeer_args args = new addPeer_args();
+        peerInfo_args args = new peerInfo_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addPeer", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("peerInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        addPeer_result result = new addPeer_result();
+        peerInfo_result result = new peerInfo_result();
         try {
-          iface_.addPeer(args.info);
+          result.success = iface_.peerInfo(args.info);
         } catch (NotImplemented notImp) {
           result.notImp = notImp;
         } catch (BadPeerName badName) {
           result.badName = badName;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing addPeer", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing addPeer");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addPeer", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing peerInfo", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing peerInfo");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("peerInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addPeer", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
-    private class delPeer implements ProcessFunction {
-      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
-      {
-        delPeer_args args = new delPeer_args();
-        try {
-          args.read(iprot);
-        } catch (org.apache.thrift.protocol.TProtocolException e) {
-          iprot.readMessageEnd();
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("delPeer", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        delPeer_result result = new delPeer_result();
-        try {
-          iface_.delPeer(args.peerName);
-        } catch (NotImplemented e) {
-          result.e = e;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing delPeer", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing delPeer");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("delPeer", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("delPeer", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
-    private class getPeers implements ProcessFunction {
-      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
-      {
-        getPeers_args args = new getPeers_args();
-        try {
-          args.read(iprot);
-        } catch (org.apache.thrift.protocol.TProtocolException e) {
-          iprot.readMessageEnd();
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getPeers", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        getPeers_result result = new getPeers_result();
-        try {
-          result.success = iface_.getPeers();
-        } catch (NotImplemented e) {
-          result.e = e;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing getPeers", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing getPeers");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getPeers", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getPeers", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("peerInfo", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -20126,12 +19908,12 @@ public class RemusNet {
 
   }
 
-  public static class addPeer_args implements org.apache.thrift.TBase<addPeer_args, addPeer_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addPeer_args");
+  public static class peerInfo_args implements org.apache.thrift.TBase<peerInfo_args, peerInfo_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("peerInfo_args");
 
-    private static final org.apache.thrift.protocol.TField INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("info", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.thrift.protocol.TField INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("info", org.apache.thrift.protocol.TType.LIST, (short)1);
 
-    public PeerInfoThrift info;
+    public List<PeerInfoThrift> info;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -20197,16 +19979,17 @@ public class RemusNet {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.INFO, new org.apache.thrift.meta_data.FieldMetaData("info", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerInfoThrift.class)));
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerInfoThrift.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addPeer_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(peerInfo_args.class, metaDataMap);
     }
 
-    public addPeer_args() {
+    public peerInfo_args() {
     }
 
-    public addPeer_args(
-      PeerInfoThrift info)
+    public peerInfo_args(
+      List<PeerInfoThrift> info)
     {
       this();
       this.info = info;
@@ -20215,14 +19998,18 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public addPeer_args(addPeer_args other) {
+    public peerInfo_args(peerInfo_args other) {
       if (other.isSetInfo()) {
-        this.info = new PeerInfoThrift(other.info);
+        List<PeerInfoThrift> __this__info = new ArrayList<PeerInfoThrift>();
+        for (PeerInfoThrift other_element : other.info) {
+          __this__info.add(new PeerInfoThrift(other_element));
+        }
+        this.info = __this__info;
       }
     }
 
-    public addPeer_args deepCopy() {
-      return new addPeer_args(this);
+    public peerInfo_args deepCopy() {
+      return new peerInfo_args(this);
     }
 
     @Override
@@ -20230,11 +20017,26 @@ public class RemusNet {
       this.info = null;
     }
 
-    public PeerInfoThrift getInfo() {
+    public int getInfoSize() {
+      return (this.info == null) ? 0 : this.info.size();
+    }
+
+    public java.util.Iterator<PeerInfoThrift> getInfoIterator() {
+      return (this.info == null) ? null : this.info.iterator();
+    }
+
+    public void addToInfo(PeerInfoThrift elem) {
+      if (this.info == null) {
+        this.info = new ArrayList<PeerInfoThrift>();
+      }
+      this.info.add(elem);
+    }
+
+    public List<PeerInfoThrift> getInfo() {
       return this.info;
     }
 
-    public addPeer_args setInfo(PeerInfoThrift info) {
+    public peerInfo_args setInfo(List<PeerInfoThrift> info) {
       this.info = info;
       return this;
     }
@@ -20260,7 +20062,7 @@ public class RemusNet {
         if (value == null) {
           unsetInfo();
         } else {
-          setInfo((PeerInfoThrift)value);
+          setInfo((List<PeerInfoThrift>)value);
         }
         break;
 
@@ -20293,12 +20095,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof addPeer_args)
-        return this.equals((addPeer_args)that);
+      if (that instanceof peerInfo_args)
+        return this.equals((peerInfo_args)that);
       return false;
     }
 
-    public boolean equals(addPeer_args that) {
+    public boolean equals(peerInfo_args that) {
       if (that == null)
         return false;
 
@@ -20319,13 +20121,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(addPeer_args other) {
+    public int compareTo(peerInfo_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      addPeer_args typedOther = (addPeer_args)other;
+      peerInfo_args typedOther = (peerInfo_args)other;
 
       lastComparison = Boolean.valueOf(isSetInfo()).compareTo(typedOther.isSetInfo());
       if (lastComparison != 0) {
@@ -20355,9 +20157,19 @@ public class RemusNet {
         }
         switch (field.id) {
           case 1: // INFO
-            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.info = new PeerInfoThrift();
-              this.info.read(iprot);
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                this.info = new ArrayList<PeerInfoThrift>(_list24.size);
+                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                {
+                  PeerInfoThrift _elem26;
+                  _elem26 = new PeerInfoThrift();
+                  _elem26.read(iprot);
+                  this.info.add(_elem26);
+                }
+                iprot.readListEnd();
+              }
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -20379,7 +20191,14 @@ public class RemusNet {
       oprot.writeStructBegin(STRUCT_DESC);
       if (this.info != null) {
         oprot.writeFieldBegin(INFO_FIELD_DESC);
-        this.info.write(oprot);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.info.size()));
+          for (PeerInfoThrift _iter27 : this.info)
+          {
+            _iter27.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -20388,7 +20207,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("addPeer_args(");
+      StringBuilder sb = new StringBuilder("peerInfo_args(");
       boolean first = true;
 
       sb.append("info:");
@@ -20424,17 +20243,20 @@ public class RemusNet {
 
   }
 
-  public static class addPeer_result implements org.apache.thrift.TBase<addPeer_result, addPeer_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addPeer_result");
+  public static class peerInfo_result implements org.apache.thrift.TBase<peerInfo_result, peerInfo_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("peerInfo_result");
 
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
     private static final org.apache.thrift.protocol.TField NOT_IMP_FIELD_DESC = new org.apache.thrift.protocol.TField("notImp", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField BAD_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("badName", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
+    public List<PeerInfoThrift> success;
     public NotImplemented notImp;
     public BadPeerName badName;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
       NOT_IMP((short)1, "notImp"),
       BAD_NAME((short)2, "badName");
 
@@ -20451,6 +20273,8 @@ public class RemusNet {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
           case 1: // NOT_IMP
             return NOT_IMP;
           case 2: // BAD_NAME
@@ -20499,22 +20323,27 @@ public class RemusNet {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerInfoThrift.class))));
       tmpMap.put(_Fields.NOT_IMP, new org.apache.thrift.meta_data.FieldMetaData("notImp", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       tmpMap.put(_Fields.BAD_NAME, new org.apache.thrift.meta_data.FieldMetaData("badName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addPeer_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(peerInfo_result.class, metaDataMap);
     }
 
-    public addPeer_result() {
+    public peerInfo_result() {
     }
 
-    public addPeer_result(
+    public peerInfo_result(
+      List<PeerInfoThrift> success,
       NotImplemented notImp,
       BadPeerName badName)
     {
       this();
+      this.success = success;
       this.notImp = notImp;
       this.badName = badName;
     }
@@ -20522,7 +20351,14 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public addPeer_result(addPeer_result other) {
+    public peerInfo_result(peerInfo_result other) {
+      if (other.isSetSuccess()) {
+        List<PeerInfoThrift> __this__success = new ArrayList<PeerInfoThrift>();
+        for (PeerInfoThrift other_element : other.success) {
+          __this__success.add(new PeerInfoThrift(other_element));
+        }
+        this.success = __this__success;
+      }
       if (other.isSetNotImp()) {
         this.notImp = new NotImplemented(other.notImp);
       }
@@ -20531,21 +20367,61 @@ public class RemusNet {
       }
     }
 
-    public addPeer_result deepCopy() {
-      return new addPeer_result(this);
+    public peerInfo_result deepCopy() {
+      return new peerInfo_result(this);
     }
 
     @Override
     public void clear() {
+      this.success = null;
       this.notImp = null;
       this.badName = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<PeerInfoThrift> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(PeerInfoThrift elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<PeerInfoThrift>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<PeerInfoThrift> getSuccess() {
+      return this.success;
+    }
+
+    public peerInfo_result setSuccess(List<PeerInfoThrift> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
     }
 
     public NotImplemented getNotImp() {
       return this.notImp;
     }
 
-    public addPeer_result setNotImp(NotImplemented notImp) {
+    public peerInfo_result setNotImp(NotImplemented notImp) {
       this.notImp = notImp;
       return this;
     }
@@ -20569,7 +20445,7 @@ public class RemusNet {
       return this.badName;
     }
 
-    public addPeer_result setBadName(BadPeerName badName) {
+    public peerInfo_result setBadName(BadPeerName badName) {
       this.badName = badName;
       return this;
     }
@@ -20591,6 +20467,14 @@ public class RemusNet {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<PeerInfoThrift>)value);
+        }
+        break;
+
       case NOT_IMP:
         if (value == null) {
           unsetNotImp();
@@ -20612,6 +20496,9 @@ public class RemusNet {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
       case NOT_IMP:
         return getNotImp();
 
@@ -20629,6 +20516,8 @@ public class RemusNet {
       }
 
       switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
       case NOT_IMP:
         return isSetNotImp();
       case BAD_NAME:
@@ -20641,14 +20530,23 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof addPeer_result)
-        return this.equals((addPeer_result)that);
+      if (that instanceof peerInfo_result)
+        return this.equals((peerInfo_result)that);
       return false;
     }
 
-    public boolean equals(addPeer_result that) {
+    public boolean equals(peerInfo_result that) {
       if (that == null)
         return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
 
       boolean this_present_notImp = true && this.isSetNotImp();
       boolean that_present_notImp = true && that.isSetNotImp();
@@ -20676,14 +20574,24 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(addPeer_result other) {
+    public int compareTo(peerInfo_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      addPeer_result typedOther = (addPeer_result)other;
+      peerInfo_result typedOther = (peerInfo_result)other;
 
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetNotImp()).compareTo(typedOther.isSetNotImp());
       if (lastComparison != 0) {
         return lastComparison;
@@ -20721,6 +20629,24 @@ public class RemusNet {
           break;
         }
         switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
+                this.success = new ArrayList<PeerInfoThrift>(_list28.size);
+                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                {
+                  PeerInfoThrift _elem30;
+                  _elem30 = new PeerInfoThrift();
+                  _elem30.read(iprot);
+                  this.success.add(_elem30);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           case 1: // NOT_IMP
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.notImp = new NotImplemented();
@@ -20751,7 +20677,18 @@ public class RemusNet {
     public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetNotImp()) {
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
+          for (PeerInfoThrift _iter31 : this.success)
+          {
+            _iter31.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetNotImp()) {
         oprot.writeFieldBegin(NOT_IMP_FIELD_DESC);
         this.notImp.write(oprot);
         oprot.writeFieldEnd();
@@ -20766,9 +20703,17 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("addPeer_result(");
+      StringBuilder sb = new StringBuilder("peerInfo_result(");
       boolean first = true;
 
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("notImp:");
       if (this.notImp == null) {
         sb.append("null");
@@ -20782,1225 +20727,6 @@ public class RemusNet {
         sb.append("null");
       } else {
         sb.append(this.badName);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class delPeer_args implements org.apache.thrift.TBase<delPeer_args, delPeer_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("delPeer_args");
-
-    private static final org.apache.thrift.protocol.TField PEER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("peerName", org.apache.thrift.protocol.TType.STRING, (short)1);
-
-    public String peerName;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      PEER_NAME((short)1, "peerName");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // PEER_NAME
-            return PEER_NAME;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.PEER_NAME, new org.apache.thrift.meta_data.FieldMetaData("peerName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(delPeer_args.class, metaDataMap);
-    }
-
-    public delPeer_args() {
-    }
-
-    public delPeer_args(
-      String peerName)
-    {
-      this();
-      this.peerName = peerName;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public delPeer_args(delPeer_args other) {
-      if (other.isSetPeerName()) {
-        this.peerName = other.peerName;
-      }
-    }
-
-    public delPeer_args deepCopy() {
-      return new delPeer_args(this);
-    }
-
-    @Override
-    public void clear() {
-      this.peerName = null;
-    }
-
-    public String getPeerName() {
-      return this.peerName;
-    }
-
-    public delPeer_args setPeerName(String peerName) {
-      this.peerName = peerName;
-      return this;
-    }
-
-    public void unsetPeerName() {
-      this.peerName = null;
-    }
-
-    /** Returns true if field peerName is set (has been assigned a value) and false otherwise */
-    public boolean isSetPeerName() {
-      return this.peerName != null;
-    }
-
-    public void setPeerNameIsSet(boolean value) {
-      if (!value) {
-        this.peerName = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case PEER_NAME:
-        if (value == null) {
-          unsetPeerName();
-        } else {
-          setPeerName((String)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case PEER_NAME:
-        return getPeerName();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case PEER_NAME:
-        return isSetPeerName();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof delPeer_args)
-        return this.equals((delPeer_args)that);
-      return false;
-    }
-
-    public boolean equals(delPeer_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_peerName = true && this.isSetPeerName();
-      boolean that_present_peerName = true && that.isSetPeerName();
-      if (this_present_peerName || that_present_peerName) {
-        if (!(this_present_peerName && that_present_peerName))
-          return false;
-        if (!this.peerName.equals(that.peerName))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(delPeer_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      delPeer_args typedOther = (delPeer_args)other;
-
-      lastComparison = Boolean.valueOf(isSetPeerName()).compareTo(typedOther.isSetPeerName());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetPeerName()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.peerName, typedOther.peerName);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // PEER_NAME
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.peerName = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      if (this.peerName != null) {
-        oprot.writeFieldBegin(PEER_NAME_FIELD_DESC);
-        oprot.writeString(this.peerName);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("delPeer_args(");
-      boolean first = true;
-
-      sb.append("peerName:");
-      if (this.peerName == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.peerName);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class delPeer_result implements org.apache.thrift.TBase<delPeer_result, delPeer_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("delPeer_result");
-
-    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-
-    public NotImplemented e;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      E((short)1, "e");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // E
-            return E;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(delPeer_result.class, metaDataMap);
-    }
-
-    public delPeer_result() {
-    }
-
-    public delPeer_result(
-      NotImplemented e)
-    {
-      this();
-      this.e = e;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public delPeer_result(delPeer_result other) {
-      if (other.isSetE()) {
-        this.e = new NotImplemented(other.e);
-      }
-    }
-
-    public delPeer_result deepCopy() {
-      return new delPeer_result(this);
-    }
-
-    @Override
-    public void clear() {
-      this.e = null;
-    }
-
-    public NotImplemented getE() {
-      return this.e;
-    }
-
-    public delPeer_result setE(NotImplemented e) {
-      this.e = e;
-      return this;
-    }
-
-    public void unsetE() {
-      this.e = null;
-    }
-
-    /** Returns true if field e is set (has been assigned a value) and false otherwise */
-    public boolean isSetE() {
-      return this.e != null;
-    }
-
-    public void setEIsSet(boolean value) {
-      if (!value) {
-        this.e = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case E:
-        if (value == null) {
-          unsetE();
-        } else {
-          setE((NotImplemented)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case E:
-        return getE();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case E:
-        return isSetE();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof delPeer_result)
-        return this.equals((delPeer_result)that);
-      return false;
-    }
-
-    public boolean equals(delPeer_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_e = true && this.isSetE();
-      boolean that_present_e = true && that.isSetE();
-      if (this_present_e || that_present_e) {
-        if (!(this_present_e && that_present_e))
-          return false;
-        if (!this.e.equals(that.e))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(delPeer_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      delPeer_result typedOther = (delPeer_result)other;
-
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetE()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // E
-            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.e = new NotImplemented();
-              this.e.read(iprot);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetE()) {
-        oprot.writeFieldBegin(E_FIELD_DESC);
-        this.e.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("delPeer_result(");
-      boolean first = true;
-
-      sb.append("e:");
-      if (this.e == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.e);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class getPeers_args implements org.apache.thrift.TBase<getPeers_args, getPeers_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getPeers_args");
-
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getPeers_args.class, metaDataMap);
-    }
-
-    public getPeers_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public getPeers_args(getPeers_args other) {
-    }
-
-    public getPeers_args deepCopy() {
-      return new getPeers_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof getPeers_args)
-        return this.equals((getPeers_args)that);
-      return false;
-    }
-
-    public boolean equals(getPeers_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(getPeers_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      getPeers_args typedOther = (getPeers_args)other;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("getPeers_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class getPeers_result implements org.apache.thrift.TBase<getPeers_result, getPeers_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getPeers_result");
-
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
-    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-
-    public List<PeerInfoThrift> success;
-    public NotImplemented e;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      E((short)1, "e");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // E
-            return E;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerInfoThrift.class))));
-      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getPeers_result.class, metaDataMap);
-    }
-
-    public getPeers_result() {
-    }
-
-    public getPeers_result(
-      List<PeerInfoThrift> success,
-      NotImplemented e)
-    {
-      this();
-      this.success = success;
-      this.e = e;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public getPeers_result(getPeers_result other) {
-      if (other.isSetSuccess()) {
-        List<PeerInfoThrift> __this__success = new ArrayList<PeerInfoThrift>();
-        for (PeerInfoThrift other_element : other.success) {
-          __this__success.add(new PeerInfoThrift(other_element));
-        }
-        this.success = __this__success;
-      }
-      if (other.isSetE()) {
-        this.e = new NotImplemented(other.e);
-      }
-    }
-
-    public getPeers_result deepCopy() {
-      return new getPeers_result(this);
-    }
-
-    @Override
-    public void clear() {
-      this.success = null;
-      this.e = null;
-    }
-
-    public int getSuccessSize() {
-      return (this.success == null) ? 0 : this.success.size();
-    }
-
-    public java.util.Iterator<PeerInfoThrift> getSuccessIterator() {
-      return (this.success == null) ? null : this.success.iterator();
-    }
-
-    public void addToSuccess(PeerInfoThrift elem) {
-      if (this.success == null) {
-        this.success = new ArrayList<PeerInfoThrift>();
-      }
-      this.success.add(elem);
-    }
-
-    public List<PeerInfoThrift> getSuccess() {
-      return this.success;
-    }
-
-    public getPeers_result setSuccess(List<PeerInfoThrift> success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
-    }
-
-    public NotImplemented getE() {
-      return this.e;
-    }
-
-    public getPeers_result setE(NotImplemented e) {
-      this.e = e;
-      return this;
-    }
-
-    public void unsetE() {
-      this.e = null;
-    }
-
-    /** Returns true if field e is set (has been assigned a value) and false otherwise */
-    public boolean isSetE() {
-      return this.e != null;
-    }
-
-    public void setEIsSet(boolean value) {
-      if (!value) {
-        this.e = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((List<PeerInfoThrift>)value);
-        }
-        break;
-
-      case E:
-        if (value == null) {
-          unsetE();
-        } else {
-          setE((NotImplemented)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
-      case E:
-        return getE();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case E:
-        return isSetE();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof getPeers_result)
-        return this.equals((getPeers_result)that);
-      return false;
-    }
-
-    public boolean equals(getPeers_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
-      boolean this_present_e = true && this.isSetE();
-      boolean that_present_e = true && that.isSetE();
-      if (this_present_e || that_present_e) {
-        if (!(this_present_e && that_present_e))
-          return false;
-        if (!this.e.equals(that.e))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(getPeers_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      getPeers_result typedOther = (getPeers_result)other;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetE()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == org.apache.thrift.protocol.TType.LIST) {
-              {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                this.success = new ArrayList<PeerInfoThrift>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
-                {
-                  PeerInfoThrift _elem26;
-                  _elem26 = new PeerInfoThrift();
-                  _elem26.read(iprot);
-                  this.success.add(_elem26);
-                }
-                iprot.readListEnd();
-              }
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 1: // E
-            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.e = new NotImplemented();
-              this.e.read(iprot);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (PeerInfoThrift _iter27 : this.success)
-          {
-            _iter27.write(oprot);
-          }
-          oprot.writeListEnd();
-        }
-        oprot.writeFieldEnd();
-      } else if (this.isSetE()) {
-        oprot.writeFieldBegin(E_FIELD_DESC);
-        this.e.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("getPeers_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("e:");
-      if (this.e == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.e);
       }
       first = false;
       sb.append(")");

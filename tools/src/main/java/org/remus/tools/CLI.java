@@ -48,7 +48,7 @@ public class CLI {
 						if (cmd.getType() == CLICommand.QUIT) {
 							quit = true;	
 						} else {
-							cmd.runCommand(pm, this);
+							cmd.runCommand(pm.getPeerManager(), this);
 						}
 					}
 				} catch (Exception e) {
@@ -89,7 +89,7 @@ public class CLI {
 	}
 
 	public RemusApp getRemusApp() throws RemusDatabaseException, TException {
-		RemusApp app = new RemusApp(pm.getPeer(pm.getDataServer()), pm.getPeer(pm.getAttachStore()));
+		RemusApp app = new RemusApp(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()), pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
 		return app;
 	}
 
@@ -102,7 +102,7 @@ public class CLI {
 	}
 
 	public RemusDB getDataSource() throws TException {
-		return RemusDB.wrap(pm.getPeer(pm.getDataServer()));
+		return RemusDB.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()));
 	}
 
 }

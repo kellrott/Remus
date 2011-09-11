@@ -23,22 +23,24 @@ import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 
 public class MapTest {
-	PluginManager pm;
-
+	PluginManager plugManager;
+	PeerManager pm;
 	@Before public void setup() throws Exception {
 
 		InputStream is = MapTest.class.getResourceAsStream("config.json");
 		
 		Object initMap = JSONValue.parse(new InputStreamReader(is));
 		
-		pm = new PluginManager((Map) initMap);
-		pm.start();
-
+		plugManager = new PluginManager((Map) initMap);
+		plugManager.start();
+		pm = plugManager.getPeerManager();
 	}
 
 	@Test public void mapTest() throws RemusDatabaseException, TException, NotImplemented, InterruptedException {
@@ -70,7 +72,7 @@ public class MapTest {
 		dataServer.add(ar, 0, 0, "e", "years");
 		dataServer.add(ar, 0, 0, "f", "ago");
 		
-		RemusManager manage = pm.getManager();
+		RemusNet.Iface manage = pm.getPeer(pm.getManager());
 
 		boolean done = false;
 		do {
@@ -98,7 +100,7 @@ public class MapTest {
 		RemusPipeline pipe = app.getPipeline("testPipeline");
 		app.deletePipeline(pipe);
 		
-		pm.close();
+		plugManager.close();
 	}
 
 }

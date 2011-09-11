@@ -2,23 +2,18 @@ package org.remus;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.core.BaseStackNode;
 import org.remus.mapred.MapReduceCallback;
-import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
-import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
-import org.remus.thrift.RemusNet;
 
-public abstract class RemusWeb implements PluginInterface, RemusNet.Iface {
+public abstract class RemusWeb extends RemusPeer {
 
 	abstract public RemusAttach getAttachStore();
 	abstract public RemusDB getDataStore();
@@ -138,23 +133,6 @@ public abstract class RemusWeb implements PluginInterface, RemusNet.Iface {
 		throw new NotImplemented();
 	}
 	
-	@Override
-	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public void delPeer(String peerName) throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
 	@Override
 	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();

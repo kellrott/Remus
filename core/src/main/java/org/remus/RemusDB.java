@@ -18,7 +18,7 @@ import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.RemusNet.Iface;
 
-public abstract class RemusDB implements Iface, PluginInterface {
+public abstract class RemusDB extends RemusPeer {
 
 	
 	public static RemusDB wrap(final RemusNet.Iface db) {
@@ -95,6 +95,12 @@ public abstract class RemusDB implements Iface, PluginInterface {
 
 			@Override
 			public void stop() {}
+
+			@Override
+			public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
+					throws NotImplemented, BadPeerName, TException {
+				return db.peerInfo(info);
+			}
 			
 		};		
 	}
@@ -216,24 +222,6 @@ public abstract class RemusDB implements Iface, PluginInterface {
 	@Override
 	public void writeBlock(AppletRef stack, String key, String name,
 			long offset, ByteBuffer data) throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	
-	@Override
-	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public void delPeer(String peerName) throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
 		throw new NotImplemented();
 	}
 

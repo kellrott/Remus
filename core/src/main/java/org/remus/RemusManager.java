@@ -14,7 +14,7 @@ import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 
-abstract public class RemusManager implements RemusNet.Iface, PluginInterface {
+abstract public class RemusManager extends RemusPeer {
 
 
 	@Override
@@ -119,22 +119,6 @@ abstract public class RemusManager implements RemusNet.Iface, PluginInterface {
 	@Override
 	public void writeBlock(AppletRef stack, String key, String name,
 			long offset, ByteBuffer data) throws NotImplemented, TException {
-		throw new NotImplemented();	
-	}
-
-	@Override
-	public void addPeer(PeerInfoThrift info) throws NotImplemented,
-			BadPeerName, TException {
-		throw new NotImplemented();	
-	}
-
-	@Override
-	public void delPeer(String peerName) throws NotImplemented, TException {
-		throw new NotImplemented();	
-	}
-
-	@Override
-	public List<PeerInfoThrift> getPeers() throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
 	

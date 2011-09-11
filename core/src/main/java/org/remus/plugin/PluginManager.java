@@ -1,11 +1,9 @@
 package org.remus.plugin;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.thrift.TException;
@@ -15,12 +13,9 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 
-import org.remus.RemusIDServer;
-import org.remus.RemusManager;
-import org.remus.RemusRemote;
+import org.remus.thrift.BadPeerName;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerInfoThrift;
-import org.remus.thrift.PeerType;
+import org.remus.thrift.PeerAddress;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Processor;
 import org.slf4j.LoggerFactory;
@@ -28,9 +23,12 @@ import org.slf4j.LoggerFactory;
 
 public class PluginManager {
 
+	public static int START_PORT=16020;
+	
 	List<PluginInterface> plugins;
 	Map<PluginInterface, ServerThread> servers;
 	private org.slf4j.Logger logger;
+	private PeerManager peerManager;
 
 	private class ServerThread extends Thread {
 		public ServerThread(int port, RemusNet.Iface plug) {
@@ -55,11 +53,32 @@ public class PluginManager {
 		}
 	}
 
-	public PluginManager(Map<String, Object> params) {		
+	public PluginManager(Map<String, Object> params) throws NotImplemented, BadPeerName, TException {		
 		logger = LoggerFactory.getLogger(PluginManager.class);
-		peerList = new HashMap<String, RemusNet.Iface>();
-		localPeers = new HashSet<String>();
-
+		
+		List<String> seeds = (List)params.get("seeds");
+		
+		if (seeds == null) {
+			logger.warn("NO SEEDS LISTED");
+			peerManager = new PeerManager(this, new LinkedList<PeerAddress>());
+		} else {
+			List<PeerAddress> sList = new LinkedList<PeerAddress>();
+			for (String sStr : seeds) {
+				String []tmp = sStr.split(":");
+				PeerAddress addr = new PeerAddress();
+				addr.setHost(tmp[0]);
+				if (tmp.length > 1) {
+					addr.setPort(Integer.parseInt(tmp[1]));
+				} else {
+					addr.setPort(START_PORT);
+				}
+				sList.add(addr);
+			}
+			peerManager = new PeerManager(this, sList);
+		}
+		
+		int defaultPort = START_PORT;
+		
 		plugins = new LinkedList<PluginInterface>();
 		servers = new HashMap<PluginInterface, ServerThread>();
 		for (String className : params.keySet()) {
@@ -68,40 +87,36 @@ public class PluginManager {
 				if (pMap.containsKey("log4jParamFile")) {
 					PropertyConfigurator.configure((String)pMap.get("log4jParamFile"));
 				}
+			} else if (className.compareTo("seeds") == 0) {
+				
 			} else {
 				try {
 					Map pMap = (Map) params.get(className);
-					if (pMap != null && pMap.containsKey("client")) {
-						Class<PluginInterface> pClass = 
-							(Class<PluginInterface>) Class.forName(className);
-						PluginInterface plug = (PluginInterface) pClass.newInstance();
-						Map config = (Map) pMap.get("client");
-						plug.init(config);
-						plugins.add(plug);
-					} else if (pMap != null && pMap.containsKey("server")) {
-						Map serverConf = (Map) pMap.get("server");
-						Map config = (Map) pMap.get("config");
-						Class<PluginInterface> pClass = 
-							(Class<PluginInterface>) Class.forName(className);
-						PluginInterface plug = (PluginInterface) pClass.newInstance();
-						plug.init(config);
-						plugins.add(plug);
-						int port = Integer.parseInt(serverConf.get("port").toString());
-						logger.info("Opening " + className + " server on port " + port);
-						ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
-						sThread.start();
-						servers.put(plug, sThread);
+					Class<PluginInterface> pClass = 
+						(Class<PluginInterface>) Class.forName(className);
+					
+					Map config = (Map) pMap.get("config");
+					PluginInterface plug = (PluginInterface) pClass.newInstance();
+					plug.init(config);
+					plugins.add(plug);
+					
+					Map serverConf = (Map) pMap.get("server");
+					int port;
+					if (serverConf != null) {
+						port = Integer.parseInt(serverConf.get("port").toString());
 					} else {
-						Class<PluginInterface> pClass = 
-							(Class<PluginInterface>) Class.forName(className);
-						PluginInterface plug = (PluginInterface) pClass.newInstance();
-						Map config = null;
-						if (pMap != null && pMap.containsKey("config")) {
-							config = (Map) pMap.get("config");
-						}
-						plug.init(config);
-						plugins.add(plug);
+						port = defaultPort;
+						defaultPort++;
 					}
+					
+					logger.info("Opening " + className + " server on port " + port);
+					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
+					sThread.start();
+					servers.put(plug, sThread);
+					plug.setupPeer(peerManager);
+					
+					peerManager.addLocalPeer(plug, new PeerAddress(PeerManager.getDefaultAddress(), port));
+					
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -121,46 +136,10 @@ public class PluginManager {
 
 	public void start() throws Exception {
 		for (PluginInterface p : plugins) {
-			if (p.getPeerInfo().peerType == PeerType.NAME_SERVER) {
-				((RemusIDServer) p).preStart(this);
-			}
-		}
-		for (PluginInterface p : plugins) {
 			p.start(this);
 		}
 	}
 
-	public String getDataServer() {
-		try {
-			List<PeerInfoThrift> piList = getIDServer().getPeers();		
-			for (PeerInfoThrift pi : piList) {
-				if (pi.peerType == PeerType.DB_SERVER) {
-					return pi.peerID;
-				}
-			}
-		} catch (TException e) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public String getAttachStore() {
-		try {
-			List<PeerInfoThrift> piList = getIDServer().getPeers();		
-			for (PeerInfoThrift pi : piList) {
-				if (pi.peerType == PeerType.ATTACH_SERVER) {
-					return pi.peerID;
-				}
-			}
-		} catch (TException e) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 
 	public void close() {
 		for (PluginInterface pi : plugins) {
@@ -172,123 +151,12 @@ public class PluginManager {
 	}
 
 
-	public RemusManager getManager() {
-		for (PluginInterface pi : plugins) {
-			if (pi.getPeerInfo().peerType == PeerType.MANAGER) {
-				return (RemusManager) pi;
-			}
-		}
-		return null;		
-	}
-
-
-	public RemusIDServer getIDServer() {
-		for (PluginInterface pi : plugins) {
-			if (pi.getPeerInfo().peerType == PeerType.NAME_SERVER) {
-				return (RemusIDServer) pi;
-			}
-		}
-		return null;		
-	}
-
-
-	Map<String, RemusNet.Iface> peerList;
-	Set<String> localPeers;
-
-	public int addLocalPeer(String peerID, RemusNet.Iface iface) {
-		peerList.put(peerID, iface);
-		localPeers.add(peerID);
-		if (servers.containsKey(iface)) {
-			return servers.get(iface).port;
-		}
-		return 0;
-	}
-
-	public Set<String> getWorkers(String type) throws NotImplemented, TException {
-		Set<String> out = new HashSet<String>();
-		List<PeerInfoThrift> list = getIDServer().getPeers();
-		for (PeerInfoThrift p : list) {
-			if (p.peerType == PeerType.WORKER) {
-				if (p.workTypes.contains(type)) {
-					out.add(p.peerID);
-				}
-			}
-		}
-		return out;
-	}
-
-	public PeerInfoThrift getPeerInfo(String peerID) throws NotImplemented, TException {
-		List<PeerInfoThrift> list = getIDServer().getPeers();
-		for (PeerInfoThrift p : list) {
-			if (p.peerID.equals(peerID)) {
-				return p;
-			}
-		}	
-		return null;
-	}
-
-	public Set<String> getWorkers() throws NotImplemented, TException {
-		Set<String> out = new HashSet<String>();
-		List<PeerInfoThrift> list = getIDServer().getPeers();
-		for (PeerInfoThrift p : list) {
-			if (p.peerType == PeerType.WORKER) {
-				out.add(p.peerID);
-			}
-		}
-		return out;
-	}
-
-
-	Map<String,RemusNet.Iface> remotePeers = new HashMap<String, RemusNet.Iface>();
-
-	public RemusNet.Iface getPeer(String peerID) throws TException {
-		if (peerList.containsKey(peerID)) {
-			return peerList.get(peerID);
-		}
-		try {
-			List<PeerInfoThrift> out = getIDServer().getPeers();
-			for (PeerInfoThrift p : out) {
-				if (p.peerID.compareTo(peerID) == 0) {
-					if (remotePeers.containsKey(p.peerID)) {
-						return remotePeers.get(p.peerID);
-					} else {
-						RemusNet.Iface r = RemusRemote.getClient(p.host, p.port);
-						remotePeers.put(p.peerID, r);
-						return r;
-					}
-				}
-			}
-		} catch (NotImplemented e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public void returnPeer(RemusNet.Iface iface) {
-		//if (iface instanceof RemusNet.Client) {
-		//	((RemusNet.Client) iface).getInputProtocol().getTransport().close();
-		//}
-	}
-
-	public String getPeerID(RemusNet.Iface plug) {
-		for (String key : peerList.keySet()) {
-			if (peerList.get(key) == plug) {
-				return key;
-			}
-		}
-		return null;
-	}
-
-	public boolean isLocalPeer(String peerID) {
-		if (localPeers.contains(peerID)) {
-			return true;
-		}
-		return false;
-	}
-
 	public List<PluginInterface> getPlugins() {
 		return plugins;
+	}
+
+	public PeerManager getPeerManager() {
+		return peerManager;
 	}
 
 }

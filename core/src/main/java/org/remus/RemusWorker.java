@@ -13,7 +13,7 @@ import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet.Iface;
 
-abstract public class RemusWorker implements Iface, PluginInterface{
+abstract public class RemusWorker extends RemusPeer {
 
 
 	@Override
@@ -115,26 +115,7 @@ abstract public class RemusWorker implements Iface, PluginInterface{
 		throw new NotImplemented();
 	}
 	
-
-
 	@Override
-	public void addPeer(PeerInfoThrift info) throws BadPeerName, TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public void delPeer(String peerName) throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
-	public List<PeerInfoThrift> getPeers() throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-	@Override
-
 	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();
 	}

@@ -41,26 +41,12 @@ public class RemusRemote implements RemusNet.Iface {
 		}
 	}
 
-	@Override
-	public void addPeer(PeerInfoThrift info) throws NotImplemented,
-	BadPeerName, TException {
-		synchronized (iface) {
-			iface.addPeer(info);
-		}
-	}
-
+	
 	@Override
 	public boolean containsKey(AppletRef stack, String key)
 	throws NotImplemented, TException {
 		synchronized (iface) {
 			return iface.containsKey(stack, key);
-		}
-	}
-
-	@Override
-	public void delPeer(String peerName) throws NotImplemented, TException {
-		synchronized (iface) {
-			iface.delPeer(peerName);
 		}
 	}
 
@@ -96,13 +82,6 @@ public class RemusRemote implements RemusNet.Iface {
 		}	
 	}
 
-	@Override
-	public List<PeerInfoThrift> getPeers() throws NotImplemented,
-	TException {
-		synchronized (iface) {
-			return iface.getPeers();
-		}
-	}
 
 	@Override
 	public long getTimeStamp(AppletRef stack) throws NotImplemented,
@@ -226,6 +205,18 @@ public class RemusRemote implements RemusNet.Iface {
 		synchronized (iface) {
 			iface.writeBlock(stack, key, name, offset, data);
 		}
+	}
+
+	@Override
+	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
+			throws NotImplemented, BadPeerName, TException {
+		synchronized (iface) {
+			return iface.peerInfo(info);
+		}
+	}
+
+	public void close() {
+		((RemusNet.Client) iface).getInputProtocol().getTransport().close();
 	}
 
 }

@@ -16,7 +16,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.plugin.PluginManager;
+import org.remus.plugin.PeerManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
@@ -58,7 +58,7 @@ public class CLICommand {
 		return type;
 	}
 
-	public void runCommand(PluginManager pm, CLI cli) throws NotImplemented, TException, RemusDatabaseException, IOException {
+	public void runCommand(PeerManager pm, CLI cli) throws NotImplemented, TException, RemusDatabaseException, IOException {
 		switch (type) {
 		case SHOW: {
 			doShow(pm, cli);
@@ -83,11 +83,11 @@ public class CLICommand {
 		}
 	}
 
-	private void doLoad(PluginManager pm, CLI cli) throws IOException {
+	private void doLoad(PeerManager pm, CLI cli) throws IOException {
 		cli.println("LOADING: " + path);
 	}
 
-	private void doDrop(PluginManager pm, CLI cli) throws RemusDatabaseException, TException {
+	private void doDrop(PeerManager pm, CLI cli) throws RemusDatabaseException, TException {
 		RemusApp app = cli.getRemusApp();
 		if (pipelineName != null) {
 			RemusPipeline pipe = app.getPipeline(pipelineName);
@@ -96,7 +96,7 @@ public class CLICommand {
 		}
 	}
 
-	private void doSelect(PluginManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
+	private void doSelect(PeerManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		String [] tmp = stack.split(":");
 
 		RemusPipeline pipeline = cli.getPipeline();
@@ -153,10 +153,10 @@ public class CLICommand {
 		}
 	}
 
-	private void doShow(PluginManager pm, CLI cli) throws NotImplemented, TException, IOException, RemusDatabaseException {
+	private void doShow(PeerManager pm, CLI cli) throws NotImplemented, TException, IOException, RemusDatabaseException {
 		switch (system) {
 		case SERVERS: {
-			for (PeerInfoThrift info : pm.getIDServer().getPeers()) {
+			for (PeerInfoThrift info : pm.getPeers()) {
 				cli.println(info.name + "\t" + info.peerID);				
 			}
 		}

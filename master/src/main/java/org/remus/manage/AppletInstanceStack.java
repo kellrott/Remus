@@ -16,7 +16,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
-import org.remus.plugin.PluginManager;
+import org.remus.plugin.PeerManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
@@ -30,7 +30,7 @@ public class AppletInstanceStack implements BaseStackNode {
 	private RemusNet.Iface datastore;
 	private Logger logger; 
 	
-	public AppletInstanceStack(PluginManager plugins) {
+	public AppletInstanceStack(PeerManager plugins) {
 		try {
 			logger = LoggerFactory.getLogger(AppletInstanceStack.class);
 			datastore = plugins.getPeer(plugins.getDataServer());

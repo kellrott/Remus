@@ -27,6 +27,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
@@ -210,8 +211,9 @@ public class PipelineAdmin {
 		}
 
 		try {
-			PluginManager pm = new PluginManager(params);
-			pm.start();
+			PluginManager plugMan = new PluginManager(params);
+			plugMan.start();
+			PeerManager pm = plugMan.getPeerManager();
 			RemusApp app = new RemusApp((RemusDB) pm.getPeer(pm.getDataServer()),
 					(RemusAttach) pm.getPeer(pm.getAttachStore()));
 			String cmd = null;

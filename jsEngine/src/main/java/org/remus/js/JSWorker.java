@@ -56,8 +56,8 @@ public class JSWorker extends RemusWorker {
 	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws TException {
 		logger.info("Received job request: " + work.mode + " " + work.workStack);
-		RemusNet.Iface db = plugins.getPeer(dataServer);
-		RemusNet.Iface attach = plugins.getPeer(attachServer);
+		RemusNet.Iface db = plugins.getPeerManager().getPeer(dataServer);
+		RemusNet.Iface attach = plugins.getPeerManager().getPeer(attachServer);
 		
 		JSFunctionCall js = new JSFunctionCall();
 		WorkEngine we = new WorkEngine(work, (RemusDB) db, (RemusAttach) attach, js);		

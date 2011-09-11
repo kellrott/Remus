@@ -10,8 +10,10 @@ import org.remus.PeerInfo;
 import org.remus.RemusDB;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.BadPeerName;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Iface;
 
@@ -111,5 +113,11 @@ public class RemusMiniDB extends RemusDB {
 
 	@Override
 	public void stop() {}
+
+	@Override
+	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
+			throws NotImplemented, BadPeerName, TException {
+		return base.peerInfo(info);
+	}
 
 }

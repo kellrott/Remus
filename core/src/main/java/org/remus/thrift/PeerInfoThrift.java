@@ -28,8 +28,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   private static final org.apache.thrift.protocol.TField PEER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("peerID", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField GROUP_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("groupName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)5);
-  private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField ADDR_FIELD_DESC = new org.apache.thrift.protocol.TField("addr", org.apache.thrift.protocol.TType.STRUCT, (short)6);
+  private static final org.apache.thrift.protocol.TField TIME_DELTA_FIELD_DESC = new org.apache.thrift.protocol.TField("timeDelta", org.apache.thrift.protocol.TType.I32, (short)7);
 
   /**
    * 
@@ -40,8 +40,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   public String peerID;
   public String groupName;
   public List<String> workTypes;
-  public String host;
-  public int port;
+  public PeerAddress addr;
+  public int timeDelta;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -54,8 +54,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     PEER_ID((short)3, "peerID"),
     GROUP_NAME((short)4, "groupName"),
     WORK_TYPES((short)5, "workTypes"),
-    HOST((short)6, "host"),
-    PORT((short)7, "port");
+    ADDR((short)6, "addr"),
+    TIME_DELTA((short)7, "timeDelta");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -80,10 +80,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
           return GROUP_NAME;
         case 5: // WORK_TYPES
           return WORK_TYPES;
-        case 6: // HOST
-          return HOST;
-        case 7: // PORT
-          return PORT;
+        case 6: // ADDR
+          return ADDR;
+        case 7: // TIME_DELTA
+          return TIME_DELTA;
         default:
           return null;
       }
@@ -124,7 +124,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   }
 
   // isset id assignments
-  private static final int __PORT_ISSET_ID = 0;
+  private static final int __TIMEDELTA_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
@@ -141,9 +141,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     tmpMap.put(_Fields.WORK_TYPES, new org.apache.thrift.meta_data.FieldMetaData("workTypes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.HOST, new org.apache.thrift.meta_data.FieldMetaData("host", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PORT, new org.apache.thrift.meta_data.FieldMetaData("port", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.ADDR, new org.apache.thrift.meta_data.FieldMetaData("addr", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerAddress.class)));
+    tmpMap.put(_Fields.TIME_DELTA, new org.apache.thrift.meta_data.FieldMetaData("timeDelta", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PeerInfoThrift.class, metaDataMap);
@@ -186,10 +186,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       this.workTypes = __this__workTypes;
     }
-    if (other.isSetHost()) {
-      this.host = other.host;
+    if (other.isSetAddr()) {
+      this.addr = new PeerAddress(other.addr);
     }
-    this.port = other.port;
+    this.timeDelta = other.timeDelta;
   }
 
   public PeerInfoThrift deepCopy() {
@@ -203,9 +203,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     this.peerID = null;
     this.groupName = null;
     this.workTypes = null;
-    this.host = null;
-    setPortIsSet(false);
-    this.port = 0;
+    this.addr = null;
+    setTimeDeltaIsSet(false);
+    this.timeDelta = 0;
   }
 
   /**
@@ -351,51 +351,51 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     }
   }
 
-  public String getHost() {
-    return this.host;
+  public PeerAddress getAddr() {
+    return this.addr;
   }
 
-  public PeerInfoThrift setHost(String host) {
-    this.host = host;
+  public PeerInfoThrift setAddr(PeerAddress addr) {
+    this.addr = addr;
     return this;
   }
 
-  public void unsetHost() {
-    this.host = null;
+  public void unsetAddr() {
+    this.addr = null;
   }
 
-  /** Returns true if field host is set (has been assigned a value) and false otherwise */
-  public boolean isSetHost() {
-    return this.host != null;
+  /** Returns true if field addr is set (has been assigned a value) and false otherwise */
+  public boolean isSetAddr() {
+    return this.addr != null;
   }
 
-  public void setHostIsSet(boolean value) {
+  public void setAddrIsSet(boolean value) {
     if (!value) {
-      this.host = null;
+      this.addr = null;
     }
   }
 
-  public int getPort() {
-    return this.port;
+  public int getTimeDelta() {
+    return this.timeDelta;
   }
 
-  public PeerInfoThrift setPort(int port) {
-    this.port = port;
-    setPortIsSet(true);
+  public PeerInfoThrift setTimeDelta(int timeDelta) {
+    this.timeDelta = timeDelta;
+    setTimeDeltaIsSet(true);
     return this;
   }
 
-  public void unsetPort() {
-    __isset_bit_vector.clear(__PORT_ISSET_ID);
+  public void unsetTimeDelta() {
+    __isset_bit_vector.clear(__TIMEDELTA_ISSET_ID);
   }
 
-  /** Returns true if field port is set (has been assigned a value) and false otherwise */
-  public boolean isSetPort() {
-    return __isset_bit_vector.get(__PORT_ISSET_ID);
+  /** Returns true if field timeDelta is set (has been assigned a value) and false otherwise */
+  public boolean isSetTimeDelta() {
+    return __isset_bit_vector.get(__TIMEDELTA_ISSET_ID);
   }
 
-  public void setPortIsSet(boolean value) {
-    __isset_bit_vector.set(__PORT_ISSET_ID, value);
+  public void setTimeDeltaIsSet(boolean value) {
+    __isset_bit_vector.set(__TIMEDELTA_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -440,19 +440,19 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       break;
 
-    case HOST:
+    case ADDR:
       if (value == null) {
-        unsetHost();
+        unsetAddr();
       } else {
-        setHost((String)value);
+        setAddr((PeerAddress)value);
       }
       break;
 
-    case PORT:
+    case TIME_DELTA:
       if (value == null) {
-        unsetPort();
+        unsetTimeDelta();
       } else {
-        setPort((Integer)value);
+        setTimeDelta((Integer)value);
       }
       break;
 
@@ -476,11 +476,11 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     case WORK_TYPES:
       return getWorkTypes();
 
-    case HOST:
-      return getHost();
+    case ADDR:
+      return getAddr();
 
-    case PORT:
-      return new Integer(getPort());
+    case TIME_DELTA:
+      return new Integer(getTimeDelta());
 
     }
     throw new IllegalStateException();
@@ -503,10 +503,10 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       return isSetGroupName();
     case WORK_TYPES:
       return isSetWorkTypes();
-    case HOST:
-      return isSetHost();
-    case PORT:
-      return isSetPort();
+    case ADDR:
+      return isSetAddr();
+    case TIME_DELTA:
+      return isSetTimeDelta();
     }
     throw new IllegalStateException();
   }
@@ -569,21 +569,21 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return false;
     }
 
-    boolean this_present_host = true && this.isSetHost();
-    boolean that_present_host = true && that.isSetHost();
-    if (this_present_host || that_present_host) {
-      if (!(this_present_host && that_present_host))
+    boolean this_present_addr = true && this.isSetAddr();
+    boolean that_present_addr = true && that.isSetAddr();
+    if (this_present_addr || that_present_addr) {
+      if (!(this_present_addr && that_present_addr))
         return false;
-      if (!this.host.equals(that.host))
+      if (!this.addr.equals(that.addr))
         return false;
     }
 
-    boolean this_present_port = true && this.isSetPort();
-    boolean that_present_port = true && that.isSetPort();
-    if (this_present_port || that_present_port) {
-      if (!(this_present_port && that_present_port))
+    boolean this_present_timeDelta = true && this.isSetTimeDelta();
+    boolean that_present_timeDelta = true && that.isSetTimeDelta();
+    if (this_present_timeDelta || that_present_timeDelta) {
+      if (!(this_present_timeDelta && that_present_timeDelta))
         return false;
-      if (this.port != that.port)
+      if (this.timeDelta != that.timeDelta)
         return false;
     }
 
@@ -653,22 +653,22 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetHost()).compareTo(typedOther.isSetHost());
+    lastComparison = Boolean.valueOf(isSetAddr()).compareTo(typedOther.isSetAddr());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetHost()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.host, typedOther.host);
+    if (isSetAddr()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.addr, typedOther.addr);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPort()).compareTo(typedOther.isSetPort());
+    lastComparison = Boolean.valueOf(isSetTimeDelta()).compareTo(typedOther.isSetTimeDelta());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPort()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.port, typedOther.port);
+    if (isSetTimeDelta()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.timeDelta, typedOther.timeDelta);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -735,17 +735,18 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // HOST
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.host = iprot.readString();
+        case 6: // ADDR
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.addr = new PeerAddress();
+            this.addr.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 7: // PORT
+        case 7: // TIME_DELTA
           if (field.type == org.apache.thrift.protocol.TType.I32) {
-            this.port = iprot.readI32();
-            setPortIsSet(true);
+            this.timeDelta = iprot.readI32();
+            setTimeDeltaIsSet(true);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -803,16 +804,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         oprot.writeFieldEnd();
       }
     }
-    if (this.host != null) {
-      if (isSetHost()) {
-        oprot.writeFieldBegin(HOST_FIELD_DESC);
-        oprot.writeString(this.host);
+    if (this.addr != null) {
+      if (isSetAddr()) {
+        oprot.writeFieldBegin(ADDR_FIELD_DESC);
+        this.addr.write(oprot);
         oprot.writeFieldEnd();
       }
     }
-    if (isSetPort()) {
-      oprot.writeFieldBegin(PORT_FIELD_DESC);
-      oprot.writeI32(this.port);
+    if (isSetTimeDelta()) {
+      oprot.writeFieldBegin(TIME_DELTA_FIELD_DESC);
+      oprot.writeI32(this.timeDelta);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -869,20 +870,20 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       first = false;
     }
-    if (isSetHost()) {
+    if (isSetAddr()) {
       if (!first) sb.append(", ");
-      sb.append("host:");
-      if (this.host == null) {
+      sb.append("addr:");
+      if (this.addr == null) {
         sb.append("null");
       } else {
-        sb.append(this.host);
+        sb.append(this.addr);
       }
       first = false;
     }
-    if (isSetPort()) {
+    if (isSetTimeDelta()) {
       if (!first) sb.append(", ");
-      sb.append("port:");
-      sb.append(this.port);
+      sb.append("timeDelta:");
+      sb.append(this.timeDelta);
       first = false;
     }
     sb.append(")");

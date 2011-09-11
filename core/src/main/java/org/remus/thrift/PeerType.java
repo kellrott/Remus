@@ -16,7 +16,8 @@ public enum PeerType implements org.apache.thrift.TEnum {
   DB_SERVER(2),
   ATTACH_SERVER(3),
   WORKER(4),
-  WEB_SERVER(5);
+  WEB_SERVER(5),
+  DEAD(6);
 
   private final int value;
 
@@ -49,6 +50,8 @@ public enum PeerType implements org.apache.thrift.TEnum {
         return WORKER;
       case 5:
         return WEB_SERVER;
+      case 6:
+        return DEAD;
       default:
         return null;
     }

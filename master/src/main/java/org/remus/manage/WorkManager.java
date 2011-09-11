@@ -22,6 +22,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusMiniDB;
 import org.remus.core.RemusPipeline;
+import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
@@ -53,7 +54,7 @@ public class WorkManager extends RemusManager {
 	private Logger logger;
 	private RemusMiniDB miniDB;
 
-	PluginManager plugins;
+	PeerManager plugins;
 	private AppletInstanceStack aiStack;
 
 	public static int INACTIVE_SLEEP_TIME = 30000;
@@ -76,7 +77,7 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
-		plugins = pluginManager;
+		plugins = pluginManager.getPeerManager();
 		/**
 		 * The miniDB is a shim placed infront of the database, that will allow you
 		 * to add additional, dynamic, applets to the database. For the work manager
