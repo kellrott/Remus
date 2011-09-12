@@ -202,7 +202,7 @@ public class PeerManager {
 
 	public void addSeed(PeerAddress pa) throws NotImplemented, BadPeerName, TException {
 		try {
-			RemusRemote remote = (RemusRemote) RemusRemote.getClient(pa.host, pa.port);		
+			RemusRemote remote = new RemusRemote(pa.host, pa.port);		
 			reqPeerInfo(remote);
 			remote.close();
 		} catch (TException e) {
@@ -240,7 +240,7 @@ public class PeerManager {
 		PeerInfoThrift p = peerMap.get(peerID);
 		if (p != null) {
 			try {
-				RemusNet.Iface r = RemusRemote.getClient(p.addr.host, p.addr.port);
+				RemusNet.Iface r = new RemusRemote(p.addr.host, p.addr.port);
 				ifaceMap.put(p.peerID, r);
 				ifaceAlloc.put(peerID, 1);
 				return r;
