@@ -5,7 +5,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,14 +42,21 @@ public class PeerManager {
 	private Map<String, RemusNet.Iface> ifaceMap = new HashMap<String, Iface>();
 	private Map<String,Integer> ifaceAlloc = new HashMap<String, Integer>();
 
+	
+	PingThread pThread;
+	
 	public PeerManager(PluginManager pm, List<PeerAddress> seeds) throws NotImplemented, BadPeerName, TException {
 		logger = LoggerFactory.getLogger(PeerManager.class);
-		for (PeerAddress pa:seeds) {
+		for (PeerAddress pa : seeds) {
 			addSeed(pa);
 		}
-
+		pThread = new PingThread();
+		pThread.start();
 	}
 
+	public void stop() {
+		pThread.quit();
+	}
 
 	class PingThread extends Thread {
 		private static final long SLEEPTIME = 30000;
@@ -60,29 +66,7 @@ public class PeerManager {
 		@Override
 		public void run() {
 			while (!quit) {
-				Set<String> peerList;
-				synchronized (peerMap) {
-					peerList = peerMap.keySet();
-				}
-
-				List<String> removeList = new ArrayList<String>();
-				for (String peerID : peerList) {
-					try {
-						RemusNet.Iface iface = getPeer(peerID);
-						iface.status();
-						returnPeer(iface);
-					} catch (TException e) {
-						//upon failure, remove node from peer list
-						removeList.add(peerID);
-					}
-				}
-
-				synchronized (peerMap) {
-					for (String peerID : removeList) {					
-						logger.error("PeerFailure peer: " + peerID);
-						peerMap.remove(peerID);
-					}
-				}
+				update();
 				synchronized (waitLock) {			
 					try {
 						waitLock.wait(SLEEPTIME);
@@ -152,9 +136,12 @@ public class PeerManager {
 		Random r = new Random();
 		int tries = 0;
 		PeerInfoThrift pi = null;
+		if (peerMap.isEmpty()) {
+			return;
+		}
 		do {
-			List<PeerInfoThrift> s = new ArrayList<PeerInfoThrift>(peerMap.values());		
-			pi = s.get(r.nextInt( s.size() ));
+			List<PeerInfoThrift> s = new ArrayList<PeerInfoThrift>(peerMap.values());
+			pi = s.get(r.nextInt(s.size()));
 			if (localPeers.contains(pi.peerID)) {
 				pi = null;
 			}

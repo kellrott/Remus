@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class PluginManager {
 
 	public static int START_PORT=16020;
-	
+
 	List<PluginInterface> plugins;
 	Map<PluginInterface, ServerThread> servers;
 	private org.slf4j.Logger logger;
@@ -55,9 +55,9 @@ public class PluginManager {
 
 	public PluginManager(Map<String, Object> params) throws NotImplemented, BadPeerName, TException {		
 		logger = LoggerFactory.getLogger(PluginManager.class);
-		
+
 		List<String> seeds = (List)params.get("seeds");
-		
+
 		if (seeds == null) {
 			logger.warn("NO SEEDS LISTED");
 			peerManager = new PeerManager(this, new LinkedList<PeerAddress>());
@@ -76,9 +76,9 @@ public class PluginManager {
 			}
 			peerManager = new PeerManager(this, sList);
 		}
-		
+
 		int defaultPort = START_PORT;
-		
+
 		plugins = new LinkedList<PluginInterface>();
 		servers = new HashMap<PluginInterface, ServerThread>();
 		for (String className : params.keySet()) {
@@ -88,19 +88,23 @@ public class PluginManager {
 					PropertyConfigurator.configure((String)pMap.get("log4jParamFile"));
 				}
 			} else if (className.compareTo("seeds") == 0) {
-				
+
 			} else {
 				try {
 					Map pMap = (Map) params.get(className);
 					Class<PluginInterface> pClass = 
 						(Class<PluginInterface>) Class.forName(className);
-					
-					Map config = (Map) pMap.get("config");
+
+					Map config = null;
+					Map serverConf = null;
+					if (pMap != null) {
+						config = (Map) pMap.get("config");
+						serverConf = (Map) pMap.get("server");
+					}
 					PluginInterface plug = (PluginInterface) pClass.newInstance();
 					plug.init(config);
 					plugins.add(plug);
-					
-					Map serverConf = (Map) pMap.get("server");
+
 					int port;
 					if (serverConf != null) {
 						port = Integer.parseInt(serverConf.get("port").toString());
@@ -108,15 +112,15 @@ public class PluginManager {
 						port = defaultPort;
 						defaultPort++;
 					}
-					
+
 					logger.info("Opening " + className + " server on port " + port);
 					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
 					sThread.start();
 					servers.put(plug, sThread);
 					plug.setupPeer(peerManager);
-					
+
 					peerManager.addLocalPeer(plug, new PeerAddress(PeerManager.getDefaultAddress(), port));
-					
+
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -148,6 +152,7 @@ public class PluginManager {
 		for (ServerThread server : servers.values()){
 			server.server.stop();
 		}
+		peerManager.stop();
 	}
 
 

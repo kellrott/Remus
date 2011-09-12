@@ -2,6 +2,8 @@ package org.remus.tools;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import jline.ConsoleReader;
@@ -62,16 +64,10 @@ public class CLI {
 
 	public static void main(String [] args) throws Exception {	
 		Map params = new HashMap();
-		Map conf = new HashMap();
-		Map client  = new HashMap();
-		client.put("host", args[0]);
-		client.put("port", Integer.parseInt(args[1]));
-		client.put("silent", true);
-		conf.put("client", client);		
-		params.put("org.remus.RemusIDClient", conf);
-
-		System.err.println("Connecting: " + client.get("host") + client.get("port"));
-
+		List<String> l = new LinkedList<String>();
+		l.add(args[0] + ":" + args[1]);		
+		params.put("seeds", l);
+		System.err.println("Connecting: " + args[0] + ":" + args[1]);
 		PluginManager pm = new PluginManager(params);				
 		pm.start();
 		CLI cli = new CLI(pm);

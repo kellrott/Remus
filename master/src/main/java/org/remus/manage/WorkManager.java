@@ -258,8 +258,10 @@ public class WorkManager extends RemusManager {
 	}
 
 	private void scanJobs() {
-		try {
-			RemusApp app = new RemusApp((RemusDB) plugins.getPeer(plugins.getDataServer()), (RemusAttach) plugins.getPeer(plugins.getAttachStore()));
+		try {			
+			RemusNet.Iface db = plugins.getPeer(plugins.getDataServer());
+			RemusNet.Iface attach = plugins.getPeer(plugins.getAttachStore());			
+			RemusApp app = new RemusApp(RemusDB.wrap(db), RemusAttach.wrap(attach));
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
@@ -272,6 +274,8 @@ public class WorkManager extends RemusManager {
 			if (activeCount > 0) {
 				logger.info("MANAGER found " + activeCount + " active stacks");
 			}
+			plugins.returnPeer(db);
+			plugins.returnPeer(attach);
 		} catch (RemusDatabaseException e) {
 			e.printStackTrace();
 		} catch (TException e) {

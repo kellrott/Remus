@@ -108,7 +108,7 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public RemusAttach getAttachStore() {		
 		try {
-			return (RemusAttach) pm.getPeer(pm.getAttachStore());
+			return RemusAttach.wrap(pm.getPeer(pm.getAttachStore()));
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -119,7 +119,7 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public RemusDB getDataStore() {
 		try {
-			return (RemusDB) pm.getPeer(pm.getDataServer());
+			return RemusDB.wrap(pm.getPeer(pm.getDataServer()));
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

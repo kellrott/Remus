@@ -157,7 +157,7 @@ public class CLICommand {
 		switch (system) {
 		case SERVERS: {
 			for (PeerInfoThrift info : pm.getPeers()) {
-				cli.println(info.name + "\t" + info.peerID);				
+				cli.println(info.name + "\t" + info.addr.host + ":" + info.addr.port + "\t" + info.peerID);				
 			}
 		}
 		break;
