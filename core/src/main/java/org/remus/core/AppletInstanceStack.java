@@ -10,8 +10,6 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.plugin.PeerManager;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.slf4j.Logger;
@@ -20,23 +18,25 @@ import org.slf4j.LoggerFactory;
 public class AppletInstanceStack implements BaseStackNode {
 
 	private RemusApp app;
+	private String pipeline;
 	TreeMap<String, String> aiMap;
 	private RemusNet.Iface datastore;
 	private Logger logger; 
-	
+
 	public AppletInstanceStack(RemusNet.Iface db, String pipeline) {
 		try {
 			logger = LoggerFactory.getLogger(AppletInstanceStack.class);
 			datastore = db;
 			app = new RemusApp(datastore, null);
 			aiMap = new TreeMap<String, String>();
+			this.pipeline = pipeline;
 			loadPipeline(pipeline);
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void reset() {
 		aiMap.clear();
 	}
@@ -68,6 +68,25 @@ public class AppletInstanceStack implements BaseStackNode {
 	@Override
 	public void add(String key, String data) {
 		logger.info("Adding Instance:" + key + " " + data); 
+	}
+
+	@Override
+	public void delete(String key) {
+		try {
+			RemusPipeline pipe = app.getPipeline(pipeline);
+			String [] tmp = key.split(":");
+			RemusApplet applet = pipe.getApplet(tmp[1]);
+			RemusInstance inst = RemusInstance.getInstance(datastore, pipeline, tmp[0]);
+			applet.deleteInstance(inst);
+		} catch (RemusDatabaseException  e) {
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override

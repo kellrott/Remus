@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
-import org.remus.RemusDBSliceIterator;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
 import org.remus.core.AppletInstanceStack;
@@ -32,7 +31,8 @@ public class CLICommand {
 	public static final int USE = 3;
 	public static final int SELECT = 4;
 	public static final int DROP = 5;
-	public static final int LOAD = 6;
+	public static final int DELETE = 6;
+	public static final int LOAD = 7;
 
 	public static final int SERVERS = 1;
 	public static final int LIST = 2;
@@ -76,6 +76,10 @@ public class CLICommand {
 			doSelect(pm, cli);
 		}
 		break;
+		case DELETE: {
+			doDelete(pm, cli);
+		}
+		break;		
 		case DROP: {
 			doDrop(pm, cli);
 		}
@@ -102,28 +106,25 @@ public class CLICommand {
 
 	private void doSelect(PeerManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		String [] tmp = stack.split(":");
-
 		RemusPipeline pipeline = cli.getPipeline();
-		BaseStackNode stack = null;
+		BaseStackNode curStack = null;
 		RemusDB db = cli.getDataSource();
 		if (tmp.length == 2) {
 			RemusApplet applet = pipeline.getApplet(tmp[1]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
 			AppletRef ar = ai.getAppletRef();
-			stack = new DataStackNode(db, ar);
+			curStack = new DataStackNode(db, ar);
 		} else if (tmp.length == 3) {
 			RemusApplet applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
 			AppletRef ar = ai.getAppletRef();
-			stack = new DataStackNode(db, ar);
+			curStack = new DataStackNode(db, ar);
 		} else {
-			stack = new AppletInstanceStack(db, cli.getPipeline().getID());
+			curStack = new AppletInstanceStack(db, cli.getPipeline().getID());
 		}
-		if (stack != null) {
-
-			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(stack, "", "", true) {
-				long counter = 0;
-
+		if (curStack != null) {
+			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(curStack, "", "", true) {
+				private long counter = 0;
 				@Override
 				public void processKeyValue(String key, Object val) {
 					boolean select = true;
@@ -138,12 +139,12 @@ public class CLICommand {
 					}
 					if (select) {
 						StringBuilder o = new StringBuilder();
-						boolean first=true;
+						boolean first = true;
 						for (Selection sel : selection) {
 							if (!first) {
 								o.append("|");
 							}
-							o.append(sel.getString(key,val));
+							o.append(sel.getString(key, val));
 						}
 						try {
 							cli.println(o.toString());
@@ -156,11 +157,59 @@ public class CLICommand {
 					addElement(null);					
 				}
 			};
-			
+
 			while (iter.hasNext()) {
 				iter.next();
 			}
+		}
+	}
 
+	private void doDelete(PeerManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
+		String [] tmp = stack.split(":");
+		RemusPipeline pipeline = cli.getPipeline();
+		BaseStackNode curStack = null;
+		RemusDB db = cli.getDataSource();
+		if (tmp.length == 2) {
+			RemusApplet applet = pipeline.getApplet(tmp[1]);
+			AppletInstance ai = applet.getAppletInstance(tmp[0]);
+			AppletRef ar = ai.getAppletRef();
+			curStack = new DataStackNode(db, ar);
+		} else if (tmp.length == 3) {
+			RemusApplet applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
+			AppletInstance ai = applet.getAppletInstance(tmp[0]);
+			AppletRef ar = ai.getAppletRef();
+			curStack = new DataStackNode(db, ar);
+		} else {
+			curStack = new AppletInstanceStack(db, cli.getPipeline().getID());
+		}
+		final BaseStackNode fCurStack = curStack;
+		if (curStack != null) {
+			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(curStack, "", "", true) {
+				private long counter = 0;
+				@Override
+				public void processKeyValue(String key, Object val) {
+					boolean select = true;
+					if (limit != null && counter >= limit) {
+						stop();
+						return;
+					} else if (conditional != null) {
+						Conditional c = conditional.get(0);						
+						if (!c.evaluate(key, val)) {
+							select = false;
+						}						
+					}
+					if (select) {						
+						fCurStack.delete(key);
+						counter++;
+
+					}
+					addElement(null);					
+				}
+			};
+
+			while (iter.hasNext()) {
+				iter.next();
+			}
 		}
 	}
 

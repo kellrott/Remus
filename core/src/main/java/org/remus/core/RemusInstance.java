@@ -4,9 +4,11 @@ import java.util.UUID;
 
 import java.util.Map;
 import org.apache.thrift.TException;
+import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 
 //import org.mpstore.MPStore;
 
@@ -21,7 +23,7 @@ public class RemusInstance implements Comparable<RemusInstance> {
 	}
 
 
-	static public RemusInstance getInstance(RemusDB store, String pipeline, String id) throws TException, NotImplemented {
+	static public RemusInstance getInstance(RemusNet.Iface store, String pipeline, String id) throws TException, NotImplemented {
 		
 		if ( id.compareTo(STATIC_INSTANCE_STR) == 0) {
 			return STATIC_INSTANCE;
@@ -31,12 +33,13 @@ public class RemusInstance implements Comparable<RemusInstance> {
 		AppletRef arSubmit = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@submit");
 		AppletRef arInst = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@instance");
 
-		for (Object subObj : store.get(arSubmit, id)) {
+		for (String subStr : store.getValueJSON(arSubmit, id)) {
+			Object subObj = JSON.loads(subStr);
 			if (((Map) subObj).containsKey(PipelineSubmission.InstanceField)) {
 				out = new RemusInstance((String) ((Map) subObj).get(PipelineSubmission.InstanceField));
 			}
 		}
-		for (Object instObj : store.get(arInst, id)) {
+		for (String instStr : store.getValueJSON(arInst, id)) {
 			out = new RemusInstance(id);			
 		}
 		return out;

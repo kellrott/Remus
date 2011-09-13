@@ -91,11 +91,12 @@ abstract public class BaseStackIterator<T> implements Iterable<T>, Iterator<T> {
 
 	public void addElement( T elem ) {
 		elemAdded = true;
-		outList.add( elem );
+		outList.add(elem);
 	}
+	
 	@Override
 	public T next() {
-		if ( maxCount != null ) {
+		if (maxCount != null) {
 			maxCount--;
 		}
 		return outList.removeFirst();

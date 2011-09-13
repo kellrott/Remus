@@ -6,7 +6,8 @@ import org.remus.JSON;
 
 public class Conditional {
 
-	public static final int EQUALS = 1;
+	public static final int EQUAL = 1;
+	public static final int NOT_EQUAL = 2;
 
 	public static final int KEY = 2;
 	public static final int STRING = 3;
@@ -47,7 +48,7 @@ public class Conditional {
 			return rightString;
 		}
 		if (rightType == FIELD) {
-			return JSON.dumps(((Map)val).get(rightString));
+			return ((Map) val).get(rightString).toString();
 		}
 		return null;
 	}
@@ -60,16 +61,23 @@ public class Conditional {
 			return leftString;
 		}
 		if (leftType == FIELD) {
-			return JSON.dumps(((Map)val).get(leftString));
+			return ((Map) val).get(leftString).toString();
 		}
 		return null;
 	}
 	
 	public boolean evaluate(String key, Object val) {
-		if (condType==EQUALS) {
+		if (condType == EQUAL) {
 			String right = getRight(key, val);
 			String left  = getLeft(key, val);			
-			if ( right != null && left != null && right.compareTo(left) == 0 ) {
+			if (right != null && left != null && right.compareTo(left) == 0) {
+				return true;
+			}
+		}
+		if (condType == NOT_EQUAL) {
+			String right = getRight(key, val);
+			String left  = getLeft(key, val);			
+			if (right != null && left != null && right.compareTo(left) != 0) {
 				return true;
 			}
 		}

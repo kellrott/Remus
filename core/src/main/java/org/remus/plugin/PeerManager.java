@@ -174,7 +174,7 @@ public class PeerManager {
 		for (PeerInfoThrift peer : info) {
 			if (!peerMap.containsKey(peer.peerID)) {
 				if (peer.peerType != PeerType.DEAD) {
-					logger.info( "Adding peer: " + peer.peerID );
+					logger.info("Adding peer: " + peer.peerID);
 					peerMap.put(peer.peerID, peer);
 				}
 			} else {
@@ -191,7 +191,7 @@ public class PeerManager {
 		}
 
 		List<PeerInfoThrift> out = new LinkedList<PeerInfoThrift>();
-		for (String peerID : diffList ) {
+		for (String peerID : diffList) {
 			PeerInfoThrift peer = peerMap.get(peerID);
 			if (peer.peerType != PeerType.DEAD) {
 				out.add(peer);
@@ -234,7 +234,7 @@ public class PeerManager {
 
 	public RemusNet.Iface getPeer(String peerID) throws TException {
 		if (ifaceMap.containsKey(peerID)) {
-			ifaceAlloc.put(peerID, ifaceAlloc.get(peerID)+1);
+			ifaceAlloc.put(peerID, ifaceAlloc.get(peerID) + 1);
 			return ifaceMap.get(peerID);
 		}
 		PeerInfoThrift p = peerMap.get(peerID);
@@ -254,8 +254,8 @@ public class PeerManager {
 
 	public void returnPeer(RemusNet.Iface iface) {
 		String peerID = null;
-		for ( Entry<String, Iface> e: ifaceMap.entrySet()) {
-			if ( iface == e.getValue()) {
+		for (Entry<String, Iface> e : ifaceMap.entrySet()) {
+			if (iface == e.getValue()) {
 				peerID = e.getKey();
 			}
 		}
@@ -263,11 +263,11 @@ public class PeerManager {
 			int c = ifaceAlloc.get(peerID);
 			if (c <= 1) {
 				logger.debug("RELEASE connection: " + peerID);
-				((RemusRemote)iface).close();
+				((RemusRemote) iface).close();
 				ifaceAlloc.remove(peerID);
 				ifaceMap.remove(peerID);
 			} else {
-				ifaceAlloc.put(peerID, c-1);
+				ifaceAlloc.put(peerID, c - 1);
 			}
 		}
 	}

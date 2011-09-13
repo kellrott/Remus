@@ -72,6 +72,12 @@ public class DataStackNode implements BaseStackNode {
 		return null;
 	}
 
+	@Override
+	public void delete(String key) {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 
 }

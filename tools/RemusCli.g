@@ -27,6 +27,7 @@ cmd  returns [CLICommand cmd]
 	| lc=showCmd {$cmd=lc;}
 	| uc=useCmd  {$cmd=uc;}
 	| sc=selectCmd {$cmd=sc;}
+	| delc=deleteCmd {$cmd=delc;}
 	| dc=dropCmd {$cmd=dc;}
 	| lc=loadCmd {$cmd=lc;}
 ;
@@ -54,6 +55,10 @@ selectCmd returns [CLICommand cmd]
 	( | 'limit' st=STRING { $cmd.setLimit(Integer.parseInt(st.getText()));} )
 ;
 
+deleteCmd returns [CLICommand cmd]
+	: 'delete' 'from' s=stackName {$cmd = new CLICommand(CLICommand.DELETE); $cmd.setStack(s);}
+	( | 'where' c=conditionalList { $cmd.setConditional(c); } )
+;
 
 dropCmd returns [CLICommand cmd]
 	: 'drop' 'pipeline' n=pipelineName {$cmd = new CLICommand(CLICommand.DROP); $cmd.setPipeline(n);}
@@ -89,21 +94,27 @@ conditionalList returns [List<Conditional> out=new LinkedList<Conditional>();]
 
 
 conditional returns [Conditional cond]
-	: 'KEY' '=' e=quoteStr { 
-		$cond=new Conditional(Conditional.EQUALS); 
+	: 'KEY' op=operation e=quoteStr { 
+		$cond=new Conditional(op); 
 		$cond.setLeftType(Conditional.KEY); 
 		$cond.setRightType(Conditional.STRING);
 		$cond.setRight(e);
 	}
-	| e1=quoteStr '=' e2=quoteStr {
-		$cond=new Conditional(Conditional.EQUALS); 
+	| e1=quoteStr op=operation e2=quoteStr {
+		$cond=new Conditional(op); 
 		$cond.setLeftType(Conditional.FIELD); 
 		$cond.setLeft(e1);
 		$cond.setRightType(Conditional.STRING);
 		$cond.setRight(e2);
 	}
 ;
-		
+
+
+operation returns [int op]
+	: '=' {$op=Conditional.EQUAL;}
+	| '!=' {$op=Conditional.NOT_EQUAL;}
+;
+	
 
 quoteStr returns [String str]
 	: s=QUOTESTR {String t=s.getText(); $str=t.substring(1,t.length()-1);}
