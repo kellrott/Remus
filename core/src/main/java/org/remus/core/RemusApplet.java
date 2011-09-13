@@ -358,25 +358,25 @@ public class RemusApplet {
 
 
 	public void deleteInstance(RemusInstance instance) throws TException, NotImplemented {
-		AppletRef applet = new AppletRef(pipeline.getID(), instance.toString(), getID());
-		datastore.deleteStack(applet);
-		applet.applet = getID() + "/@done";
-		datastore.deleteStack(applet);
-		applet.applet = getID() + "/@work";
-		datastore.deleteStack(applet);
-		applet.applet = getID() + "/@error";
-		datastore.deleteStack(applet);
+		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), getID());
+	
+		logger.debug("DELETE:" + ar);
+		datastore.deleteStack(ar);
+		ar.applet = getID() + "/@done";
+		datastore.deleteStack(ar);
+		ar.applet = getID() + "/@work";
+		datastore.deleteStack(ar);
+		ar.applet = getID() + "/@error";
+		datastore.deleteStack(ar);
 
-		applet.instance = RemusInstance.STATIC_INSTANCE_STR;
-		applet.applet = getID() + "/@instance";
-		datastore.deleteStack(applet);
-		applet.applet = getID() + "/@work";
-		datastore.deleteStack(applet);
-		applet.applet = getID() + WorkStatus.WorkStatusName;
-		datastore.deleteStack(applet);
+		ar.instance = RemusInstance.STATIC_INSTANCE_STR;
+		ar.applet = getID() + "/@instance";
+		datastore.deleteValue(ar, instance.toString());
+		ar.applet = getID() + "/@work";
+		datastore.deleteValue(ar, instance.toString());
 
 		if (attachstore != null) {
-			attachstore.deleteStack(applet);
+			attachstore.deleteStack(ar);
 		}
 	}
 

@@ -12,6 +12,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -85,7 +86,8 @@ public class CLI {
 	}
 
 	public RemusApp getRemusApp() throws RemusDatabaseException, TException {
-		RemusApp app = new RemusApp(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()), pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
+		RemusApp app = new RemusApp(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()), 
+				pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
 		return app;
 	}
 
@@ -99,6 +101,10 @@ public class CLI {
 
 	public RemusDB getDataSource() throws TException {
 		return RemusDB.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()));
+	}
+
+	public RemusAttach getAttachStore() throws TException {
+		return RemusAttach.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
 	}
 
 }

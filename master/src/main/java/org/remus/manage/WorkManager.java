@@ -101,7 +101,7 @@ public class WorkManager extends RemusManager {
 		RemusApp app = new RemusApp(db, attach);		
 		miniDB.reset();
 		for (String pipeline : app.getPipelines()) {		
-			AppletInstanceStack aiStack = new AppletInstanceStack(db, pipeline);
+			AppletInstanceStack aiStack = new AppletInstanceStack(db, attach, pipeline);
 			miniDB.addBaseStack("/@agent?" + pipeline, aiStack);
 		}
 	}

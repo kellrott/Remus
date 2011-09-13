@@ -11,10 +11,11 @@ public class Conditional {
 	public static final int EQUAL = 1;
 	public static final int NOT_EQUAL = 2;
 	public static final int LIKE = 3;
+	public static final int NOT_LIKE = 4;
 
-	public static final int KEY = 2;
-	public static final int STRING = 3;
-	public static final int FIELD = 4;
+	public static final int KEY = 21;
+	public static final int STRING = 22;
+	public static final int FIELD = 23;
 
 	public int condType;
 	public int leftType;
@@ -90,6 +91,15 @@ public class Conditional {
 			Pattern p = Pattern.compile(right);
 			Matcher m = p.matcher(left);
 			if (m.matches()) {
+				return true;
+			}
+		}
+		if (condType == NOT_LIKE) {
+			String right = getRight(key, val);
+			String left  = getLeft(key, val);
+			Pattern p = Pattern.compile(right);
+			Matcher m = p.matcher(left);
+			if (!m.matches()) {
 				return true;
 			}
 		}

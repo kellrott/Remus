@@ -114,6 +114,7 @@ operation returns [int op]
 	: '=' {$op=Conditional.EQUAL;}
 	| '!=' {$op=Conditional.NOT_EQUAL;}
 	| 'like' {$op=Conditional.LIKE;}
+	| 'not' 'like' {$op=Conditional.NOT_LIKE;}
 ;
 	
 

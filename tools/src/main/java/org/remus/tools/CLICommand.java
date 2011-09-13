@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
@@ -109,6 +110,7 @@ public class CLICommand {
 		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
 		RemusDB db = cli.getDataSource();
+		RemusAttach attach = cli.getAttachStore();
 		if (tmp.length == 2) {
 			RemusApplet applet = pipeline.getApplet(tmp[1]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
@@ -120,7 +122,7 @@ public class CLICommand {
 			AppletRef ar = ai.getAppletRef();
 			curStack = new DataStackNode(db, ar);
 		} else {
-			curStack = new AppletInstanceStack(db, cli.getPipeline().getID());
+			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID());
 		}
 		if (curStack != null) {
 			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(curStack, "", "", true) {
@@ -169,6 +171,7 @@ public class CLICommand {
 		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
 		RemusDB db = cli.getDataSource();
+		RemusAttach attach = cli.getAttachStore();
 		if (tmp.length == 2) {
 			RemusApplet applet = pipeline.getApplet(tmp[1]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
@@ -180,7 +183,7 @@ public class CLICommand {
 			AppletRef ar = ai.getAppletRef();
 			curStack = new DataStackNode(db, ar);
 		} else {
-			curStack = new AppletInstanceStack(db, cli.getPipeline().getID());
+			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID());
 		}
 		final BaseStackNode fCurStack = curStack;
 		if (curStack != null) {
@@ -199,7 +202,13 @@ public class CLICommand {
 						}						
 					}
 					if (select) {						
-						fCurStack.delete(key);
+						fCurStack.delete(key);						
+						try {
+							cli.println("DELETE: " + key);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						counter++;
 
 					}
