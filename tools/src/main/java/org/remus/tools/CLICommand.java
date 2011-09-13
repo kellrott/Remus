@@ -11,7 +11,10 @@ import org.remus.RemusDB;
 import org.remus.RemusDBSliceIterator;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
+import org.remus.core.AppletInstanceStack;
+import org.remus.core.BaseStackIterator;
 import org.remus.core.BaseStackNode;
+import org.remus.core.DataStackNode;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
@@ -101,24 +104,28 @@ public class CLICommand {
 		String [] tmp = stack.split(":");
 
 		RemusPipeline pipeline = cli.getPipeline();
-		RemusApplet applet = null;
 		BaseStackNode stack = null;
+		RemusDB db = cli.getDataSource();
 		if (tmp.length == 2) {
-			applet = pipeline.getApplet(tmp[1]);
-		} else if (tmp.length == 3) {
-			applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
-		} else {
-			cli.println("Status request");
-		}
-		if (applet != null) {
+			RemusApplet applet = pipeline.getApplet(tmp[1]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
 			AppletRef ar = ai.getAppletRef();
-			RemusDB db = cli.getDataSource();
+			stack = new DataStackNode(db, ar);
+		} else if (tmp.length == 3) {
+			RemusApplet applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
+			AppletInstance ai = applet.getAppletInstance(tmp[0]);
+			AppletRef ar = ai.getAppletRef();
+			stack = new DataStackNode(db, ar);
+		} else {
+			stack = new AppletInstanceStack(db, cli.getPipeline().getID());
+		}
+		if (stack != null) {
 
-			RemusDBSliceIterator<Object> iter = new RemusDBSliceIterator<Object>(db, ar, "", "", true) {				
+			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(stack, "", "", true) {
 				long counter = 0;
+
 				@Override
-				public void processKeyValue(String key, Object val, long jobID, long emitID) {
+				public void processKeyValue(String key, Object val) {
 					boolean select = true;
 					if (limit != null && counter >= limit) {
 						stop();
@@ -146,10 +153,10 @@ public class CLICommand {
 							//e.printStackTrace();
 						}
 					}
-					addElement(null);
+					addElement(null);					
 				}
 			};
-
+			
 			while (iter.hasNext()) {
 				iter.next();
 			}

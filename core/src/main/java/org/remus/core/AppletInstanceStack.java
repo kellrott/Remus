@@ -24,17 +24,14 @@ public class AppletInstanceStack implements BaseStackNode {
 	private RemusNet.Iface datastore;
 	private Logger logger; 
 	
-	public AppletInstanceStack(PeerManager plugins, String pipeline) {
+	public AppletInstanceStack(RemusNet.Iface db, String pipeline) {
 		try {
 			logger = LoggerFactory.getLogger(AppletInstanceStack.class);
-			datastore = plugins.getPeer(plugins.getDataServer());
+			datastore = db;
 			app = new RemusApp(datastore, null);
 			aiMap = new TreeMap<String, String>();
 			loadPipeline(pipeline);
 		} catch (RemusDatabaseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -97,7 +94,7 @@ public class AppletInstanceStack implements BaseStackNode {
 		TreeMap<String, String> o = aiMap;
 		if (o != null) {
 			NavigableSet<String> a = o.descendingKeySet();
-			SortedSet<String> t = a.tailSet(keyStart);
+			SortedSet<String> t = a.headSet(keyStart);
 			LinkedList<String> out = new LinkedList<String>();
 			for (String name : t) {
 				if (out.size() < count) {

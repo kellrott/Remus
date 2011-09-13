@@ -17,8 +17,10 @@ abstract public class BaseStackIterator<T> implements Iterable<T>, Iterator<T> {
 	private BaseStackNode node;
 	private boolean loadVal;
 
-	public BaseStackIterator(BaseStackNode node, boolean loadVal) {
+	public BaseStackIterator(BaseStackNode node, String keyStart, String keyEnd, boolean loadVal) {
 		this.node = node;
+		this.keyStart = keyStart;
+		this.keyStart = keyEnd;
 		outList = new LinkedList<T>();
 		this.loadVal = loadVal;
 	}
