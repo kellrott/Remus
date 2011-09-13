@@ -113,6 +113,7 @@ conditional returns [Conditional cond]
 operation returns [int op]
 	: '=' {$op=Conditional.EQUAL;}
 	| '!=' {$op=Conditional.NOT_EQUAL;}
+	| 'like' {$op=Conditional.LIKE;}
 ;
 	
 

@@ -1,6 +1,8 @@
 package org.remus.tools;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.remus.JSON;
 
@@ -8,6 +10,7 @@ public class Conditional {
 
 	public static final int EQUAL = 1;
 	public static final int NOT_EQUAL = 2;
+	public static final int LIKE = 3;
 
 	public static final int KEY = 2;
 	public static final int STRING = 3;
@@ -78,6 +81,15 @@ public class Conditional {
 			String right = getRight(key, val);
 			String left  = getLeft(key, val);			
 			if (right != null && left != null && right.compareTo(left) != 0) {
+				return true;
+			}
+		}
+		if (condType == LIKE) {
+			String right = getRight(key, val);
+			String left  = getLeft(key, val);
+			Pattern p = Pattern.compile(right);
+			Matcher m = p.matcher(left);
+			if (m.matches()) {
 				return true;
 			}
 		}
