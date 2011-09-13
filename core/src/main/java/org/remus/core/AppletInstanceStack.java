@@ -93,8 +93,8 @@ public class AppletInstanceStack implements BaseStackNode {
 	public List<String> keySlice(String keyStart, int count) {
 		TreeMap<String, String> o = aiMap;
 		if (o != null) {
-			NavigableSet<String> a = o.descendingKeySet();
-			SortedSet<String> t = a.headSet(keyStart);
+			NavigableSet<String> a = o.navigableKeySet();
+			SortedSet<String> t = a.tailSet(keyStart);
 			LinkedList<String> out = new LinkedList<String>();
 			for (String name : t) {
 				if (out.size() < count) {

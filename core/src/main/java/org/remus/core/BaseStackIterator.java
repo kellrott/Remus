@@ -20,7 +20,7 @@ abstract public class BaseStackIterator<T> implements Iterable<T>, Iterator<T> {
 	public BaseStackIterator(BaseStackNode node, String keyStart, String keyEnd, boolean loadVal) {
 		this.node = node;
 		this.keyStart = keyStart;
-		this.keyStart = keyEnd;
+		this.keyEnd = keyEnd;
 		outList = new LinkedList<T>();
 		this.loadVal = loadVal;
 	}
@@ -52,7 +52,7 @@ abstract public class BaseStackIterator<T> implements Iterable<T>, Iterator<T> {
 		elemAdded = false;
 		if (loadVal) {
 			List<String> curlist = node.keySlice(keyStart, maxFetch);
-			for (String key : curlist){
+			for (String key : curlist) {
 				if (stop) {
 					return false;
 				}
