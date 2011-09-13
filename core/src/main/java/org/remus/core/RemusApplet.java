@@ -430,7 +430,7 @@ public class RemusApplet {
 		} else if (getMode() == AGENT) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", RemusInstance.STATIC_INSTANCE_STR);
-			inMap.put("_applet", "/@agent");
+			inMap.put("_applet", "/@agent?" + pipeline.getID());
 			baseMap.put("_input", inMap);
 		} else if (getMode() == PIPE) {
 			if (getInput().compareTo("?") != 0) {
