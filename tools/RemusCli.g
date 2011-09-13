@@ -66,6 +66,7 @@ loadCmd returns [CLICommand cmd]
 stackName returns [String name]
 	: n=STRING ':' m=STRING {$name=n.getText() + ":" + m.getText();}
 	| n1=STRING ':' m1=STRING ':' o1=STRING {$name=n1.getText() + ":" + m1.getText() + ":" + o1.getText();}
+	| '@' n1=STRING { $name= "@" + n1.getText(); }
 ;
 
 pipelineName returns [String name]

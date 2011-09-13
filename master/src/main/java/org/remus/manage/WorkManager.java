@@ -17,6 +17,7 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.core.AppletInstance;
+import org.remus.core.AppletInstanceStack;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
@@ -54,8 +55,9 @@ public class WorkManager extends RemusManager {
 	private Logger logger;
 	private RemusMiniDB miniDB;
 
-	PeerManager plugins;
-	private AppletInstanceStack aiStack;
+	private RemusNet.Iface db, attach;
+	
+	PeerManager peerManager;
 
 	public static int INACTIVE_SLEEP_TIME = 30000;
 
@@ -77,20 +79,33 @@ public class WorkManager extends RemusManager {
 
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
-		plugins = pluginManager.getPeerManager();
+		peerManager = pluginManager.getPeerManager();
 		/**
 		 * The miniDB is a shim placed infront of the database, that will allow you
 		 * to add additional, dynamic, applets to the database. For the work manager
 		 * it is used to create the '/@agent' applets, which view all the applet instance
 		 * records as a single stack
 		 */
-		miniDB = new RemusMiniDB(plugins.getPeer(plugins.getDataServer()));
-		aiStack = new AppletInstanceStack(plugins);
-		miniDB.addBaseStack("/@agent", aiStack);
+		
+		db = peerManager.getPeer(peerManager.getDataServer());
+		attach = peerManager.getPeer(peerManager.getAttachStore());			
+
+		miniDB = new RemusMiniDB(peerManager.getPeer(peerManager.getDataServer()));
+		setupAIStack();
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
 
+	
+	private void setupAIStack() throws RemusDatabaseException, TException {		
+		RemusApp app = new RemusApp(db, attach);		
+		miniDB.reset();
+		for (String pipeline : app.getPipelines()) {		
+			AppletInstanceStack aiStack = new AppletInstanceStack(peerManager, pipeline);
+			miniDB.addBaseStack("/@agent?" + pipeline, aiStack);
+		}
+	}
+	
 	private class RemoteJob {
 		private String peerID;
 		private String jobID;
@@ -177,9 +192,9 @@ public class WorkManager extends RemusManager {
 			assignRate.put(ai, newAssignRate);
 		}
 		try {
-			RemusNet.Iface worker = plugins.getPeer(rj.peerID);					
+			RemusNet.Iface worker = peerManager.getPeer(rj.peerID);					
 			worker.jobCancel(rj.jobID);	
-			plugins.returnPeer(worker);
+			peerManager.returnPeer(worker);
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		} catch (TException e) {
@@ -232,7 +247,7 @@ public class WorkManager extends RemusManager {
 							sleepTime += 1000;
 						}
 					} else {
-						sleepTime = 100;	
+						sleepTime = 100;
 					}
 					logger.debug("Manager SleepTime=" + sleepTime);
 					synchronized (waitLock) {
@@ -258,9 +273,7 @@ public class WorkManager extends RemusManager {
 	}
 
 	private void scanJobs() {
-		try {			
-			RemusNet.Iface db = plugins.getPeer(plugins.getDataServer());
-			RemusNet.Iface attach = plugins.getPeer(plugins.getAttachStore());			
+		try {
 			RemusApp app = new RemusApp(RemusDB.wrap(db), RemusAttach.wrap(attach));
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
@@ -274,8 +287,6 @@ public class WorkManager extends RemusManager {
 			if (activeCount > 0) {
 				logger.info("MANAGER found " + activeCount + " active stacks");
 			}
-			plugins.returnPeer(db);
-			plugins.returnPeer(attach);
 		} catch (RemusDatabaseException e) {
 			e.printStackTrace();
 		} catch (TException e) {
@@ -294,7 +305,7 @@ public class WorkManager extends RemusManager {
 				for (RemoteJob rj : activeStacks.get(ai)) {
 					logger.debug("Checking " + rj.peerID + " for " + rj.jobID + " " + ai);
 					try {
-						RemusNet.Iface worker = plugins.getPeer(rj.peerID);
+						RemusNet.Iface worker = peerManager.getPeer(rj.peerID);
 						if (worker != null) {
 							JobStatus s = worker.jobStatus(rj.jobID);
 							if (s.status == JobState.DONE) {
@@ -316,7 +327,7 @@ public class WorkManager extends RemusManager {
 							} else {
 								activeCount += 1;
 							}
-							plugins.returnPeer(worker);
+							peerManager.returnPeer(worker);
 						}
 					} catch (TException e) {
 						logger.warn("Worker Connection Failed: " + rj.peerID);
@@ -338,7 +349,7 @@ public class WorkManager extends RemusManager {
 	private Map<AppletInstance,long []> workIDCache = new HashMap<AppletInstance, long[]>();
 
 	private long [] getAppletWorkCache(AppletInstance ai) throws NotImplemented, TException {
-		Set<String> peers = plugins.getWorkers();
+		Set<String> peers = peerManager.getWorkers();
 		long [] workIDs = null;
 		synchronized (workIDCache) {			
 			if (workIDCache.containsKey(ai) && workIDCache.get(ai) != null) {
@@ -382,21 +393,21 @@ public class WorkManager extends RemusManager {
 		boolean workAdded = false;
 
 		try {
-			Set<String> peers = plugins.getWorkers();
+			Set<String> peers = peerManager.getWorkers();
 			for (String peerID : peers) {
 				if (!peerStacks.containsKey(peerID)) {
 					peerStacks.put(peerID, new HashSet<RemoteJob>());
 				}
 				if (peerStacks.get(peerID).size() == 0) {
 					//find an applet stack with a matching worktype					
-					PeerInfoThrift pinfo = plugins.getPeerInfo(peerID);
+					PeerInfoThrift pinfo = peerManager.getPeerInfo(peerID);
 					AppletInstance ai = null;
 					long [] workIDs = null;
 					if (pinfo != null && pinfo.workTypes != null) {
 						synchronized (activeStacks) {						
 							for (AppletInstance acur : activeStacks.keySet()) {	
 								if (ai == null && acur.getApplet() != null) {
-									if ( pinfo.workTypes.contains( acur.getApplet().getType() ) ) {
+									if (pinfo.workTypes.contains(acur.getApplet().getType())) {
 										workIDs = getAppletWorkCache(acur);
 										if (workIDs != null) {
 											ai = acur;
@@ -418,7 +429,7 @@ public class WorkManager extends RemusManager {
 										curPos++;
 									} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
 									workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
-									for (int i=last; i < curPos; i++) {
+									for (int i = last; i < curPos; i++) {
 										workIDs[i] = -1;
 									}
 									workAdded = true;
@@ -521,7 +532,7 @@ public class WorkManager extends RemusManager {
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
 			wdesc.setInfoJSON(JSON.dumps(instanceInfo));
 
-			RemusNet.Iface worker = plugins.getPeer(peerID);
+			RemusNet.Iface worker = peerManager.getPeer(peerID);
 
 			switch (ai.getApplet().getMode()) {
 			case RemusApplet.MAPPER:
@@ -550,21 +561,24 @@ public class WorkManager extends RemusManager {
 				break;
 			}
 			if (ai.getApplet().getMode() == RemusApplet.AGENT) {
-				aiStack.reset();
-				String jobID = worker.jobRequest(plugins.getPeerID(this), plugins.getAttachStore(), wdesc);
+				setupAIStack();
+				String jobID = worker.jobRequest(peerManager.getPeerID(this), peerManager.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 				}
 			} else {
-				String jobID = worker.jobRequest(plugins.getDataServer(), plugins.getAttachStore(), wdesc);
+				String jobID = worker.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 				}
 			}
-			plugins.returnPeer(worker);
+			peerManager.returnPeer(worker);
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

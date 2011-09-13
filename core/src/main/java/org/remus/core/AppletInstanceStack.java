@@ -1,4 +1,4 @@
-package org.remus.manage;
+package org.remus.core;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,12 +10,6 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.core.AppletInstance;
-import org.remus.core.BaseStackNode;
-import org.remus.core.RemusApp;
-import org.remus.core.RemusApplet;
-import org.remus.core.RemusInstance;
-import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
@@ -26,16 +20,17 @@ import org.slf4j.LoggerFactory;
 public class AppletInstanceStack implements BaseStackNode {
 
 	private RemusApp app;
-	TreeMap<String, TreeMap<String, String>> aiMap;
+	TreeMap<String, String> aiMap;
 	private RemusNet.Iface datastore;
 	private Logger logger; 
 	
-	public AppletInstanceStack(PeerManager plugins) {
+	public AppletInstanceStack(PeerManager plugins, String pipeline) {
 		try {
 			logger = LoggerFactory.getLogger(AppletInstanceStack.class);
 			datastore = plugins.getPeer(plugins.getDataServer());
 			app = new RemusApp(datastore, null);
-			aiMap = new TreeMap<String, TreeMap<String, String>>();
+			aiMap = new TreeMap<String, String>();
+			loadPipeline(pipeline);
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -49,13 +44,10 @@ public class AppletInstanceStack implements BaseStackNode {
 		aiMap.clear();
 	}
 
-	void loadPipeline(AppletRef stack) {
-		try {
-			if (aiMap.containsKey(stack.pipeline)) {
-				return;
-			}
-			logger.debug("Loading AppletStack: " + stack.pipeline);
-			RemusPipeline pipe = app.getPipeline(stack.pipeline);
+	void loadPipeline(String pipeline) {
+		try {			
+			logger.debug("Loading AppletStack: " + pipeline);
+			RemusPipeline pipe = app.getPipeline(pipeline);
 			TreeMap<String, String> aiList = new TreeMap<String, String>();		
 			for (String appletName : pipe.getMembers()) {
 				RemusApplet applet = pipe.getApplet(appletName);
@@ -64,7 +56,7 @@ public class AppletInstanceStack implements BaseStackNode {
 					aiList.put(inst.toString() + ":" + applet.getID(), JSON.dumps(ai.getInstanceInfo()));
 				}
 			}
-			aiMap.put(stack.pipeline, aiList);
+			aiMap = aiList;
 		} catch (RemusDatabaseException e) {
 			e.printStackTrace();
 		} catch (TException e) {
@@ -77,36 +69,32 @@ public class AppletInstanceStack implements BaseStackNode {
 	}
 
 	@Override
-	public void add(AppletRef stack, long jobID, long emitID, String key, String data) {
+	public void add(String key, String data) {
 		logger.info("Adding Instance:" + key + " " + data); 
 	}
 
 	@Override
-	public boolean containsKey(AppletRef stack, String key) {
-		loadPipeline(stack);
-		if (!aiMap.containsKey(stack.pipeline) || !aiMap.get(stack.pipeline).containsKey(key)) {
+	public boolean containsKey(String key) {
+		if (!aiMap.containsKey(key)) {
 			return false;
 		}
 		return true;
 	}
 
 	@Override
-	public List<String> getValueJSON(AppletRef stack, String key) {
-		loadPipeline(stack);
+	public List<String> getValueJSON(String key) {
 		List<String> out = new LinkedList<String>();
-		TreeMap<String, String> o = aiMap.get(stack.pipeline);
-		if (o != null) {
-			if (o.containsKey(key)) {
-				out.add(o.get(key));
+		if (aiMap != null) {
+			if (aiMap.containsKey(key)) {
+				out.add(aiMap.get(key));
 			}
 		}
 		return out;
 	}
 
 	@Override
-	public List<String> keySlice(AppletRef stack, String keyStart, int count) {
-		loadPipeline(stack);
-		TreeMap<String, String> o = aiMap.get(stack.pipeline);
+	public List<String> keySlice(String keyStart, int count) {
+		TreeMap<String, String> o = aiMap;
 		if (o != null) {
 			NavigableSet<String> a = o.descendingKeySet();
 			SortedSet<String> t = a.tailSet(keyStart);

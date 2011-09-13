@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-09-04 00:33:16
+// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-09-12 16:39:19
 
 package org.remus.tools.antlr;
 
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class RemusCliParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "QUOTESTR", "QUOTE", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'show'", "'servers'", "'pipelines'", "'stacks'", "'applets'", "'use'", "'select'", "'from'", "'where'", "'limit'", "'drop'", "'pipeline'", "'load'", "'infile'", "'into'", "':'", "','", "'*'", "'KEY'", "'='"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "QUOTESTR", "QUOTE", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'show'", "'servers'", "'pipelines'", "'stacks'", "'applets'", "'use'", "'select'", "'from'", "'where'", "'limit'", "'drop'", "'pipeline'", "'load'", "'infile'", "'into'", "':'", "'@'", "','", "'*'", "'KEY'", "'='"
     };
     public static final int QUOTESTR=5;
     public static final int T__29=29;
@@ -34,6 +34,7 @@ public class RemusCliParser extends Parser {
     public static final int T__30=30;
     public static final int T__19=19;
     public static final int QUOTE=6;
+    public static final int T__31=31;
     public static final int T__16=16;
     public static final int T__15=15;
     public static final int T__18=18;
@@ -562,7 +563,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "stackName"
-    // RemusCli.g:66:1: stackName returns [String name] : (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING );
+    // RemusCli.g:66:1: stackName returns [String name] : (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING | '@' n1= STRING );
     public final String stackName() throws RecognitionException {
         String name = null;
 
@@ -573,35 +574,35 @@ public class RemusCliParser extends Parser {
         Token o1=null;
 
         try {
-            // RemusCli.g:67:2: (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING )
-            int alt5=2;
+            // RemusCli.g:67:2: (n= STRING ':' m= STRING | n1= STRING ':' m1= STRING ':' o1= STRING | '@' n1= STRING )
+            int alt5=3;
             int LA5_0 = input.LA(1);
 
             if ( (LA5_0==STRING) ) {
                 int LA5_1 = input.LA(2);
 
                 if ( (LA5_1==26) ) {
-                    int LA5_2 = input.LA(3);
+                    int LA5_3 = input.LA(3);
 
-                    if ( (LA5_2==STRING) ) {
-                        int LA5_3 = input.LA(4);
+                    if ( (LA5_3==STRING) ) {
+                        int LA5_4 = input.LA(4);
 
-                        if ( (LA5_3==26) ) {
+                        if ( (LA5_4==26) ) {
                             alt5=2;
                         }
-                        else if ( (LA5_3==EOF||(LA5_3>=19 && LA5_3<=20)) ) {
+                        else if ( (LA5_4==EOF||(LA5_4>=19 && LA5_4<=20)) ) {
                             alt5=1;
                         }
                         else {
                             NoViableAltException nvae =
-                                new NoViableAltException("", 5, 3, input);
+                                new NoViableAltException("", 5, 4, input);
 
                             throw nvae;
                         }
                     }
                     else {
                         NoViableAltException nvae =
-                            new NoViableAltException("", 5, 2, input);
+                            new NoViableAltException("", 5, 3, input);
 
                         throw nvae;
                     }
@@ -612,6 +613,9 @@ public class RemusCliParser extends Parser {
 
                     throw nvae;
                 }
+            }
+            else if ( (LA5_0==27) ) {
+                alt5=3;
             }
             else {
                 NoViableAltException nvae =
@@ -642,6 +646,15 @@ public class RemusCliParser extends Parser {
 
                     }
                     break;
+                case 3 :
+                    // RemusCli.g:69:4: '@' n1= STRING
+                    {
+                    match(input,27,FOLLOW_27_in_stackName339); 
+                    n1=(Token)match(input,STRING,FOLLOW_STRING_in_stackName343); 
+                     name = "@" + n1.getText(); 
+
+                    }
+                    break;
 
             }
         }
@@ -657,17 +670,17 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "pipelineName"
-    // RemusCli.g:71:1: pipelineName returns [String name] : n= STRING ;
+    // RemusCli.g:72:1: pipelineName returns [String name] : n= STRING ;
     public final String pipelineName() throws RecognitionException {
         String name = null;
 
         Token n=null;
 
         try {
-            // RemusCli.g:72:2: (n= STRING )
-            // RemusCli.g:72:4: n= STRING
+            // RemusCli.g:73:2: (n= STRING )
+            // RemusCli.g:73:4: n= STRING
             {
-            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName350); 
+            n=(Token)match(input,STRING,FOLLOW_STRING_in_pipelineName361); 
             name =n.getText();
 
             }
@@ -685,7 +698,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "selectionList"
-    // RemusCli.g:75:1: selectionList returns [List<Selection> out=new LinkedList<Selection>();] : w= selection ( ',' w= selection )* ;
+    // RemusCli.g:76:1: selectionList returns [List<Selection> out=new LinkedList<Selection>();] : w= selection ( ',' w= selection )* ;
     public final List<Selection> selectionList() throws RecognitionException {
         List<Selection> out = new LinkedList<Selection>();;
 
@@ -693,32 +706,32 @@ public class RemusCliParser extends Parser {
 
 
         try {
-            // RemusCli.g:76:2: (w= selection ( ',' w= selection )* )
-            // RemusCli.g:76:4: w= selection ( ',' w= selection )*
+            // RemusCli.g:77:2: (w= selection ( ',' w= selection )* )
+            // RemusCli.g:77:4: w= selection ( ',' w= selection )*
             {
-            pushFollow(FOLLOW_selection_in_selectionList368);
+            pushFollow(FOLLOW_selection_in_selectionList379);
             w=selection();
 
             state._fsp--;
 
             out.add(w);
-            // RemusCli.g:76:31: ( ',' w= selection )*
+            // RemusCli.g:77:31: ( ',' w= selection )*
             loop6:
             do {
                 int alt6=2;
                 int LA6_0 = input.LA(1);
 
-                if ( (LA6_0==27) ) {
+                if ( (LA6_0==28) ) {
                     alt6=1;
                 }
 
 
                 switch (alt6) {
             	case 1 :
-            	    // RemusCli.g:76:32: ',' w= selection
+            	    // RemusCli.g:77:32: ',' w= selection
             	    {
-            	    match(input,27,FOLLOW_27_in_selectionList373); 
-            	    pushFollow(FOLLOW_selection_in_selectionList377);
+            	    match(input,28,FOLLOW_28_in_selectionList384); 
+            	    pushFollow(FOLLOW_selection_in_selectionList388);
             	    w=selection();
 
             	    state._fsp--;
@@ -749,7 +762,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "selection"
-    // RemusCli.g:79:1: selection returns [Selection select] : (s= quoteStr | '*' | 'KEY' );
+    // RemusCli.g:80:1: selection returns [Selection select] : (s= quoteStr | '*' | 'KEY' );
     public final Selection selection() throws RecognitionException {
         Selection select = null;
 
@@ -757,7 +770,7 @@ public class RemusCliParser extends Parser {
 
 
         try {
-            // RemusCli.g:80:2: (s= quoteStr | '*' | 'KEY' )
+            // RemusCli.g:81:2: (s= quoteStr | '*' | 'KEY' )
             int alt7=3;
             switch ( input.LA(1) ) {
             case QUOTESTR:
@@ -765,12 +778,12 @@ public class RemusCliParser extends Parser {
                 alt7=1;
                 }
                 break;
-            case 28:
+            case 29:
                 {
                 alt7=2;
                 }
                 break;
-            case 29:
+            case 30:
                 {
                 alt7=3;
                 }
@@ -784,9 +797,9 @@ public class RemusCliParser extends Parser {
 
             switch (alt7) {
                 case 1 :
-                    // RemusCli.g:80:4: s= quoteStr
+                    // RemusCli.g:81:4: s= quoteStr
                     {
-                    pushFollow(FOLLOW_quoteStr_in_selection397);
+                    pushFollow(FOLLOW_quoteStr_in_selection408);
                     s=quoteStr();
 
                     state._fsp--;
@@ -796,17 +809,17 @@ public class RemusCliParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // RemusCli.g:81:4: '*'
+                    // RemusCli.g:82:4: '*'
                     {
-                    match(input,28,FOLLOW_28_in_selection404); 
+                    match(input,29,FOLLOW_29_in_selection415); 
                     select =new Selection(Selection.ALL);
 
                     }
                     break;
                 case 3 :
-                    // RemusCli.g:82:4: 'KEY'
+                    // RemusCli.g:83:4: 'KEY'
                     {
-                    match(input,29,FOLLOW_29_in_selection411); 
+                    match(input,30,FOLLOW_30_in_selection422); 
                     select =new Selection(Selection.KEY);
 
                     }
@@ -826,7 +839,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "conditionalList"
-    // RemusCli.g:85:1: conditionalList returns [List<Conditional> out=new LinkedList<Conditional>();] : w= conditional ;
+    // RemusCli.g:86:1: conditionalList returns [List<Conditional> out=new LinkedList<Conditional>();] : w= conditional ;
     public final List<Conditional> conditionalList() throws RecognitionException {
         List<Conditional> out = new LinkedList<Conditional>();;
 
@@ -834,10 +847,10 @@ public class RemusCliParser extends Parser {
 
 
         try {
-            // RemusCli.g:86:2: (w= conditional )
-            // RemusCli.g:86:4: w= conditional
+            // RemusCli.g:87:2: (w= conditional )
+            // RemusCli.g:87:4: w= conditional
             {
-            pushFollow(FOLLOW_conditional_in_conditionalList429);
+            pushFollow(FOLLOW_conditional_in_conditionalList440);
             w=conditional();
 
             state._fsp--;
@@ -859,7 +872,7 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "conditional"
-    // RemusCli.g:90:1: conditional returns [Conditional cond] : ( 'KEY' '=' e= quoteStr | e1= quoteStr '=' e2= quoteStr );
+    // RemusCli.g:91:1: conditional returns [Conditional cond] : ( 'KEY' '=' e= quoteStr | e1= quoteStr '=' e2= quoteStr );
     public final Conditional conditional() throws RecognitionException {
         Conditional cond = null;
 
@@ -871,11 +884,11 @@ public class RemusCliParser extends Parser {
 
 
         try {
-            // RemusCli.g:91:2: ( 'KEY' '=' e= quoteStr | e1= quoteStr '=' e2= quoteStr )
+            // RemusCli.g:92:2: ( 'KEY' '=' e= quoteStr | e1= quoteStr '=' e2= quoteStr )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
-            if ( (LA8_0==29) ) {
+            if ( (LA8_0==30) ) {
                 alt8=1;
             }
             else if ( (LA8_0==QUOTESTR) ) {
@@ -889,11 +902,11 @@ public class RemusCliParser extends Parser {
             }
             switch (alt8) {
                 case 1 :
-                    // RemusCli.g:91:4: 'KEY' '=' e= quoteStr
+                    // RemusCli.g:92:4: 'KEY' '=' e= quoteStr
                     {
-                    match(input,29,FOLLOW_29_in_conditional446); 
-                    match(input,30,FOLLOW_30_in_conditional448); 
-                    pushFollow(FOLLOW_quoteStr_in_conditional452);
+                    match(input,30,FOLLOW_30_in_conditional457); 
+                    match(input,31,FOLLOW_31_in_conditional459); 
+                    pushFollow(FOLLOW_quoteStr_in_conditional463);
                     e=quoteStr();
 
                     state._fsp--;
@@ -908,15 +921,15 @@ public class RemusCliParser extends Parser {
                     }
                     break;
                 case 2 :
-                    // RemusCli.g:97:4: e1= quoteStr '=' e2= quoteStr
+                    // RemusCli.g:98:4: e1= quoteStr '=' e2= quoteStr
                     {
-                    pushFollow(FOLLOW_quoteStr_in_conditional461);
+                    pushFollow(FOLLOW_quoteStr_in_conditional472);
                     e1=quoteStr();
 
                     state._fsp--;
 
-                    match(input,30,FOLLOW_30_in_conditional463); 
-                    pushFollow(FOLLOW_quoteStr_in_conditional467);
+                    match(input,31,FOLLOW_31_in_conditional474); 
+                    pushFollow(FOLLOW_quoteStr_in_conditional478);
                     e2=quoteStr();
 
                     state._fsp--;
@@ -946,17 +959,17 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "quoteStr"
-    // RemusCli.g:107:1: quoteStr returns [String str] : s= QUOTESTR ;
+    // RemusCli.g:108:1: quoteStr returns [String str] : s= QUOTESTR ;
     public final String quoteStr() throws RecognitionException {
         String str = null;
 
         Token s=null;
 
         try {
-            // RemusCli.g:108:2: (s= QUOTESTR )
-            // RemusCli.g:108:4: s= QUOTESTR
+            // RemusCli.g:109:2: (s= QUOTESTR )
+            // RemusCli.g:109:4: s= QUOTESTR
             {
-            s=(Token)match(input,QUOTESTR,FOLLOW_QUOTESTR_in_quoteStr488); 
+            s=(Token)match(input,QUOTESTR,FOLLOW_QUOTESTR_in_quoteStr499); 
             String t=s.getText(); str =t.substring(1,t.length()-1);
 
             }
@@ -994,11 +1007,11 @@ public class RemusCliParser extends Parser {
     public static final BitSet FOLLOW_15_in_showCmd157 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_16_in_useCmd173 = new BitSet(new long[]{0x0000000000000010L});
     public static final BitSet FOLLOW_pipelineName_in_useCmd177 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_17_in_selectCmd194 = new BitSet(new long[]{0x0000000030000020L});
+    public static final BitSet FOLLOW_17_in_selectCmd194 = new BitSet(new long[]{0x0000000060000020L});
     public static final BitSet FOLLOW_selectionList_in_selectCmd198 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_18_in_selectCmd200 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_18_in_selectCmd200 = new BitSet(new long[]{0x0000000008000010L});
     public static final BitSet FOLLOW_stackName_in_selectCmd204 = new BitSet(new long[]{0x0000000000180002L});
-    public static final BitSet FOLLOW_19_in_selectCmd213 = new BitSet(new long[]{0x0000000020000020L});
+    public static final BitSet FOLLOW_19_in_selectCmd213 = new BitSet(new long[]{0x0000000040000020L});
     public static final BitSet FOLLOW_conditionalList_in_selectCmd217 = new BitSet(new long[]{0x0000000000100002L});
     public static final BitSet FOLLOW_20_in_selectCmd228 = new BitSet(new long[]{0x0000000000000010L});
     public static final BitSet FOLLOW_STRING_in_selectCmd232 = new BitSet(new long[]{0x0000000000000002L});
@@ -1019,20 +1032,22 @@ public class RemusCliParser extends Parser {
     public static final BitSet FOLLOW_STRING_in_stackName326 = new BitSet(new long[]{0x0000000004000000L});
     public static final BitSet FOLLOW_26_in_stackName328 = new BitSet(new long[]{0x0000000000000010L});
     public static final BitSet FOLLOW_STRING_in_stackName332 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_STRING_in_pipelineName350 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_selection_in_selectionList368 = new BitSet(new long[]{0x0000000008000002L});
-    public static final BitSet FOLLOW_27_in_selectionList373 = new BitSet(new long[]{0x0000000030000020L});
-    public static final BitSet FOLLOW_selection_in_selectionList377 = new BitSet(new long[]{0x0000000008000002L});
-    public static final BitSet FOLLOW_quoteStr_in_selection397 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_28_in_selection404 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_29_in_selection411 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_conditional_in_conditionalList429 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_29_in_conditional446 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_conditional448 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_quoteStr_in_conditional452 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_quoteStr_in_conditional461 = new BitSet(new long[]{0x0000000040000000L});
-    public static final BitSet FOLLOW_30_in_conditional463 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_quoteStr_in_conditional467 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_QUOTESTR_in_quoteStr488 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_27_in_stackName339 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_STRING_in_stackName343 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_STRING_in_pipelineName361 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_selection_in_selectionList379 = new BitSet(new long[]{0x0000000010000002L});
+    public static final BitSet FOLLOW_28_in_selectionList384 = new BitSet(new long[]{0x0000000060000020L});
+    public static final BitSet FOLLOW_selection_in_selectionList388 = new BitSet(new long[]{0x0000000010000002L});
+    public static final BitSet FOLLOW_quoteStr_in_selection408 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_29_in_selection415 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_30_in_selection422 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_conditional_in_conditionalList440 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_30_in_conditional457 = new BitSet(new long[]{0x0000000080000000L});
+    public static final BitSet FOLLOW_31_in_conditional459 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_quoteStr_in_conditional463 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_quoteStr_in_conditional472 = new BitSet(new long[]{0x0000000080000000L});
+    public static final BitSet FOLLOW_31_in_conditional474 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_quoteStr_in_conditional478 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_QUOTESTR_in_quoteStr499 = new BitSet(new long[]{0x0000000000000002L});
 
 }

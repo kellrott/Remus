@@ -41,7 +41,7 @@ public class RemusMiniDB extends RemusDB {
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		if (nodes.containsKey(stack.applet)) {
-			nodes.get(stack.applet).add(stack, jobID, emitID, key, data);
+			nodes.get(stack.applet).add(key, data);
 		} else {
 			base.addData(stack, jobID, emitID, key, data);
 		}
@@ -51,7 +51,7 @@ public class RemusMiniDB extends RemusDB {
 	public boolean containsKey(AppletRef stack, String key)
 	throws NotImplemented, TException {
 		if (nodes.containsKey(stack.applet)) {
-			return nodes.get(stack.applet).containsKey(stack, key);
+			return nodes.get(stack.applet).containsKey(key);
 		} 
 		return base.containsKey(stack, key);
 	}
@@ -77,7 +77,7 @@ public class RemusMiniDB extends RemusDB {
 	public List<String> getValueJSON(AppletRef stack, String key)
 	throws NotImplemented, TException {
 		if (nodes.containsKey(stack.applet)) {
-			return nodes.get(stack.applet).getValueJSON(stack, key);
+			return nodes.get(stack.applet).getValueJSON(key);
 		}
 		return base.getValueJSON(stack, key);
 	}
@@ -92,7 +92,7 @@ public class RemusMiniDB extends RemusDB {
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
 	throws NotImplemented, TException {
 		if (nodes.containsKey(stack.applet)) {
-			return nodes.get(stack.applet).keySlice(stack,keyStart,count);
+			return nodes.get(stack.applet).keySlice(keyStart, count);
 		}
 		return base.keySlice(stack, keyStart, count);
 	}
@@ -118,6 +118,10 @@ public class RemusMiniDB extends RemusDB {
 	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
 			throws NotImplemented, BadPeerName, TException {
 		return base.peerInfo(info);
+	}
+
+	public void reset() {
+		nodes.clear();		
 	}
 
 }

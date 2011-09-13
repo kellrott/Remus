@@ -11,6 +11,7 @@ import org.remus.RemusDB;
 import org.remus.RemusDBSliceIterator;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
+import org.remus.core.BaseStackNode;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
@@ -101,10 +102,13 @@ public class CLICommand {
 
 		RemusPipeline pipeline = cli.getPipeline();
 		RemusApplet applet = null;
+		BaseStackNode stack = null;
 		if (tmp.length == 2) {
 			applet = pipeline.getApplet(tmp[1]);
 		} else if (tmp.length == 3) {
 			applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
+		} else {
+			cli.println("Status request");
 		}
 		if (applet != null) {
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);
