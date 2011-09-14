@@ -42,9 +42,9 @@ public class PeerManager {
 	private Map<String, RemusNet.Iface> ifaceMap = new HashMap<String, Iface>();
 	private Map<String,Integer> ifaceAlloc = new HashMap<String, Integer>();
 
-	
+
 	PingThread pThread;
-	
+
 	public PeerManager(PluginManager pm, List<PeerAddress> seeds) throws NotImplemented, BadPeerName, TException {
 		logger = LoggerFactory.getLogger(PeerManager.class);
 		for (PeerAddress pa : seeds) {
@@ -323,35 +323,44 @@ public class PeerManager {
 		return out;
 	}
 
-	/*
-	public int addLocalPeer(String peerID, RemusNet.Iface iface) {
-		peerList.put(peerID, iface);
-		localPeers.add(peerID);
-		if (servers.containsKey(iface)) {
-			return servers.get(iface).port;
-		}
-		return 0;
-	}
-	 */
-
+	
+	private int dsRobin = 0;
 	public String getDataServer() {
-		Collection<PeerInfoThrift> piList = getPeers();		
+		Collection<PeerInfoThrift> piList = getPeers();
+		List<String> out = new ArrayList<String>(piList.size());
 		for (PeerInfoThrift pi : piList) {
 			if (pi.peerType == PeerType.DB_SERVER) {
-				return pi.peerID;
+				out.add(pi.peerID);
 			}
 		}
-		return null;
+		if (out.size() == 0) {
+			return null;
+		}
+		if (dsRobin >= out.size()) {
+			dsRobin = 0;
+		}
+		dsRobin++;
+		return out.get(dsRobin - 1);
 	}
 
+	private int atRobin = 0;
 	public String getAttachStore() {
 		Collection<PeerInfoThrift> piList = getPeers();		
+		List<String> out = new ArrayList<String>(piList.size());
+
 		for (PeerInfoThrift pi : piList) {
 			if (pi.peerType == PeerType.ATTACH_SERVER) {
-				return pi.peerID;
+				out.add(pi.peerID);
 			}
 		}
-		return null;
+		if (out.size() == 0) {
+			return null;
+		}
+		if (atRobin >= out.size()) {
+			atRobin = 0;
+		}
+		atRobin++;
+		return out.get(atRobin - 1);
 	}
 
 
