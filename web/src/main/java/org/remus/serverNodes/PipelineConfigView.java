@@ -49,7 +49,7 @@ public class PipelineConfigView implements BaseNode {
 	throws FileNotFoundException {
 		if (name.length() == 0) {
 			Map out = new HashMap();		
-			AppletRef ar = new AppletRef(null, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+			AppletRef ar = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 			for (KeyValPair kv : datastore.listKeyPairs(ar)) {
 				out.put(kv.getKey(), kv.getValue());
 			}		

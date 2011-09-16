@@ -187,6 +187,7 @@ public class JettyServer extends RemusWeb {
 		long i = 0;
 		for (String key : keyIter) {
 			keyStack.put(Long.toString(i), key);
+			i++;
 		}
 		synchronized (dbMap) {
 			dbMap.put(tmpStackWork, keyStack);			
@@ -241,7 +242,7 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
 			throws NotImplemented, TException {
-		logger.info("WEB_DB GET: " + stack + " " + key);
+		logger.debug("WEB_DB GET: " + stack + " " + key);
 		synchronized (dbMap) {
 			if (dbMap.containsKey(stack.applet)) {
 				return Arrays.asList(JSON.dumps(dbMap.get(stack.applet).get(key)) );
@@ -258,7 +259,7 @@ public class JettyServer extends RemusWeb {
 	@Override
 	public void addData(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
-		logger.info("WEB_DB addData: " + stack + " " + key);
+		logger.debug("WEB_DB addData: " + stack + " " + key);
 		synchronized (nodeMap) {
 			if (nodeMap.containsKey(stack.applet)) {
 				nodeMap.get(stack.applet).add(key, data);

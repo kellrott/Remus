@@ -168,7 +168,7 @@ public class PeerManager {
 
 
 	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-	throws NotImplemented, BadPeerName, TException {
+			throws NotImplemented, BadPeerName, TException {
 
 		Set<String> diffList = new HashSet(peerMap.keySet());
 		for (PeerInfoThrift peer : info) {
@@ -323,8 +323,8 @@ public class PeerManager {
 		return out;
 	}
 
-	
-	private int dsRobin = 0;
+
+	private Integer dsRobin = 0;
 	public String getDataServer() {
 		Collection<PeerInfoThrift> piList = getPeers();
 		List<String> out = new ArrayList<String>(piList.size());
@@ -336,14 +336,16 @@ public class PeerManager {
 		if (out.size() == 0) {
 			return null;
 		}
-		if (dsRobin >= out.size()) {
-			dsRobin = 0;
+		synchronized (dsRobin) {
+			if (dsRobin >= out.size()) {
+				dsRobin = 0;
+			}
+			dsRobin++;
+			return out.get(dsRobin - 1);
 		}
-		dsRobin++;
-		return out.get(dsRobin - 1);
 	}
 
-	private int atRobin = 0;
+	private Integer atRobin = 0;
 	public String getAttachStore() {
 		Collection<PeerInfoThrift> piList = getPeers();		
 		List<String> out = new ArrayList<String>(piList.size());
@@ -356,11 +358,13 @@ public class PeerManager {
 		if (out.size() == 0) {
 			return null;
 		}
-		if (atRobin >= out.size()) {
-			atRobin = 0;
+		synchronized (atRobin) {	
+			if (atRobin >= out.size()) {
+				atRobin = 0;
+			}
+			atRobin++;
+			return out.get(atRobin - 1);
 		}
-		atRobin++;
-		return out.get(atRobin - 1);
 	}
 
 
