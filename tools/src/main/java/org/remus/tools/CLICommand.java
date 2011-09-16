@@ -122,7 +122,13 @@ public class CLICommand {
 			AppletRef ar = ai.getAppletRef();
 			curStack = new DataStackNode(db, ar);
 		} else {
-			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID());
+			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID()) {
+				@Override
+				public void add(String key, String data) {
+					// TODO Auto-generated method stub
+					
+				}
+			};
 		}
 		if (curStack != null) {
 			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(curStack, "", "", true) {
@@ -183,7 +189,11 @@ public class CLICommand {
 			AppletRef ar = ai.getAppletRef();
 			curStack = new DataStackNode(db, ar);
 		} else {
-			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID());
+			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID()) {
+				@Override
+				public void add(String key, String data) {
+				}
+			};
 		}
 		final BaseStackNode fCurStack = curStack;
 		if (curStack != null) {

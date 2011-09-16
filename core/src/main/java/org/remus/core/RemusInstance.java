@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import java.util.Map;
 import org.apache.thrift.TException;
+import org.json.simple.JSONAware;
 import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
@@ -12,7 +13,7 @@ import org.remus.thrift.RemusNet;
 
 //import org.mpstore.MPStore;
 
-public class RemusInstance implements Comparable<RemusInstance> {
+public class RemusInstance implements Comparable<RemusInstance>, JSONAware {
 
 	UUID id;
 	public static final String STATIC_INSTANCE_STR = "00000000-0000-0000-0000-000000000000";
@@ -67,6 +68,12 @@ public class RemusInstance implements Comparable<RemusInstance> {
 	@Override
 	public boolean equals(Object obj) {
 		return ((RemusInstance)obj).id.equals(this.id);
+	}
+
+
+	@Override
+	public String toJSONString() {
+		return JSON.dumps(id.toString());
 	}
 
 }

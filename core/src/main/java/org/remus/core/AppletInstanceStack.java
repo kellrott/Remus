@@ -16,7 +16,7 @@ import org.remus.thrift.RemusNet.Iface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AppletInstanceStack implements BaseStackNode {
+abstract public class AppletInstanceStack implements BaseStackNode {
 
 	private RemusApp app;
 	private String pipeline;
@@ -69,9 +69,7 @@ public class AppletInstanceStack implements BaseStackNode {
 	}
 
 	@Override
-	public void add(String key, String data) {
-		logger.info("Adding Instance:" + key + " " + data); 
-	}
+	abstract public void add(String key, String data);
 
 	@Override
 	public void delete(String key) {

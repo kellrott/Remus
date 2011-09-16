@@ -1,9 +1,12 @@
 package org.remus.server;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.thrift.TException;
 import org.mortbay.jetty.Server;
@@ -15,7 +18,10 @@ import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
+import org.remus.core.BaseStackIterator;
 import org.remus.core.BaseStackNode;
+import org.remus.core.RemusInstance;
+import org.remus.core.RemusMiniDB;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
@@ -49,6 +55,7 @@ public class JettyServer extends RemusWeb {
 	}
 
 	Map<AppletRef, BaseStackNode> stackMap;
+	private RemusMiniDB miniDB = null;
 
 	@Override
 	public void init(Map params) {
@@ -128,14 +135,20 @@ public class JettyServer extends RemusWeb {
 	}
 
 
+	Map<String,Map<String,Object>> dbMap = new HashMap<String, Map<String,Object>>();
+	Map<String,BaseStackNode> nodeMap = new HashMap<String, BaseStackNode>();
 	@Override
 	public void jsRequest(String string, WorkMode mode,
-			BaseStackNode appletView, MapReduceCallback mapReduceCallback) {
+			BaseStackNode appletView, BaseStackNode appletOut) {
 		String peerID = pm.getPeerID(this);
 		logger.info("Javascript Query: " + peerID);
 		RemusNet.Iface jsWorker = null;
 		//RemusManager manager = pm.getManager();
 		//jsWorker = manager.getWorker("javascript");
+
+		if (miniDB == null) {
+			miniDB = new RemusMiniDB(getDataStore());
+		}
 
 		try {
 			for (String worker : pm.getWorkers("javascript")) {
@@ -147,13 +160,45 @@ public class JettyServer extends RemusWeb {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		String tmpStack = UUID.randomUUID().toString();
+		String tmpStackIn = tmpStack + "_IN";
+		String tmpStackWork = tmpStack + "/@work";
+
 		WorkDesc work = new WorkDesc();
 		work.mode = mode;
-		work.infoJSON = JSON.dumps(new HashMap());
+		Map infoMap = new HashMap();
+		infoMap.put("jsCode", string);
+		Map inMap = new HashMap();
+		inMap.put("_instance", RemusInstance.STATIC_INSTANCE);
+		inMap.put("_applet", tmpStackIn);
+		infoMap.put("_input", inMap);
+		work.setInfoJSON(JSON.dumps(infoMap));
 		work.workStart = 0;
-		work.workEnd = 1;
-		work.lang = "javascript";
 
+
+		BaseStackIterator<String> keyIter = new BaseStackIterator<String>(appletView, "", "", false) {
+			@Override
+			public void processKeyValue(String key, Object val) {
+				addElement(key);
+			}
+		};
+		Map<String,Object> keyStack = new HashMap<String,Object>();
+		long i = 0;
+		for (String key : keyIter) {
+			keyStack.put(Long.toString(i), key);
+		}
+		synchronized (dbMap) {
+			dbMap.put(tmpStackWork, keyStack);			
+		}
+		synchronized (nodeMap) {
+			nodeMap.put(tmpStackIn, appletView);	
+			nodeMap.put(tmpStack, appletOut);	
+		}
+		work.workEnd = keyStack.size();
+		work.setLang("javascript");
+		work.setMode(WorkMode.MAP);
+		work.setWorkStack(new AppletRef("@jsInteractive", RemusInstance.STATIC_INSTANCE_STR, tmpStack));
 		try {
 			String jobID = jsWorker.jobRequest(peerID, null, work);			
 			boolean done = false;
@@ -177,6 +222,15 @@ public class JettyServer extends RemusWeb {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
+		
+		synchronized (dbMap) {
+			dbMap.remove(tmpStackWork);
+		}
+		synchronized (nodeMap) {
+			nodeMap.remove(tmpStackIn);
+			nodeMap.remove(tmpStackWork);
+		}
+		
 	}
 
 	@Override
@@ -186,9 +240,30 @@ public class JettyServer extends RemusWeb {
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
-	throws NotImplemented, TException {
+			throws NotImplemented, TException {
 		logger.info("WEB_DB GET: " + stack + " " + key);
-		return Arrays.asList("test");
+		synchronized (dbMap) {
+			if (dbMap.containsKey(stack.applet)) {
+				return Arrays.asList(JSON.dumps(dbMap.get(stack.applet).get(key)) );
+			}
+		}
+		synchronized (nodeMap) {
+			if (nodeMap.containsKey(stack.applet)) {
+				return nodeMap.get(stack.applet).getValueJSON(key);
+			}
+		}
+		return Arrays.asList();
+	}
+
+	@Override
+	public void addData(AppletRef stack, long jobID, long emitID, String key,
+			String data) throws NotImplemented, TException {
+		logger.info("WEB_DB addData: " + stack + " " + key);
+		synchronized (nodeMap) {
+			if (nodeMap.containsKey(stack.applet)) {
+				nodeMap.get(stack.applet).add(key, data);
+			}
+		}
 	}
 
 }

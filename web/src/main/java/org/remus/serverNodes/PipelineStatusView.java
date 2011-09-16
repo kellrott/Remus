@@ -16,6 +16,7 @@ import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
+import org.remus.core.AppletInstanceStack;
 import org.remus.core.BaseStackNode;
 import org.remus.core.DataStackInfo;
 import org.remus.core.RemusApplet;
@@ -147,12 +148,14 @@ public class PipelineStatusView implements BaseNode {
 				}
 			} while (len >= 0);
 
-			/*
-			web.jsRequest(sb.toString(), WorkMode.MAP, this, new MapReduceCallback(null, null, null, null, null) {
+			
+			AppletInstanceStack ai =  new AppletInstanceStack(web.getDataStore(), web.getAttachStore(), pipeline.getID()) {
+
 				@Override
-				public void emit(String key, Object val) {
+				public void add(String key, String data) {
+					// TODO Auto-generated method stub
 					Map out = new HashMap();
-					out.put(key, val);		
+					out.put(key, data);
 					try {
 						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());
@@ -161,9 +164,10 @@ public class PipelineStatusView implements BaseNode {
 						e.printStackTrace();
 					}
 				}
-			}
-			);
-			 */
+			};
+			
+			web.jsRequest(sb.toString(), WorkMode.MAP, ai, ai);
+			 
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

@@ -19,7 +19,7 @@ public abstract class RemusWeb extends RemusPeer {
 	abstract public RemusDB getDataStore();
 	abstract public void jsRequest(String string, WorkMode map, 
 			BaseStackNode appletView,
-			MapReduceCallback mapReduceCallback);
+			BaseStackNode appletOut);
 
 	
 

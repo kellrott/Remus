@@ -60,7 +60,7 @@ public class JSWorker extends RemusWorker {
 		RemusNet.Iface attach = plugins.getPeerManager().getPeer(attachServer);
 		
 		JSFunctionCall js = new JSFunctionCall();
-		WorkEngine we = new WorkEngine(work, (RemusDB) db, (RemusAttach) attach, js);		
+		WorkEngine we = new WorkEngine(work, RemusDB.wrap(db), RemusAttach.wrap(attach), js);		
 		executor.submit(we);
 		String jobName = UUID.randomUUID().toString();
 		workMap.put(jobName, we);
