@@ -1,12 +1,13 @@
 
 all : 
-	mvn package -DskipTests
+	mkdir -p lib
+	mvn install -DskipTests
 	mvn dependency:copy-dependencies
-	cp -n */target/dependency/*.jar */target/*.jar lib/
+	find */target/dependency/*.jar */target/*.jar -exec cp \{\} ./lib \;
 
 eclipse : 
 	mvn eclipse:eclipse
 
 clean :
 	mvn clean
-	rm -rf target
+	rm -rf lib

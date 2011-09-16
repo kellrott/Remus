@@ -40,51 +40,40 @@ REMUS_DIR is the downloaded directory, and should have a ‘README’ file, a �
 3) Build:
 make
 
-3.1) Cassandra Enabled Python Client
-
-The remus client will work without these libraries, but having them makes data access much faster:
-
-easy_install pycassa
-easy_install thrift05
-
-
 4) Server properties file:
 
-Edit the ‘etc/remus.prop’ file to setup your custom parameters. 
+Edit the ‘remusProp.yaml’ file to setup your custom parameters. 
 
 Example Server Properties:
 
-org.remus.port = 16017
-org.remus.mpstore = org.mpstore.ThriftStore
-org.remus.attachstore = org.mpstore.FileAttachStore
+#JavaScript Worker
+org.remus.js.JSWorker : ~
 
-org.mpstore.FileAttachStore.dir = /opt/remus
-org.mpstore.FileAttachStore.shared = true
+#The Web Server
+org.remus.server.JettyServer : ~ 
 
-org.mpstore.ThriftStore.columnFamily = remusTable
-org.mpstore.ThriftStore.keySpace = remus
-org.mpstore.ThriftStore.instColumns = false
+#Cassandra Data Server
+org.remus.cassandra.Server :
+    config :
+        columnFamily : remusTable
+        keySpace : remus
 
-org.remus.workManage = org.remus.manage.PassiveManager
+#File System Attachment Server
+org.remus.fs.FileServer : 
+    config :
+        dir : /opt/remus
+        shared : false
 
+#Work Management Server
+org.remus.manage.WorkManager : ~
 
-Properties Definitions:
-
-org.remus.port - Define the Internet Port Remus should live on
-org.remus.mpstore - Define the driver Remus should use to store Map/Reduce related key-pair values  
-org.remus.attachstore - Define the driver Remus should use to store File attachments
-
-org.mpstore.FileAttachStore.dir - Define a directory to hold file attachments
-org.mpstore.FileAttachStore.shared - The file attachment directory is a shared folder accross worker machines
-
-org.mpstore.ThriftStore.server - The host where the Cassandra instance lives (default: localhost)
-org.mpstore.ThriftStore.port - The port to contact the Cassandra server (default: 9160)
-org.mpstore.ThriftStore.keySpace - The Cassandra keyspace to be used by the ThriftStore driver
-org.mpstore.ThriftStore.columnFamily - The Cassandra column family to be used by the ThriftStore driver
+#Instance configuration (logging information)
+config:
+    log4jParamFile : log4j.properties
 
 
 5) Server Startup
-To start the master server, in REMUS_DIR run ./bin/remusMaster
+To start the master server, in REMUS_DIR run ./bin/remusMaster remusProp.yaml
 
 6) Load site
 Point your web browser to the server, for example: http://localhost:16017/@manage/
