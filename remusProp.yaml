@@ -1,0 +1,16 @@
+org.remus.js.JSWorker : ~
+org.remus.server.JettyServer : ~ 
+org.remus.cassandra.Server :
+    config :
+        columnFamily : remusTable
+        keySpace : remus
+
+org.remus.fs.FileServer : 
+    config :
+        dir : /opt/remus
+        shared : false
+
+org.remus.manage.WorkManager : ~
+
+config:
+    log4jParamFile : log4j.properties
