@@ -1,9 +1,8 @@
 package org.remus.server;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,7 +21,6 @@ import org.remus.core.BaseStackIterator;
 import org.remus.core.BaseStackNode;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusMiniDB;
-import org.remus.mapred.MapReduceCallback;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
@@ -70,13 +68,12 @@ public class JettyServer extends RemusWeb {
 		System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "0");		
 
 		int serverPort = DEFAULT_PORT;
-		if (params != null && params.containsKey("org.remus.port")) {
-			serverPort = Integer.parseInt(params.get("org.remus.port").toString());
+		if (params != null && params.containsKey("port")) {
+			serverPort = Integer.parseInt(params.get("port").toString());
 		}
 
 		server = new Server(serverPort);
 		Context root = new Context(server, "/", Context.SESSIONS);
-		ServletHolder sh = new ServletHolder(new MasterServlet(this));
 
 		/*
 		for (Map.Entry<Object, Object> propItem : prop.entrySet()) {
@@ -85,6 +82,16 @@ public class JettyServer extends RemusWeb {
 			sh.setInitParameter(key, value);
 		}
 		 */		
+		
+		if (params.containsKey("fileDir")) {
+			Map dirMap = (Map)params.get("fileDir");
+			for (Object name : dirMap.keySet() ) {
+				FileServlet fs = new FileServlet( (String)name, new File((String)dirMap.get(name)) );
+				root.addServlet(new ServletHolder(fs), "/" + (String)name + "/*");
+			}
+		}
+
+		ServletHolder sh = new ServletHolder(new MasterServlet(this));
 
 		root.addServlet(sh, "/*");
 
