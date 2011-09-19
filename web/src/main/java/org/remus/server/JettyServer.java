@@ -83,7 +83,7 @@ public class JettyServer extends RemusWeb {
 		}
 		 */		
 		
-		if (params.containsKey("fileDir")) {
+		if (params != null && params.containsKey("fileDir")) {
 			Map dirMap = (Map)params.get("fileDir");
 			for (Object name : dirMap.keySet() ) {
 				FileServlet fs = new FileServlet( (String)name, new File((String)dirMap.get(name)) );

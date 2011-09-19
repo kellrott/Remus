@@ -30,12 +30,12 @@ public class MasterServlet extends HttpServlet {
 	//	String workDir;
 	String srcDir;
 	Map<String, String> configMap;
+	private RemusWeb web;
 
 	public MasterServlet(RemusWeb web) throws RemusDatabaseException {
-		app = new RemusApp(web.getDataStore(), web.getAttachStore());
-		appView = new AppView(app, web);
+		this.web = web;
 	}
-		
+
 	/**
 	 * 
 	 */
@@ -54,6 +54,17 @@ public class MasterServlet extends HttpServlet {
 		return workerID;
 	}
 
+	private void appInit() {
+		if (appView == null) {
+			try {
+				app = new RemusApp(web.getDataStore(), web.getAttachStore());
+				appView = new AppView(app, web);
+			} catch (RemusDatabaseException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
@@ -62,6 +73,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
+			appInit();
 			appView.passCall(AppView.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
@@ -75,20 +87,21 @@ public class MasterServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		
+
 		String fullPath = (new File(req.getRequestURI())).getAbsolutePath();
 		try {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
+			appInit();
 			appView.passCall(AppView.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
 		} catch (FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
 		}	
-		
-		
+
+
 	}
 
 
@@ -101,6 +114,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
+			appInit();
 			appView.passCall(AppView.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
@@ -110,7 +124,7 @@ public class MasterServlet extends HttpServlet {
 	}
 
 
-	
+
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {		
@@ -119,6 +133,7 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
+			appInit();
 			appView.passCall(AppView.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
