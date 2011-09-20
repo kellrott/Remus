@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.EcmaError;
 import org.mozilla.javascript.Function;
@@ -30,10 +31,14 @@ public class JSFunctionCall implements MapReduceFunction {
 			public Scriptable wrapAsJavaObject(Context cx, Scriptable scope, Object javaObject, Class staticType) {
 				//System.out.println( javaObject );
 				if (javaObject instanceof Map) {
-					return new ScriptMap((Map)javaObject);
+					return new ScriptMap((Map) javaObject);
 				}
 				if (javaObject instanceof List) {
 					return new NativeArray(((List) javaObject).toArray());
+				}
+				if (javaObject instanceof JSONObject) {
+					JSONObject jobj = (JSONObject) javaObject;
+					return new ScriptMap(jobj);
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			};

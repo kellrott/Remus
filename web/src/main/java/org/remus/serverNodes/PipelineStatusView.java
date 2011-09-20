@@ -155,7 +155,7 @@ public class PipelineStatusView implements BaseNode {
 				public void add(String key, String data) {
 					// TODO Auto-generated method stub
 					Map out = new HashMap();
-					out.put(key, data);
+					out.put(key, JSON.loads(data));
 					try {
 						os.write(JSON.dumps(out).getBytes());
 						os.write("\n".getBytes());

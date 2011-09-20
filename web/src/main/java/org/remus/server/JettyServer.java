@@ -82,7 +82,7 @@ public class JettyServer extends RemusWeb {
 			sh.setInitParameter(key, value);
 		}
 		 */		
-		
+
 		if (params != null && params.containsKey("fileDir")) {
 			Map dirMap = (Map)params.get("fileDir");
 			for (Object name : dirMap.keySet() ) {
@@ -159,7 +159,9 @@ public class JettyServer extends RemusWeb {
 
 		try {
 			for (String worker : pm.getWorkers("javascript")) {
-				jsWorker = pm.getPeer(worker);
+				if (jsWorker == null) {
+					jsWorker = pm.getPeer(worker);
+				}
 			}
 		} catch (TException e) {
 			e.printStackTrace();
@@ -208,7 +210,7 @@ public class JettyServer extends RemusWeb {
 		work.setMode(WorkMode.MAP);
 		work.setWorkStack(new AppletRef("@jsInteractive", RemusInstance.STATIC_INSTANCE_STR, tmpStack));
 		try {
-			String jobID = jsWorker.jobRequest(peerID, null, work);			
+			String jobID = jsWorker.jobRequest(peerID, null, work);
 			boolean done = false;
 			do {
 				JobStatus stat = jsWorker.jobStatus(jobID);
@@ -230,7 +232,7 @@ public class JettyServer extends RemusWeb {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
-		
+
 		synchronized (dbMap) {
 			dbMap.remove(tmpStackWork);
 		}
@@ -238,7 +240,7 @@ public class JettyServer extends RemusWeb {
 			nodeMap.remove(tmpStackIn);
 			nodeMap.remove(tmpStackWork);
 		}
-		
+
 	}
 
 	@Override
@@ -248,16 +250,17 @@ public class JettyServer extends RemusWeb {
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		logger.debug("WEB_DB GET: " + stack + " " + key);
 		synchronized (dbMap) {
 			if (dbMap.containsKey(stack.applet)) {
-				return Arrays.asList(JSON.dumps(dbMap.get(stack.applet).get(key)) );
+				return Arrays.asList(JSON.dumps(dbMap.get(stack.applet).get(key)));
 			}
 		}
 		synchronized (nodeMap) {
 			if (nodeMap.containsKey(stack.applet)) {
-				return nodeMap.get(stack.applet).getValueJSON(key);
+				List<String> out = nodeMap.get(stack.applet).getValueJSON(key);
+				return out;
 			}
 		}
 		return Arrays.asList();
