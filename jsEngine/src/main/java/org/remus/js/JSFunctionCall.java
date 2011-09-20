@@ -20,11 +20,12 @@ import org.remus.mapred.NotSupported;
 public class JSFunctionCall implements MapReduceFunction {
 
 	Context cx;
-	private JSFunction currentFunction;	
+	private JSFunction currentFunction;
+	private WrapFactory wrap;	
 
 	public JSFunctionCall() {
 		cx = Context.enter();
-		cx.setWrapFactory( new WrapFactory() {
+		wrap = new WrapFactory() {
 			@SuppressWarnings("unchecked")
 
 			@Override
@@ -45,21 +46,19 @@ public class JSFunctionCall implements MapReduceFunction {
 
 
 			@Override
-			public Scriptable wrapNewObject(Context cx, Scriptable scope,
-					Object obj) {
-				System.err.println( "NEW:" + obj );
+			public Scriptable wrapNewObject(Context cx, Scriptable scope, Object obj) {
+				System.err.println("NEW:" + obj);
 				return super.wrapNewObject(cx, scope, obj);
 			}
 
 			@Override
-			public Object wrap(Context cx, Scriptable scope, Object obj,
-					Class staticType) {
+			public Object wrap(Context cx, Scriptable scope, Object obj, Class staticType) {
 				Object out = super.wrap(cx, scope, obj, staticType);
 				//System.err.println( "WRAP:" + obj + " " + staticType + " " + out);
 				return out;
 			}
-
-		});					
+		};		
+		cx.setWrapFactory(wrap);
 	}
 
 
@@ -69,14 +68,16 @@ public class JSFunctionCall implements MapReduceFunction {
 		public void call(String key, Object val) {
 			Scriptable scope = cx.initStandardObjects();
 			cx = Context.enter();
-			func.call(cx, scope, null, new Object [] { key, val });
+			cx.setWrapFactory(wrap);
+			func.call(cx, scope, null, new Object [] { key, cx.javaToJS(val, scope)});
 		}
 	}
 
 	private JSFunction compileFunction(String source, String fileName) {
 		try {
 			Scriptable scope = cx.initStandardObjects();
-			cx = Context.enter();
+			cx.enter();
+			cx.setWrapFactory(wrap);
 			JSFunction jfunc = new JSFunction();
 			jfunc.emit = new EmitInterface();
 			Function out = cx.compileFunction(scope, source, fileName, 1, null);
