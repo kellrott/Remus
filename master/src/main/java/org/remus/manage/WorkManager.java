@@ -56,7 +56,7 @@ public class WorkManager extends RemusManager {
 	private RemusMiniDB miniDB;
 
 	private RemusNet.Iface db, attach;
-	
+
 	PeerManager peerManager;
 
 	public static int INACTIVE_SLEEP_TIME = 30000;
@@ -86,7 +86,7 @@ public class WorkManager extends RemusManager {
 		 * it is used to create the '/@agent' applets, which view all the applet instance
 		 * records as a single stack
 		 */
-		
+
 		db = peerManager.getPeer(peerManager.getDataServer());
 		attach = peerManager.getPeer(peerManager.getAttachStore());			
 
@@ -96,7 +96,7 @@ public class WorkManager extends RemusManager {
 		sThread.start();
 	}
 
-	
+
 	private void setupAIStack() throws RemusDatabaseException, TException {		
 		RemusApp app = new RemusApp(db, attach);		
 		miniDB.reset();
@@ -108,7 +108,7 @@ public class WorkManager extends RemusManager {
 			miniDB.addBaseStack("/@agent?" + pipeline, aiStack);
 		}
 	}
-	
+
 	private class RemoteJob {
 		private String peerID;
 		private String jobID;
@@ -227,22 +227,26 @@ public class WorkManager extends RemusManager {
 		public void run() {
 			while (!quit) {
 				Boolean workChange = false;
-				//First, scan all of the stacks to find active worksets
-				scanJobs();
-				//scan the workers, start assigning untouched work to workers that aren't over limit
-				if (workSchedule()) {
-					workChange = true;
-				}
-				//collect and clean finished jobs
 				try {
-					if (cleanJobs()) {
+					//First, scan all of the stacks to find active worksets
+					scanJobs();
+					//scan the workers, start assigning untouched work to workers that aren't over limit
+					if (workSchedule()) {
 						workChange = true;
 					}
-				} catch (TException e) {
-					e.printStackTrace();
-				} catch (NotImplemented e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					//collect and clean finished jobs
+					try {
+						if (cleanJobs()) {
+							workChange = true;
+						}
+					} catch (TException e) {
+						e.printStackTrace();
+					} catch (NotImplemented e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} catch (Exception e) {
+					logger.error(e.getMessage());
 				}
 				try {
 					if (!workChange) {
