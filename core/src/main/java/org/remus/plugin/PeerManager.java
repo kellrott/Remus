@@ -34,11 +34,10 @@ public class PeerManager {
 
 	private Logger logger;
 
-	private PingThread pingThread;
 	private Map<String,PeerInfoThrift> peerMap = new HashMap<String, PeerInfoThrift>();
-	private Map<String,Long> lastStat = new HashMap<String, Long>();
+	private Map<String,ArrayList<Long>> failTimes = new HashMap<String, ArrayList<Long>>();
 	private Set<String> localPeers = new HashSet<String>();
-
+	private Map<String,Long> deadTime = new HashMap<String, Long>();
 	private Map<String, RemusNet.Iface> ifaceMap = new HashMap<String, Iface>();
 	private Map<String,Integer> ifaceAlloc = new HashMap<String, Integer>();
 
@@ -58,18 +57,28 @@ public class PeerManager {
 		pThread.quit();
 	}
 
+	public static final int FAIL_COUNT = 5;
+	public static final int FAIL_TIMEPERIOD = 120000;
+	public static final int DEAD_TIMEPERIOD = 6000;
+
 	class PingThread extends Thread {
 		private static final long SLEEPTIME = 30000;
+		private static final long PAUSETIME = 3000;
 		boolean quit = false;
 		Integer waitLock = new Integer(0);
 
 		@Override
 		public void run() {
 			while (!quit) {
-				update();
+				boolean change = update();
+				removeFailed();
 				synchronized (waitLock) {			
 					try {
-						waitLock.wait(SLEEPTIME);
+						if (change) {
+							waitLock.wait(PAUSETIME);
+						} else {
+							waitLock.wait(SLEEPTIME);
+						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -78,6 +87,11 @@ public class PeerManager {
 			}
 		}
 
+		public void touch() {
+			synchronized (waitLock) {
+				waitLock.notifyAll();	
+			}
+		}
 		public void quit() {
 			quit = true;
 			synchronized (waitLock) {
@@ -86,19 +100,53 @@ public class PeerManager {
 		}
 	}
 
-	public void flushOld(long oldest) {
-		long minPing = (new Date()).getTime() - oldest;
-		List<String> removeList = new LinkedList<String>();
+	public void peerFailure(String peerID) {
+		if (!failTimes.containsKey(peerID)) {
+			failTimes.put(peerID, new ArrayList<Long>());
+		}
+		ArrayList<Long> times = failTimes.get(peerID);
+		times.add((new Date()).getTime());
+		if (times.size() > FAIL_COUNT * 2) {
+			times.remove(0);
+		}
+	}
+
+	public void removeFailed() {
+		long minTime = (new Date()).getTime() - FAIL_TIMEPERIOD;
 		synchronized (peerMap) {
-			synchronized (lastStat) {
-				for (String name : lastStat.keySet()) {
-					if (lastStat.get(name) < minPing) {
-						removeList.add(name);
+			synchronized (failTimes) {
+				List<String> failList = new LinkedList<String>();
+				for (String name : failTimes.keySet()) {
+					int fail = 0;
+					for (long time : failTimes.get(name)) {
+						if (time < minTime) {
+							fail++;
+						}
+					}
+					if (fail >= FAIL_COUNT) {
+						failList.add(name);
 					}
 				}
-				for (String name : removeList) {
-					peerMap.put(name, null);
+				for (String name : failList) {
+					logger.info("Setting Peer " + name + " DEAD");
+					peerMap.get(name).peerType = PeerType.DEAD;
+					deadTime.put(name, (new Date()).getTime());
 				}
+			}
+
+			List<String> removeList = new LinkedList<String>();
+			for (String name : deadTime.keySet()) {
+				long dTime = (new Date()).getTime() - DEAD_TIMEPERIOD;
+				if (deadTime.get(name) < dTime ) {
+					removeList.add(name);
+				}
+			}
+			
+			for (String name : removeList) {
+				logger.info("Removing DEAD Peer " + name );
+				peerMap.remove(name);
+				failTimes.remove(name);
+				deadTime.remove(name);
 			}
 		}
 	}
@@ -122,36 +170,44 @@ public class PeerManager {
 	}
 
 
-	public void reqPeerInfo(RemusNet.Iface remote) throws NotImplemented, BadPeerName, TException {
-		List<PeerInfoThrift> ret = remote.peerInfo(new LinkedList(peerMap.values()));
-		for (PeerInfoThrift pi : ret) {
-			if (pi.peerType != PeerType.DEAD) {
-				logger.info("RECEIVED PEER: " + pi.peerID);
-				peerMap.put(pi.peerID, pi);
+	public boolean reqPeerInfo(RemusNet.Iface remote) throws NotImplemented, BadPeerName, TException {
+		boolean changed = false;
+		synchronized (peerMap) {
+			List<PeerInfoThrift> ret = remote.peerInfo(new LinkedList(peerMap.values()));
+			for (PeerInfoThrift pi : ret) {
+				if (pi.peerType != PeerType.DEAD) {
+					logger.info("RECEIVED PEER: " + pi.peerID);
+					peerMap.put(pi.peerID, pi);
+					changed = true;
+				}
 			}
 		}
+		return changed;
 	}
 
-	public void update() {
+	public boolean update() {
 		Random r = new Random();
 		int tries = 0;
+		boolean change = false;
 		PeerInfoThrift pi = null;
 		if (peerMap.isEmpty()) {
-			return;
+			return false;
 		}
 		do {
-			List<PeerInfoThrift> s = new ArrayList<PeerInfoThrift>(peerMap.values());
-			pi = s.get(r.nextInt(s.size()));
-			if (localPeers.contains(pi.peerID)) {
-				pi = null;
+			synchronized (peerMap) {				
+				List<PeerInfoThrift> s = new ArrayList<PeerInfoThrift>(peerMap.values());
+				pi = s.get(r.nextInt(s.size()));
+				if (localPeers.contains(pi.peerID)) {
+					pi = null;
+				}
+				tries++;
 			}
-			tries++;
 		} while (pi == null && tries < 5);
 		if (pi != null) {
 			try {
 				RemusNet.Iface remote = getPeer(pi.peerID);
 				if (remote != null) {
-					reqPeerInfo(remote);
+					change = reqPeerInfo(remote);
 					returnPeer(remote);
 				}
 			} catch (TException e) {
@@ -164,38 +220,47 @@ public class PeerManager {
 				e.printStackTrace();
 			}
 		}
+		return change;
 	}
 
 
 	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-			throws NotImplemented, BadPeerName, TException {
-
-		Set<String> diffList = new HashSet(peerMap.keySet());
-		for (PeerInfoThrift peer : info) {
-			if (!peerMap.containsKey(peer.peerID)) {
-				if (peer.peerType != PeerType.DEAD) {
-					logger.info("Adding peer: " + peer.peerID);
-					peerMap.put(peer.peerID, peer);
-				}
-			} else {
-				if (peer.peerType == PeerType.DEAD) {
-					if (peerMap.get(peer.peerID).peerType != PeerType.DEAD) {
-						peerMap.get(peer.peerID).peerType = PeerType.DEAD;
+	throws NotImplemented, BadPeerName, TException {
+		boolean change = false;
+		List<PeerInfoThrift> out = new LinkedList<PeerInfoThrift>();
+		synchronized (peerMap) {			
+			Set<String> diffList = new HashSet(peerMap.keySet());
+			for (PeerInfoThrift peer : info) {
+				if (!peerMap.containsKey(peer.peerID)) {
+					if (peer.peerType != PeerType.DEAD) {
+						logger.info("Adding peer: " + peer.peerID);
+						peerMap.put(peer.peerID, peer);
+						change = true;
 					}
 				} else {
-					if (peerMap.get(peer.peerID).peerType != PeerType.DEAD) {
-						diffList.remove(peer.peerID);
+					if (peer.peerType == PeerType.DEAD) {
+						if (peerMap.get(peer.peerID).peerType != PeerType.DEAD) {
+							logger.info("DEAD peer news: " + peer.peerID);
+							peerMap.get(peer.peerID).peerType = PeerType.DEAD;
+							change = true;
+						}
+					} else {
+						if (peerMap.get(peer.peerID).peerType != PeerType.DEAD) {
+							diffList.remove(peer.peerID);
+						}
 					}
+				}
+			}
+
+			for (String peerID : diffList) {
+				PeerInfoThrift peer = peerMap.get(peerID);
+				if (peer.peerType != PeerType.DEAD) {
+					out.add(peer);
 				}
 			}
 		}
-
-		List<PeerInfoThrift> out = new LinkedList<PeerInfoThrift>();
-		for (String peerID : diffList) {
-			PeerInfoThrift peer = peerMap.get(peerID);
-			if (peer.peerType != PeerType.DEAD) {
-				out.add(peer);
-			}
+		if (change) {
+			pThread.touch();
 		}
 		return out;
 	}
@@ -245,8 +310,7 @@ public class PeerManager {
 				ifaceAlloc.put(peerID, 1);
 				return r;
 			} catch (TTransportException e) {
-				//peer appears to be dead, mark as such
-				peerMap.get(p.peerID).peerType = PeerType.DEAD;
+				peerFailure(peerID);
 			}
 		}
 		return null;
@@ -262,7 +326,7 @@ public class PeerManager {
 		if (peerID != null && !localPeers.contains(peerID)) {
 			int c = ifaceAlloc.get(peerID);
 			if (c <= 1) {
-				logger.debug("RELEASE connection: " + peerID);
+				//logger.debug("RELEASE connection: " + peerID);
 				((RemusRemote) iface).close();
 				ifaceAlloc.remove(peerID);
 				ifaceMap.remove(peerID);

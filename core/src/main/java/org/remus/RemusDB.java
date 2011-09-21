@@ -16,7 +16,6 @@ import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
-import org.remus.thrift.RemusNet.Iface;
 
 public abstract class RemusDB extends RemusPeer {
 

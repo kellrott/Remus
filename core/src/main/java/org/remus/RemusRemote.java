@@ -18,7 +18,8 @@ import org.remus.thrift.WorkDesc;
 import org.remus.thrift.RemusNet.Iface;
 
 public class RemusRemote implements RemusNet.Iface {
-
+	public static final int REMOTE_TIMEOUT = 60000;
+	
 	private Byte [] lock = new Byte[0];
 	private Iface iface;
 	private String host = null;
@@ -36,6 +37,7 @@ public class RemusRemote implements RemusNet.Iface {
 			TSocket transport = new TSocket(host, port);
 			TBinaryProtocol protocol = new TBinaryProtocol(transport);
 			transport.open();
+			transport.setTimeout(REMOTE_TIMEOUT);
 			iface = new RemusNet.Client(protocol);
 		}
 	}
