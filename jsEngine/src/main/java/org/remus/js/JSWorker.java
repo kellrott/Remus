@@ -56,11 +56,13 @@ public class JSWorker extends RemusWorker {
 	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
 			throws TException {
 		logger.info("Received job request: " + work.mode + " " + work.workStack);
-		RemusNet.Iface db = plugins.getPeerManager().getPeer(dataServer);
-		RemusNet.Iface attach = plugins.getPeerManager().getPeer(attachServer);
+		RemusNet.Iface dbIface = plugins.getPeerManager().getPeer(dataServer);
+		RemusNet.Iface attachIface = plugins.getPeerManager().getPeer(attachServer);		
+		RemusDB db = RemusDB.wrap(dbIface);
+		RemusAttach attach = RemusAttach.wrap(attachIface);
 		
 		JSFunctionCall js = new JSFunctionCall();
-		WorkEngine we = new WorkEngine(work, RemusDB.wrap(db), RemusAttach.wrap(attach), js);		
+		WorkEngine we = new WorkEngine(work, db, attach, js);		
 		executor.submit(we);
 		String jobName = UUID.randomUUID().toString();
 		workMap.put(jobName, we);

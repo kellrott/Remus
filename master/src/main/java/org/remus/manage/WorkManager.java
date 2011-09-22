@@ -548,7 +548,7 @@ public class WorkManager extends RemusManager {
 			Map aiMap = new HashMap();
 			for (AppletInstance ai : activeStacks.keySet()) {
 				List o = new LinkedList();
-				for ( RemoteJob rj : activeStacks.get(ai) ) {
+				for (RemoteJob rj : activeStacks.get(ai)) {
 					o.add(rj.peerID);
 				}
 				aiMap.put(ai.toString(), o);

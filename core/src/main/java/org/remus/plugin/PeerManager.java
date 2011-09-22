@@ -70,8 +70,13 @@ public class PeerManager {
 		@Override
 		public void run() {
 			while (!quit) {
-				boolean change = update();
-				removeFailed();
+				boolean change = false;
+				if (update()) {
+					change = true;
+				}
+				if (removeFailed()) {
+					change = true;
+				}
 				synchronized (waitLock) {			
 					try {
 						if (change) {
@@ -101,54 +106,74 @@ public class PeerManager {
 	}
 
 	public void peerFailure(String peerID) {
-		if (!failTimes.containsKey(peerID)) {
-			failTimes.put(peerID, new ArrayList<Long>());
+		synchronized (failTimes) {			
+			if (!failTimes.containsKey(peerID)) {
+				failTimes.put(peerID, new ArrayList<Long>());
+			}
+			ArrayList<Long> times = failTimes.get(peerID);
+			times.add((new Date()).getTime());
+			if (times.size() > FAIL_COUNT * 2) {
+				times.remove(0);
+			}
 		}
-		ArrayList<Long> times = failTimes.get(peerID);
-		times.add((new Date()).getTime());
-		if (times.size() > FAIL_COUNT * 2) {
-			times.remove(0);
-		}
+		removeFailed();
 	}
 
-	public void removeFailed() {
+	public boolean removeFailed() {
+		boolean change = false;
 		long minTime = (new Date()).getTime() - FAIL_TIMEPERIOD;
-		synchronized (peerMap) {
-			synchronized (failTimes) {
-				List<String> failList = new LinkedList<String>();
-				for (String name : failTimes.keySet()) {
-					int fail = 0;
-					for (long time : failTimes.get(name)) {
-						if (time < minTime) {
-							fail++;
-						}
-					}
-					if (fail >= FAIL_COUNT) {
-						failList.add(name);
+		List<String> failList = new LinkedList<String>();
+		synchronized (failTimes) {
+			for (String name : failTimes.keySet()) {
+				int fail = 0;
+				for (long time : failTimes.get(name)) {
+					if (time > minTime) {
+						fail++;
 					}
 				}
-				for (String name : failList) {
-					logger.info("Setting Peer " + name + " DEAD");
-					peerMap.get(name).peerType = PeerType.DEAD;
-					deadTime.put(name, (new Date()).getTime());
+				if (fail >= FAIL_COUNT) {
+					failList.add(name);
 				}
 			}
-
-			List<String> removeList = new LinkedList<String>();
+		}
+		synchronized (peerMap) {
+			for (String name : failList) {
+				logger.info("Setting Peer " + name + " DEAD");
+				peerMap.get(name).peerType = PeerType.DEAD;
+			}
+		}
+		List<String> removeList = new LinkedList<String>();
+		synchronized (deadTime) {
+			for (String name : failList) {
+				deadTime.put(name, (new Date()).getTime());
+				change = true;
+			}
 			for (String name : deadTime.keySet()) {
 				long dTime = (new Date()).getTime() - DEAD_TIMEPERIOD;
-				if (deadTime.get(name) < dTime ) {
+				if (deadTime.get(name) < dTime) {
 					removeList.add(name);
 				}
 			}
-			
+		}
+		synchronized (peerMap) {
 			for (String name : removeList) {
-				logger.info("Removing DEAD Peer " + name );
+				logger.info("Removing DEAD Peer " + name);
 				peerMap.remove(name);
+			}
+		}
+
+		synchronized (failTimes) {
+			for (String name : removeList) {
 				failTimes.remove(name);
+			}			
+		}
+
+		synchronized (deadTime) {
+			for (String name : removeList) {
 				deadTime.remove(name);
 			}
 		}
+		return change;
 	}
 
 	public static String getDefaultAddress() throws UnknownHostException, SocketException {
@@ -211,7 +236,7 @@ public class PeerManager {
 					returnPeer(remote);
 				}
 			} catch (TException e) {
-				e.printStackTrace();			
+				peerFailure(pi.peerID);
 			} catch (NotImplemented e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

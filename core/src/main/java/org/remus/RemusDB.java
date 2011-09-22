@@ -21,6 +21,9 @@ public abstract class RemusDB extends RemusPeer {
 
 	
 	public static RemusDB wrap(final RemusNet.Iface db) {
+		if (db == null) {
+			return null;
+		}
 		if (db instanceof RemusDB) {
 			return (RemusDB) db;
 		}

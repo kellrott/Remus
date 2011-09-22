@@ -28,6 +28,9 @@ public abstract class RemusAttach extends RemusPeer {
 	
 	
 	public static RemusAttach wrap(final RemusNet.Iface attach) {
+		if (attach == null) {
+			return null;
+		}
 		if (attach instanceof RemusAttach) {
 			return (RemusAttach) attach;
 		}

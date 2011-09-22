@@ -60,6 +60,9 @@ public class PipelineView implements BaseNode {
 
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os) throws FileNotFoundException {
+		if (name.length() > 0) {
+			throw new FileNotFoundException();
+		}
 		Map out = new HashMap();
 		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 		for (KeyValPair kv : pipe.getSubmits()) {

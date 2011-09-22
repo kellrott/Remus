@@ -240,7 +240,7 @@ public class RemusPipeline {
 		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
 
 		try {
-			//if (!datastore.containsKey(arSubmit, key)) {
+			if (!datastore.containsKey(arSubmit, key)) {
 				value.setSubmitKey(key);
 				value.setInstance(inst);
 				datastore.add(arSubmit,
@@ -248,7 +248,7 @@ public class RemusPipeline {
 						(Long) 0L,
 						key,
 						value);
-			//}
+			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
