@@ -5,7 +5,7 @@ import json
 from urllib2 import urlopen
 from urllib  import quote
 from urlparse import urlparse
-import remus
+
 import imp
 from cStringIO import StringIO
 import callback
@@ -61,7 +61,7 @@ class miniFileCallBack:
 
 class miniNetCallback(miniFileCallBack):
 	def __init__(self, path, appletName, appletDesc ):
-		miniFileCallBack.__init__( path, appletName, appletDesc )
+		miniFileCallBack.__init__( self, path, appletName, appletDesc )
 		a = urlparse( path )
 		self.server = a.scheme + "://" + a.netloc + "/"
 		self.url = path
@@ -84,12 +84,12 @@ class miniNetCallback(miniFileCallBack):
 
 
 class ServerWrapperGen:
-	def __init__(server, pipeline, instance):
+	def __init__(self, server, pipeline, instance):
 		self.server = server
 		self.pipeline = pipeline
 		self.instance = instance
 	
-	def getWapper( self, applet ):
+	def getWrapper( self, applet ):
 		return remusLib.StackWrapper( self.server, "DEBUG", self.pipeline, self.instance, applet )
 
 class FileWrapper:
@@ -141,13 +141,13 @@ def main( argv ):
 	appletDesc = json.loads( open( pipePath ).read() )[ applet ]
 	
 	if input.startswith( "http://" ) or input.startswith( "https://" ):
-		h = urlparse( instPath )
+		h = urlparse( input )
 		server = "%s://%s" % ( h.scheme, h.netloc )
 		tmp = h.path.split("/")
 		pipeline = tmp[1]
 		instance = tmp[2]
 		cb = callback.RemusCallback( miniNetCallback(input, applet, appletDesc) )
-		wrapperFactory = FileWrapperGen( server, pipeline, instance, outdir )
+		wrapperFactory = ServerWrapperGen( server, pipeline, instance )
 	else:
 		cb = callback.RemusCallback( miniFileCallBack(input, applet, appletDesc, outdir) )
 		wrapperFactory = FileWrapperGen( input )

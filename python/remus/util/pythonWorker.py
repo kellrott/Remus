@@ -2,7 +2,7 @@
 import remusLib
 import json
 import imp
-import remus
+
 import callback
 import sys
 from cStringIO import StringIO
