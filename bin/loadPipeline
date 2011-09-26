@@ -8,85 +8,92 @@ import httplib
 from urlparse import urlparse
 from cStringIO import StringIO
 from urllib import urlopen
-
+try:
+    import yaml
+except ImportError:
+    pass
 
 def addFiles(arg, dirname, names):
-	for name in names:
-		path = os.path.join( dirname, name )
-		if not os.path.samefile( path, arg[0] ):
-			if not os.path.isdir(path):
-				arg[1].append( os.path.normpath(path) )
+    for name in names:
+        path = os.path.join( dirname, name )
+        if not os.path.samefile( path, arg[0] ):
+            if not os.path.isdir(path):
+                arg[1].append( os.path.normpath(path) )
 
 def putData( url, data ):
-	u = urlparse( url )
-	curConn = httplib.HTTPConnection(u.netloc)
-	curServer = u.netloc
-	curConn.request("PUT", u.path, data, {})
-	outStr = StringIO( curConn.getresponse().read() )
-	curConn.close()
-	return outStr
+    u = urlparse( url )
+    curConn = httplib.HTTPConnection(u.netloc)
+    curServer = u.netloc
+    curConn.request("PUT", u.path, data, {})
+    outStr = StringIO( curConn.getresponse().read() )
+    curConn.close()
+    return outStr
 
 
-def parseRemusJSON(server, pipelineName, path):
-	baseDir = os.path.dirname( path )
-	handle = open( path )
-	pipelineData = json.loads( handle.read() )
+def parseRemus(server, pipelineName, path):
+    baseDir = os.path.dirname( path )
+    handle = open( path )
+    
+    if path.endswith(".yaml"):
+        pipelineData = yaml.load( handle.read() )        
+    else:
+        pipelineData = json.loads( handle.read() )
 
-	url = server + "/@pipeline/" + pipelineName 
+    url = server + "/@pipeline/" + pipelineName 
 
-	if '_include' in pipelineData:
-		fileList = copy( pipelineData['_include'] )
-	else:
-		fileList = []
+    if '_include' in pipelineData:
+        fileList = copy( pipelineData['_include'] )
+    else:
+        fileList = []
 
-	initData = {}
-	initApplet = {}
-	for name in pipelineData:
-		if name not in [ "_id", "_include" ]:
-			node = pipelineData[ name ]
-			if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
-				if node.has_key( "_code" ):
-					if os.path.exists(  node[ "_code" ] ):
-						fileList.append( node[ "_code" ] )				
-				
-				if node.has_key( "_init" ):					
-					if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
-						initData[ node[ "_init" ][ "_submitKey" ] ] = {}
-						initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
-						
-					initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data", {}) )
-					initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
-					del node[ "_init" ]
+    initData = {}
+    initApplet = {}
+    for name in pipelineData:
+        if name not in [ "_id", "_include" ]:
+            node = pipelineData[ name ]
+            if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
+                if node.has_key( "_code" ):
+                    if os.path.exists(  node[ "_code" ] ):
+                        fileList.append( node[ "_code" ] )                
+                
+                if node.has_key( "_init" ):                    
+                    if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
+                        initData[ node[ "_init" ][ "_submitKey" ] ] = {}
+                        initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
+                        
+                    initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data", {}) )
+                    initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
+                    del node[ "_init" ]
 
-				"""
-				url = server + "/" + pipelineName + "/@pipeline/" + name  				
-				print url
-				data = json.dumps( node )
-				print putData( url, data ).read()
-				"""
+                """
+                url = server + "/" + pipelineName + "/@pipeline/" + name                  
+                print url
+                data = json.dumps( node )
+                print putData( url, data ).read()
+                """
 
-	data = json.dumps( pipelineData )
+    data = json.dumps( pipelineData )
 
-	print url
-	print putData( url, data ).read()
+    print url
+    print putData( url, data ).read()
 
-				
-	for file in fileList:
-		srcPath = os.path.join( baseDir, file ) 
-		url = server + "/" + pipelineName + "/@attach/" + file.replace('/', '%2F')
-		print "LOADING", url
-		handle = open( srcPath )
-		print putData( url, handle.read() ).read()
-		handle.close()
+                
+    for file in fileList:
+        srcPath = os.path.join( baseDir, file ) 
+        url = server + "/" + pipelineName + "/@attach/" + file.replace('/', '%2F')
+        print "LOADING", url
+        handle = open( srcPath )
+        print putData( url, handle.read() ).read()
+        handle.close()
 
-	for subKey in initData:
-		submitData = { "_applets" : initApplet[subKey] }
-		print "INIT: ", subKey, initData[ subKey ].keys(), json.dumps(submitData)
-		print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), json.dumps(submitData) ).read()
-		for applet in initData[ subKey ]:
-			print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
+    for subKey in initData:
+        submitData = { "_applets" : initApplet[subKey] }
+        print "INIT: ", subKey, initData[ subKey ].keys(), json.dumps(submitData)
+        print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), json.dumps(submitData) ).read()
+        for applet in initData[ subKey ]:
+            print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
 
-	
+    
 if __name__ == "__main__":
-	parseRemusJSON( sys.argv[1], sys.argv[2], sys.argv[3] )
-		
+    parseRemus( sys.argv[1], sys.argv[2], sys.argv[3] )
+        
