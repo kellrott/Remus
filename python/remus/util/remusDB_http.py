@@ -82,6 +82,7 @@ class HTTP_Stack( AbstractStack ):
 			keyList.append( json.loads( line ) )
 		handle.close()
 		for reqKey in keyList:
+			print "getting stack: " + "%s/%s" % (baseURL, reqKey) 
 			reqHandle = self.urlopen( "%s/%s" % (baseURL, reqKey) )
 			for reqLine in reqHandle:
 				data = json.loads( reqLine )
