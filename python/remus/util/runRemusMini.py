@@ -6,6 +6,11 @@ from urllib2 import urlopen
 from urllib  import quote
 from urlparse import urlparse
 
+try:
+	import yaml
+except ImportError:
+	pass
+
 import imp
 from cStringIO import StringIO
 import callback
@@ -30,7 +35,7 @@ class miniFileCallBack:
 	def open( self, key, name, mode ):
 		if mode == "w":
 			handle = open( os.path.join( self.outdir, "%s.%s" % ( key, name ) ), "w" )
-			return handle
+			return handle	
 	
 	def keylist( self, applet ):
 		print "stack", self.url + "?info"
@@ -65,6 +70,18 @@ class miniNetCallback(miniFileCallBack):
 		a = urlparse( path )
 		self.server = a.scheme + "://" + a.netloc + "/"
 		self.url = path
+		print self.url + "/" + appletName + "?info"
+		self.info = json.loads( urlopen( self.url + "/" + appletName + "?info" ).read() )
+		
+
+	def open( self, key, name, mode ):
+		if mode == "w":
+			handle = open( os.path.join( self.outdir, "%s.%s" % ( key, name ) ), "w" )
+			return handle	
+		attachURL = self.server + self.info["_pipeline"] +  applet.split(":")[0] + "/" + key + "/" + name
+		print attachURL
+		return urlopen( attachURL )
+	
 	
 	def keylist( self, applet ):
 		print "stack", self.url + "?info"
@@ -138,7 +155,10 @@ def main( argv ):
 		tmp = arg.split( '=' )
 		appletDesc[ tmp[0] ] = tmp[1]
 
-	appletDesc = json.loads( open( pipePath ).read() )[ applet ]
+	if pipePath.endswith(".yaml"):
+		appletDesc = yaml.load( open( pipePath ).read() )[ applet ]
+	else:
+		appletDesc = json.loads( open( pipePath ).read() )[ applet ]
 	
 	if input.startswith( "http://" ) or input.startswith( "https://" ):
 		h = urlparse( input )
@@ -152,6 +172,7 @@ def main( argv ):
 		cb = callback.RemusCallback( miniFileCallBack(input, applet, appletDesc, outdir) )
 		wrapperFactory = FileWrapperGen( input )
 	
+	print appletDesc
 
 	code = open( appletDesc['_code'] ).read()
 	module = imp.new_module( "test_func" )	
@@ -165,6 +186,7 @@ def main( argv ):
 
 	if ( appletDesc['_mode'] == "map" ):
 		for dkey, data in remusLib.getDataStack( wrapperFactory.getWrapper( appletDesc["_src"] ) ):
+			print "running", dkey
 			func( dkey, data )
 				
 	if ( appletDesc['_mode'] == "reduce" ):
