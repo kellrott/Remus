@@ -158,6 +158,9 @@ def main( argv ):
     else:
         appletDesc = json.loads( open( pipePath ).read() )[ applet ]
     
+    for key in jobDesc:
+        appletDesc[key] = jobDesc[key]
+    
     if input.startswith( "http://" ) or input.startswith( "https://" ):
         h = urlparse( input )
         server = "%s://%s" % ( h.scheme, h.netloc )
@@ -197,6 +200,7 @@ def main( argv ):
             dStack = wrapperFactory.getWrapper( inFile )            
             iHandle = remusLib.getDataStack( dStack )
             inList.append( iHandle )
+        print inList
         func( inList )
 
         

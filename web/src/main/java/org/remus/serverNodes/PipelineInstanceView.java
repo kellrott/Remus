@@ -43,9 +43,9 @@ public class PipelineInstanceView implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
-		if ( name.length() == 0)  {
-			for ( String appletName : pipeline.getMembers() ) {
-				AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + AppletInstanceStatusView.InstanceStatusName );
+		if (name.length() == 0)  {
+			for (String appletName : pipeline.getMembers()) {
+				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
 				try {
 					for (Object instObj : datastore.get(ar, inst.toString())) {
 						Map out = new HashMap();

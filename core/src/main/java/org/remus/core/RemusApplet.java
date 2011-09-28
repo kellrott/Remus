@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
+import org.json.simple.JSONAware;
+import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
@@ -27,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class RemusApplet {
+public class RemusApplet implements JSONAware {
 
 	public static final int MAPPER = 1;
 	public static final int MERGER = 2;
@@ -62,7 +64,8 @@ public class RemusApplet {
 	private RemusAttach attachstore;
 	private ArrayList<String> outputs;
 
-
+	private Object appletDesc;
+	
 	public RemusApplet(RemusPipeline pipeline, String name, RemusDB datastore, RemusAttach attachstore) throws TException, NotImplemented, RemusDatabaseException {
 		logger = LoggerFactory.getLogger(RemusApplet.class);
 		id = name;
@@ -73,7 +76,6 @@ public class RemusApplet {
 		AppletRef arApplet = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
 
-		Object appletDesc = null;
 		for (Object obj : datastore.get(arApplet, name)) {
 			appletDesc = obj;
 		}
@@ -515,5 +517,10 @@ public class RemusApplet {
 	public AppletInstance getAppletInstance(String inst) throws TException, NotImplemented {
 		AppletInstance ai = new AppletInstance(pipeline, RemusInstance.getInstance(datastore, pipeline.getID(), inst), this, datastore);
 		return ai;
+	}
+
+	@Override
+	public String toJSONString() {
+		return JSON.dumps(appletDesc);
 	}
 }

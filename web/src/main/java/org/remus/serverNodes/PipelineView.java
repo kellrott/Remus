@@ -44,8 +44,9 @@ public class PipelineView implements BaseNode {
 		children.put("@submit", new SubmitView(pipe, datastore));
 		children.put("@status", new PipelineStatusView(pipe, web));
 		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
-		children.put("@agent", new PipelineAgentView(pipe));
 
+		children.put("@pipeline", new AppletConfigView(pipe));
+		
 		children.put("@error", new PipelineErrorView(pipe));
 		children.put("@reset", new ResetInstanceView(pipe));
 
