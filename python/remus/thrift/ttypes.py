@@ -70,6 +70,7 @@ class PeerType:
   ATTACH_SERVER = 3
   WORKER = 4
   WEB_SERVER = 5
+  DEAD = 6
 
   _VALUES_TO_NAMES = {
     0: "MANAGER",
@@ -78,6 +79,7 @@ class PeerType:
     3: "ATTACH_SERVER",
     4: "WORKER",
     5: "WEB_SERVER",
+    6: "DEAD",
   }
 
   _NAMES_TO_VALUES = {
@@ -87,6 +89,7 @@ class PeerType:
     "ATTACH_SERVER": 3,
     "WORKER": 4,
     "WEB_SERVER": 5,
+    "DEAD": 6,
   }
 
 
@@ -274,6 +277,81 @@ class AppletRef:
   def __ne__(self, other):
     return not (self == other)
 
+class PeerAddress:
+  """
+  Attributes:
+   - host
+   - port
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'host', None, None, ), # 1
+    (2, TType.I32, 'port', None, None, ), # 2
+  )
+
+  def __init__(self, host=None, port=None,):
+    self.host = host
+    self.port = port
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.host = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.port = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PeerAddress')
+    if self.host != None:
+      oprot.writeFieldBegin('host', TType.STRING, 1)
+      oprot.writeString(self.host)
+      oprot.writeFieldEnd()
+    if self.port != None:
+      oprot.writeFieldBegin('port', TType.I32, 2)
+      oprot.writeI32(self.port)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      if self.host is None:
+        raise TProtocol.TProtocolException(message='Required field host is unset!')
+      if self.port is None:
+        raise TProtocol.TProtocolException(message='Required field port is unset!')
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class PeerInfoThrift:
   """
   Attributes:
@@ -282,8 +360,8 @@ class PeerInfoThrift:
    - peerID
    - groupName
    - workTypes
-   - host
-   - port
+   - addr
+   - timeDelta
   """
 
   thrift_spec = (
@@ -293,18 +371,18 @@ class PeerInfoThrift:
     (3, TType.STRING, 'peerID', None, None, ), # 3
     (4, TType.STRING, 'groupName', None, None, ), # 4
     (5, TType.LIST, 'workTypes', (TType.STRING,None), None, ), # 5
-    (6, TType.STRING, 'host', None, None, ), # 6
-    (7, TType.I32, 'port', None, None, ), # 7
+    (6, TType.STRUCT, 'addr', (PeerAddress, PeerAddress.thrift_spec), None, ), # 6
+    (7, TType.I32, 'timeDelta', None, None, ), # 7
   )
 
-  def __init__(self, peerType=None, name=None, peerID=None, groupName=None, workTypes=None, host=None, port=None,):
+  def __init__(self, peerType=None, name=None, peerID=None, groupName=None, workTypes=None, addr=None, timeDelta=None,):
     self.peerType = peerType
     self.name = name
     self.peerID = peerID
     self.groupName = groupName
     self.workTypes = workTypes
-    self.host = host
-    self.port = port
+    self.addr = addr
+    self.timeDelta = timeDelta
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -346,13 +424,14 @@ class PeerInfoThrift:
         else:
           iprot.skip(ftype)
       elif fid == 6:
-        if ftype == TType.STRING:
-          self.host = iprot.readString();
+        if ftype == TType.STRUCT:
+          self.addr = PeerAddress()
+          self.addr.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.I32:
-          self.port = iprot.readI32();
+          self.timeDelta = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -388,13 +467,13 @@ class PeerInfoThrift:
         oprot.writeString(iter13)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.host != None:
-      oprot.writeFieldBegin('host', TType.STRING, 6)
-      oprot.writeString(self.host)
+    if self.addr != None:
+      oprot.writeFieldBegin('addr', TType.STRUCT, 6)
+      self.addr.write(oprot)
       oprot.writeFieldEnd()
-    if self.port != None:
-      oprot.writeFieldBegin('port', TType.I32, 7)
-      oprot.writeI32(self.port)
+    if self.timeDelta != None:
+      oprot.writeFieldBegin('timeDelta', TType.I32, 7)
+      oprot.writeI32(self.timeDelta)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

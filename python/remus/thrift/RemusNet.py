@@ -202,7 +202,7 @@ class Iface:
   def scheduleInfoJSON(self, ):
     pass
 
-  def addPeer(self, info):
+  def peerInfo(self, info):
     """
     Name service methods
 
@@ -210,16 +210,6 @@ class Iface:
     Parameters:
      - info
     """
-    pass
-
-  def delPeer(self, peerName):
-    """
-    Parameters:
-     - peerName
-    """
-    pass
-
-  def getPeers(self, ):
     pass
 
 
@@ -979,7 +969,7 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
 
-  def addPeer(self, info):
+  def peerInfo(self, info):
     """
     Name service methods
 
@@ -987,89 +977,34 @@ class Client(Iface):
     Parameters:
      - info
     """
-    self.send_addPeer(info)
-    self.recv_addPeer()
+    self.send_peerInfo(info)
+    return self.recv_peerInfo()
 
-  def send_addPeer(self, info):
-    self._oprot.writeMessageBegin('addPeer', TMessageType.CALL, self._seqid)
-    args = addPeer_args()
+  def send_peerInfo(self, info):
+    self._oprot.writeMessageBegin('peerInfo', TMessageType.CALL, self._seqid)
+    args = peerInfo_args()
     args.info = info
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_addPeer(self, ):
+  def recv_peerInfo(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = addPeer_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.notImp != None:
-      raise result.notImp
-    if result.badName != None:
-      raise result.badName
-    return
-
-  def delPeer(self, peerName):
-    """
-    Parameters:
-     - peerName
-    """
-    self.send_delPeer(peerName)
-    self.recv_delPeer()
-
-  def send_delPeer(self, peerName):
-    self._oprot.writeMessageBegin('delPeer', TMessageType.CALL, self._seqid)
-    args = delPeer_args()
-    args.peerName = peerName
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_delPeer(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = delPeer_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.e != None:
-      raise result.e
-    return
-
-  def getPeers(self, ):
-    self.send_getPeers()
-    return self.recv_getPeers()
-
-  def send_getPeers(self, ):
-    self._oprot.writeMessageBegin('getPeers', TMessageType.CALL, self._seqid)
-    args = getPeers_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_getPeers(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = getPeers_result()
+    result = peerInfo_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
-    if result.e != None:
-      raise result.e
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getPeers failed: unknown result");
+    if result.notImp != None:
+      raise result.notImp
+    if result.badName != None:
+      raise result.badName
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "peerInfo failed: unknown result");
 
 
 class Processor(Iface, TProcessor):
@@ -1098,9 +1033,7 @@ class Processor(Iface, TProcessor):
     self._processMap["jobCancel"] = Processor.process_jobCancel
     self._processMap["scheduleRequest"] = Processor.process_scheduleRequest
     self._processMap["scheduleInfoJSON"] = Processor.process_scheduleInfoJSON
-    self._processMap["addPeer"] = Processor.process_addPeer
-    self._processMap["delPeer"] = Processor.process_delPeer
-    self._processMap["getPeers"] = Processor.process_getPeers
+    self._processMap["peerInfo"] = Processor.process_peerInfo
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -1422,46 +1355,18 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_addPeer(self, seqid, iprot, oprot):
-    args = addPeer_args()
+  def process_peerInfo(self, seqid, iprot, oprot):
+    args = peerInfo_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = addPeer_result()
+    result = peerInfo_result()
     try:
-      self._handler.addPeer(args.info)
+      result.success = self._handler.peerInfo(args.info)
     except NotImplemented, notImp:
       result.notImp = notImp
     except BadPeerName, badName:
       result.badName = badName
-    oprot.writeMessageBegin("addPeer", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_delPeer(self, seqid, iprot, oprot):
-    args = delPeer_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = delPeer_result()
-    try:
-      self._handler.delPeer(args.peerName)
-    except NotImplemented, e:
-      result.e = e
-    oprot.writeMessageBegin("delPeer", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_getPeers(self, seqid, iprot, oprot):
-    args = getPeers_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = getPeers_result()
-    try:
-      result.success = self._handler.getPeers()
-    except NotImplemented, e:
-      result.e = e
-    oprot.writeMessageBegin("getPeers", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("peerInfo", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -4620,7 +4525,7 @@ class scheduleInfoJSON_result:
   def __ne__(self, other):
     return not (self == other)
 
-class addPeer_args:
+class peerInfo_args:
   """
   Attributes:
    - info
@@ -4628,7 +4533,7 @@ class addPeer_args:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'info', (PeerInfoThrift, PeerInfoThrift.thrift_spec), None, ), # 1
+    (1, TType.LIST, 'info', (TType.STRUCT,(PeerInfoThrift, PeerInfoThrift.thrift_spec)), None, ), # 1
   )
 
   def __init__(self, info=None,):
@@ -4644,9 +4549,14 @@ class addPeer_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.STRUCT:
-          self.info = PeerInfoThrift()
-          self.info.read(iprot)
+        if ftype == TType.LIST:
+          self.info = []
+          (_etype45, _size42) = iprot.readListBegin()
+          for _i46 in xrange(_size42):
+            _elem47 = PeerInfoThrift()
+            _elem47.read(iprot)
+            self.info.append(_elem47)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -4658,10 +4568,13 @@ class addPeer_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('addPeer_args')
+    oprot.writeStructBegin('peerInfo_args')
     if self.info != None:
-      oprot.writeFieldBegin('info', TType.STRUCT, 1)
-      self.info.write(oprot)
+      oprot.writeFieldBegin('info', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.info))
+      for iter48 in self.info:
+        iter48.write(oprot)
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -4680,20 +4593,22 @@ class addPeer_args:
   def __ne__(self, other):
     return not (self == other)
 
-class addPeer_result:
+class peerInfo_result:
   """
   Attributes:
+   - success
    - notImp
    - badName
   """
 
   thrift_spec = (
-    None, # 0
+    (0, TType.LIST, 'success', (TType.STRUCT,(PeerInfoThrift, PeerInfoThrift.thrift_spec)), None, ), # 0
     (1, TType.STRUCT, 'notImp', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
     (2, TType.STRUCT, 'badName', (BadPeerName, BadPeerName.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, notImp=None, badName=None,):
+  def __init__(self, success=None, notImp=None, badName=None,):
+    self.success = success
     self.notImp = notImp
     self.badName = badName
 
@@ -4706,7 +4621,18 @@ class addPeer_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == 1:
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype52, _size49) = iprot.readListBegin()
+          for _i53 in xrange(_size49):
+            _elem54 = PeerInfoThrift()
+            _elem54.read(iprot)
+            self.success.append(_elem54)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
         if ftype == TType.STRUCT:
           self.notImp = NotImplemented()
           self.notImp.read(iprot)
@@ -4727,7 +4653,14 @@ class addPeer_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('addPeer_result')
+    oprot.writeStructBegin('peerInfo_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter55 in self.success:
+        iter55.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     if self.notImp != None:
       oprot.writeFieldBegin('notImp', TType.STRUCT, 1)
       self.notImp.write(oprot)
@@ -4735,246 +4668,6 @@ class addPeer_result:
     if self.badName != None:
       oprot.writeFieldBegin('badName', TType.STRUCT, 2)
       self.badName.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class delPeer_args:
-  """
-  Attributes:
-   - peerName
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRING, 'peerName', None, None, ), # 1
-  )
-
-  def __init__(self, peerName=None,):
-    self.peerName = peerName
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.peerName = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('delPeer_args')
-    if self.peerName != None:
-      oprot.writeFieldBegin('peerName', TType.STRING, 1)
-      oprot.writeString(self.peerName)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class delPeer_result:
-  """
-  Attributes:
-   - e
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, e=None,):
-    self.e = e
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.e = NotImplemented()
-          self.e.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('delPeer_result')
-    if self.e != None:
-      oprot.writeFieldBegin('e', TType.STRUCT, 1)
-      self.e.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getPeers_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getPeers_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class getPeers_result:
-  """
-  Attributes:
-   - success
-   - e
-  """
-
-  thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(PeerInfoThrift, PeerInfoThrift.thrift_spec)), None, ), # 0
-    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, success=None, e=None,):
-    self.success = success
-    self.e = e
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = PeerInfoThrift()
-            _elem47.read(iprot)
-            self.success.append(_elem47)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.e = NotImplemented()
-          self.e.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('getPeers_result')
-    if self.success != None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter48 in self.success:
-        iter48.write(oprot)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.e != None:
-      oprot.writeFieldBegin('e', TType.STRUCT, 1)
-      self.e.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
