@@ -1,6 +1,6 @@
 
 namespace java org.remus.thrift
-namespace py remus.thrift
+namespace py remus.net
 
 struct InstanceRef {
 	1: required string pipeline,
