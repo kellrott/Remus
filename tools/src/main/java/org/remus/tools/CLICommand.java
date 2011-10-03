@@ -251,7 +251,7 @@ public class CLICommand {
 			RemusPipeline pipe = cli.getPipeline();
 			if (pipe != null) {
 				Map<RemusInstance, String> subMap = new HashMap<RemusInstance, String>();
-				for (KeyValPair kv : pipe.getSubmits()) {
+				for (KeyValPair kv : pipe.getSubmitValues()) {
 					PipelineSubmission ps = new PipelineSubmission(kv.getValue());
 					subMap.put(ps.getInstance(), kv.getKey());
 				}

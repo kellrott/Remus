@@ -55,7 +55,7 @@ class Iface:
     """
     pass
 
-  def addData(self, stack, jobID, emitID, key, data):
+  def addDataJSON(self, stack, jobID, emitID, key, data):
     """
     Parameters:
      - stack
@@ -97,7 +97,7 @@ class Iface:
     """
     pass
 
-  def initAttachment(self, stack, key, name, length):
+  def initAttachment(self, stack, key, name):
     """
     Attachment methods
 
@@ -106,7 +106,6 @@ class Iface:
      - stack
      - key
      - name
-     - length
     """
     pass
 
@@ -130,13 +129,12 @@ class Iface:
     """
     pass
 
-  def writeBlock(self, stack, key, name, offset, data):
+  def appendBlock(self, stack, key, name, data):
     """
     Parameters:
      - stack
      - key
      - name
-     - offset
      - data
     """
     pass
@@ -386,7 +384,7 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "keyCount failed: unknown result");
 
-  def addData(self, stack, jobID, emitID, key, data):
+  def addDataJSON(self, stack, jobID, emitID, key, data):
     """
     Parameters:
      - stack
@@ -395,12 +393,12 @@ class Client(Iface):
      - key
      - data
     """
-    self.send_addData(stack, jobID, emitID, key, data)
-    self.recv_addData()
+    self.send_addDataJSON(stack, jobID, emitID, key, data)
+    self.recv_addDataJSON()
 
-  def send_addData(self, stack, jobID, emitID, key, data):
-    self._oprot.writeMessageBegin('addData', TMessageType.CALL, self._seqid)
-    args = addData_args()
+  def send_addDataJSON(self, stack, jobID, emitID, key, data):
+    self._oprot.writeMessageBegin('addDataJSON', TMessageType.CALL, self._seqid)
+    args = addDataJSON_args()
     args.stack = stack
     args.jobID = jobID
     args.emitID = emitID
@@ -410,14 +408,14 @@ class Client(Iface):
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_addData(self, ):
+  def recv_addDataJSON(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = addData_result()
+    result = addDataJSON_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.e != None:
@@ -554,7 +552,7 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getTimeStamp failed: unknown result");
 
-  def initAttachment(self, stack, key, name, length):
+  def initAttachment(self, stack, key, name):
     """
     Attachment methods
 
@@ -563,18 +561,16 @@ class Client(Iface):
      - stack
      - key
      - name
-     - length
     """
-    self.send_initAttachment(stack, key, name, length)
+    self.send_initAttachment(stack, key, name)
     self.recv_initAttachment()
 
-  def send_initAttachment(self, stack, key, name, length):
+  def send_initAttachment(self, stack, key, name):
     self._oprot.writeMessageBegin('initAttachment', TMessageType.CALL, self._seqid)
     args = initAttachment_args()
     args.stack = stack
     args.key = key
     args.name = name
-    args.length = length
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
@@ -669,38 +665,36 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "readBlock failed: unknown result");
 
-  def writeBlock(self, stack, key, name, offset, data):
+  def appendBlock(self, stack, key, name, data):
     """
     Parameters:
      - stack
      - key
      - name
-     - offset
      - data
     """
-    self.send_writeBlock(stack, key, name, offset, data)
-    self.recv_writeBlock()
+    self.send_appendBlock(stack, key, name, data)
+    self.recv_appendBlock()
 
-  def send_writeBlock(self, stack, key, name, offset, data):
-    self._oprot.writeMessageBegin('writeBlock', TMessageType.CALL, self._seqid)
-    args = writeBlock_args()
+  def send_appendBlock(self, stack, key, name, data):
+    self._oprot.writeMessageBegin('appendBlock', TMessageType.CALL, self._seqid)
+    args = appendBlock_args()
     args.stack = stack
     args.key = key
     args.name = name
-    args.offset = offset
     args.data = data
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_writeBlock(self, ):
+  def recv_appendBlock(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = writeBlock_result()
+    result = appendBlock_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.e != None:
@@ -1016,7 +1010,7 @@ class Processor(Iface, TProcessor):
     self._processMap["keySlice"] = Processor.process_keySlice
     self._processMap["getValueJSON"] = Processor.process_getValueJSON
     self._processMap["keyCount"] = Processor.process_keyCount
-    self._processMap["addData"] = Processor.process_addData
+    self._processMap["addDataJSON"] = Processor.process_addDataJSON
     self._processMap["keyValJSONSlice"] = Processor.process_keyValJSONSlice
     self._processMap["deleteStack"] = Processor.process_deleteStack
     self._processMap["deleteValue"] = Processor.process_deleteValue
@@ -1024,7 +1018,7 @@ class Processor(Iface, TProcessor):
     self._processMap["initAttachment"] = Processor.process_initAttachment
     self._processMap["getAttachmentSize"] = Processor.process_getAttachmentSize
     self._processMap["readBlock"] = Processor.process_readBlock
-    self._processMap["writeBlock"] = Processor.process_writeBlock
+    self._processMap["appendBlock"] = Processor.process_appendBlock
     self._processMap["listAttachments"] = Processor.process_listAttachments
     self._processMap["hasAttachment"] = Processor.process_hasAttachment
     self._processMap["deleteAttachment"] = Processor.process_deleteAttachment
@@ -1117,16 +1111,16 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_addData(self, seqid, iprot, oprot):
-    args = addData_args()
+  def process_addDataJSON(self, seqid, iprot, oprot):
+    args = addDataJSON_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = addData_result()
+    result = addDataJSON_result()
     try:
-      self._handler.addData(args.stack, args.jobID, args.emitID, args.key, args.data)
+      self._handler.addDataJSON(args.stack, args.jobID, args.emitID, args.key, args.data)
     except NotImplemented, e:
       result.e = e
-    oprot.writeMessageBegin("addData", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("addDataJSON", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1193,7 +1187,7 @@ class Processor(Iface, TProcessor):
     iprot.readMessageEnd()
     result = initAttachment_result()
     try:
-      self._handler.initAttachment(args.stack, args.key, args.name, args.length)
+      self._handler.initAttachment(args.stack, args.key, args.name)
     except NotImplemented, e:
       result.e = e
     oprot.writeMessageBegin("initAttachment", TMessageType.REPLY, seqid)
@@ -1229,16 +1223,16 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_writeBlock(self, seqid, iprot, oprot):
-    args = writeBlock_args()
+  def process_appendBlock(self, seqid, iprot, oprot):
+    args = appendBlock_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = writeBlock_result()
+    result = appendBlock_result()
     try:
-      self._handler.writeBlock(args.stack, args.key, args.name, args.offset, args.data)
+      self._handler.appendBlock(args.stack, args.key, args.name, args.data)
     except NotImplemented, e:
       result.e = e
-    oprot.writeMessageBegin("writeBlock", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("appendBlock", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -2073,7 +2067,7 @@ class keyCount_result:
   def __ne__(self, other):
     return not (self == other)
 
-class addData_args:
+class addDataJSON_args:
   """
   Attributes:
    - stack
@@ -2143,7 +2137,7 @@ class addData_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('addData_args')
+    oprot.writeStructBegin('addDataJSON_args')
     if self.stack != None:
       oprot.writeFieldBegin('stack', TType.STRUCT, 1)
       self.stack.write(oprot)
@@ -2181,7 +2175,7 @@ class addData_args:
   def __ne__(self, other):
     return not (self == other)
 
-class addData_result:
+class addDataJSON_result:
   """
   Attributes:
    - e
@@ -2219,7 +2213,7 @@ class addData_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('addData_result')
+    oprot.writeStructBegin('addDataJSON_result')
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)
       self.e.write(oprot)
@@ -2794,7 +2788,6 @@ class initAttachment_args:
    - stack
    - key
    - name
-   - length
   """
 
   thrift_spec = (
@@ -2802,14 +2795,12 @@ class initAttachment_args:
     (1, TType.STRUCT, 'stack', (AppletRef, AppletRef.thrift_spec), None, ), # 1
     (2, TType.STRING, 'key', None, None, ), # 2
     (3, TType.STRING, 'name', None, None, ), # 3
-    (4, TType.I64, 'length', None, None, ), # 4
   )
 
-  def __init__(self, stack=None, key=None, name=None, length=None,):
+  def __init__(self, stack=None, key=None, name=None,):
     self.stack = stack
     self.key = key
     self.name = name
-    self.length = length
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2836,11 +2827,6 @@ class initAttachment_args:
           self.name = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == 4:
-        if ftype == TType.I64:
-          self.length = iprot.readI64();
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2862,10 +2848,6 @@ class initAttachment_args:
     if self.name != None:
       oprot.writeFieldBegin('name', TType.STRING, 3)
       oprot.writeString(self.name)
-      oprot.writeFieldEnd()
-    if self.length != None:
-      oprot.writeFieldBegin('length', TType.I64, 4)
-      oprot.writeI64(self.length)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -3278,13 +3260,12 @@ class readBlock_result:
   def __ne__(self, other):
     return not (self == other)
 
-class writeBlock_args:
+class appendBlock_args:
   """
   Attributes:
    - stack
    - key
    - name
-   - offset
    - data
   """
 
@@ -3293,15 +3274,13 @@ class writeBlock_args:
     (1, TType.STRUCT, 'stack', (AppletRef, AppletRef.thrift_spec), None, ), # 1
     (2, TType.STRING, 'key', None, None, ), # 2
     (3, TType.STRING, 'name', None, None, ), # 3
-    (4, TType.I64, 'offset', None, None, ), # 4
-    (5, TType.STRING, 'data', None, None, ), # 5
+    (4, TType.STRING, 'data', None, None, ), # 4
   )
 
-  def __init__(self, stack=None, key=None, name=None, offset=None, data=None,):
+  def __init__(self, stack=None, key=None, name=None, data=None,):
     self.stack = stack
     self.key = key
     self.name = name
-    self.offset = offset
     self.data = data
 
   def read(self, iprot):
@@ -3330,11 +3309,6 @@ class writeBlock_args:
         else:
           iprot.skip(ftype)
       elif fid == 4:
-        if ftype == TType.I64:
-          self.offset = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 5:
         if ftype == TType.STRING:
           self.data = iprot.readString();
         else:
@@ -3348,7 +3322,7 @@ class writeBlock_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('writeBlock_args')
+    oprot.writeStructBegin('appendBlock_args')
     if self.stack != None:
       oprot.writeFieldBegin('stack', TType.STRUCT, 1)
       self.stack.write(oprot)
@@ -3361,12 +3335,8 @@ class writeBlock_args:
       oprot.writeFieldBegin('name', TType.STRING, 3)
       oprot.writeString(self.name)
       oprot.writeFieldEnd()
-    if self.offset != None:
-      oprot.writeFieldBegin('offset', TType.I64, 4)
-      oprot.writeI64(self.offset)
-      oprot.writeFieldEnd()
     if self.data != None:
-      oprot.writeFieldBegin('data', TType.STRING, 5)
+      oprot.writeFieldBegin('data', TType.STRING, 4)
       oprot.writeString(self.data)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3386,7 +3356,7 @@ class writeBlock_args:
   def __ne__(self, other):
     return not (self == other)
 
-class writeBlock_result:
+class appendBlock_result:
   """
   Attributes:
    - e
@@ -3424,7 +3394,7 @@ class writeBlock_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('writeBlock_result')
+    oprot.writeStructBegin('appendBlock_result')
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)
       self.e.write(oprot)

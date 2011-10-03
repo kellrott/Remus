@@ -50,11 +50,11 @@ public class ResetInstanceView implements BaseNode {
 
 				RemusInstance inst = pipeline.getInstance(name);
 				String subKey = pipeline.getSubKey(inst);
-				Map subMap = pipeline.getSubmitData(subKey);
+				PipelineSubmission subMap = pipeline.getSubmitData(subKey);
 				if (inst == null || subKey == null || subMap == null) {
 					throw new FileNotFoundException();	
 				}			
-				subMap.remove(PipelineSubmission.WorkDoneField);
+				//subMap.remove(PipelineSubmission.WorkDoneField);
 				try {
 					pipeline.deleteInstance(inst);
 				} catch (RemusDatabaseException e) {
@@ -79,7 +79,7 @@ public class ResetInstanceView implements BaseNode {
 						try {
 							applet.deleteInstance(inst);
 							String subKey = pipeline.getSubKey(inst);
-							Map params = pipeline.getSubmitData(subKey);
+							PipelineSubmission params = pipeline.getSubmitData(subKey);
 							applet.createInstance(subKey, params, inst);
 						} catch (TException e) {
 							e.printStackTrace();

@@ -18,7 +18,7 @@ import org.remus.RemusDatabaseException;
 
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.RemusNet;
+import org.remus.thrift.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,16 +44,16 @@ public class RemusPipeline {
 
 
 	public void putApplet(RemusPipeline pipe, String name, Object data) throws TException, NotImplemented { 
-		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef ar = new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		datastore.add(ar, 0L, 0L, name, data);
 	}	
 
 
-	public Set<AppletInstance> getActiveApplets( ) throws TException, NotImplemented, RemusDatabaseException {
+	public Set<AppletInstance> getActiveApplets(RemusInstance inst) throws TException, NotImplemented, RemusDatabaseException {
 		Set<AppletInstance> out = new HashSet<AppletInstance>();
-		for ( String appletName : getMembers() ) {
+		for (String appletName : getMembers()) {
 			RemusApplet applet = new RemusApplet(this, appletName, datastore, attachStore);
-			out.addAll(applet.getActiveApplets());
+			out.addAll(applet.getActiveApplets(inst));
 		}
 		return out;
 	}
@@ -61,7 +61,7 @@ public class RemusPipeline {
 
 	public Collection<String> getMembers() {
 		List<String> out = new LinkedList<String>();
-		AppletRef arPipeline = new AppletRef(name, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef arPipeline = new AppletRef(name, Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		for (String key : datastore.listKeys(arPipeline)) {
 			out.add(key);
 		}
@@ -70,7 +70,7 @@ public class RemusPipeline {
 
 
 	public boolean hasApplet(String appletName) {
-		AppletRef arPipeline = new AppletRef( name, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline" );
+		AppletRef arPipeline = new AppletRef(name, Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		try {
 			return datastore.containsKey(arPipeline, appletName);
 		} catch (TException e) {
@@ -82,9 +82,26 @@ public class RemusPipeline {
 		}
 		return false;
 	}
+	
+	
+
+	public boolean hasAppletInstance(RemusInstance instance, String applet) {
+		AppletRef arInst = new AppletRef(name, Constants.STATIC_INSTANCE, applet + Constants.INSTANCE_APPLET);
+		try {
+			return datastore.containsKey(arInst, instance.toString());
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 
 	public RemusApplet getApplet(String name) throws RemusDatabaseException {
-		AppletRef arPipeline = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef arPipeline = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		try {
 			if (datastore.containsKey(arPipeline, name)) {
 				return new RemusApplet(this, name, datastore, attachStore);
@@ -110,7 +127,7 @@ public class RemusPipeline {
 	}
 
 	public String getSubKey(RemusInstance inst) {
-		AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+		AppletRef arInstance = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
 		try {
 			for (Object instObject : datastore.get(arInstance, inst.toString())) {
 				return (String) instObject;
@@ -124,12 +141,12 @@ public class RemusPipeline {
 		return null;
 	}
 
-	public Map getSubmitData(String subKey) {
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+	public PipelineSubmission getSubmitData(String subKey) {
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 		try {
 			for (Object subObject : datastore.get(arSubmit, subKey)) {
 				Map subMap = (Map) subObject;
-				return subMap;
+				return new PipelineSubmission(subMap);
 			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
@@ -147,7 +164,7 @@ public class RemusPipeline {
 				RemusApplet applet = new RemusApplet(this, appletName, datastore, attachStore);
 				applet.deleteInstance(instance);
 			}
-			AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+			AppletRef arInstance = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
 			datastore.deleteValue(arInstance, instance.toString());
 		} catch (TException e) {
 			e.printStackTrace();
@@ -187,7 +204,7 @@ public class RemusPipeline {
 			applet.deleteInstance(inst);
 		}
 		AppletRef arPipeline = 
-				new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID());
+				new AppletRef(getID(), Constants.STATIC_INSTANCE, applet.getID());
 		datastore.deleteStack(arPipeline);
 	}
 	/*
@@ -208,25 +225,41 @@ public class RemusPipeline {
 	}
 
 
-	public Iterable<KeyValPair> getSubmits() {
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+	public Iterable<KeyValPair> getSubmitValues() {
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 		return datastore.listKeyPairs(arSubmit);
 	}
 
 	public void deleteSubmission(String key) throws TException, NotImplemented, RemusDatabaseException {
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 		Map sMap = null;
 		for (Object obj : datastore.get(arSubmit, key)) {
 			sMap = (Map) sMap;
 		}
 		if (sMap != null) {
-			String instStr = (String) sMap.get(PipelineSubmission.InstanceField);
+			String instStr = (String) sMap.get(PipelineSubmission.INSTANCE_FIELD);
 			RemusInstance inst = new RemusInstance(instStr);
 			deleteInstance(inst);
 		}
 		datastore.deleteValue(arSubmit, key);
 	}
 
+	
+	public Iterable<String> getSubmits() {
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
+		return datastore.listKeys(arSubmit);
+	}
+	
+	
+	public void setSubmit(String subKey, PipelineSubmission subData) throws TException, NotImplemented {
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
+		datastore.add(arSubmit,
+				(Long) 0L,
+				(Long) 0L,
+				subKey,
+				subData);
+	}
+	
 	public RemusInstance handleSubmission(String key, PipelineSubmission value) {
 
 		RemusInstance inst;
@@ -237,7 +270,7 @@ public class RemusPipeline {
 		//to be instanced in an exisiting pipeline instance, they will be, but the original submisison 
 		//will remain
 
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 
 		try {
 			if (!datastore.containsKey(arSubmit, key)) {
@@ -255,7 +288,7 @@ public class RemusPipeline {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-		AppletRef arInstance = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+		AppletRef arInstance = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
 
 		try {
 			datastore.add(arInstance,
@@ -277,11 +310,11 @@ public class RemusPipeline {
 		Set<String> activeSet = new HashSet<String>();
 		RemusInstance inst = new RemusInstance();
 
-		AppletRef arSubmit = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		AppletRef arSubmit = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 
 		try {
 			for (Object subObject : datastore.get(arSubmit, name)) {
-				inst = new RemusInstance((String) ((Map) subObject).get(PipelineSubmission.InstanceField));
+				inst = new RemusInstance((String) ((Map) subObject).get(PipelineSubmission.INSTANCE_FIELD));
 			}
 		} catch (TException e) {
 			// TODO Auto-generated catch block
@@ -296,7 +329,7 @@ public class RemusPipeline {
 				if (applet != null) {
 					activeSet.add(appletName);
 					try {
-						applet.createInstance(name, params.base, inst);
+						applet.createInstance(name, params, inst);
 					} catch (TException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -324,7 +357,7 @@ public class RemusPipeline {
 									RemusApplet srcApplet = getApplet(iRef);
 									if (activeSet.contains(iRef)) {
 										try {
-											if (applet.createInstance(name, params.base, inst)) {
+											if (applet.createInstance(name, params, inst)) {
 												added = true;
 											}
 										} catch (TException e) {
@@ -350,25 +383,26 @@ public class RemusPipeline {
 
 
 	public OutputStream writeAttachment(String name) throws IOException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef stack = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		return attachStore.writeAttachment(stack, null, name);
 	}
 
 	public InputStream readAttachment(String name) throws NotImplemented {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef stack = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		return attachStore.readAttachement(stack, null, name);
 	}
 
 	public boolean hasAttachment(String name) throws NotImplemented, TException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef stack = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		return attachStore.hasAttachment(stack, null, name);
 	}
 
-
-
 	public List<String> listAttachments() throws NotImplemented, TException {
-		AppletRef stack = new AppletRef(getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef stack = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		return attachStore.listAttachments(stack, null);
 	}
+
+
+	
 
 }

@@ -38,12 +38,12 @@ public class RemusMiniDB extends RemusDB {
 	public void init(Map params) throws ConnectionException {}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		if (nodes.containsKey(stack.applet)) {
 			nodes.get(stack.applet).add(key, data);
 		} else {
-			base.addData(stack, jobID, emitID, key, data);
+			base.addDataJSON(stack, jobID, emitID, key, data);
 		}
 	}
 

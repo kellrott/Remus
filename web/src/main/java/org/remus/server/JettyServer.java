@@ -267,7 +267,7 @@ public class JettyServer extends RemusWeb {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		logger.debug("WEB_DB addData: " + stack + " " + key);
 		synchronized (nodeMap) {

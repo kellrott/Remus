@@ -21,6 +21,7 @@ import org.remus.core.AppletInstanceStack;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
 import org.remus.core.RemusMiniDB;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
@@ -285,10 +286,36 @@ public class WorkManager extends RemusManager {
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
+				List<RemusInstance> instList = new LinkedList<RemusInstance>();
 				RemusPipeline pipe = app.getPipeline(name);
-				Set<AppletInstance> curSet = pipe.getActiveApplets();
-				activeCount += curSet.size();
-				fullSet.addAll(curSet);
+				for (String subKey : pipe.getSubmits()) {
+					Boolean changed = false;
+					PipelineSubmission subData = pipe.getSubmitData(subKey);
+					if (!subData.hasSubmitKey()) {
+						subData.setSubmitKey(subKey);
+						changed = true;
+					}
+					if (!subData.hasInstance()) {
+						subData.setInstance(new RemusInstance());
+						changed = true;
+					}
+					
+					for (String applet : subData.getInitApplets()) {
+						if (!pipe.hasAppletInstance(subData.getInstance(), applet)) {
+							RemusApplet ap = pipe.getApplet(applet);
+							ap.createInstance(subKey, subData, subData.getInstance());
+						}
+					}					
+					if (changed) {
+						pipe.setSubmit(subKey,subData);
+					}
+					instList.add(subData.getInstance());
+				}
+				for (RemusInstance inst : instList) {
+					Set<AppletInstance> curSet = pipe.getActiveApplets(inst);
+					activeCount += curSet.size();
+					fullSet.addAll(curSet);
+				}
 			}
 			syncAppletList(fullSet);
 			if (activeCount > 0) {
@@ -580,10 +607,10 @@ public class WorkManager extends RemusManager {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		logger.debug("Manage DB add: " + stack + " " + key);
-		miniDB.addData(stack, jobID, emitID, key, data);
+		miniDB.addDataJSON(stack, jobID, emitID, key, data);
 	}
 
 	@Override

@@ -199,7 +199,7 @@ public class Server extends RemusDB {
 
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws TException {
 
 

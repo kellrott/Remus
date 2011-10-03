@@ -2,6 +2,7 @@ package org.remus.fs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -66,22 +67,21 @@ public class FileServer extends RemusAttach {
 	public boolean hasAttachment(AppletRef stack, String key, String name)
 			throws TException {
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
-		if ( attachFile.exists() ) {
+		if (attachFile.exists()) {
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name,
-			long length) throws TException {
+	public void initAttachment(AppletRef stack, String key, String name) throws TException {
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
         try {
         	if (!attachFile.getParentFile().exists()) {
         		attachFile.getParentFile().mkdirs();
         	}
 			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
-			f.setLength(length);
+			f.setLength(0);
 			f.close();
         } catch (FileNotFoundException e) {
 			throw new TException(e);
@@ -122,13 +122,11 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public void writeBlock(AppletRef stack, String key, String name,
-			long offset, ByteBuffer data) throws TException {
+	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) throws TException {
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
         try {
-			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
-			f.seek(offset);
-			f.write( data.array() );
+        	FileOutputStream f = new FileOutputStream(attachFile, true);
+			f.write(data.array());
 			f.close();
         } catch (FileNotFoundException e) {
 			throw new TException(e);

@@ -40,10 +40,10 @@ public class DataStackRef {
 				if (inputInfo == null) {
 					throw new RemusDatabaseException("Submission missing _input field");
 				}
-				String instanceStr = (String) inputInfo.get(PipelineSubmission.InstanceField);
+				String instanceStr = (String) inputInfo.get(PipelineSubmission.INSTANCE_FIELD);
 				String appletStr = (String) inputInfo.get( "_applet" );				
 				for ( Object subObj : out.ds.get( arSubmit, instanceStr) ) {
-					instanceStr = (String)((Map)subObj).get(PipelineSubmission.InstanceField);
+					instanceStr = (String)((Map)subObj).get(PipelineSubmission.INSTANCE_FIELD);
 				}
 				if ( inputInfo.containsKey( PipelineSubmission.KeysField ) ) {
 					out.keys = new ArrayList<String>();

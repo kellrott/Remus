@@ -36,8 +36,8 @@ public class RemusInstance implements Comparable<RemusInstance>, JSONAware {
 
 		for (String subStr : store.getValueJSON(arSubmit, id)) {
 			Object subObj = JSON.loads(subStr);
-			if (((Map) subObj).containsKey(PipelineSubmission.InstanceField)) {
-				out = new RemusInstance((String) ((Map) subObj).get(PipelineSubmission.InstanceField));
+			if (((Map) subObj).containsKey(PipelineSubmission.INSTANCE_FIELD)) {
+				out = new RemusInstance((String) ((Map) subObj).get(PipelineSubmission.INSTANCE_FIELD));
 			}
 		}
 		for (String instStr : store.getValueJSON(arInst, id)) {
