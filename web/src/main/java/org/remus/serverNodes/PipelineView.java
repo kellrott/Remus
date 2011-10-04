@@ -69,6 +69,8 @@ public class PipelineView implements BaseNode {
 		for (String subKey : pipe.getSubmits()) {
 			try {
 				os.write(JSON.dumps(subKey).getBytes());
+				os.write("\n".getBytes());
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}	
