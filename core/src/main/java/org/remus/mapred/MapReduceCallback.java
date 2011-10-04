@@ -97,7 +97,7 @@ public class MapReduceCallback {
 		return null;
 	}
 	
-	public void copyTo(String key, String name, File file) {
+	public void copyTo(File file, String key, String name) {
 		RemusInstance inst;
 		try {
 			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.INSTANCE_FIELD));

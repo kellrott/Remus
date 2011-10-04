@@ -411,7 +411,12 @@ function makeStackViewUL( dict, pipeline ) {
 			//	msg.data.func(msg.data.sel); 
 			//} );
 			var tmp = e.split(':');
-			var a = $("<a target='_blank'>").attr( 'href', "stackViewer.html?pipeline=" + pipeline + "&instance=" + tmp[0] + "&applet=" + tmp[1] );
+			var a;
+			if (tmp.length == 3) {
+				a = $("<a target='_blank'>").attr( 'href', "stackViewer.html?pipeline=" + pipeline + "&instance=" + tmp[0] + "&applet=" + tmp[1] + ":" + tmp[2] );
+			} else {
+				a = $("<a target='_blank'>").attr( 'href', "stackViewer.html?pipeline=" + pipeline + "&instance=" + tmp[0] + "&applet=" + tmp[1] );
+			}
 			a.popupwindow();
 			a.append(e);
 			ul.append( $("<li>").append( $("<span class='file'>").append(a) ) );

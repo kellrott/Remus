@@ -41,7 +41,7 @@ public class PipelineView implements BaseNode {
 		this.datastore = web.getDataStore();
 		this.attachstore = web.getAttachStore();
 		children = new HashMap<String, BaseNode>();
-		children.put("@submit", new SubmitView(pipe, datastore));
+		children.put("@submit", new SubmitView(pipe, datastore, web));
 		children.put("@status", new PipelineStatusView(pipe, web));
 		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
 
@@ -78,6 +78,9 @@ public class PipelineView implements BaseNode {
 
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
+		if (name.contains("/")) {
+			throw new FileNotFoundException();
+		}
 		if (pipe != null) {
 			try {
 				StringBuilder sb = new StringBuilder();

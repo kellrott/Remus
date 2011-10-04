@@ -5,23 +5,23 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 import org.remus.core.BaseStackNode;
-import org.remus.mapred.MapReduceCallback;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
+import org.remus.thrift.RemusNet;
 
 public abstract class RemusWeb extends RemusPeer {
 
 	abstract public RemusAttach getAttachStore();
 	abstract public RemusDB getDataStore();
+	abstract public RemusNet.Iface getMaster();
+	
 	abstract public void jsRequest(String string, WorkMode map, 
 			BaseStackNode appletView,
-			BaseStackNode appletOut);
-
-	
+			BaseStackNode appletOut);	
 
 	@Override
 	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
@@ -142,4 +142,5 @@ public abstract class RemusWeb extends RemusPeer {
 	public int jobCancel(String jobID) throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
+	
 }

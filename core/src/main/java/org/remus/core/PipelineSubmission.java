@@ -123,5 +123,9 @@ public class PipelineSubmission implements JSONAware {
 		return base.containsKey(INSTANCE_FIELD);
 	}
 
+	public String getSubmitKey() {
+		return (String)base.get(SUBMIT_KEY_FIELD);
+	}
+
 	
 }

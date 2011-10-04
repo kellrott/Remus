@@ -141,6 +141,17 @@ public class JettyServer extends RemusWeb {
 		return null;
 	}
 
+	
+	public RemusNet.Iface getMaster() {
+		try {
+			return pm.getPeer(pm.getManager());
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
 
 	Map<String,Map<String,Object>> dbMap = new HashMap<String, Map<String,Object>>();
 	Map<String,BaseStackNode> nodeMap = new HashMap<String, BaseStackNode>();

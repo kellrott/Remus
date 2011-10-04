@@ -8,6 +8,7 @@ import org.json.simple.JSONAware;
 import org.remus.JSON;
 import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 
@@ -24,24 +25,24 @@ public class RemusInstance implements Comparable<RemusInstance>, JSONAware {
 	}
 
 
-	static public RemusInstance getInstance(RemusNet.Iface store, String pipeline, String id) throws TException, NotImplemented {
-		
+	static public RemusInstance getInstance(RemusNet.Iface store, String pipeline, String id) throws TException, NotImplemented {		
 		if ( id.compareTo(STATIC_INSTANCE_STR) == 0) {
 			return STATIC_INSTANCE;
-		}
-		
+		}		
 		RemusInstance out = null;
-		AppletRef arSubmit = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@submit");
-		AppletRef arInst = new AppletRef(pipeline, STATIC_INSTANCE_STR, "/@instance");
-
+		AppletRef arSubmit = new AppletRef(pipeline, Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 		for (String subStr : store.getValueJSON(arSubmit, id)) {
 			Object subObj = JSON.loads(subStr);
 			if (((Map) subObj).containsKey(PipelineSubmission.INSTANCE_FIELD)) {
 				out = new RemusInstance((String) ((Map) subObj).get(PipelineSubmission.INSTANCE_FIELD));
 			}
 		}
-		for (String instStr : store.getValueJSON(arInst, id)) {
-			out = new RemusInstance(id);			
+		try {
+			if (out == null) {
+				out = new RemusInstance(id);
+			}
+		} catch (IllegalArgumentException e) {
+			
 		}
 		return out;
 	}
