@@ -14,6 +14,9 @@ class RemusCallback:
 
 	def open(self, key, name, mode="r"):
 		return self.parent.open( key, name, mode )		
+	
+	def copyTo(self, path, key, name):
+		return self.parent.copyTo(path, key, name) 
 		
 	def map(self, f):
 		return self.addFunction(f)

@@ -16,7 +16,7 @@ from cStringIO import StringIO
 import callback
 import remusLib
 import os
-
+import shutil
 
 class miniFileCallBack:
 
@@ -36,6 +36,9 @@ class miniFileCallBack:
         if mode == "w":
             handle = open( os.path.join( self.outdir, "%s.%s" % ( key, name ) ), "w" )
             return handle    
+    
+    def copyTo(self, path, key, name):
+        shutil.copyfile( path, os.path.join( self.outdir, "%s.%s" % ( key, name ) ) )
     
     def keylist( self, applet ):
         print "stack", self.url + "?info"
@@ -80,6 +83,9 @@ class miniNetCallback(miniFileCallBack):
         print attachURL
         return urlopen( attachURL )
     
+    def copyTo(self, path, key, name):
+        shutil.copyfile( path, os.path.join( self.outdir, "%s.%s" % ( key, name ) ) )
+
     
     def keylist( self, applet ):
         print "stack", self.url + "?info"
