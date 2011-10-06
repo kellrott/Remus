@@ -294,7 +294,7 @@ public class WorkManager extends RemusManager {
 					if (checkSubmission(pipe, subKey, subData)) {
 						pipe.setSubmit(subKey,subData);
 						pipe.setInstanceSubkey(subData.getInstance(), subKey);
-					}		
+					}
 					instList.add(subData.getInstance());
 				}
 				for (RemusInstance inst : instList) {
@@ -302,7 +302,7 @@ public class WorkManager extends RemusManager {
 					activeCount += curSet.size();
 					fullSet.addAll(curSet);
 				}
-				//create agents
+				//check for work that needs to be instanced
 				for ( String appletName : pipe.getMembers() ) {
 					RemusApplet applet = pipe.getApplet(appletName);
 					if (applet.getMode() != RemusApplet.STORE) {
@@ -347,6 +347,13 @@ public class WorkManager extends RemusManager {
 		if (!subData.hasInstance()) {
 			subData.setInstance(new RemusInstance());
 			changed = true;
+		} else {
+			//If the instance field doesn't match the key stored in the '@instance' stack
+			String instKey = pipe.getSubKey(subData.getInstance());
+			if (instKey != null && subKey.compareTo(instKey) != 0) {
+				subData.setInstance(new RemusInstance());
+				changed = true;				
+			}
 		}
 
 		for (String applet : subData.getInitApplets()) {
