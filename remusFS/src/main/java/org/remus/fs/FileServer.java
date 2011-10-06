@@ -17,6 +17,8 @@ import org.remus.RemusAttach;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.PeerType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileServer extends RemusAttach {
 
@@ -28,11 +30,13 @@ public class FileServer extends RemusAttach {
 	 * Is the directory shared?
 	 */
 	private Boolean dirShared;
+	private Logger logger;
 	public final static String DIR_NAME    = "dir";
 	public final static String DIR_SHARED  = "shared";
 
 	@Override
 	public void init(Map params) {
+		logger = LoggerFactory.getLogger(FileServer.class);
 		this.basePath = new File((String) params.get(DIR_NAME));
 		this.dirShared = Boolean.valueOf(params.get(DIR_SHARED).toString());
 	}
@@ -58,6 +62,7 @@ public class FileServer extends RemusAttach {
 
 	@Override
 	public void deleteStack(AppletRef stack) throws TException {
+		logger.debug("DELETE ATTACH STACK:" + stack);
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, null, null);
 		File stackDir = attachFile.getParentFile().getParentFile();
 		deleteDir(stackDir);

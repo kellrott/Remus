@@ -375,6 +375,8 @@ public class RemusApplet implements JSONAware {
 		datastore.deleteValue(ar, instance.toString());
 
 		if (attachstore != null) {
+			ar.applet = getID();
+			ar.instance = instance.toString();
 			attachstore.deleteStack(ar);
 		}
 	}
