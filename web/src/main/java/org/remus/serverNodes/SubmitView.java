@@ -44,16 +44,31 @@ public class SubmitView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		Map out = new HashMap();
 		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
 		try {
 			if (name.length() == 0) {
 				for (KeyValPair kv : datasource.listKeyPairs(ar)) {
+					Map out = new HashMap();					
 					out.put(kv.getKey(), kv.getValue());
+					try {
+						os.write(JSON.dumps(out).getBytes());
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			} else {
+				Map out = new HashMap();
 				for (Object obj : datasource.get(ar, name)) {
 					out.put(name, obj);
+				}
+				try {
+					os.write(JSON.dumps(out).getBytes());
+					os.write("\n".getBytes());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		} catch (TException e) {
@@ -61,13 +76,6 @@ public class SubmitView implements BaseNode {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-		try {
-			os.write(JSON.dumps(out).getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	@Override
