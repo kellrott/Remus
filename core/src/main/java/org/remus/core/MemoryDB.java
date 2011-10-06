@@ -162,7 +162,7 @@ public class MemoryDB extends RemusDB {
 			}
 			return out;
 		}		
-		return null;
+		return new LinkedList<String>();
 	}
 
 	
