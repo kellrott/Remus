@@ -21,7 +21,7 @@ public class AgentGenerator implements WorkGenerator {
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 
 		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
-		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
+		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
 		int jobID = 0;
 		for (String input : applet.getInputs()) {			

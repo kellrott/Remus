@@ -6,7 +6,10 @@ const string STATIC_INSTANCE =  "00000000-0000-0000-0000-000000000000";
 const string PIPELINE_APPLET = "/@pipeline";
 const string INSTANCE_APPLET = "/@instance";
 const string SUBMIT_APPLET = "/@submit";
-const string ROOT_PIPELINE = "@root"
+const string WORK_APPLET = "/@work";
+const string ERROR_APPLET = "/@error";
+const string DONE_APPLET = "/@done";
+const string ROOT_PIPELINE = "@root";
 
 struct InstanceRef {
 	1: required string pipeline,

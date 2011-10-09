@@ -30,6 +30,12 @@ public class Constants {
 
   public static final String SUBMIT_APPLET = "/@submit";
 
+  public static final String WORK_APPLET = "/@work";
+
+  public static final String ERROR_APPLET = "/@error";
+
+  public static final String DONE_APPLET = "/@done";
+
   public static final String ROOT_PIPELINE = "@root";
 
 }

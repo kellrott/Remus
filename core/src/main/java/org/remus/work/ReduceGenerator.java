@@ -9,6 +9,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class ReduceGenerator implements WorkGenerator {
@@ -18,9 +19,9 @@ public class ReduceGenerator implements WorkGenerator {
 
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
-			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
-			DataStackRef iRef = DataStackRef.fromSubmission(pipeline, applet, applet.getInput(), instance);
+			DataStackRef iRef = DataStackRef.fromSubmission(pipeline, applet, applet.getSource(), instance);
 			int jobID = 0;
 
 			for (String key : iRef.listKeys(datastore)) {

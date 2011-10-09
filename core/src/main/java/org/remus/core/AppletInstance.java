@@ -70,7 +70,7 @@ public class AppletInstance {
 		if (isInError()) {
 			return false;
 		}
-		if (applet.hasInputs()) {
+		if (applet.hasSources()) {
 			boolean allReady = true;
 			for (String iRef : applet.getInputs()) {
 				if (iRef.compareTo("?") != 0) {

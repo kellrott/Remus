@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.cassandra.thrift.Constants;
+import org.remus.thrift.Constants;
 import org.apache.thrift.TException;
 import org.json.simple.JSONAware;
 import org.remus.JSON;
@@ -60,7 +60,7 @@ public class RemusApplet implements JSONAware {
 	@SuppressWarnings("unchecked")
 	Class workGenerator = null;
 	private String id;
-	List<String> inputs = null, lInputs = null, rInputs = null;
+	List<String> sources = null, lSources = null, rSources = null;
 	int mode;
 	private String type;
 	private RemusPipeline pipeline;
@@ -78,7 +78,7 @@ public class RemusApplet implements JSONAware {
 		this.attachstore = attachstore;
 
 		AppletRef arApplet = new AppletRef(pipeline.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+				RemusInstance.STATIC_INSTANCE_STR, Constants.PIPELINE_APPLET);
 
 		for (Object obj : datastore.get(arApplet, name)) {
 			appletDesc = (Map)obj;
@@ -170,7 +170,7 @@ public class RemusApplet implements JSONAware {
 			//try {
 			String lInput = (String) appletObj.get(LEFT_SRC);
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-			addLeftInput(lInput);
+			addLeftSource(lInput);
 			//} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			//	e.printStackTrace();
@@ -178,7 +178,7 @@ public class RemusApplet implements JSONAware {
 			//try {
 			String rInput = (String) appletObj.get(RIGHT_SRC);
 			//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-			addRightInput(rInput);
+			addRightSource(rInput);
 			//} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			//	e.printStackTrace();
@@ -190,12 +190,12 @@ public class RemusApplet implements JSONAware {
 			if (src instanceof String) {
 				String input = (String) src;
 				//RemusPath path = new RemusPath( this, (String)input, pipelineName, name );
-				addInput(input);
+				addSource(input);
 			}
 			if (src instanceof List) {
 				for (Object obj : (List) src) {
 					//RemusPath path = new RemusPath( this, (String)obj, pipelineName, name );
-					addInput((String) obj);
+					addSource((String) obj);
 				}
 			}
 			//} catch (FileNotFoundException e) {
@@ -221,39 +221,39 @@ public class RemusApplet implements JSONAware {
 		outputs.add(outName);
 	}
 
-	private void addInput(String in) {
-		if (inputs == null) {
-			inputs = new ArrayList<String>();
+	private void addSource(String in) {
+		if (sources == null) {
+			sources = new ArrayList<String>();
 		}
-		inputs.add(in);
+		sources.add(in);
 	}	
 
-	private void addLeftInput(String in) {
-		if (lInputs == null) {
-			lInputs = new LinkedList<String>();
+	private void addLeftSource(String in) {
+		if (lSources == null) {
+			lSources = new LinkedList<String>();
 		}
-		lInputs.add(in);
-		addInput(in);
+		lSources.add(in);
+		addSource(in);
 	}
 
-	private void addRightInput(String in) {
-		if (rInputs == null) {
-			rInputs = new LinkedList<String>();
+	private void addRightSource(String in) {
+		if (rSources == null) {
+			rSources = new LinkedList<String>();
 		}
-		rInputs.add(in);
-		addInput(in);
+		rSources.add(in);
+		addSource(in);
 	}
 
-	public String getInput() {
-		return inputs.get(0);
+	public String getSource() {
+		return sources.get(0);
 	}
 
-	public String getLeftInput() {
-		return lInputs.get(0);
+	public String getLeftSource() {
+		return lSources.get(0);
 	}
 
-	public String getRightInput() {
-		return rInputs.get(0);
+	public String getRightSource() {
+		return rSources.get(0);
 	}
 
 
@@ -263,8 +263,8 @@ public class RemusApplet implements JSONAware {
 
 
 	public List<String> getInputs() {
-		if ( inputs != null )
-			return inputs;
+		if ( sources != null )
+			return sources;
 		return new ArrayList<String>();
 	}
 
@@ -273,8 +273,8 @@ public class RemusApplet implements JSONAware {
 		return mode;
 	}
 
-	public boolean hasInputs() {
-		if (inputs == null) {
+	public boolean hasSources() {
+		if (sources == null) {
 			return false;
 		}
 		return true;
@@ -316,7 +316,7 @@ public class RemusApplet implements JSONAware {
 
 			}
 		} else {
-			if (hasInputs()) {
+			if (hasSources()) {
 				try {
 					long thisTime = ai.getStatusTimeStamp();
 					long inTime = ai.inputTimeStamp();
@@ -341,7 +341,7 @@ public class RemusApplet implements JSONAware {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>();
 		AppletRef applet = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, getID()
-				+ "/@instance");
+				+ Constants.INSTANCE_APPLET);
 		for (String key : datastore.listKeys(applet)) {
 			out.add(new RemusInstance(key));
 		}
@@ -354,17 +354,17 @@ public class RemusApplet implements JSONAware {
 
 		logger.debug("DELETE:" + ar);
 		datastore.deleteStack(ar);
-		ar.applet = getID() + "/@done";
+		ar.applet = getID() + Constants.DONE_APPLET;
 		datastore.deleteStack(ar);
-		ar.applet = getID() + "/@work";
+		ar.applet = getID() + Constants.WORK_APPLET;
 		datastore.deleteStack(ar);
-		ar.applet = getID() + "/@error";
+		ar.applet = getID() + Constants.ERROR_APPLET;
 		datastore.deleteStack(ar);
 
 		ar.instance = RemusInstance.STATIC_INSTANCE_STR;
-		ar.applet = getID() + "/@instance";
+		ar.applet = getID() + Constants.INSTANCE_APPLET;
 		datastore.deleteValue(ar, instance.toString());
-		ar.applet = getID() + "/@work";
+		ar.applet = getID() + Constants.WORK_APPLET;
 		datastore.deleteValue(ar, instance.toString());
 
 		if (attachstore != null) {
@@ -382,7 +382,7 @@ public class RemusApplet implements JSONAware {
 	public boolean createInstance(PipelineSubmission params, RemusInstance inst) throws TException, NotImplemented {
 
 		logger.info("Creating instance of " + getID() + " for " + inst.toString());
-		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + "/@instance");
+		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + Constants.INSTANCE_APPLET);
 
 		if (datastore.containsKey(instApplet, inst.toString())) {
 			return false;
@@ -405,9 +405,9 @@ public class RemusApplet implements JSONAware {
 			Map lMap = new HashMap();
 			Map rMap = new HashMap();
 			lMap.put("_instance", inst.toString());
-			lMap.put("_applet", getLeftInput());
+			lMap.put("_applet", getLeftSource());
 			rMap.put("_instance", inst.toString());
-			rMap.put("_applet", getRightInput());
+			rMap.put("_applet", getRightSource());
 			inMap.put("_left", lMap);
 			inMap.put("_right", rMap);				
 			inMap.put("_axis", "_left");
@@ -418,7 +418,7 @@ public class RemusApplet implements JSONAware {
 			inMap.put("_applet", "/@agent?" + pipeline.getID());
 			baseMap.put("_input", inMap);
 		} else if (getMode() == PIPE) {
-			if (getInput().compareTo("?") != 0) {
+			if (getSource().compareTo("?") != 0) {
 				List outList = new ArrayList();
 				for (String input : getInputs()) {
 					Map inMap = new HashMap();
@@ -428,10 +428,10 @@ public class RemusApplet implements JSONAware {
 				}
 				baseMap.put("_input", outList);
 			}
-		} else if (hasInputs() && getInput().compareTo("?") != 0) {
+		} else if (hasSources() && getSource().compareTo("?") != 0) {
 			Map inMap = new HashMap();
 			inMap.put("_instance", inst.toString());
-			inMap.put("_applet", getInput());
+			inMap.put("_applet", getSource());
 			baseMap.put("_input", inMap);			
 		}
 
@@ -462,12 +462,12 @@ public class RemusApplet implements JSONAware {
 
 
 	public void errorWork(RemusInstance inst, long jobID, String workerID, String error) throws TException, NotImplemented {
-		AppletRef applet = new AppletRef(pipeline.getID(), inst.toString(), getID() + "/@error");
+		AppletRef applet = new AppletRef(pipeline.getID(), inst.toString(), getID() + Constants.ERROR_APPLET);
 		datastore.add(applet, 0L, 0L, Long.toString(jobID), error);
 	}
 
 	public void deleteErrors(RemusInstance inst) throws TException, NotImplemented {
-		AppletRef applet = new AppletRef(pipeline.getID(), inst.toString(), getID() + "/@error");
+		AppletRef applet = new AppletRef(pipeline.getID(), inst.toString(), getID() + Constants.ERROR_APPLET);
 		datastore.deleteStack(applet);
 	};
 

@@ -9,6 +9,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class MergeGenerator implements WorkGenerator {
@@ -18,10 +19,10 @@ public class MergeGenerator implements WorkGenerator {
 		try {
 			int jobID = 0;
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
-			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
-			DataStackRef lRef = DataStackRef.fromSubmission(pipeline, applet, applet.getLeftInput(), instance);
-			DataStackRef rRef = DataStackRef.fromSubmission(pipeline, applet, applet.getRightInput(), instance);
+			DataStackRef lRef = DataStackRef.fromSubmission(pipeline, applet, applet.getLeftSource(), instance);
+			DataStackRef rRef = DataStackRef.fromSubmission(pipeline, applet, applet.getRightSource(), instance);
 			for (String key : lRef.listKeys(datastore)) {
 				datastore.add(arWork, 0, 0, Integer.toString(jobID), key);
 				jobID++;							

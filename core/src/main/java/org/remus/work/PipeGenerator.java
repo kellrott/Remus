@@ -11,6 +11,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class PipeGenerator implements WorkGenerator {
@@ -19,7 +20,7 @@ public class PipeGenerator implements WorkGenerator {
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
-			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
 			List<String> arrayList = new ArrayList<String>();
 			for (String ref : applet.getInputs()) {

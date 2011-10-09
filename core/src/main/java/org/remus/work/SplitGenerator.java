@@ -8,6 +8,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class SplitGenerator implements WorkGenerator {
@@ -16,7 +17,7 @@ public class SplitGenerator implements WorkGenerator {
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
-			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + "/@work");
+			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 			datastore.add(arWork, 0, 0, "0", instance.toString());
 			long t = datastore.getTimeStamp(ar);
 			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);

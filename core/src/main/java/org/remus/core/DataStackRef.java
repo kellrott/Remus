@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 
+import org.remus.thrift.Constants;
 import org.apache.thrift.TException;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
@@ -30,11 +31,11 @@ public class DataStackRef {
 		out.instance = instance;
 		out.ds = applet.getDataStore();
 		
-		AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
-		AppletRef arSubmit   = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+		AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
+		AppletRef arSubmit   = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET);
 		
 		
-		if ( applet.getInput().compareTo("?") == 0 ) {
+		if ( applet.getSource().compareTo("?") == 0 ) {
 			for ( Object instObj : out.ds.get( arInstance, instance.toString() ) ) {
 				Map inputInfo = (Map)((Map)instObj).get(PipelineSubmission.InputField);
 				if (inputInfo == null) {

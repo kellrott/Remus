@@ -314,7 +314,7 @@ public class WorkManager extends RemusManager {
 										inputFound = true;
 									}
 									if (inputFound) {
-										AppletInstance src = pipe.getAppletInstance(inst, applet.getInput());
+										AppletInstance src = pipe.getAppletInstance(inst, applet.getSource());
 										PipelineSubmission info = src.getInstanceInfo();
 										applet.createInstance(info, inst);
 									}
