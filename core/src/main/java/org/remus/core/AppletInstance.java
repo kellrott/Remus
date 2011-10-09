@@ -286,32 +286,7 @@ public class AppletInstance {
 		return new WorkStatus((Map) statObj);
 	}
 
-	/*
-
-	@SuppressWarnings({"rawtypes" })
-	public static boolean isComplete( RemusPipeline pipeline, RemusApplet applet, RemusInstance remusInstance ) {
-		boolean found = false;
-		AppletRef arStatus = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@work" );
-		AppletRef arError = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@error" );
-		try {
-			for (Object statObj : applet.getDataStore().get( arStatus, remusInstance.toString())) {
-				if ( statObj != null && ((Map)statObj).containsKey( WorkStatus.WORKDONE_FIELD ) && (Boolean)((Map)statObj).get(WorkStatus.WORKDONE_FIELD) == true ) {
-					found = true;
-				}
-			}
-			if ( found ) {
-				for (@SuppressWarnings("unused") String key : applet.getDataStore().listKeys(  arError ) ) {
-					found = false;
-				}
-			}
-		} catch (TException e) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			e.printStackTrace();
-		}
-		return found;
-	}
-	 */
+	
 	@SuppressWarnings("rawtypes")
 	public boolean isComplete() {
 		boolean found = false;

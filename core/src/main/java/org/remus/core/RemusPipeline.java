@@ -18,7 +18,7 @@ import org.remus.RemusDatabaseException;
 
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.RemusNet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

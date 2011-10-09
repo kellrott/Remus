@@ -64,7 +64,7 @@ public class AttachListView implements BaseNode {
 			try {
 				InputStream is = attach.readAttachement(ar, key, name);
 				if ( is != null ) {
-					byte [] buffer = new byte[1024];
+					byte [] buffer = new byte[10240];
 					int len;
 					try {
 						while ( (len = is.read(buffer)) >= 0 ) {
@@ -92,7 +92,7 @@ public class AttachListView implements BaseNode {
 			try {
 				AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet );
 				OutputStream as = attach.writeAttachment(ar, key, name);
-				byte [] buffer = new byte[1024];
+				byte [] buffer = new byte[10240];
 				int readLen;
 				while ((readLen=is.read(buffer)) > 0) {
 					as.write(buffer, 0, readLen);
