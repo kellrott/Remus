@@ -2,6 +2,12 @@
 namespace java org.remus.thrift
 namespace py remus.net
 
+const string STATIC_INSTANCE =  "00000000-0000-0000-0000-000000000000";
+const string PIPELINE_APPLET = "/@pipeline";
+const string INSTANCE_APPLET = "/@instance";
+const string SUBMIT_APPLET = "/@submit";
+const string ROOT_PIPELINE = "@root"
+
 struct InstanceRef {
 	1: required string pipeline,
 	2: required string instance
@@ -104,7 +110,7 @@ service RemusNet {
 
 	i64 keyCount( 1:AppletRef stack, 2:i32 maxCount ) throws (1:NotImplemented e);
 
-	void addData( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data) throws (1:NotImplemented e);
+	void addDataJSON( 1:AppletRef stack, 2:i64 jobID, 3:i64 emitID, 4:string key, 5:string data) throws (1:NotImplemented e);
 
 	list<KeyValJSONPair> keyValJSONSlice( 1:AppletRef stack, 2:string startKey, 3:i32 count) throws (1:NotImplemented e);
 
@@ -127,13 +133,13 @@ service RemusNet {
 	 *
 	 */
 
-	void initAttachment( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 length) throws (1:NotImplemented e);
+	void initAttachment(1:AppletRef stack, 2:string key, 3:string name) throws (1:NotImplemented e);
 	
-	i64 getAttachmentSize( 1:AppletRef stack, 2:string key, 3:string name)  throws (1:NotImplemented e);
+	i64 getAttachmentSize(1:AppletRef stack, 2:string key, 3:string name)  throws (1:NotImplemented e);
 	
 	binary readBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:i32 length ) throws (1:NotImplemented e);
 	
-	void writeBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:binary data )  throws (1:NotImplemented e);
+	void appendBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:binary data )  throws (1:NotImplemented e);
 	
 	list<string> listAttachments( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 

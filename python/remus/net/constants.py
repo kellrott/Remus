@@ -7,3 +7,8 @@
 from thrift.Thrift import *
 from ttypes import *
 
+STATIC_INSTANCE = "00000000-0000-0000-0000-000000000000"
+PIPELINE_APPLET = "/@pipeline"
+INSTANCE_APPLET = "/@instance"
+SUBMIT_APPLET = "/@submit"
+ROOT_PIPELINE = "@root"

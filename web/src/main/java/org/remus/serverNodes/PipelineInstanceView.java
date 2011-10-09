@@ -47,14 +47,11 @@ public class PipelineInstanceView implements BaseNode {
 			for (String appletName : pipeline.getMembers()) {
 				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
 				try {
-					for (Object instObj : datastore.get(ar, inst.toString())) {
-						Map out = new HashMap();
-						out.put(appletName, instObj);	
+					if (datastore.containsKey(ar, inst.toString())) {
 						try {
-							os.write(JSON.dumps(out).getBytes());
+							os.write(JSON.dumps(appletName).getBytes());
 							os.write("\n".getBytes());
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}

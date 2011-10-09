@@ -141,6 +141,17 @@ public class JettyServer extends RemusWeb {
 		return null;
 	}
 
+	
+	public RemusNet.Iface getMaster() {
+		try {
+			return pm.getPeer(pm.getManager());
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
 
 	Map<String,Map<String,Object>> dbMap = new HashMap<String, Map<String,Object>>();
 	Map<String,BaseStackNode> nodeMap = new HashMap<String, BaseStackNode>();
@@ -267,7 +278,7 @@ public class JettyServer extends RemusWeb {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		logger.debug("WEB_DB addData: " + stack + " " + key);
 		synchronized (nodeMap) {

@@ -43,11 +43,11 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID,
 			String key, String data) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
-			iface.addData(stack, jobID, emitID, key, data);
+			iface.addDataJSON(stack, jobID, emitID, key, data);
 		}
 	}
 
@@ -126,11 +126,10 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name,
-			long length) throws NotImplemented, TException {
+	public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
-			iface.initAttachment(stack, key, name, length);		
+			iface.initAttachment(stack, key, name);		
 		}
 	}
 
@@ -230,11 +229,11 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void writeBlock(AppletRef stack, String key, String name,
-			long offset, ByteBuffer data) throws NotImplemented, TException {
+	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) 
+	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
-			iface.writeBlock(stack, key, name, offset, data);
+			iface.appendBlock(stack, key, name, data);
 		}
 	}
 

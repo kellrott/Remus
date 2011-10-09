@@ -41,12 +41,12 @@ public class PipelineView implements BaseNode {
 		this.datastore = web.getDataStore();
 		this.attachstore = web.getAttachStore();
 		children = new HashMap<String, BaseNode>();
-		children.put("@submit", new SubmitView(pipe, datastore));
+		children.put("@submit", new SubmitView(pipe, datastore, web));
 		children.put("@status", new PipelineStatusView(pipe, web));
 		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
 
 		children.put("@pipeline", new AppletConfigView(pipe));
-		
+
 		children.put("@error", new PipelineErrorView(pipe));
 		children.put("@reset", new ResetInstanceView(pipe));
 
@@ -66,19 +66,23 @@ public class PipelineView implements BaseNode {
 		}
 		Map out = new HashMap();
 		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		for (KeyValPair kv : pipe.getSubmits()) {
-			out.put(kv.getKey(), kv.getValue());
+		for (String subKey : pipe.getSubmits()) {
+			try {
+				os.write(JSON.dumps(subKey).getBytes());
+				os.write("\n".getBytes());
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}	
 		}
-		try {
-			os.write(JSON.dumps(out).getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
+		if (name.contains("/")) {
+			throw new FileNotFoundException();
+		}
 		if (pipe != null) {
 			try {
 				StringBuilder sb = new StringBuilder();

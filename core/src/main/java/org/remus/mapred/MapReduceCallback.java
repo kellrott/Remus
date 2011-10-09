@@ -83,7 +83,7 @@ public class MapReduceCallback {
 	public InputStream openInput(String key, String name) {
 		Map inMap = (Map)jobInfo.get(PipelineSubmission.InputField);
 		try {
-			RemusInstance inst = RemusInstance.getInstance(db, pipeline, (String) inMap.get(PipelineSubmission.InstanceField));
+			RemusInstance inst = RemusInstance.getInstance(db, pipeline, (String) inMap.get(PipelineSubmission.INSTANCE_FIELD));
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), (String) inMap.get("_applet"));
 			return attach.readAttachement(arAttach, key, name);
 		} catch (TException e) {
@@ -97,10 +97,10 @@ public class MapReduceCallback {
 		return null;
 	}
 	
-	public void copyTo(String key, String name, File file) {
+	public void copyTo(File file, String key, String name) {
 		RemusInstance inst;
 		try {
-			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.InstanceField));
+			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.INSTANCE_FIELD));
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), applet);
 			attach.copyTo(arAttach, key, name, file);
 		} catch (TException e) {

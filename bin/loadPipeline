@@ -60,8 +60,12 @@ def parseRemus(server, pipelineName, path):
                     if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
                         initData[ node[ "_init" ][ "_submitKey" ] ] = {}
                         initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
-                        
-                    initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data", {}) )
+                    
+                    if "_data" in node[ "_init" ]:
+                        initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data") )
+                    else:
+                        initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = None
+
                     initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
                     del node[ "_init" ]
 
@@ -73,10 +77,9 @@ def parseRemus(server, pipelineName, path):
                 """
 
     data = json.dumps( pipelineData )
-
     print url
+    print "pipeline:", data
     print putData( url, data ).read()
-
                 
     for file in fileList:
         srcPath = os.path.join( baseDir, file ) 
@@ -88,10 +91,15 @@ def parseRemus(server, pipelineName, path):
 
     for subKey in initData:
         submitData = { "_applets" : initApplet[subKey] }
-        print "INIT: ", subKey, initData[ subKey ].keys(), json.dumps(submitData)
-        print urlopen( "%s/%s/@submit/%s" % (server, pipelineName, subKey), json.dumps(submitData) ).read()
+        url = "%s/%s/@submit/%s" % (server, pipelineName, subKey)
+        print "INIT: ", url, json.dumps(submitData)        
+        print urlopen( url, json.dumps(submitData) ).read()
         for applet in initData[ subKey ]:
-            print putData( "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet ), initData[ subKey ][ applet ]  ).read()
+            url = "%s/%s/%s/%s" % ( server, pipelineName, subKey, applet )
+            data = initData[ subKey ][ applet ] 
+            if data is not None:
+                print "INIT DATA:", url, data
+                print putData( url, data ).read()
 
     
 if __name__ == "__main__":

@@ -33,9 +33,9 @@ public abstract class RemusDB extends RemusPeer {
 			public void init(Map params) throws ConnectionException {}
 
 			@Override
-			public void addData(AppletRef stack, long jobID, long emitID,
+			public void addDataJSON(AppletRef stack, long jobID, long emitID,
 					String key, String data) throws NotImplemented, TException {
-				db.addData(stack, jobID, emitID, key, data);
+				db.addDataJSON(stack, jobID, emitID, key, data);
 			}
 
 			@Override
@@ -110,7 +110,7 @@ public abstract class RemusDB extends RemusPeer {
 	abstract public void init(Map params) throws ConnectionException;
 
 	public void add( AppletRef stack, long jobID, long emitID, String key, Object object ) throws TException, NotImplemented {
-		addData(stack, jobID, emitID, key, JSON.dumps(object));
+		addDataJSON(stack, jobID, emitID, key, JSON.dumps(object));
 	}
 	
 	
@@ -182,8 +182,8 @@ public abstract class RemusDB extends RemusPeer {
 
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name,
-			long length) throws NotImplemented, TException {
+	public void initAttachment(AppletRef stack, String key, String name) 
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -222,8 +222,8 @@ public abstract class RemusDB extends RemusPeer {
 
 
 	@Override
-	public void writeBlock(AppletRef stack, String key, String name,
-			long offset, ByteBuffer data) throws NotImplemented, TException {
+	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) 
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 

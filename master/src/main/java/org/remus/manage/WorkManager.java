@@ -21,11 +21,13 @@ import org.remus.core.AppletInstanceStack;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
+import org.remus.core.RemusInstance;
 import org.remus.core.RemusMiniDB;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
@@ -285,10 +287,42 @@ public class WorkManager extends RemusManager {
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
+				List<RemusInstance> instList = new LinkedList<RemusInstance>();
 				RemusPipeline pipe = app.getPipeline(name);
-				Set<AppletInstance> curSet = pipe.getActiveApplets();
-				activeCount += curSet.size();
-				fullSet.addAll(curSet);
+				for (String subKey : pipe.getSubmits()) {
+					PipelineSubmission subData = pipe.getSubmitData(subKey);
+					if (checkSubmission(pipe, subKey, subData)) {
+						pipe.setSubmit(subKey,subData);
+						pipe.setInstanceSubkey(subData.getInstance(), subKey);
+					}
+					instList.add(subData.getInstance());
+				}
+				for (RemusInstance inst : instList) {
+					Set<AppletInstance> curSet = pipe.getActiveApplets(inst);
+					activeCount += curSet.size();
+					fullSet.addAll(curSet);
+				}
+				//check for work that needs to be instanced
+				for ( String appletName : pipe.getMembers() ) {
+					RemusApplet applet = pipe.getApplet(appletName);
+					if (applet.getMode() != RemusApplet.STORE) {
+						for (RemusInstance inst : instList) {
+							if (!pipe.hasAppletInstance(inst, appletName)) {
+								boolean inputFound = false;
+								for (String input : applet.getInputs()) {
+									if (pipe.hasAppletInstance(inst, input)) {
+										inputFound = true;
+									}
+									if (inputFound) {
+										AppletInstance src = pipe.getAppletInstance(inst, applet.getInput());
+										PipelineSubmission info = src.getInstanceInfo();
+										applet.createInstance(info, inst);
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 			syncAppletList(fullSet);
 			if (activeCount > 0) {
@@ -301,6 +335,34 @@ public class WorkManager extends RemusManager {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
+	}
+
+	private boolean checkSubmission(RemusPipeline pipe, String subKey, PipelineSubmission subData) 
+	throws RemusDatabaseException, TException, NotImplemented {
+		Boolean changed = false;
+		if (!subData.hasSubmitKey() || subData.getSubmitKey().compareTo(subKey) != 0 ) {
+			subData.setSubmitKey(subKey);
+			changed = true;
+		}
+		if (!subData.hasInstance()) {
+			subData.setInstance(new RemusInstance());
+			changed = true;
+		} else {
+			//If the instance field doesn't match the key stored in the '@instance' stack
+			String instKey = pipe.getSubKey(subData.getInstance());
+			if (instKey != null && subKey.compareTo(instKey) != 0) {
+				subData.setInstance(new RemusInstance());
+				changed = true;				
+			}
+		}
+
+		for (String applet : subData.getInitApplets()) {
+			if (!pipe.hasAppletInstance(subData.getInstance(), applet)) {
+				RemusApplet ap = pipe.getApplet(applet);
+				ap.createInstance(subData, subData.getInstance());
+			}
+		}					
+		return changed;
 	}
 
 	private boolean cleanJobs() throws TException, NotImplemented {
@@ -580,10 +642,27 @@ public class WorkManager extends RemusManager {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		logger.debug("Manage DB add: " + stack + " " + key);
-		miniDB.addData(stack, jobID, emitID, key, data);
+
+		if (stack.applet.compareTo(Constants.SUBMIT_APPLET) == 0) {
+			try {
+				PipelineSubmission subData = new PipelineSubmission(JSON.loads(data));
+				RemusApp app = new RemusApp(RemusDB.wrap(db), RemusAttach.wrap(attach));
+				RemusPipeline pipe = app.getPipeline(stack.pipeline);
+				if (pipe != null) {
+					if (checkSubmission(pipe, key, subData)) {
+						pipe.setSubmit(key, subData);
+						pipe.setInstanceSubkey(subData.getInstance(), key);
+					}	
+				} 
+			} catch (RemusDatabaseException e) {
+				throw new TException(e);
+			}
+		} else {			
+			miniDB.addDataJSON(stack, jobID, emitID, key, data);
+		}
 	}
 
 	@Override

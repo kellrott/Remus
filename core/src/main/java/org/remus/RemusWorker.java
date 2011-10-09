@@ -17,7 +17,7 @@ abstract public class RemusWorker extends RemusPeer {
 
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
@@ -69,8 +69,8 @@ abstract public class RemusWorker extends RemusPeer {
 	}
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name,
-			long length) throws NotImplemented, TException {
+	public void initAttachment(AppletRef stack, String key, String name) 
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -110,8 +110,8 @@ abstract public class RemusWorker extends RemusPeer {
 	}
 
 	@Override
-	public void writeBlock(AppletRef stack, String key, String name,
-			long offset, ByteBuffer data) throws NotImplemented, TException {
+	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) 
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 	

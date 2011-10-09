@@ -74,7 +74,7 @@ public class MemoryDB extends RemusDB {
 	}
 	
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 
 		String sn = stackName(stack);
@@ -162,7 +162,7 @@ public class MemoryDB extends RemusDB {
 			}
 			return out;
 		}		
-		return null;
+		return new LinkedList<String>();
 	}
 
 	

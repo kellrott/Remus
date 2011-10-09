@@ -102,7 +102,11 @@ public class Server extends RemusDB {
 				String strategy = "org.apache.cassandra.locator.SimpleStrategy";				
 				ksDesc = new KsDef(keySpace, strategy, new ArrayList<CfDef>());
 				Map stOpts = new HashMap();
-				stOpts.put("replication_factor", "1"); //BUG: need to tune this
+				String replicationFactor = "1";
+				if (paramMap.containsKey("replicationFactor")) {
+					replicationFactor = paramMap.get("replicationFactor").toString();
+				}
+				stOpts.put("replication_factor", replicationFactor);
 				ksDesc.setStrategy_options(stOpts);
 				try {
 					client.system_add_keyspace(ksDesc);
@@ -199,7 +203,7 @@ public class Server extends RemusDB {
 
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws TException {
 
 

@@ -41,7 +41,7 @@ public class RemusNet {
 
     public long keyCount(AppletRef stack, int maxCount) throws NotImplemented, org.apache.thrift.TException;
 
-    public void addData(AppletRef stack, long jobID, long emitID, String key, String data) throws NotImplemented, org.apache.thrift.TException;
+    public void addDataJSON(AppletRef stack, long jobID, long emitID, String key, String data) throws NotImplemented, org.apache.thrift.TException;
 
     public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey, int count) throws NotImplemented, org.apache.thrift.TException;
 
@@ -58,15 +58,14 @@ public class RemusNet {
      * @param stack
      * @param key
      * @param name
-     * @param length
      */
-    public void initAttachment(AppletRef stack, String key, String name, long length) throws NotImplemented, org.apache.thrift.TException;
+    public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException;
 
     public long getAttachmentSize(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException;
 
     public ByteBuffer readBlock(AppletRef stack, String key, String name, long offset, int length) throws NotImplemented, org.apache.thrift.TException;
 
-    public void writeBlock(AppletRef stack, String key, String name, long offset, ByteBuffer data) throws NotImplemented, org.apache.thrift.TException;
+    public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) throws NotImplemented, org.apache.thrift.TException;
 
     public List<String> listAttachments(AppletRef stack, String key) throws NotImplemented, org.apache.thrift.TException;
 
@@ -117,7 +116,7 @@ public class RemusNet {
 
     public void keyCount(AppletRef stack, int maxCount, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyCount_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void addData(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addData_call> resultHandler) throws org.apache.thrift.TException;
+    public void addDataJSON(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.addDataJSON_call> resultHandler) throws org.apache.thrift.TException;
 
     public void keyValJSONSlice(AppletRef stack, String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.keyValJSONSlice_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -127,13 +126,13 @@ public class RemusNet {
 
     public void getTimeStamp(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getTimeStamp_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void initAttachment(AppletRef stack, String key, String name, long length, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.initAttachment_call> resultHandler) throws org.apache.thrift.TException;
+    public void initAttachment(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.initAttachment_call> resultHandler) throws org.apache.thrift.TException;
 
     public void getAttachmentSize(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getAttachmentSize_call> resultHandler) throws org.apache.thrift.TException;
 
     public void readBlock(AppletRef stack, String key, String name, long offset, int length, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.readBlock_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void writeBlock(AppletRef stack, String key, String name, long offset, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.writeBlock_call> resultHandler) throws org.apache.thrift.TException;
+    public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.appendBlock_call> resultHandler) throws org.apache.thrift.TException;
 
     public void listAttachments(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.listAttachments_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -388,16 +387,16 @@ public class RemusNet {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "keyCount failed: unknown result");
     }
 
-    public void addData(AppletRef stack, long jobID, long emitID, String key, String data) throws NotImplemented, org.apache.thrift.TException
+    public void addDataJSON(AppletRef stack, long jobID, long emitID, String key, String data) throws NotImplemented, org.apache.thrift.TException
     {
-      send_addData(stack, jobID, emitID, key, data);
-      recv_addData();
+      send_addDataJSON(stack, jobID, emitID, key, data);
+      recv_addDataJSON();
     }
 
-    public void send_addData(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
+    public void send_addDataJSON(AppletRef stack, long jobID, long emitID, String key, String data) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      addData_args args = new addData_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addDataJSON", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      addDataJSON_args args = new addDataJSON_args();
       args.setStack(stack);
       args.setJobID(jobID);
       args.setEmitID(emitID);
@@ -408,7 +407,7 @@ public class RemusNet {
       oprot_.getTransport().flush();
     }
 
-    public void recv_addData() throws NotImplemented, org.apache.thrift.TException
+    public void recv_addDataJSON() throws NotImplemented, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -417,9 +416,9 @@ public class RemusNet {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "addData failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "addDataJSON failed: out of sequence response");
       }
-      addData_result result = new addData_result();
+      addDataJSON_result result = new addDataJSON_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.e != null) {
@@ -581,20 +580,19 @@ public class RemusNet {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getTimeStamp failed: unknown result");
     }
 
-    public void initAttachment(AppletRef stack, String key, String name, long length) throws NotImplemented, org.apache.thrift.TException
+    public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException
     {
-      send_initAttachment(stack, key, name, length);
+      send_initAttachment(stack, key, name);
       recv_initAttachment();
     }
 
-    public void send_initAttachment(AppletRef stack, String key, String name, long length) throws org.apache.thrift.TException
+    public void send_initAttachment(AppletRef stack, String key, String name) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("initAttachment", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       initAttachment_args args = new initAttachment_args();
       args.setStack(stack);
       args.setKey(key);
       args.setName(name);
-      args.setLength(length);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -704,27 +702,26 @@ public class RemusNet {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "readBlock failed: unknown result");
     }
 
-    public void writeBlock(AppletRef stack, String key, String name, long offset, ByteBuffer data) throws NotImplemented, org.apache.thrift.TException
+    public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) throws NotImplemented, org.apache.thrift.TException
     {
-      send_writeBlock(stack, key, name, offset, data);
-      recv_writeBlock();
+      send_appendBlock(stack, key, name, data);
+      recv_appendBlock();
     }
 
-    public void send_writeBlock(AppletRef stack, String key, String name, long offset, ByteBuffer data) throws org.apache.thrift.TException
+    public void send_appendBlock(AppletRef stack, String key, String name, ByteBuffer data) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeBlock", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      writeBlock_args args = new writeBlock_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("appendBlock", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      appendBlock_args args = new appendBlock_args();
       args.setStack(stack);
       args.setKey(key);
       args.setName(name);
-      args.setOffset(offset);
       args.setData(data);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void recv_writeBlock() throws NotImplemented, org.apache.thrift.TException
+    public void recv_appendBlock() throws NotImplemented, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -733,9 +730,9 @@ public class RemusNet {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "writeBlock failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "appendBlock failed: out of sequence response");
       }
-      writeBlock_result result = new writeBlock_result();
+      appendBlock_result result = new appendBlock_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.e != null) {
@@ -1287,20 +1284,20 @@ public class RemusNet {
       }
     }
 
-    public void addData(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addData_call> resultHandler) throws org.apache.thrift.TException {
+    public void addDataJSON(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addDataJSON_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      addData_call method_call = new addData_call(stack, jobID, emitID, key, data, resultHandler, this, protocolFactory, transport);
+      addDataJSON_call method_call = new addDataJSON_call(stack, jobID, emitID, key, data, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class addData_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class addDataJSON_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private long jobID;
       private long emitID;
       private String key;
       private String data;
-      public addData_call(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addData_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public addDataJSON_call(AppletRef stack, long jobID, long emitID, String key, String data, org.apache.thrift.async.AsyncMethodCallback<addDataJSON_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.jobID = jobID;
@@ -1310,8 +1307,8 @@ public class RemusNet {
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        addData_args args = new addData_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addDataJSON", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        addDataJSON_args args = new addDataJSON_args();
         args.setStack(stack);
         args.setJobID(jobID);
         args.setEmitID(emitID);
@@ -1327,7 +1324,7 @@ public class RemusNet {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_addData();
+        (new Client(prot)).recv_addDataJSON();
       }
     }
 
@@ -1468,9 +1465,9 @@ public class RemusNet {
       }
     }
 
-    public void initAttachment(AppletRef stack, String key, String name, long length, org.apache.thrift.async.AsyncMethodCallback<initAttachment_call> resultHandler) throws org.apache.thrift.TException {
+    public void initAttachment(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<initAttachment_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      initAttachment_call method_call = new initAttachment_call(stack, key, name, length, resultHandler, this, protocolFactory, transport);
+      initAttachment_call method_call = new initAttachment_call(stack, key, name, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
@@ -1479,13 +1476,11 @@ public class RemusNet {
       private AppletRef stack;
       private String key;
       private String name;
-      private long length;
-      public initAttachment_call(AppletRef stack, String key, String name, long length, org.apache.thrift.async.AsyncMethodCallback<initAttachment_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public initAttachment_call(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<initAttachment_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.key = key;
         this.name = name;
-        this.length = length;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -1494,7 +1489,6 @@ public class RemusNet {
         args.setStack(stack);
         args.setKey(key);
         args.setName(name);
-        args.setLength(length);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1591,35 +1585,32 @@ public class RemusNet {
       }
     }
 
-    public void writeBlock(AppletRef stack, String key, String name, long offset, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<writeBlock_call> resultHandler) throws org.apache.thrift.TException {
+    public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<appendBlock_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      writeBlock_call method_call = new writeBlock_call(stack, key, name, offset, data, resultHandler, this, protocolFactory, transport);
+      appendBlock_call method_call = new appendBlock_call(stack, key, name, data, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class writeBlock_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class appendBlock_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private String key;
       private String name;
-      private long offset;
       private ByteBuffer data;
-      public writeBlock_call(AppletRef stack, String key, String name, long offset, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<writeBlock_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public appendBlock_call(AppletRef stack, String key, String name, ByteBuffer data, org.apache.thrift.async.AsyncMethodCallback<appendBlock_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.key = key;
         this.name = name;
-        this.offset = offset;
         this.data = data;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeBlock", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        writeBlock_args args = new writeBlock_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("appendBlock", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        appendBlock_args args = new appendBlock_args();
         args.setStack(stack);
         args.setKey(key);
         args.setName(name);
-        args.setOffset(offset);
         args.setData(data);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1631,7 +1622,7 @@ public class RemusNet {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_writeBlock();
+        (new Client(prot)).recv_appendBlock();
       }
     }
 
@@ -1950,7 +1941,7 @@ public class RemusNet {
       processMap_.put("keySlice", new keySlice());
       processMap_.put("getValueJSON", new getValueJSON());
       processMap_.put("keyCount", new keyCount());
-      processMap_.put("addData", new addData());
+      processMap_.put("addDataJSON", new addDataJSON());
       processMap_.put("keyValJSONSlice", new keyValJSONSlice());
       processMap_.put("deleteStack", new deleteStack());
       processMap_.put("deleteValue", new deleteValue());
@@ -1958,7 +1949,7 @@ public class RemusNet {
       processMap_.put("initAttachment", new initAttachment());
       processMap_.put("getAttachmentSize", new getAttachmentSize());
       processMap_.put("readBlock", new readBlock());
-      processMap_.put("writeBlock", new writeBlock());
+      processMap_.put("appendBlock", new appendBlock());
       processMap_.put("listAttachments", new listAttachments());
       processMap_.put("hasAttachment", new hasAttachment());
       processMap_.put("deleteAttachment", new deleteAttachment());
@@ -2175,37 +2166,37 @@ public class RemusNet {
 
     }
 
-    private class addData implements ProcessFunction {
+    private class addDataJSON implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        addData_args args = new addData_args();
+        addDataJSON_args args = new addDataJSON_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addDataJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        addData_result result = new addData_result();
+        addDataJSON_result result = new addDataJSON_result();
         try {
-          iface_.addData(args.stack, args.jobID, args.emitID, args.key, args.data);
+          iface_.addDataJSON(args.stack, args.jobID, args.emitID, args.key, args.data);
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing addData", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing addData");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing addDataJSON", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing addDataJSON");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addDataJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addData", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("addDataJSON", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2384,7 +2375,7 @@ public class RemusNet {
         iprot.readMessageEnd();
         initAttachment_result result = new initAttachment_result();
         try {
-          iface_.initAttachment(args.stack, args.key, args.name, args.length);
+          iface_.initAttachment(args.stack, args.key, args.name);
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
@@ -2481,37 +2472,37 @@ public class RemusNet {
 
     }
 
-    private class writeBlock implements ProcessFunction {
+    private class appendBlock implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        writeBlock_args args = new writeBlock_args();
+        appendBlock_args args = new appendBlock_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeBlock", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("appendBlock", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        writeBlock_result result = new writeBlock_result();
+        appendBlock_result result = new appendBlock_result();
         try {
-          iface_.writeBlock(args.stack, args.key, args.name, args.offset, args.data);
+          iface_.appendBlock(args.stack, args.key, args.name, args.data);
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing writeBlock", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing writeBlock");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeBlock", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing appendBlock", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing appendBlock");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("appendBlock", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("writeBlock", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("appendBlock", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -6616,8 +6607,8 @@ public class RemusNet {
 
   }
 
-  public static class addData_args implements org.apache.thrift.TBase<addData_args, addData_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addData_args");
+  public static class addDataJSON_args implements org.apache.thrift.TBase<addDataJSON_args, addDataJSON_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addDataJSON_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobID", org.apache.thrift.protocol.TType.I64, (short)2);
@@ -6720,13 +6711,13 @@ public class RemusNet {
       tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addData_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addDataJSON_args.class, metaDataMap);
     }
 
-    public addData_args() {
+    public addDataJSON_args() {
     }
 
-    public addData_args(
+    public addDataJSON_args(
       AppletRef stack,
       long jobID,
       long emitID,
@@ -6746,7 +6737,7 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public addData_args(addData_args other) {
+    public addDataJSON_args(addDataJSON_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetStack()) {
@@ -6762,8 +6753,8 @@ public class RemusNet {
       }
     }
 
-    public addData_args deepCopy() {
-      return new addData_args(this);
+    public addDataJSON_args deepCopy() {
+      return new addDataJSON_args(this);
     }
 
     @Override
@@ -6781,7 +6772,7 @@ public class RemusNet {
       return this.stack;
     }
 
-    public addData_args setStack(AppletRef stack) {
+    public addDataJSON_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -6805,7 +6796,7 @@ public class RemusNet {
       return this.jobID;
     }
 
-    public addData_args setJobID(long jobID) {
+    public addDataJSON_args setJobID(long jobID) {
       this.jobID = jobID;
       setJobIDIsSet(true);
       return this;
@@ -6828,7 +6819,7 @@ public class RemusNet {
       return this.emitID;
     }
 
-    public addData_args setEmitID(long emitID) {
+    public addDataJSON_args setEmitID(long emitID) {
       this.emitID = emitID;
       setEmitIDIsSet(true);
       return this;
@@ -6851,7 +6842,7 @@ public class RemusNet {
       return this.key;
     }
 
-    public addData_args setKey(String key) {
+    public addDataJSON_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -6875,7 +6866,7 @@ public class RemusNet {
       return this.data;
     }
 
-    public addData_args setData(String data) {
+    public addDataJSON_args setData(String data) {
       this.data = data;
       return this;
     }
@@ -6986,12 +6977,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof addData_args)
-        return this.equals((addData_args)that);
+      if (that instanceof addDataJSON_args)
+        return this.equals((addDataJSON_args)that);
       return false;
     }
 
-    public boolean equals(addData_args that) {
+    public boolean equals(addDataJSON_args that) {
       if (that == null)
         return false;
 
@@ -7048,13 +7039,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(addData_args other) {
+    public int compareTo(addDataJSON_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      addData_args typedOther = (addData_args)other;
+      addDataJSON_args typedOther = (addDataJSON_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -7203,7 +7194,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("addData_args(");
+      StringBuilder sb = new StringBuilder("addDataJSON_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -7265,8 +7256,8 @@ public class RemusNet {
 
   }
 
-  public static class addData_result implements org.apache.thrift.TBase<addData_result, addData_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addData_result");
+  public static class addDataJSON_result implements org.apache.thrift.TBase<addDataJSON_result, addDataJSON_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("addDataJSON_result");
 
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
@@ -7338,13 +7329,13 @@ public class RemusNet {
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addData_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(addDataJSON_result.class, metaDataMap);
     }
 
-    public addData_result() {
+    public addDataJSON_result() {
     }
 
-    public addData_result(
+    public addDataJSON_result(
       NotImplemented e)
     {
       this();
@@ -7354,14 +7345,14 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public addData_result(addData_result other) {
+    public addDataJSON_result(addDataJSON_result other) {
       if (other.isSetE()) {
         this.e = new NotImplemented(other.e);
       }
     }
 
-    public addData_result deepCopy() {
-      return new addData_result(this);
+    public addDataJSON_result deepCopy() {
+      return new addDataJSON_result(this);
     }
 
     @Override
@@ -7373,7 +7364,7 @@ public class RemusNet {
       return this.e;
     }
 
-    public addData_result setE(NotImplemented e) {
+    public addDataJSON_result setE(NotImplemented e) {
       this.e = e;
       return this;
     }
@@ -7432,12 +7423,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof addData_result)
-        return this.equals((addData_result)that);
+      if (that instanceof addDataJSON_result)
+        return this.equals((addDataJSON_result)that);
       return false;
     }
 
-    public boolean equals(addData_result that) {
+    public boolean equals(addDataJSON_result that) {
       if (that == null)
         return false;
 
@@ -7458,13 +7449,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(addData_result other) {
+    public int compareTo(addDataJSON_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      addData_result typedOther = (addData_result)other;
+      addDataJSON_result typedOther = (addDataJSON_result)other;
 
       lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
       if (lastComparison != 0) {
@@ -7526,7 +7517,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("addData_result(");
+      StringBuilder sb = new StringBuilder("addDataJSON_result(");
       boolean first = true;
 
       sb.append("e:");
@@ -10429,19 +10420,16 @@ public class RemusNet {
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)2);
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)3);
-    private static final org.apache.thrift.protocol.TField LENGTH_FIELD_DESC = new org.apache.thrift.protocol.TField("length", org.apache.thrift.protocol.TType.I64, (short)4);
 
     public AppletRef stack;
     public String key;
     public String name;
-    public long length;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       STACK((short)1, "stack"),
       KEY((short)2, "key"),
-      NAME((short)3, "name"),
-      LENGTH((short)4, "length");
+      NAME((short)3, "name");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10462,8 +10450,6 @@ public class RemusNet {
             return KEY;
           case 3: // NAME
             return NAME;
-          case 4: // LENGTH
-            return LENGTH;
           default:
             return null;
         }
@@ -10504,8 +10490,6 @@ public class RemusNet {
     }
 
     // isset id assignments
-    private static final int __LENGTH_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
@@ -10516,8 +10500,6 @@ public class RemusNet {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.LENGTH, new org.apache.thrift.meta_data.FieldMetaData("length", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(initAttachment_args.class, metaDataMap);
     }
@@ -10528,23 +10510,18 @@ public class RemusNet {
     public initAttachment_args(
       AppletRef stack,
       String key,
-      String name,
-      long length)
+      String name)
     {
       this();
       this.stack = stack;
       this.key = key;
       this.name = name;
-      this.length = length;
-      setLengthIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public initAttachment_args(initAttachment_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
@@ -10554,7 +10531,6 @@ public class RemusNet {
       if (other.isSetName()) {
         this.name = other.name;
       }
-      this.length = other.length;
     }
 
     public initAttachment_args deepCopy() {
@@ -10566,8 +10542,6 @@ public class RemusNet {
       this.stack = null;
       this.key = null;
       this.name = null;
-      setLengthIsSet(false);
-      this.length = 0;
     }
 
     public AppletRef getStack() {
@@ -10642,29 +10616,6 @@ public class RemusNet {
       }
     }
 
-    public long getLength() {
-      return this.length;
-    }
-
-    public initAttachment_args setLength(long length) {
-      this.length = length;
-      setLengthIsSet(true);
-      return this;
-    }
-
-    public void unsetLength() {
-      __isset_bit_vector.clear(__LENGTH_ISSET_ID);
-    }
-
-    /** Returns true if field length is set (has been assigned a value) and false otherwise */
-    public boolean isSetLength() {
-      return __isset_bit_vector.get(__LENGTH_ISSET_ID);
-    }
-
-    public void setLengthIsSet(boolean value) {
-      __isset_bit_vector.set(__LENGTH_ISSET_ID, value);
-    }
-
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case STACK:
@@ -10691,14 +10642,6 @@ public class RemusNet {
         }
         break;
 
-      case LENGTH:
-        if (value == null) {
-          unsetLength();
-        } else {
-          setLength((Long)value);
-        }
-        break;
-
       }
     }
 
@@ -10712,9 +10655,6 @@ public class RemusNet {
 
       case NAME:
         return getName();
-
-      case LENGTH:
-        return new Long(getLength());
 
       }
       throw new IllegalStateException();
@@ -10733,8 +10673,6 @@ public class RemusNet {
         return isSetKey();
       case NAME:
         return isSetName();
-      case LENGTH:
-        return isSetLength();
       }
       throw new IllegalStateException();
     }
@@ -10776,15 +10714,6 @@ public class RemusNet {
         if (!(this_present_name && that_present_name))
           return false;
         if (!this.name.equals(that.name))
-          return false;
-      }
-
-      boolean this_present_length = true;
-      boolean that_present_length = true;
-      if (this_present_length || that_present_length) {
-        if (!(this_present_length && that_present_length))
-          return false;
-        if (this.length != that.length)
           return false;
       }
 
@@ -10834,16 +10763,6 @@ public class RemusNet {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetLength()).compareTo(typedOther.isSetLength());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetLength()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.length, typedOther.length);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       return 0;
     }
 
@@ -10883,14 +10802,6 @@ public class RemusNet {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 4: // LENGTH
-            if (field.type == org.apache.thrift.protocol.TType.I64) {
-              this.length = iprot.readI64();
-              setLengthIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
         }
@@ -10921,9 +10832,6 @@ public class RemusNet {
         oprot.writeString(this.name);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(LENGTH_FIELD_DESC);
-      oprot.writeI64(this.length);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -10956,10 +10864,6 @@ public class RemusNet {
         sb.append(this.name);
       }
       first = false;
-      if (!first) sb.append(", ");
-      sb.append("length:");
-      sb.append(this.length);
-      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -10978,8 +10882,6 @@ public class RemusNet {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -13191,19 +13093,17 @@ public class RemusNet {
 
   }
 
-  public static class writeBlock_args implements org.apache.thrift.TBase<writeBlock_args, writeBlock_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("writeBlock_args");
+  public static class appendBlock_args implements org.apache.thrift.TBase<appendBlock_args, appendBlock_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("appendBlock_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)2);
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)3);
-    private static final org.apache.thrift.protocol.TField OFFSET_FIELD_DESC = new org.apache.thrift.protocol.TField("offset", org.apache.thrift.protocol.TType.I64, (short)4);
-    private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.STRING, (short)5);
+    private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     public AppletRef stack;
     public String key;
     public String name;
-    public long offset;
     public ByteBuffer data;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -13211,8 +13111,7 @@ public class RemusNet {
       STACK((short)1, "stack"),
       KEY((short)2, "key"),
       NAME((short)3, "name"),
-      OFFSET((short)4, "offset"),
-      DATA((short)5, "data");
+      DATA((short)4, "data");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -13233,9 +13132,7 @@ public class RemusNet {
             return KEY;
           case 3: // NAME
             return NAME;
-          case 4: // OFFSET
-            return OFFSET;
-          case 5: // DATA
+          case 4: // DATA
             return DATA;
           default:
             return null;
@@ -13277,8 +13174,6 @@ public class RemusNet {
     }
 
     // isset id assignments
-    private static final int __OFFSET_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
@@ -13289,39 +13184,32 @@ public class RemusNet {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.OFFSET, new org.apache.thrift.meta_data.FieldMetaData("offset", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING          , true)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(writeBlock_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(appendBlock_args.class, metaDataMap);
     }
 
-    public writeBlock_args() {
+    public appendBlock_args() {
     }
 
-    public writeBlock_args(
+    public appendBlock_args(
       AppletRef stack,
       String key,
       String name,
-      long offset,
       ByteBuffer data)
     {
       this();
       this.stack = stack;
       this.key = key;
       this.name = name;
-      this.offset = offset;
-      setOffsetIsSet(true);
       this.data = data;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public writeBlock_args(writeBlock_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
+    public appendBlock_args(appendBlock_args other) {
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
@@ -13331,15 +13219,14 @@ public class RemusNet {
       if (other.isSetName()) {
         this.name = other.name;
       }
-      this.offset = other.offset;
       if (other.isSetData()) {
         this.data = org.apache.thrift.TBaseHelper.copyBinary(other.data);
 ;
       }
     }
 
-    public writeBlock_args deepCopy() {
-      return new writeBlock_args(this);
+    public appendBlock_args deepCopy() {
+      return new appendBlock_args(this);
     }
 
     @Override
@@ -13347,8 +13234,6 @@ public class RemusNet {
       this.stack = null;
       this.key = null;
       this.name = null;
-      setOffsetIsSet(false);
-      this.offset = 0;
       this.data = null;
     }
 
@@ -13356,7 +13241,7 @@ public class RemusNet {
       return this.stack;
     }
 
-    public writeBlock_args setStack(AppletRef stack) {
+    public appendBlock_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -13380,7 +13265,7 @@ public class RemusNet {
       return this.key;
     }
 
-    public writeBlock_args setKey(String key) {
+    public appendBlock_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -13404,7 +13289,7 @@ public class RemusNet {
       return this.name;
     }
 
-    public writeBlock_args setName(String name) {
+    public appendBlock_args setName(String name) {
       this.name = name;
       return this;
     }
@@ -13424,29 +13309,6 @@ public class RemusNet {
       }
     }
 
-    public long getOffset() {
-      return this.offset;
-    }
-
-    public writeBlock_args setOffset(long offset) {
-      this.offset = offset;
-      setOffsetIsSet(true);
-      return this;
-    }
-
-    public void unsetOffset() {
-      __isset_bit_vector.clear(__OFFSET_ISSET_ID);
-    }
-
-    /** Returns true if field offset is set (has been assigned a value) and false otherwise */
-    public boolean isSetOffset() {
-      return __isset_bit_vector.get(__OFFSET_ISSET_ID);
-    }
-
-    public void setOffsetIsSet(boolean value) {
-      __isset_bit_vector.set(__OFFSET_ISSET_ID, value);
-    }
-
     public byte[] getData() {
       setData(org.apache.thrift.TBaseHelper.rightSize(data));
       return data == null ? null : data.array();
@@ -13456,12 +13318,12 @@ public class RemusNet {
       return data;
     }
 
-    public writeBlock_args setData(byte[] data) {
+    public appendBlock_args setData(byte[] data) {
       setData(data == null ? (ByteBuffer)null : ByteBuffer.wrap(data));
       return this;
     }
 
-    public writeBlock_args setData(ByteBuffer data) {
+    public appendBlock_args setData(ByteBuffer data) {
       this.data = data;
       return this;
     }
@@ -13507,14 +13369,6 @@ public class RemusNet {
         }
         break;
 
-      case OFFSET:
-        if (value == null) {
-          unsetOffset();
-        } else {
-          setOffset((Long)value);
-        }
-        break;
-
       case DATA:
         if (value == null) {
           unsetData();
@@ -13537,9 +13391,6 @@ public class RemusNet {
       case NAME:
         return getName();
 
-      case OFFSET:
-        return new Long(getOffset());
-
       case DATA:
         return getData();
 
@@ -13560,8 +13411,6 @@ public class RemusNet {
         return isSetKey();
       case NAME:
         return isSetName();
-      case OFFSET:
-        return isSetOffset();
       case DATA:
         return isSetData();
       }
@@ -13572,12 +13421,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof writeBlock_args)
-        return this.equals((writeBlock_args)that);
+      if (that instanceof appendBlock_args)
+        return this.equals((appendBlock_args)that);
       return false;
     }
 
-    public boolean equals(writeBlock_args that) {
+    public boolean equals(appendBlock_args that) {
       if (that == null)
         return false;
 
@@ -13608,15 +13457,6 @@ public class RemusNet {
           return false;
       }
 
-      boolean this_present_offset = true;
-      boolean that_present_offset = true;
-      if (this_present_offset || that_present_offset) {
-        if (!(this_present_offset && that_present_offset))
-          return false;
-        if (this.offset != that.offset)
-          return false;
-      }
-
       boolean this_present_data = true && this.isSetData();
       boolean that_present_data = true && that.isSetData();
       if (this_present_data || that_present_data) {
@@ -13634,13 +13474,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(writeBlock_args other) {
+    public int compareTo(appendBlock_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      writeBlock_args typedOther = (writeBlock_args)other;
+      appendBlock_args typedOther = (appendBlock_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -13668,16 +13508,6 @@ public class RemusNet {
       }
       if (isSetName()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetOffset()).compareTo(typedOther.isSetOffset());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetOffset()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.offset, typedOther.offset);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -13731,15 +13561,7 @@ public class RemusNet {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 4: // OFFSET
-            if (field.type == org.apache.thrift.protocol.TType.I64) {
-              this.offset = iprot.readI64();
-              setOffsetIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 5: // DATA
+          case 4: // DATA
             if (field.type == org.apache.thrift.protocol.TType.STRING) {
               this.data = iprot.readBinary();
             } else { 
@@ -13776,9 +13598,6 @@ public class RemusNet {
         oprot.writeString(this.name);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(OFFSET_FIELD_DESC);
-      oprot.writeI64(this.offset);
-      oprot.writeFieldEnd();
       if (this.data != null) {
         oprot.writeFieldBegin(DATA_FIELD_DESC);
         oprot.writeBinary(this.data);
@@ -13790,7 +13609,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("writeBlock_args(");
+      StringBuilder sb = new StringBuilder("appendBlock_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -13815,10 +13634,6 @@ public class RemusNet {
       } else {
         sb.append(this.name);
       }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("offset:");
-      sb.append(this.offset);
       first = false;
       if (!first) sb.append(", ");
       sb.append("data:");
@@ -13846,8 +13661,6 @@ public class RemusNet {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -13856,8 +13669,8 @@ public class RemusNet {
 
   }
 
-  public static class writeBlock_result implements org.apache.thrift.TBase<writeBlock_result, writeBlock_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("writeBlock_result");
+  public static class appendBlock_result implements org.apache.thrift.TBase<appendBlock_result, appendBlock_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("appendBlock_result");
 
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
@@ -13929,13 +13742,13 @@ public class RemusNet {
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(writeBlock_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(appendBlock_result.class, metaDataMap);
     }
 
-    public writeBlock_result() {
+    public appendBlock_result() {
     }
 
-    public writeBlock_result(
+    public appendBlock_result(
       NotImplemented e)
     {
       this();
@@ -13945,14 +13758,14 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public writeBlock_result(writeBlock_result other) {
+    public appendBlock_result(appendBlock_result other) {
       if (other.isSetE()) {
         this.e = new NotImplemented(other.e);
       }
     }
 
-    public writeBlock_result deepCopy() {
-      return new writeBlock_result(this);
+    public appendBlock_result deepCopy() {
+      return new appendBlock_result(this);
     }
 
     @Override
@@ -13964,7 +13777,7 @@ public class RemusNet {
       return this.e;
     }
 
-    public writeBlock_result setE(NotImplemented e) {
+    public appendBlock_result setE(NotImplemented e) {
       this.e = e;
       return this;
     }
@@ -14023,12 +13836,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof writeBlock_result)
-        return this.equals((writeBlock_result)that);
+      if (that instanceof appendBlock_result)
+        return this.equals((appendBlock_result)that);
       return false;
     }
 
-    public boolean equals(writeBlock_result that) {
+    public boolean equals(appendBlock_result that) {
       if (that == null)
         return false;
 
@@ -14049,13 +13862,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(writeBlock_result other) {
+    public int compareTo(appendBlock_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      writeBlock_result typedOther = (writeBlock_result)other;
+      appendBlock_result typedOther = (appendBlock_result)other;
 
       lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
       if (lastComparison != 0) {
@@ -14117,7 +13930,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("writeBlock_result(");
+      StringBuilder sb = new StringBuilder("appendBlock_result(");
       boolean first = true;
 
       sb.append("e:");

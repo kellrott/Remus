@@ -1,14 +1,14 @@
 
 from remus.net import RemusNet
+from remus.net import constants
 import json
 from thrift import Thrift
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
-STATIC_INSTANCE = "00000000-0000-0000-0000-000000000000"
 
-class Client:
+class Client(object):
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -18,13 +18,10 @@ class Client:
         self.transport.open()
         self.client = RemusNet.Client(self.protocol)
     
-    def __getattr__(self, i):
-        if hasattr(self.client,i):
+    def __getattr__(self,i):
+        if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 'containsKey', 'initAttachment', 'appendBlock' ]:
             return getattr(self.client,i)
-    
-        
-
-
+                
 class PeerManager:
     def __init__(self, host, port):
         self.host = host
@@ -50,7 +47,7 @@ class PeerManager:
             if p.peerType == RemusNet.PeerType.DB_SERVER:
                 return p.peerID
     
-    def getFileServer(self):
+    def getAttachServer(self):
         self.connect()
         peers = self.server.peerInfo([])
         for p in peers:
@@ -67,13 +64,15 @@ class PeerManager:
     def lookupInstance(self,pipeline,instance):
         pid = self.getDataServer()
         iface = self.getIface(pid)
-        ar = RemusNet.AppletRef(pipeline, "00000000-0000-0000-0000-000000000000", "/@instance" )
+        ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.INSTANCE_APPLET)
         for a in iface.getValueJSON( ar, instance ):
             return instance
         
-        ar = RemusNet.AppletRef(pipeline, "00000000-0000-0000-0000-000000000000", "/@submit" )
+        ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.SUBMIT_APPLET)
         for a in iface.getValueJSON( ar, instance ):
-            return json.loads(a)["_instance"]
-
+            try:
+                return json.loads(a)["_instance"]
+            except KeyError:
+                pass
         return None
         

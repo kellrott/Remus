@@ -77,6 +77,9 @@ public class AppletInstance {
 					try {
 						RemusApplet iApplet = pipeline.getApplet(iRef);
 						if (iApplet != null) {
+							if (iApplet.getMode() == RemusApplet.OUTPUT) {
+								iApplet = pipeline.getApplet(iRef.split(":")[0]);
+							}
 							if (iApplet.getMode() != RemusApplet.STORE) {
 								AppletInstance ai = new AppletInstance(pipeline, instance, iApplet, datastore);
 								if (!ai.isComplete()) {

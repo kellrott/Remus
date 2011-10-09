@@ -3,6 +3,7 @@ package org.remus.test;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -17,26 +18,26 @@ import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.RemusManager;
 import org.remus.core.PipelineDesc;
-import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 
 public class MapTest {
 	PluginManager plugManager;
 	PeerManager pm;
+	@SuppressWarnings("unchecked")
 	@Before public void setup() throws Exception {
-
-		InputStream is = MapTest.class.getResourceAsStream("config.json");
-		
-		Object initMap = JSONValue.parse(new InputStreamReader(is));
+		Map initMap = new HashMap();
+		initMap.put("org.remus.js.JSWorker", null);
+		initMap.put("org.remus.manage.WorkManager", null);
+		initMap.put("org.remus.core.MemoryDB", null);
 		
 		plugManager = new PluginManager((Map) initMap);
 		plugManager.start();
@@ -60,7 +61,14 @@ public class MapTest {
 
 		Map subMap = (Map) JSONValue.parse("{ \"_applets\" : [\"testMap\", \"inputStack\"]  }");
 		
-		RemusInstance inst = pipe.handleSubmission("testSubmit", new PipelineSubmission(subMap));
+		RemusNet.Iface manager = pm.getPeer(pm.getManager());
+		AppletRef subAR = new AppletRef("testPipeline", Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
+		manager.addDataJSON(subAR, 0, 0, "testSubmit", JSON.dumps(subMap));
+
+		RemusInstance inst = null;
+		for (String json : manager.getValueJSON(subAR, "testSubmit")) {
+			inst = new RemusInstance((String)((Map)JSON.loads(json)).get("_instance"));
+		}
 
 		AppletRef ar = new AppletRef("testPipeline", inst.toString(), "inputStack");
 

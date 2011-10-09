@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TokenRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
 import org.apache.commons.pool.BasePoolableObjectFactory;
@@ -32,10 +33,14 @@ class ThriftClientFactory extends BasePoolableObjectFactory {
 		tf.open();
 		Client client = new Client(proto);	
 		Set<String> tList = new HashSet<String>();
-		for (TokenRange tokr : client.describe_ring(keySpace)) {
-			for (String host : tokr.getEndpoints()) {
-				tList.add(host);
+		try {
+			for (TokenRange tokr : client.describe_ring(keySpace)) {
+				for (String host : tokr.getEndpoints()) {
+					tList.add(host);
+				}
 			}
+		} catch (InvalidRequestException e) {
+			tList.add(serverName);
 		}
 		hostList = new ArrayList<String>(tList);
 	}

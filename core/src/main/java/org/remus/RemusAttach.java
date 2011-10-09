@@ -45,13 +45,7 @@ public abstract class RemusAttach extends RemusPeer {
 			@Override
 			public PeerInfo getPeerInfo() {
 				return ((PluginInterface) attach).getPeerInfo();
-			}
-			
-			@Override
-			public void writeBlock(AppletRef stack, String key, String name,
-					long offset, ByteBuffer data) throws NotImplemented, TException {
-				attach.writeBlock(stack, key, name, offset, data);				
-			}
+			}					
 			
 			@Override
 			public ByteBuffer readBlock(AppletRef stack, String key, String name,
@@ -66,9 +60,8 @@ public abstract class RemusAttach extends RemusPeer {
 			}
 			
 			@Override
-			public void initAttachment(AppletRef stack, String key, String name,
-					long length) throws NotImplemented, TException {
-				attach.initAttachment(stack, key, name, length);				
+			public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, TException {
+				attach.initAttachment(stack, key, name);				
 			}
 			
 			@Override
@@ -102,6 +95,14 @@ public abstract class RemusAttach extends RemusPeer {
 					throws NotImplemented, BadPeerName, TException {
 				return attach.peerInfo(info);
 			}
+
+			@Override
+			public void appendBlock(AppletRef stack, String key, String name,
+					ByteBuffer data) throws NotImplemented, TException {
+				attach.appendBlock(stack, key, name, data);
+			}
+
+			
 		};
 	}
 	
@@ -110,19 +111,16 @@ public abstract class RemusAttach extends RemusPeer {
 	abstract public void init(Map params);
 
 	public void copyTo(AppletRef stack, String key, String name, File file) throws TException, IOException, NotImplemented {
-		long fileSize = file.length();		
-		initAttachment(stack, key, name, fileSize);		
+		initAttachment(stack, key, name);		
 		byte [] buffer = new byte[BLOCK_SIZE];
 		int size;
-		long offset = 0;
 		FileInputStream fis = new FileInputStream(file);
 		while ((size = fis.read(buffer)) > 0) {
 			ByteBuffer buff = ByteBuffer.allocate(size);
 			for (int i = 0; i < size; i++) {
 				buff.put(buffer[i]);
 			}
-			writeBlock(stack, key, name, offset, buff);
-			offset += size;
+			appendBlock(stack, key, name, buff);
 		}
 		fis.close();
 	}
@@ -217,7 +215,7 @@ public abstract class RemusAttach extends RemusPeer {
 			fos.close();
 			long fileSize = file.length();
 			try {
-				initAttachment(stack, key, name, fileSize);
+				initAttachment(stack, key, name);
 				byte [] buffer = new byte[BLOCK_SIZE];
 				long offset = 0;
 				FileInputStream fis = new FileInputStream(file);
@@ -227,7 +225,7 @@ public abstract class RemusAttach extends RemusPeer {
 					for (int i = 0; i < readSize; i++) {
 						buff.array()[i] = buffer[i];
 					}
-					writeBlock(stack, key, name, offset, buff);
+					appendBlock(stack, key, name, buff);
 					offset += readSize;
 				}
 				fis.close();
@@ -251,7 +249,7 @@ public abstract class RemusAttach extends RemusPeer {
 	}
 
 	@Override
-	public void addData(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 		throw new NotImplemented();
 	}

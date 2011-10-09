@@ -14,7 +14,7 @@ public class PipelineSubmission implements JSONAware {
 	public static final String SUBMIT_KEY_FIELD = "_submitKey";
 	public static final Object WorkDoneField = "_workdone";
 	public static final String KeysField = "_keys";
-	public static final String InstanceField = "_instance";
+	public static final String INSTANCE_FIELD = "_instance";
 	public static final String InputField = "_input";
 	public static final String AppletField = "_applets";
 	public static final String AXIS_FIELD = "_axis";
@@ -48,7 +48,7 @@ public class PipelineSubmission implements JSONAware {
 	}
 
 	public void setInstance(RemusInstance inst) {
-		base.put(InstanceField, inst.toString());		
+		base.put(INSTANCE_FIELD, inst.toString());		
 	}
 
 	public void setInitApplets(List<String> asList) {
@@ -113,6 +113,18 @@ public class PipelineSubmission implements JSONAware {
 
 	public void setMode(String mode) {
 		base.put("_mode", mode);
+	}
+
+	public boolean hasSubmitKey() {
+		return base.containsKey(SUBMIT_KEY_FIELD);
+	}
+
+	public boolean hasInstance() {
+		return base.containsKey(INSTANCE_FIELD);
+	}
+
+	public String getSubmitKey() {
+		return (String)base.get(SUBMIT_KEY_FIELD);
 	}
 
 	

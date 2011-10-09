@@ -10,6 +10,7 @@ import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,16 @@ public class AgentGenerator implements WorkGenerator {
 		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 		for (KeyValPair kv : datastore.listKeyPairs(ar)) {
 			logger.info("Agent Generating submission: " + kv.getKey());
-			pipeline.handleSubmission(kv.getKey(), new PipelineSubmission(kv.getValue()));
+			AppletRef subAR = new AppletRef(pipeline.getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
+			try {
+				if (!datastore.containsKey(subAR, kv.getKey()) ) {
+					datastore.add(subAR, 0, 0, kv.getKey(), kv.getValue());
+				}
+			} catch (NotImplemented e) {
+				e.printStackTrace();
+			} catch (TException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

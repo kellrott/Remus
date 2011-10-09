@@ -13,20 +13,25 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
+import org.remus.RemusWeb;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 
 public class SubmitView implements BaseNode {
 
 	RemusPipeline pipe;
 	RemusDB datasource;
-	public SubmitView(RemusPipeline pipe, RemusDB datasource) {
+	RemusWeb parent;
+	public SubmitView(RemusPipeline pipe, RemusDB datasource, RemusWeb parent) {
 		this.pipe = pipe;
 		this.datasource = datasource;
+		this.parent = parent;
 	}
 
 	@Override
@@ -39,16 +44,31 @@ public class SubmitView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		Map out = new HashMap();
 		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
 		try {
 			if (name.length() == 0) {
 				for (KeyValPair kv : datasource.listKeyPairs(ar)) {
+					Map out = new HashMap();					
 					out.put(kv.getKey(), kv.getValue());
+					try {
+						os.write(JSON.dumps(out).getBytes());
+						os.write("\n".getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			} else {
+				Map out = new HashMap();
 				for (Object obj : datasource.get(ar, name)) {
 					out.put(name, obj);
+				}
+				try {
+					os.write(JSON.dumps(out).getBytes());
+					os.write("\n".getBytes());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		} catch (TException e) {
@@ -56,13 +76,6 @@ public class SubmitView implements BaseNode {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-		try {
-			os.write(JSON.dumps(out).getBytes());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 	@Override
@@ -84,9 +97,20 @@ public class SubmitView implements BaseNode {
 					sb.append(new String(buffer, 0, len));
 				}
 				Object data = JSON.loads(sb.toString());
-				RemusInstance inst = pipe.handleSubmission(name, new PipelineSubmission(data));
-				os.write(JSON.dumps(inst.toString() + " created").getBytes());
+				RemusNet.Iface master = parent.getMaster();
+				AppletRef subAR = new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
+				master.addDataJSON(subAR, 0, 0, name, JSON.dumps(data));
+				for (String oJson : master.getValueJSON(subAR, name)) {
+					Object o = JSON.loads(oJson);
+					os.write(JSON.dumps(((Map)o).get("_instance") + " created").getBytes());
+				}
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

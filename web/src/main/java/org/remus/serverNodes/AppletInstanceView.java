@@ -284,30 +284,7 @@ public class AppletInstanceView implements BaseNode {
 				e.printStackTrace();
 			}			
 		} else if (applet.getMode() == RemusApplet.AGENT) {
-			//A submit to an agent is stored and a new instance is created
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(is));
-				String curline = null;
-				while ((curline = br.readLine()) != null) {
-					Map inObj = (Map) JSON.loads(curline);	
-					//long jobID = Long.parseLong( inObj.get("id").toString() );
-					//long emitID = (Long)inObj.get("order");
-					String key = (String) inObj.get("key");
-					Map value = (Map) inObj.get("value");
-					//RemusInstance inst = new RemusInstance();
-
-					//instance requested applets
-					System.err.println("AGENT SUBMISSION:" + key);
-					pipeline.handleSubmission(key, new PipelineSubmission(value));
-
-				}				
-			} catch (NumberFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}		
+							
 		} else {		
 			try {
 				Set outSet = new HashSet<Integer>();
