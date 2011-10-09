@@ -540,44 +540,22 @@ public class WorkManager extends RemusManager {
 			if (worker == null) {
 				return;
 			}
-			switch (ai.getApplet().getMode()) {
-			case RemusApplet.MAPPER:
-				wdesc.setMode(WorkMode.MAP);
-				break;
-			case RemusApplet.REDUCER:
-				wdesc.setMode(WorkMode.REDUCE);
-				break;
-			case RemusApplet.SPLITTER:
-				wdesc.setMode(WorkMode.SPLIT);
-				break;
-			case RemusApplet.MATCHER:
-				wdesc.setMode(WorkMode.MATCH);
-				break;
-			case RemusApplet.MERGER:
-				wdesc.setMode(WorkMode.MERGE);
-				break;
-			case RemusApplet.PIPE:
-				wdesc.setMode(WorkMode.PIPE);
-				break;
-			case RemusApplet.AGENT: 
+			int mode = ai.getApplet().getMode();
+			if (mode == WorkMode.AGENT.getValue()) {
 				logger.info("Agent Operation");
 				wdesc.setMode(WorkMode.MAP);				
-				break;
-			default: 
-				break;
-			}
-			if (ai.getApplet().getMode() == RemusApplet.AGENT) {
 				setupAIStack();
 				String jobID = worker.jobRequest(peerManager.getPeerID(this), peerManager.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
-				}
+				}				
 			} else {
+				wdesc.setMode(WorkMode.findByValue(mode));
 				String jobID = worker.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), wdesc);
 				synchronized (activeStacks) {
 					addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 				}
-			}
+			}			
 			peerManager.returnPeer(worker);
 		} catch (TException e) {
 			e.printStackTrace();

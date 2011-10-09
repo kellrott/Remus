@@ -26,7 +26,12 @@ enum WorkMode {
 	REDUCE,
 	PIPE,
 	MATCH,
-	MERGE
+	MERGE,
+	REMAP,
+	REREDUCE,
+	STORE,
+	OUTPUT,
+	AGENT
 }
 
 enum JobState {

@@ -16,7 +16,12 @@ public enum WorkMode implements org.apache.thrift.TEnum {
   REDUCE(2),
   PIPE(3),
   MATCH(4),
-  MERGE(5);
+  MERGE(5),
+  REMAP(6),
+  REREDUCE(7),
+  STORE(8),
+  OUTPUT(9),
+  AGENT(10);
 
   private final int value;
 
@@ -49,6 +54,16 @@ public enum WorkMode implements org.apache.thrift.TEnum {
         return MATCH;
       case 5:
         return MERGE;
+      case 6:
+        return REMAP;
+      case 7:
+        return REREDUCE;
+      case 8:
+        return STORE;
+      case 9:
+        return OUTPUT;
+      case 10:
+        return AGENT;
       default:
         return null;
     }

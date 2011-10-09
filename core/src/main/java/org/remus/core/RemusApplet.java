@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.cassandra.thrift.Constants;
 import org.apache.thrift.TException;
 import org.json.simple.JSONAware;
 import org.remus.JSON;
@@ -17,11 +18,14 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.WorkMode;
 import org.remus.work.AgentGenerator;
 import org.remus.work.MapGenerator;
 import org.remus.work.MatchGenerator;
 import org.remus.work.MergeGenerator;
 import org.remus.work.PipeGenerator;
+import org.remus.work.ReMapGenerator;
+import org.remus.work.ReReduceGenerator;
 import org.remus.work.ReduceGenerator;
 import org.remus.work.SplitGenerator;
 import org.remus.work.WorkGenerator;
@@ -31,15 +35,17 @@ import org.slf4j.LoggerFactory;
 
 public class RemusApplet implements JSONAware {
 
-	public static final int MAPPER = 1;
-	public static final int MERGER = 2;
-	public static final int MATCHER = 3;
-	public static final int SPLITTER = 4;
-	public static final int REDUCER = 5;
-	public static final int PIPE = 6;
-	public static final int STORE = 7;
-	public static final int OUTPUT = 8;
-	public static final int AGENT = 9;
+	public static final int MAPPER = WorkMode.MAP.getValue();
+	public static final int MERGER = WorkMode.MERGE.getValue();
+	public static final int MATCHER = WorkMode.MATCH.getValue();
+	public static final int SPLITTER = WorkMode.SPLIT.getValue();
+	public static final int REDUCER = WorkMode.REDUCE.getValue();
+	public static final int PIPE = WorkMode.PIPE.getValue();
+	public static final int STORE = WorkMode.STORE.getValue();
+	public static final int OUTPUT = WorkMode.OUTPUT.getValue();
+	public static final int AGENT = WorkMode.AGENT.getValue();
+	public static final int REMAPPER = WorkMode.REMAP.getValue();
+	public static final int REREDUCER = WorkMode.REREDUCE.getValue();
 
 	public static final String CODE_FIELD = "_code";
 	public static final String MODE_FIELD = "_mode";
@@ -94,39 +100,26 @@ public class RemusApplet implements JSONAware {
 	}
 
 	void setMode(int mode) {
-		switch (mode) {
-		case MAPPER: {
+		if (mode == MAPPER) {
 			workGenerator = MapGenerator.class;
-			break;
-		}
-		case REDUCER: {
+		} else if (mode == REDUCER) {	
 			workGenerator = ReduceGenerator.class;	
-			break;
-		}
-		case SPLITTER: {
+		} else if (mode == SPLITTER) {	
 			workGenerator = SplitGenerator.class;	
-			break;
-		}
-		case MERGER: {
+		} else if (mode == MERGER) {	
 			workGenerator = MergeGenerator.class;	
-			break;
-		}
-		case MATCHER: {
+		} else if (mode == MATCHER) {	
 			workGenerator = MatchGenerator.class;	
-			break;
-		}
-		case PIPE: {
+		} else if (mode == PIPE) {	
 			workGenerator = PipeGenerator.class;	
-			break;
-		}
-		case AGENT: {
+		} else if (mode == AGENT) {	
 			workGenerator = AgentGenerator.class;	
-			break;			
-		}	
-		default: {
+		} else if (mode == REMAPPER) {
+			workGenerator = ReMapGenerator.class;
+		} else if (mode == REREDUCER) {
+			workGenerator = ReReduceGenerator.class;
+		} else {
 			workGenerator = null;	
-			break;
-		}
 		}
 		this.mode = mode;
 	}
