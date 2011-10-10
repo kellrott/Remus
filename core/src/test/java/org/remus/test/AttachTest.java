@@ -27,14 +27,13 @@ public class AttachTest {
 
 	RemusAttach fs;
 
+	String driver = "org.remus.fs.FileServer";
 	@Before public void setUp() throws FileNotFoundException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ConnectionException {
-		Properties prop = new Properties();
-		prop.load( new FileInputStream( new File( "cassandra.prop" ) ) );
 		
-		Class<RemusAttach> cls = (Class<RemusAttach>) Class.forName( prop.getProperty( "org.remus.ATTACH_DRIVER" ) );
+		Class<RemusAttach> cls = (Class<RemusAttach>) Class.forName( driver );
 		
 		fs = cls.newInstance();
-		fs.init(prop);
+		fs.init(null);
 		
 		//ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
 		//ds.initMPStore(new JsonSerializer(), prop );
