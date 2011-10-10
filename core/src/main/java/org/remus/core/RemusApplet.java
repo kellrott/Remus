@@ -161,6 +161,13 @@ public class RemusApplet implements JSONAware {
 		if (modeStr.compareTo("output") == 0) {
 			appletType = OUTPUT;
 		}
+		if (modeStr.compareTo("remap") == 0) {
+			appletType = REMAPPER;
+		}
+		if (modeStr.compareTo("rereducer") == 0) {
+			appletType = REREDUCER;
+		}
+
 		if (appletType == null) {
 			throw new RemusDatabaseException("Invalid Applet Type");
 		}
@@ -262,7 +269,7 @@ public class RemusApplet implements JSONAware {
 	}
 
 
-	public List<String> getInputs() {
+	public List<String> getSources() {
 		if ( sources != null )
 			return sources;
 		return new ArrayList<String>();
@@ -395,11 +402,11 @@ public class RemusApplet implements JSONAware {
 				baseMap.put(key, params.base.get(key));
 			}
 		}
-		
+
 		for (Object key : appletDesc.keySet()) {
 			baseMap.put(key, appletDesc.get(key));
 		}
-		
+
 		if (getMode() == MERGER || getMode() == MATCHER) {
 			Map inMap = new HashMap();
 			Map lMap = new HashMap();
@@ -417,10 +424,10 @@ public class RemusApplet implements JSONAware {
 			inMap.put("_instance", RemusInstance.STATIC_INSTANCE_STR);
 			inMap.put("_applet", "/@agent?" + pipeline.getID());
 			baseMap.put("_input", inMap);
-		} else if (getMode() == PIPE) {
+		} else if (getMode() == PIPE || getMode() == REMAPPER || getMode() == REREDUCER) {
 			if (getSource().compareTo("?") != 0) {
 				List outList = new ArrayList();
-				for (String input : getInputs()) {
+				for (String input : getSources()) {
 					Map inMap = new HashMap();
 					inMap.put("_instance", inst.toString());
 					inMap.put("_applet", input);

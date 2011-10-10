@@ -18,6 +18,11 @@ public class ReMapGenerator implements WorkGenerator {
 	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
 			RemusInstance instance, RemusDB datastore) {
 		
+	}
+
+	@Override
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET );
@@ -38,17 +43,7 @@ public class ReMapGenerator implements WorkGenerator {
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet,
-			RemusInstance instance, RemusDB datastore) {
-		// TODO Auto-generated method stub
-		
+		}		
 	}
 
 }

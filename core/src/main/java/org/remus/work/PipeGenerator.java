@@ -23,7 +23,7 @@ public class PipeGenerator implements WorkGenerator {
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
 			List<String> arrayList = new ArrayList<String>();
-			for (String ref : applet.getInputs()) {
+			for (String ref : applet.getSources()) {
 				String iRef = DataStackRef.pathFromSubmission(pipeline, applet, ref, instance);
 				arrayList.add(iRef);
 			}

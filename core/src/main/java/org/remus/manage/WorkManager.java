@@ -309,7 +309,7 @@ public class WorkManager extends RemusManager {
 						for (RemusInstance inst : instList) {
 							if (!pipe.hasAppletInstance(inst, appletName)) {
 								boolean inputFound = false;
-								for (String input : applet.getInputs()) {
+								for (String input : applet.getSources()) {
 									if (pipe.hasAppletInstance(inst, input)) {
 										inputFound = true;
 									}

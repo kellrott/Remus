@@ -24,7 +24,7 @@ public class AgentGenerator implements WorkGenerator {
 		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
 
 		int jobID = 0;
-		for (String input : applet.getInputs()) {			
+		for (String input : applet.getSources()) {			
 			String key = instance.toString() + ":" + input;
 			try {
 				datastore.add(arWork, 0, 0, Integer.toString(jobID), key);

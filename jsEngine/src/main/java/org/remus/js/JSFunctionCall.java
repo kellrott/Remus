@@ -1,5 +1,7 @@
 package org.remus.js;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,6 @@ public class JSFunctionCall implements MapReduceFunction {
 				}
 				return super.wrapAsJavaObject(cx, scope, javaObject, staticType);
 			};
-
 
 			@Override
 			public Scriptable wrapNewObject(Context cx, Scriptable scope, Object obj) {
@@ -124,6 +125,14 @@ public class JSFunctionCall implements MapReduceFunction {
 					}
 				}
 				out = m;
+			}
+			if (in instanceof NativeArray) {
+				NativeArray n = (NativeArray) in;
+				List l = new ArrayList((int) n.getLength());
+				for ( Object key : n.getIds() ) {
+					l.add(n.get((Integer) key, null));
+				}
+				out = l;
 			}
 			return out;
 		}

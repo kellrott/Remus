@@ -27,13 +27,18 @@ public class MemoryDB extends RemusDB {
 		public void put(long jobID, long emitID, String data) {
 			baseMap.put(Long.toString(jobID) + "_" + Long.toString(emitID), data);
 		}		
+
+		@Override
+		public String toString() {
+			return baseMap.toString();
+		}
 	}
-	
+
 	class StackMap {
 		TreeMap<String, StackRow> baseMap = new TreeMap<String, StackRow>();
-		
+
 		long timestamp = 0;
-		
+
 		public void addData(long jobID, long emitID, String key, String data) {
 			timestamp = (new Date()).getTime();
 			StackRow sr = baseMap.get(key);
@@ -59,11 +64,16 @@ public class MemoryDB extends RemusDB {
 		public StackRow get(String key) {
 			return baseMap.get(key);
 		}
-		
+
+		@Override
+		public String toString() {
+			return baseMap.toString();		
+		}
+
 	}
-	
+
 	Map<String,StackMap> baseMap;
-	
+
 	@Override
 	public void init(Map params) throws ConnectionException {
 		baseMap = new HashMap<String,StackMap>();		
@@ -72,14 +82,14 @@ public class MemoryDB extends RemusDB {
 	private String stackName(AppletRef stack) {
 		return stack.pipeline + "/" + stack.instance + "/" + stack.applet;
 	}
-	
+
 	@Override
 	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
 
 		String sn = stackName(stack);
 		StackMap s = baseMap.get(sn);
-		
+
 		if (s == null) {
 			s = new StackMap();
 			baseMap.put(sn, s);
@@ -106,7 +116,7 @@ public class MemoryDB extends RemusDB {
 
 	@Override
 	public void deleteValue(AppletRef stack, String key) throws NotImplemented,
-			TException {
+	TException {
 		String sn = stackName(stack);
 		StackMap s = baseMap.get(sn);
 		if (s != null) {
@@ -130,14 +140,16 @@ public class MemoryDB extends RemusDB {
 		String sn = stackName(stack);
 		StackMap s = baseMap.get(sn);
 		if (s != null) {
-			return new ArrayList(s.get(key).baseMap.values());
+			if (s.containsKey(key)) {
+				return new ArrayList(s.get(key).baseMap.values());
+			}
 		}
-		return null;
+		return new ArrayList<String>();
 	}
 
 	@Override
 	public long keyCount(AppletRef stack, int maxCount) throws NotImplemented,
-			TException {
+	TException {
 		String sn = stackName(stack);
 		StackMap s = baseMap.get(sn);
 		if (s != null) {
@@ -165,10 +177,10 @@ public class MemoryDB extends RemusDB {
 		return new LinkedList<String>();
 	}
 
-	
+
 	@Override
 	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, String startKey, int count) 
-	throws NotImplemented, TException {
+			throws NotImplemented, TException {
 		String sn = stackName(stack);
 		StackMap s = baseMap.get(sn);
 		if (s != null) {
@@ -183,17 +195,17 @@ public class MemoryDB extends RemusDB {
 						String [] tmp = e.getKey().split("_");
 						long jobID = Long.parseLong(tmp[0]);
 						long emitID = Long.parseLong(tmp[1]);
-						new KeyValJSONPair(key, e.getValue(), jobID, emitID);
+						out.add(new KeyValJSONPair(key, e.getValue(), jobID, emitID));
 					}
 				}
 				i++;
 			}
 			return out;
 		}		
-		return null;
+		return new ArrayList<KeyValJSONPair>();
 	}
 
-	
+
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
@@ -208,4 +220,9 @@ public class MemoryDB extends RemusDB {
 	@Override
 	public void stop() {}
 
+	@Override
+	public String toString() {
+		return baseMap.toString();
+	}
+	
 }

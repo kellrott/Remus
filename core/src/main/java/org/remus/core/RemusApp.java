@@ -49,13 +49,15 @@ public class RemusApp {
 			rootStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET));
 			rootStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET));
-			rootAttachStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET));
+			if (rootAttachStore != null) {
+				rootAttachStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET));
+			}
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
 	}
 
-	
+
 	public void putPipeline(String pipelineName, PipelineDesc pDesc) throws TException, NotImplemented {
 		AppletRef arPipeline = new AppletRef(Constants.ROOT_PIPELINE, Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
 		rootStore.add(arPipeline, 0L, 0L, pipelineName, new HashMap());
@@ -67,7 +69,7 @@ public class RemusApp {
 			} catch (ClassCastException e) {}
 		}		
 	}
-	
+
 
 	public RemusPipeline getPipeline(String name) {
 		if (hasPipeline(name)) {
