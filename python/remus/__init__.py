@@ -53,6 +53,14 @@ class PeerManager:
         for p in peers:
             if p.peerType == RemusNet.PeerType.ATTACH_SERVER:
                 return p.peerID
+
+    def getManager(self):
+        self.connect()
+        peers = self.server.peerInfo([])
+        for p in peers:
+            if p.peerType == RemusNet.PeerType.MANAGER:
+                return p.peerID
+
     
     def getIface(self, peerID):
         peers = self.server.peerInfo([])
