@@ -20,7 +20,7 @@ import shutil
 
 class miniFileCallBack:
 
-    def __init__(self, path, appletName, appletDesc, outdir="mini" ):
+    def __init__(self, server, pipeline, instance, appletName, appletDesc, outdir="mini" ):
         self.appletName = appletName
         self.appletDesc = appletDesc
         self.outdir = outdir
@@ -41,9 +41,7 @@ class miniFileCallBack:
         shutil.copyfile( path, os.path.join( self.outdir, "%s.%s" % ( key, name ) ) )
     
     def keylist( self, applet ):
-        print "stack", self.url + "?info"
-        info = json.loads( urlopen( self.url + "?info" ).read() )
-        keyURL = self.server + info["_pipeline"] + "/" + applet.replace(":", "/")
+        keyURL = self.server + "/" + self.pipeline + "/" + applet.replace(":", "/")
         handle = urlopen( keyURL )
         for line in handle:
             yield json.loads( line )
@@ -69,7 +67,7 @@ class miniFileCallBack:
 
 class miniNetCallback(miniFileCallBack):
     def __init__(self, server, pipeline, instance, applet, appletDesc ):
-        miniFileCallBack.__init__( self, server + "/" + pipeline + "/" + instance, applet, appletDesc )        
+        miniFileCallBack.__init__( self, server, pipeline, instance, applet, appletDesc )        
         self.server = server
         self.pipeline = pipeline
         self.instance = instance
@@ -88,17 +86,13 @@ class miniNetCallback(miniFileCallBack):
 
     
     def keylist( self, applet ):
-        print "stack", self.url + "?info"
-        info = json.loads( urlopen( self.url + "?info" ).read() )
-        keyURL = self.server + info["_pipeline"] + "/" + applet.replace(":", "/")
+        keyURL = self.server + "/" + self.pipeline + "/" + applet.replace(":", "/")
         handle = urlopen( keyURL )
         for line in handle:
             yield json.loads( line )
 
     def get( self, applet, key ):
-        print "stack", self.url + "?info"
-        info = json.loads( urlopen( self.url + "?info" ).read() )
-        keyURL = self.server + info["_pipeline"] + "/" + applet.replace(":", "/") + "/" + key
+        keyURL = self.server + "/" + self.pipeline + "/" + applet.replace(":", "/") + "/" + key
         handle = urlopen( keyURL )
         for line in handle:
             yield json.loads( line )[ key ]
@@ -181,7 +175,10 @@ def main( argv ):
     
     print appletDesc
 
-    code = open( appletDesc['_code'] ).read()
+    if appletDesc['_code'].startswith(":"):
+        code = appletDesc[ appletDesc['_code'][1:] ]
+    else:
+        code = open( appletDesc['_code'] ).read()
     module = imp.new_module( "test_func" )    
     module.__dict__["__name__"] = "test_func"
     module.__dict__["remus"] = cb
@@ -208,9 +205,23 @@ def main( argv ):
             inList.append( iHandle )
         print inList
         func( inList )
-
-        
-
+    
+    if ( appletDesc['_mode'] == "agent" ):
+        inList = []
+        if isinstance(appletDesc['_src'],list):
+            for inFile in appletDesc['_src']:            
+                inList.append(inFile)
+        else:
+            inList.append( appletDesc['_src'] )
+        print inList
+        for inFile in inList:
+            handle = urlopen(input + "/@status")
+            for line in handle:
+                data = json.loads(line)
+                for key in data:
+                    if key.endswith(":" + inFile):
+                        func(key, data[key])
+            handle.close()
 
 if __name__=="__main__":
     main( sys.argv[1:] )
