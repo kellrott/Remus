@@ -231,6 +231,5 @@ class AttachWrapper:
 		return self.attach.open(key, name, mode)
 
 import remusDB_http
-import remusDB_pycassa
 import remusDB_file
 import pythonWorker

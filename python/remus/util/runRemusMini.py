@@ -124,6 +124,48 @@ class FileWrapperGen:
     def getWrapper( self, applet ):
         return FileWrapper( os.path.join( self.path, applet + "@data" ) )
 
+
+class DataStack:
+    def __init__(self, wrapperFactory, applet):
+        self.wrapperFactory = wrapperFactory
+        self.applet = applet
+    
+    def __iter__(self):
+        dStack = self.wrapperFactory.getWrapper( self.applet )            
+        iHandle = remusLib.getDataStack( dStack )
+        return iHandle.__iter__()
+    
+    def get_info(self):
+        url = self.wrapperFactory.server + "/" + self.wrapperFactory.pipeline + "/@status/" + self.wrapperFactory.instance + ":" + self.applet
+        handle = urlopen(url)
+        data = json.loads(handle.read())
+        handle.close()
+        return data[data.keys()[0]] 
+    
+    def get(self, key):
+        url = self.wrapperFactory.server + "/" + self.wrapperFactory.pipeline + "/" + self.wrapperFactory.instance + "/" + self.applet + "/" + key
+        handle = urlopen(url)
+        for line in handle:
+            data = json.loads(line)
+            for k in data:
+                yield data[k]
+        handle.close()
+    
+    def containsKey(self, key):
+        url = self.wrapperFactory.server + "/" + self.wrapperFactory.pipeline + "/" + self.wrapperFactory.instance + "/" + self.applet + "/" + key
+        handle = urlopen(url)
+        count = 0
+        for line in handle:
+            data = json.loads(line)
+            for k in data:
+                count += 1
+        handle.close()
+        return count > 0
+    
+        
+        
+    
+
 def main( argv ):
     from getopt import getopt
     
@@ -198,11 +240,9 @@ def main( argv ):
             func( dkey, data )
     
     if ( appletDesc['_mode'] == "pipe" ):
-        inList = []
+        inList = {}
         for inFile in appletDesc['_src']:            
-            dStack = wrapperFactory.getWrapper( inFile )            
-            iHandle = remusLib.getDataStack( dStack )
-            inList.append( iHandle )
+            inList[ inFile ] = DataStack( wrapperFactory, inFile )
         print inList
         func( inList )
     
