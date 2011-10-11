@@ -36,8 +36,17 @@ public class SubmitView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		try {
+			if (name.length() > 0) {
+				AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );		
+				datasource.deleteValue(ar, name);
+			}	
+		} catch (TException e) {
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -81,8 +90,7 @@ public class SubmitView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override
