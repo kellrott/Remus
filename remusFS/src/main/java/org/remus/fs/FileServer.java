@@ -135,7 +135,7 @@ public class FileServer extends RemusAttach {
         	byte [] array = data.array();
 			f.write(array);
 			f.close();
-			logger.debug("Appending block " + stack + " " + key + " " + name + " length: " + array.length);
+			//logger.debug("Appending block " + stack + " " + key + " " + name + " length: " + array.length);
         } catch (FileNotFoundException e) {
 			throw new TException(e);
 		} catch (IOException e) {
