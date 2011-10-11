@@ -102,7 +102,7 @@ public class MapReduceCallback {
 		try {
 			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.INSTANCE_FIELD));
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), applet);
-			attach.copyTo(arAttach, key, name, file);
+			attach.copyTo(file, arAttach, key, name);
 		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

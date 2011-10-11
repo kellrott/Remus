@@ -76,11 +76,11 @@ public class AttachTest {
 		fos.close();
 		String key1 = "key_1";
 
-		fs.copyTo( aRef1, key1, "test_file", fTemp );
+		fs.copyTo( fTemp, aRef1, key1, "test_file" );
 		fTemp.delete();
 
 		File fTemp2 = File.createTempFile("remus", "tmp");
-		fs.copyFrom(aRef1, key1, "test_file", fTemp2 );
+		fs.copyFrom(fTemp2, aRef1, key1, "test_file" );
 
 		is = AttachTest.class.getResourceAsStream("test.txt");	
 		br = new BufferedReader( new InputStreamReader(is) );

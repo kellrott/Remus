@@ -110,22 +110,22 @@ public abstract class RemusAttach extends RemusPeer {
 	@SuppressWarnings("unchecked")
 	abstract public void init(Map params);
 
-	public void copyTo(AppletRef stack, String key, String name, File file) throws TException, IOException, NotImplemented {
+	public long copyTo(File file, AppletRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		initAttachment(stack, key, name);		
 		byte [] buffer = new byte[BLOCK_SIZE];
 		int size;
+		long total = 0;
 		FileInputStream fis = new FileInputStream(file);
 		while ((size = fis.read(buffer)) > 0) {
-			ByteBuffer buff = ByteBuffer.allocate(size);
-			for (int i = 0; i < size; i++) {
-				buff.put(buffer[i]);
-			}
+			ByteBuffer buff = ByteBuffer.wrap(buffer, 0, size);
 			appendBlock(stack, key, name, buff);
+			total += buff.array().length;
 		}
 		fis.close();
+		return total;
 	}
 
-	public void copyFrom(AppletRef stack, String key, String name, File file) throws TException, IOException, NotImplemented {
+	public long copyFrom(File file, AppletRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		long fileSize = getAttachmentSize(stack, key, name);
 
 		FileOutputStream fos = new FileOutputStream(file);
@@ -136,6 +136,7 @@ public abstract class RemusAttach extends RemusPeer {
 			fos.write(buf.array());
 			offset += buf.array().length;
 		}
+		return fileSize;
 	}
 
 	private class BlockReader extends InputStream {

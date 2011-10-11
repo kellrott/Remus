@@ -88,6 +88,7 @@ public class FileServer extends RemusAttach {
 			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
 			f.setLength(0);
 			f.close();
+			logger.debug("Init file:" + stack + " " + key + " " + name);			
         } catch (FileNotFoundException e) {
 			throw new TException(e);
 		} catch (IOException e) {
@@ -131,8 +132,10 @@ public class FileServer extends RemusAttach {
 		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
         try {
         	FileOutputStream f = new FileOutputStream(attachFile, true);
-			f.write(data.array());
+        	byte [] array = data.array();
+			f.write(array);
 			f.close();
+			logger.debug("Appending block " + stack + " " + key + " " + name + " length: " + array.length);
         } catch (FileNotFoundException e) {
 			throw new TException(e);
 		} catch (IOException e) {
