@@ -18,6 +18,7 @@ import org.remus.RemusDatabaseException;
 import org.remus.RemusManager;
 import org.remus.core.AppletInstance;
 import org.remus.core.AppletInstanceStack;
+import org.remus.core.BaseStackNode;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
@@ -94,6 +95,37 @@ public class WorkManager extends RemusManager {
 
 		miniDB = new RemusMiniDB(peerManager.getPeer(peerManager.getDataServer()));
 		setupAIStack();
+		miniDB.addBaseStack("@activity", new BaseStackNode() {			
+			@Override
+			public List<String> keySlice(String keyStart, int count) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public List<String> getValueJSON(String key) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+			
+			@Override
+			public void delete(String key) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public boolean containsKey(String key) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+			
+			@Override
+			public void add(String key, String data) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		sThread = new ScheduleThread();
 		sThread.start();
 	}
