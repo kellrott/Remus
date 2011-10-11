@@ -7,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
@@ -16,7 +15,6 @@ import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
-import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
@@ -55,7 +53,7 @@ public class WorkEngine implements Runnable {
 				work.workStack.pipeline,
 				work.workStack.instance,
 				work.workStack.applet
-				);
+		);
 
 
 		PipelineSubmission sub = new PipelineSubmission(stackInfo);
@@ -70,7 +68,7 @@ public class WorkEngine implements Runnable {
 						work.workStack.pipeline,
 						inst.toString(),
 						sub.getInputApplet()
-						);
+				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
@@ -107,7 +105,7 @@ public class WorkEngine implements Runnable {
 						work.workStack.pipeline,
 						inst.toString(),
 						sub.getInputApplet()
-						);
+				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
@@ -140,12 +138,12 @@ public class WorkEngine implements Runnable {
 						work.workStack.pipeline,
 						leftInst.toString(),
 						sub.getLeftInputApplet()
-						);
+				);
 				AppletRef rightAr = new AppletRef(
 						work.workStack.pipeline,
 						rightInst.toString(),
 						sub.getRightInputApplet()
-						);
+				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline, work.workStack.instance,
@@ -175,12 +173,12 @@ public class WorkEngine implements Runnable {
 						work.workStack.pipeline,
 						leftInst.toString(),
 						sub.getLeftInputApplet()
-						);
+				);
 				AppletRef rightAr = new AppletRef(
 						work.workStack.pipeline,
 						rightInst.toString(),
 						sub.getRightInputApplet()
-						);
+				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
 					MapReduceCallback cb = new MapReduceCallback(
@@ -226,7 +224,7 @@ public class WorkEngine implements Runnable {
 							work.workStack.pipeline,
 							inst.toString(),
 							(String) ((Map) inputInfo).get("_applet")
-							);
+					);
 					siList.add(new StackIterator(db, ar));
 					i++;
 				}
@@ -264,7 +262,7 @@ public class WorkEngine implements Runnable {
 								work.workStack.pipeline,
 								remapInst.toString(),
 								(String) ((Map) inputInfo).get("_applet")
-								);
+						);
 					} else {
 						MappedInfo m = new MappedInfo();
 						m.info = inputInfo;
@@ -275,7 +273,7 @@ public class WorkEngine implements Runnable {
 								work.workStack.pipeline,
 								m.inst.toString(),
 								(String) ((Map) inputInfo).get("_applet")
-								);
+						);
 						mappedList.add(m);				
 					}
 				}
@@ -299,12 +297,12 @@ public class WorkEngine implements Runnable {
 							this.cb = cb;
 							this.mappedList = mappedList;
 						}
-						
+
 						public void setKeys(String key, List<String> mappedKeySet) {
 							this.key = key;
 							this.mappedKeySet = mappedKeySet;
 						}
-						
+
 						void remapIter() throws NotSupported, Exception {
 							remapIter(0, new LinkedList());
 						}
@@ -344,7 +342,68 @@ public class WorkEngine implements Runnable {
 				}
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.REREDUCE) {
+				List inputList = sub.getInputList();
+				Object remapInfo = null;
+				AppletRef remapAR = null;
+				class MappedInfo {
+					Object info;
+					RemusInstance inst;
+					AppletRef applet;
+				};
 
+				List<MappedInfo> mappedList = new LinkedList<MappedInfo>();
+				for (Object inputInfo : inputList) {
+					if (remapInfo == null) {
+						remapInfo = inputInfo;
+						RemusInstance remapInst = RemusInstance.getInstance(db, 
+								work.workStack.pipeline, 
+								(String) ((Map) remapInfo).get("_instance"));
+
+						remapAR = new AppletRef(
+								work.workStack.pipeline,
+								remapInst.toString(),
+								(String) ((Map) inputInfo).get("_applet")
+						);
+					} else {
+						MappedInfo m = new MappedInfo();
+						m.info = inputInfo;
+						m.inst = RemusInstance.getInstance(db, 
+								work.workStack.pipeline, 
+								(String) ((Map) inputInfo).get("_instance"));
+						m.applet =  new AppletRef(
+								work.workStack.pipeline,
+								m.inst.toString(),
+								(String) ((Map) inputInfo).get("_applet")
+						);
+						mappedList.add(m);				
+					}
+				}
+
+				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
+					MapReduceCallback cb = new MapReduceCallback(
+							work.workStack.pipeline, 
+							work.workStack.instance,
+							work.workStack.applet,
+							new PipelineSubmission(stackInfo),
+							db, attach);
+					for (Object key : db.get(arWork, Long.toString(jobID))) {
+						for (Object value : db.get(remapAR, (String) key)) {
+							List remapKeys = (List) value;
+							List remapValues = new LinkedList();	
+							int i = 0;
+							for (Object rKey : remapKeys) {
+								remapValues.add(db.get(mappedList.get(i).applet, rKey.toString()));
+								i++;
+							}
+							mapred.reduce(key.toString(), remapValues, cb);
+						}
+					}
+					if (!canceled) {
+						cb.writeEmits(outRef, jobID);
+						logger.info(work.workStack.instance + ":" + work.workStack.applet + ":" + jobID + " EmitTotal: " + cb.emitCount);
+					}
+				}
+				status = JobState.DONE;
 			} else {
 				status = JobState.ERROR;
 			}
