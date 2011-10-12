@@ -15,6 +15,8 @@ import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KeyRange;
+import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.SlicePredicate;
@@ -60,7 +62,7 @@ public class Server extends RemusDB {
 	public static final String PORT = "port";
 	public static final String INST_COLUMNS = "instColumns";
 	public static final int CASSANDRA_PORT = 9160;
-	
+
 	@Override
 	public void init( Map paramMap) throws ConnectionException {
 
@@ -79,7 +81,7 @@ public class Server extends RemusDB {
 		logger.info("CASSANDRA Connector: " + serverName + ":" + serverPort + " " + keySpace);
 
 		try {
-		clientPool = new ThriftClientPool(serverName, serverPort, keySpace);
+			clientPool = new ThriftClientPool(serverName, serverPort, keySpace);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ConnectionException(e.getMessage());
@@ -201,7 +203,7 @@ public class Server extends RemusDB {
 	private String stack2column(AppletRef stack) {
 		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
 	}
-	
+
 	private AppletRef column2stack(String name) {
 		String [] tmp = name.split("/");
 		return new AppletRef(tmp[0], tmp[1], tmp[2]);
@@ -552,24 +554,24 @@ public class Server extends RemusDB {
 
 	@Override
 	public List<AppletRef> stackSlice(final String startKey, final int count)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		ThriftCaller<List<AppletRef>> stackSlice = new ThriftCaller<List<AppletRef>>(clientPool) {
-
 			@Override
 			protected List<AppletRef> request(Client client)
-					throws InvalidRequestException, UnavailableException,
-					TimedOutException, TException {
-				
+			throws InvalidRequestException, UnavailableException,
+			TimedOutException, TException {
 				final ColumnParent cp = new ColumnParent(columnFamily);
-				cp.super_column = null;
-				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()), ByteBuffer.wrap("".getBytes()), false, count);
-				SlicePredicate slice = new SlicePredicate();	 
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()), ByteBuffer.wrap("".getBytes()), false, 1);
+				SlicePredicate slice = new SlicePredicate();
 				slice.setSlice_range(sRange);
-				List<ColumnOrSuperColumn> res = client.get_slice(ByteBuffer.wrap(keySpace.getBytes()), cp, slice, CL);
+				KeyRange kr = new KeyRange(count);
+				kr.start_key = ByteBuffer.wrap(startKey.getBytes());
+				kr.end_key = ByteBuffer.wrap("".getBytes());				
+				List<KeySlice> res = client.get_range_slices(cp, slice, kr, CL);
 				List<AppletRef> out = new ArrayList<AppletRef>(res.size());
-				for (ColumnOrSuperColumn scol : res) {		
-					String stackName = new String(scol.getColumn().getName());
-					out.add(column2stack(stackName));
+				for (KeySlice key : res) {
+					AppletRef a = column2stack(new String(key.getKey()));
+					out.add(a);
 				}
 				return out;
 			}			
@@ -581,7 +583,7 @@ public class Server extends RemusDB {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
@@ -594,8 +596,8 @@ public class Server extends RemusDB {
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	
+
 }
