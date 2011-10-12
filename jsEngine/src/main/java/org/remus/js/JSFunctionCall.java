@@ -167,7 +167,7 @@ public class JSFunctionCall implements MapReduceFunction {
 	}
 
 	@Override
-	public void pipe(List<Object> handles, MapReduceCallback cb)
+	public void pipe(Map<String,Object> handles, MapReduceCallback cb)
 	throws NotSupported {
 		throw new NotSupported();
 	}

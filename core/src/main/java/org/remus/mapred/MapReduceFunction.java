@@ -13,6 +13,6 @@ public interface MapReduceFunction {
 			String right_key, List<Object> right_vals, MapReduceCallback cb) throws NotSupported, Exception;
 	void match(String key, List<Object> left_vals,
 			List<Object> right_vals, MapReduceCallback cb) throws NotSupported, Exception;
-	void pipe(List<Object> handles, MapReduceCallback cb) throws NotSupported, Exception;
+	void pipe(Map<String,Object> handles, MapReduceCallback cb) throws NotSupported, Exception;
 	void cleanup();
 }

@@ -1,14 +1,11 @@
 package org.remus.cassandra.test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 //import junit
 import org.apache.thrift.TException;
@@ -145,7 +142,7 @@ public class MPStoreTest {
 		Assert.assertTrue( !ds.containsKey(aRef1, key2) );
 	}
 
-/*		
+	
 	private static final int CYCLE_1 = 200;
 	private static final int CYCLE_2 = 100;
 	
@@ -173,7 +170,7 @@ public class MPStoreTest {
 		Assert.assertEquals(count, CYCLE_1 * CYCLE_2);
 		ds.deleteStack(aRef1);
 	}
-	*/
+	
 	
 	@Test public void stackTest() throws NotImplemented, TException {
 		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);

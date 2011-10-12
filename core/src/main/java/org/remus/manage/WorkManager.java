@@ -347,8 +347,12 @@ public class WorkManager extends RemusManager {
 									}
 									if (inputFound) {
 										AppletInstance src = pipe.getAppletInstance(inst, applet.getSource());
-										PipelineSubmission info = src.getInstanceInfo();
-										applet.createInstance(info, inst);
+										if (src != null) {
+											PipelineSubmission info = src.getInstanceInfo();
+											applet.createInstance(info, inst);
+										} else {
+											//TODO: init new work!!!
+										}
 									}
 								}
 							}

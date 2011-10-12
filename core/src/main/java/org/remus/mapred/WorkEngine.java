@@ -3,18 +3,26 @@ package org.remus.mapred;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
+import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
+import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
+import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
@@ -214,7 +222,8 @@ public class WorkEngine implements Runnable {
 				status = JobState.DONE;
 			} else if (work.mode == WorkMode.PIPE) {
 				List inputList = sub.getInputList();
-				List<Object> siList = new LinkedList<Object>();
+				List sourceList = sub.getSourceList();
+				Map<String,Object> siList = new HashMap<String,Object>();
 				int i = 0;
 				for (Object inputInfo : inputList) {
 					RemusInstance inst = RemusInstance.getInstance(db, 
@@ -225,7 +234,9 @@ public class WorkEngine implements Runnable {
 							inst.toString(),
 							(String) ((Map) inputInfo).get("_applet")
 					);
-					siList.add(new StackIterator(db, ar));
+					//siList.put((String) siList.get(i), new StackIterator(db, ar));
+					
+					siList.put((String) sourceList.get(i), new StackInterface(db, attach, ar));
 					i++;
 				}
 
@@ -436,6 +447,34 @@ public class WorkEngine implements Runnable {
 		mapred.cleanup();
 	}
 
+	
+	public class StackInterface implements Iterable {
+		private RemusApp app;
+		private RemusPipeline pipe;
+		private AppletInstance ai;
+		private RemusDB db;
+		private RemusAttach attach;
+		private AppletRef stack;
+		public StackInterface(RemusDB db, RemusAttach attach, AppletRef stack) throws RemusDatabaseException {
+			this.db = db;
+			this.attach = attach;
+			this.stack = stack;
+			app = new RemusApp(db, attach);
+			pipe = app.getPipeline(stack.pipeline);
+			ai = pipe.getAppletInstance(new RemusInstance(stack.instance), stack.applet);
+		}
+		
+		public Map get_info() throws TException, NotImplemented {
+			return ai.getInstanceInfo().getMap();
+		}		
+		
+		@Override
+		public Iterator iterator() {
+			return new StackIterator(db, stack);
+		}	
+		
+	}
+	
 	public class StackIterator extends RemusDBSliceIterator<Object []> {
 		public StackIterator(RemusDB db, AppletRef stack) {
 			super(db, stack, "", "", true);

@@ -30,6 +30,7 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 		this.loadVal = loadVal;
 		this.keyEnd = keyEnd;
 		outList = new LinkedList<T>();
+		hasNext();
 	}
 
 	@Override

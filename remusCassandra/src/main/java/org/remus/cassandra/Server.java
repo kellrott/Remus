@@ -51,8 +51,6 @@ public class Server extends RemusDB {
 	ThriftClientPool clientPool;
 	String columnFamily, keySpace, serverName;
 	int serverPort;
-	boolean instanceColumns;
-	Map<String,String> columns = new HashMap<String,String>();
 
 	private Logger logger;
 
@@ -85,10 +83,6 @@ public class Server extends RemusDB {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new ConnectionException(e.getMessage());
-		}
-		instanceColumns = false;
-		if (paramMap.containsKey(INST_COLUMNS)) {
-			instanceColumns = Boolean.valueOf((String) paramMap.get(INST_COLUMNS));
 		}
 
 		try {
@@ -142,63 +136,6 @@ public class Server extends RemusDB {
 	public void stop() {
 	}
 
-	private String getColumnFamily( String inst ) throws ConnectionException {
-		if (columns.containsKey(inst)) {
-			return columns.get(inst);		
-		}
-		String cfName;
-		if (instanceColumns) {
-			cfName = columnFamily + "_" + inst.replaceAll("-", "");
-		} else {
-			cfName = columnFamily;
-		}
-		TTransport tr = new TSocket(serverName, serverPort);	 //new default in 0.7 is framed transport	 
-		TFramedTransport tf = new TFramedTransport(tr);	 
-		try {
-			TProtocol proto = new TBinaryProtocol(tf);	 
-			tf.open();
-			Client client = new Client(proto);
-			KsDef ksDesc = client.describe_keyspace(keySpace);				
-			Boolean found = false;
-			for (CfDef cfdef : ksDesc.getCf_defs()) {
-				if (cfdef.name.compareTo(cfName) == 0) {
-					found = true;
-				}
-			}
-			if (!found) {
-				CfDef cfDesc = new CfDef(keySpace, cfName);
-				cfDesc.comparator_type =  "UTF8Type";
-				cfDesc.column_type = "Super";
-				//ksDesc.addToCf_defs(cfDesc);
-				try { 
-					client.set_keyspace(keySpace);
-					client.system_add_column_family(cfDesc);
-				} catch (Exception e2) {
-					throw new ConnectionException("Unable to find or create columnFamily " + cfName + "\n" + e2.toString());
-				}
-			}
-			columns.put(inst, cfName);
-		} catch (NoSuchElementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TTransportException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidRequestException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			tf.close();
-		}		
-		return columns.get(inst);
-	}
-
 
 	private String stack2column(AppletRef stack) {
 		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
@@ -221,13 +158,7 @@ public class Server extends RemusDB {
 			Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap(data.getBytes());
 
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnParent cp = new ColumnParent(curCF);
+		final ColumnParent cp = new ColumnParent(columnFamily);
 
 		ThriftCaller<Boolean> addCall = new ThriftCaller<Boolean>(clientPool)  {
 			@Override
@@ -257,14 +188,9 @@ public class Server extends RemusDB {
 
 	@Override
 	public boolean containsKey(AppletRef stack, String key) throws TException {
+
 		final String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnPath cp = new ColumnPath(curCF);
+		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 
@@ -296,24 +222,16 @@ public class Server extends RemusDB {
 	@Override
 	public void deleteStack(AppletRef stack) throws TException {
 
-		final String column = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnPath cp = new ColumnPath(curCF);
+		final String superColumn = stack2column(stack);
+		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
 			@Override
 			protected Boolean request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
-
 				long clock = System.currentTimeMillis() * 1000;
-				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
-
+				client.remove(ByteBuffer.wrap(superColumn.getBytes()), cp, clock, CL);
 				return null;
 			}
 
@@ -329,13 +247,7 @@ public class Server extends RemusDB {
 	@Override
 	public void deleteValue(AppletRef stack, String key) throws TException {
 		final String column = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnPath cp = new ColumnPath( curCF );
+		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 
@@ -344,7 +256,6 @@ public class Server extends RemusDB {
 			protected Boolean request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
-
 				long clock = System.currentTimeMillis() * 1000;
 				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
 				return null;
@@ -362,14 +273,7 @@ public class Server extends RemusDB {
 	@Override
 	public long getTimeStamp(AppletRef stack) throws TException {
 		String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-
-		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, curCF, "","") {				
+		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, columnFamily, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
 				for (Column col : scol.getSuper_column().getColumns()) {
@@ -391,15 +295,8 @@ public class Server extends RemusDB {
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key) throws TException {
 
-		final String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnPath cp = new ColumnPath(curCF);
-
+		final String superColumn = stack2column(stack);		
+		final ColumnPath cp = new ColumnPath(columnFamily);
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 		ThriftCaller<List<String>> getCall = new ThriftCaller<List<String>>(clientPool) {
 
@@ -433,14 +330,7 @@ public class Server extends RemusDB {
 	@Override
 	public long keyCount(AppletRef stack, final int maxCount) throws TException {
 		final String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnParent cp = new ColumnParent(curCF);
-
+		final ColumnParent cp = new ColumnParent(columnFamily);
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>(clientPool) {
 			@Override
 			protected Long request(Client client)
@@ -467,15 +357,8 @@ public class Server extends RemusDB {
 	@Override
 	public List<String> keySlice(AppletRef stack, final String keyStart, final int count)
 	throws TException {
-		final String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnParent cp = new ColumnParent(curCF);
-
+		final String superColumn = stack2column(stack);		
+		final ColumnParent cp = new ColumnParent(columnFamily);
 		ThriftCaller<List<String>> keySliceCall = new ThriftCaller<List<String>>(clientPool) {
 			@Override
 			protected List<String> request(Client client)
@@ -505,15 +388,8 @@ public class Server extends RemusDB {
 	@Override
 	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, final String startKey,
 			final int count) throws TException {
-
 		final String superColumn = stack2column(stack);
-		String curCF = columnFamily;
-		try {
-			curCF = getColumnFamily(stack.instance);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnParent cp = new ColumnParent(curCF);
+		final ColumnParent cp = new ColumnParent(columnFamily);
 
 		ThriftCaller<List<KeyValJSONPair>> keyValSlice = new ThriftCaller<List<KeyValJSONPair>>(clientPool) {			
 			@Override
