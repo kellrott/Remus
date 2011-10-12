@@ -7,16 +7,21 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
 import org.remus.server.BaseNode;
+import org.remus.thrift.AppletRef;
+import org.remus.thrift.NotImplemented;
+import org.remus.thrift.RemusNet;
 
 @SuppressWarnings("unchecked")
 public class StoreInfoView implements BaseNode {
 
-	RemusApp app;
-	public StoreInfoView(RemusApp app) {
-		this.app = app;
+	RemusWeb web;
+	public StoreInfoView(RemusWeb web) {
+		this.web = web;
 	}
 
 	@Override
@@ -29,14 +34,27 @@ public class StoreInfoView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
+		RemusNet.Iface db = web.getDataStore();
+		
 		try {
-			Map out = new HashMap();
-			//out.put( "dataStore", app.getRootDatastore().getConfig()  );
-			//out.put( "attachStore", app.getRootAttachStore().getConfig()  );
-			
-			os.write( JSON.dumps( out ).getBytes() );
-		} catch ( IOException e ) {
-
+			for (AppletRef ar : db.stackSlice("", 500)) {
+				Map out = new HashMap();
+				out.put("_instance", ar.instance);
+				out.put("_pipeline", ar.pipeline);
+				out.put("_applet", ar.applet);
+				os.write(JSON.dumps(out).getBytes());
+				os.write("\n".getBytes());
+				
+			}
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

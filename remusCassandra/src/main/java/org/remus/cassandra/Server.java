@@ -143,7 +143,12 @@ public class Server extends RemusDB {
 
 	private AppletRef column2stack(String name) {
 		String [] tmp = name.split("/");
-		return new AppletRef(tmp[0], tmp[1], tmp[2]);
+		StringBuilder s = new StringBuilder(tmp[2]);
+		for (int i = 3; i < tmp.length; i++) {
+			s.append("/");
+			s.append(tmp[i]);
+		}
+		return new AppletRef(tmp[1], tmp[0], s.toString());
 	}
 
 
