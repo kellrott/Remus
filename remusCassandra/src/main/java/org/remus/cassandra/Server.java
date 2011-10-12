@@ -570,8 +570,10 @@ public class Server extends RemusDB {
 				List<KeySlice> res = client.get_range_slices(cp, slice, kr, CL);
 				List<AppletRef> out = new ArrayList<AppletRef>(res.size());
 				for (KeySlice key : res) {
-					AppletRef a = column2stack(new String(key.getKey()));
-					out.add(a);
+					if (!key.columns.isEmpty()) {
+						AppletRef a = column2stack(new String(key.getKey()));
+						out.add(a);
+					}
 				}
 				return out;
 			}			
