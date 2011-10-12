@@ -37,6 +37,7 @@ import org.remus.RemusDB;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,6 +200,11 @@ public class Server extends RemusDB {
 
 	private String stack2column(AppletRef stack) {
 		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
+	}
+	
+	private AppletRef column2stack(String name) {
+		String [] tmp = name.split("/");
+		return new AppletRef(tmp[0], tmp[1], tmp[2]);
 	}
 
 
@@ -540,35 +546,42 @@ public class Server extends RemusDB {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		/*
-		ThriftSliceIterator<KeyValJSONPair> out = new ThriftSliceIterator<KeyValJSONPair>(clientPool, superColumn, curCF, startKey, "", count) {				
-			@Override
-			void processColumn(ColumnOrSuperColumn scol) {
-				String key = new String( scol.getSuper_column().getName() );
-				for ( Column col : scol.getSuper_column().getColumns() ) {
-					String itemName=new String(col.getName());
-					String [] tmp = itemName.split("_");
-					long jobID = Long.parseLong(  tmp[0] );
-					long emitID = Long.parseLong( tmp[1] );
-
-					KeyValJSONPair kv = new KeyValJSONPair(key, new String(col.getValue()), jobID, emitID);
-
-					addElement( kv );
-				}
-			}
-		};
-
-		LinkedList<KeyValJSONPair> outList = new LinkedList<KeyValJSONPair>();
-		for ( KeyValJSONPair kv : out ) {
-			outList.add(kv);
-		}
-		return outList;
-		 */
-
 		return null;
 
 	}
 
+	@Override
+	public List<AppletRef> stackSlice(final String startKey, final int count)
+			throws NotImplemented, TException {
+		ThriftCaller<List<AppletRef>> stackSlice = new ThriftCaller<List<AppletRef>>(clientPool) {
+
+			@Override
+			protected List<AppletRef> request(Client client)
+					throws InvalidRequestException, UnavailableException,
+					TimedOutException, TException {
+				
+				final ColumnParent cp = new ColumnParent(columnFamily);
+				cp.super_column = null;
+				SliceRange sRange = new SliceRange(ByteBuffer.wrap(startKey.getBytes()), ByteBuffer.wrap("".getBytes()), false, count);
+				SlicePredicate slice = new SlicePredicate();	 
+				slice.setSlice_range(sRange);
+				List<ColumnOrSuperColumn> res = client.get_slice(ByteBuffer.wrap(keySpace.getBytes()), cp, slice, CL);
+				List<AppletRef> out = new ArrayList<AppletRef>(res.size());
+				for (ColumnOrSuperColumn scol : res) {		
+					String stackName = new String(scol.getColumn().getName());
+					out.add(column2stack(stackName));
+				}
+				return out;
+			}			
+		};
+		try {
+			return stackSlice.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();

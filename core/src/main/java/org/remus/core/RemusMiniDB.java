@@ -123,5 +123,11 @@ public class RemusMiniDB extends RemusDB {
 	public void reset() {
 		nodes.clear();		
 	}
+	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+			throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
 
 }

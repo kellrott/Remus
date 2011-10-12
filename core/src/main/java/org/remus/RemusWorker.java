@@ -24,13 +24,13 @@ abstract public class RemusWorker extends RemusPeer {
 
 	@Override
 	public boolean containsKey(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
 	@Override
 	public void deleteAttachment(AppletRef stack, String key, String name)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -41,13 +41,13 @@ abstract public class RemusWorker extends RemusPeer {
 
 	@Override
 	public void deleteValue(AppletRef stack, String key) throws NotImplemented,
-			TException {
+	TException {
 		throw new NotImplemented();
 	}
 
 	@Override
 	public long getAttachmentSize(AppletRef stack, String key, String name)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -58,13 +58,13 @@ abstract public class RemusWorker extends RemusPeer {
 
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
 	@Override
 	public boolean hasAttachment(AppletRef stack, String key, String name)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -76,13 +76,13 @@ abstract public class RemusWorker extends RemusPeer {
 
 	@Override
 	public long keyCount(AppletRef stack, int maxCount) throws NotImplemented,
-			TException {
+	TException {
 		throw new NotImplemented();
 	}
 
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -94,7 +94,7 @@ abstract public class RemusWorker extends RemusPeer {
 
 	@Override
 	public List<String> listAttachments(AppletRef stack, String key)
-			throws NotImplemented, TException {
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -114,9 +114,15 @@ abstract public class RemusWorker extends RemusPeer {
 	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
-	
+
 	@Override
 	public String scheduleInfoJSON() throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
+
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 

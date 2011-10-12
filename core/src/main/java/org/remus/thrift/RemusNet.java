@@ -49,6 +49,8 @@ public class RemusNet {
 
     public void deleteValue(AppletRef stack, String key) throws NotImplemented, org.apache.thrift.TException;
 
+    public List<AppletRef> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException;
+
     public long getTimeStamp(AppletRef stack) throws NotImplemented, org.apache.thrift.TException;
 
     /**
@@ -123,6 +125,8 @@ public class RemusNet {
     public void deleteStack(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.deleteStack_call> resultHandler) throws org.apache.thrift.TException;
 
     public void deleteValue(AppletRef stack, String key, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.deleteValue_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void stackSlice(String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.stackSlice_call> resultHandler) throws org.apache.thrift.TException;
 
     public void getTimeStamp(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getTimeStamp_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -539,6 +543,46 @@ public class RemusNet {
         throw result.e;
       }
       return;
+    }
+
+    public List<AppletRef> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException
+    {
+      send_stackSlice(startKey, count);
+      return recv_stackSlice();
+    }
+
+    public void send_stackSlice(String startKey, int count) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stackSlice", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      stackSlice_args args = new stackSlice_args();
+      args.setStartKey(startKey);
+      args.setCount(count);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<AppletRef> recv_stackSlice() throws NotImplemented, org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "stackSlice failed: out of sequence response");
+      }
+      stackSlice_result result = new stackSlice_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "stackSlice failed: unknown result");
     }
 
     public long getTimeStamp(AppletRef stack) throws NotImplemented, org.apache.thrift.TException
@@ -1433,6 +1477,41 @@ public class RemusNet {
       }
     }
 
+    public void stackSlice(String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<stackSlice_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      stackSlice_call method_call = new stackSlice_call(startKey, count, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class stackSlice_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String startKey;
+      private int count;
+      public stackSlice_call(String startKey, int count, org.apache.thrift.async.AsyncMethodCallback<stackSlice_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.startKey = startKey;
+        this.count = count;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stackSlice", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        stackSlice_args args = new stackSlice_args();
+        args.setStartKey(startKey);
+        args.setCount(count);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<AppletRef> getResult() throws NotImplemented, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_stackSlice();
+      }
+    }
+
     public void getTimeStamp(AppletRef stack, org.apache.thrift.async.AsyncMethodCallback<getTimeStamp_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       getTimeStamp_call method_call = new getTimeStamp_call(stack, resultHandler, this, protocolFactory, transport);
@@ -1945,6 +2024,7 @@ public class RemusNet {
       processMap_.put("keyValJSONSlice", new keyValJSONSlice());
       processMap_.put("deleteStack", new deleteStack());
       processMap_.put("deleteValue", new deleteValue());
+      processMap_.put("stackSlice", new stackSlice());
       processMap_.put("getTimeStamp", new getTimeStamp());
       processMap_.put("initAttachment", new initAttachment());
       processMap_.put("getAttachmentSize", new getAttachmentSize());
@@ -2311,6 +2391,44 @@ public class RemusNet {
           return;
         }
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("deleteValue", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class stackSlice implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        stackSlice_args args = new stackSlice_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stackSlice", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        stackSlice_result result = new stackSlice_result();
+        try {
+          result.success = iface_.stackSlice(args.startKey, args.count);
+        } catch (NotImplemented e) {
+          result.e = e;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing stackSlice", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing stackSlice");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stackSlice", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("stackSlice", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -9731,6 +9849,815 @@ public class RemusNet {
 
   }
 
+  public static class stackSlice_args implements org.apache.thrift.TBase<stackSlice_args, stackSlice_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("stackSlice_args");
+
+    private static final org.apache.thrift.protocol.TField START_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("startKey", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("count", org.apache.thrift.protocol.TType.I32, (short)2);
+
+    public String startKey;
+    public int count;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      START_KEY((short)1, "startKey"),
+      COUNT((short)2, "count");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // START_KEY
+            return START_KEY;
+          case 2: // COUNT
+            return COUNT;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __COUNT_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.START_KEY, new org.apache.thrift.meta_data.FieldMetaData("startKey", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.COUNT, new org.apache.thrift.meta_data.FieldMetaData("count", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(stackSlice_args.class, metaDataMap);
+    }
+
+    public stackSlice_args() {
+    }
+
+    public stackSlice_args(
+      String startKey,
+      int count)
+    {
+      this();
+      this.startKey = startKey;
+      this.count = count;
+      setCountIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public stackSlice_args(stackSlice_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetStartKey()) {
+        this.startKey = other.startKey;
+      }
+      this.count = other.count;
+    }
+
+    public stackSlice_args deepCopy() {
+      return new stackSlice_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.startKey = null;
+      setCountIsSet(false);
+      this.count = 0;
+    }
+
+    public String getStartKey() {
+      return this.startKey;
+    }
+
+    public stackSlice_args setStartKey(String startKey) {
+      this.startKey = startKey;
+      return this;
+    }
+
+    public void unsetStartKey() {
+      this.startKey = null;
+    }
+
+    /** Returns true if field startKey is set (has been assigned a value) and false otherwise */
+    public boolean isSetStartKey() {
+      return this.startKey != null;
+    }
+
+    public void setStartKeyIsSet(boolean value) {
+      if (!value) {
+        this.startKey = null;
+      }
+    }
+
+    public int getCount() {
+      return this.count;
+    }
+
+    public stackSlice_args setCount(int count) {
+      this.count = count;
+      setCountIsSet(true);
+      return this;
+    }
+
+    public void unsetCount() {
+      __isset_bit_vector.clear(__COUNT_ISSET_ID);
+    }
+
+    /** Returns true if field count is set (has been assigned a value) and false otherwise */
+    public boolean isSetCount() {
+      return __isset_bit_vector.get(__COUNT_ISSET_ID);
+    }
+
+    public void setCountIsSet(boolean value) {
+      __isset_bit_vector.set(__COUNT_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case START_KEY:
+        if (value == null) {
+          unsetStartKey();
+        } else {
+          setStartKey((String)value);
+        }
+        break;
+
+      case COUNT:
+        if (value == null) {
+          unsetCount();
+        } else {
+          setCount((Integer)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case START_KEY:
+        return getStartKey();
+
+      case COUNT:
+        return new Integer(getCount());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case START_KEY:
+        return isSetStartKey();
+      case COUNT:
+        return isSetCount();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof stackSlice_args)
+        return this.equals((stackSlice_args)that);
+      return false;
+    }
+
+    public boolean equals(stackSlice_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_startKey = true && this.isSetStartKey();
+      boolean that_present_startKey = true && that.isSetStartKey();
+      if (this_present_startKey || that_present_startKey) {
+        if (!(this_present_startKey && that_present_startKey))
+          return false;
+        if (!this.startKey.equals(that.startKey))
+          return false;
+      }
+
+      boolean this_present_count = true;
+      boolean that_present_count = true;
+      if (this_present_count || that_present_count) {
+        if (!(this_present_count && that_present_count))
+          return false;
+        if (this.count != that.count)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(stackSlice_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      stackSlice_args typedOther = (stackSlice_args)other;
+
+      lastComparison = Boolean.valueOf(isSetStartKey()).compareTo(typedOther.isSetStartKey());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetStartKey()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startKey, typedOther.startKey);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetCount()).compareTo(typedOther.isSetCount());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCount()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.count, typedOther.count);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // START_KEY
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.startKey = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // COUNT
+            if (field.type == org.apache.thrift.protocol.TType.I32) {
+              this.count = iprot.readI32();
+              setCountIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.startKey != null) {
+        oprot.writeFieldBegin(START_KEY_FIELD_DESC);
+        oprot.writeString(this.startKey);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(COUNT_FIELD_DESC);
+      oprot.writeI32(this.count);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("stackSlice_args(");
+      boolean first = true;
+
+      sb.append("startKey:");
+      if (this.startKey == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.startKey);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("count:");
+      sb.append(this.count);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class stackSlice_result implements org.apache.thrift.TBase<stackSlice_result, stackSlice_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("stackSlice_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public List<AppletRef> success;
+    public NotImplemented e;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class))));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(stackSlice_result.class, metaDataMap);
+    }
+
+    public stackSlice_result() {
+    }
+
+    public stackSlice_result(
+      List<AppletRef> success,
+      NotImplemented e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public stackSlice_result(stackSlice_result other) {
+      if (other.isSetSuccess()) {
+        List<AppletRef> __this__success = new ArrayList<AppletRef>();
+        for (AppletRef other_element : other.success) {
+          __this__success.add(new AppletRef(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetE()) {
+        this.e = new NotImplemented(other.e);
+      }
+    }
+
+    public stackSlice_result deepCopy() {
+      return new stackSlice_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<AppletRef> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(AppletRef elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<AppletRef>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<AppletRef> getSuccess() {
+      return this.success;
+    }
+
+    public stackSlice_result setSuccess(List<AppletRef> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public NotImplemented getE() {
+      return this.e;
+    }
+
+    public stackSlice_result setE(NotImplemented e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<AppletRef>)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((NotImplemented)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof stackSlice_result)
+        return this.equals((stackSlice_result)that);
+      return false;
+    }
+
+    public boolean equals(stackSlice_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(stackSlice_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      stackSlice_result typedOther = (stackSlice_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
+                this.success = new ArrayList<AppletRef>(_list20.size);
+                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+                {
+                  AppletRef _elem22;
+                  _elem22 = new AppletRef();
+                  _elem22.read(iprot);
+                  this.success.add(_elem22);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // E
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.e = new NotImplemented();
+              this.e.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
+          for (AppletRef _iter23 : this.success)
+          {
+            _iter23.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetE()) {
+        oprot.writeFieldBegin(E_FIELD_DESC);
+        this.e.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("stackSlice_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
   public static class getTimeStamp_args implements org.apache.thrift.TBase<getTimeStamp_args, getTimeStamp_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getTimeStamp_args");
 
@@ -14673,13 +15600,13 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list20.size);
-                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list24.size);
+                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
                 {
-                  String _elem22;
-                  _elem22 = iprot.readString();
-                  this.success.add(_elem22);
+                  String _elem26;
+                  _elem26 = iprot.readString();
+                  this.success.add(_elem26);
                 }
                 iprot.readListEnd();
               }
@@ -14713,9 +15640,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter23 : this.success)
+          for (String _iter27 : this.success)
           {
-            oprot.writeString(_iter23);
+            oprot.writeString(_iter27);
           }
           oprot.writeListEnd();
         }
@@ -19972,14 +20899,14 @@ public class RemusNet {
           case 1: // INFO
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-                this.info = new ArrayList<PeerInfoThrift>(_list24.size);
-                for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
+                this.info = new ArrayList<PeerInfoThrift>(_list28.size);
+                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
                 {
-                  PeerInfoThrift _elem26;
-                  _elem26 = new PeerInfoThrift();
-                  _elem26.read(iprot);
-                  this.info.add(_elem26);
+                  PeerInfoThrift _elem30;
+                  _elem30 = new PeerInfoThrift();
+                  _elem30.read(iprot);
+                  this.info.add(_elem30);
                 }
                 iprot.readListEnd();
               }
@@ -20006,9 +20933,9 @@ public class RemusNet {
         oprot.writeFieldBegin(INFO_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.info.size()));
-          for (PeerInfoThrift _iter27 : this.info)
+          for (PeerInfoThrift _iter31 : this.info)
           {
-            _iter27.write(oprot);
+            _iter31.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -20445,14 +21372,14 @@ public class RemusNet {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                this.success = new ArrayList<PeerInfoThrift>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+                this.success = new ArrayList<PeerInfoThrift>(_list32.size);
+                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
                 {
-                  PeerInfoThrift _elem30;
-                  _elem30 = new PeerInfoThrift();
-                  _elem30.read(iprot);
-                  this.success.add(_elem30);
+                  PeerInfoThrift _elem34;
+                  _elem34 = new PeerInfoThrift();
+                  _elem34.read(iprot);
+                  this.success.add(_elem34);
                 }
                 iprot.readListEnd();
               }
@@ -20494,9 +21421,9 @@ public class RemusNet {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (PeerInfoThrift _iter31 : this.success)
+          for (PeerInfoThrift _iter35 : this.success)
           {
-            _iter31.write(oprot);
+            _iter35.write(oprot);
           }
           oprot.writeListEnd();
         }

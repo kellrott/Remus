@@ -143,4 +143,9 @@ public abstract class RemusWeb extends RemusPeer {
 		throw new NotImplemented();	
 	}
 	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+	throws NotImplemented, TException {
+		throw new NotImplemented();
+	}
 }

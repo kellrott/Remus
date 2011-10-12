@@ -245,6 +245,15 @@ public class RemusRemote implements RemusNet.Iface {
 			return iface.peerInfo(info);
 		}
 	}
+	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+			throws NotImplemented, TException {
+		synchronized (lock) {
+			checkIface();
+			return iface.stackSlice(startKey, count);
+		}
+	}
 
 	public void close() {
 		((RemusNet.Client) iface).getInputProtocol().getTransport().close();

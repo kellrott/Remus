@@ -104,6 +104,11 @@ public abstract class RemusDB extends RemusPeer {
 				return db.peerInfo(info);
 			}
 			
+			@Override
+			public List<AppletRef> stackSlice(String startKey, int count)
+					throws NotImplemented, TException {
+				return db.stackSlice(startKey, count);
+			}			
 		};		
 	}
 	

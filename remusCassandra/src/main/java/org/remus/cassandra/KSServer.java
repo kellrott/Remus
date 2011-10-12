@@ -37,6 +37,7 @@ import org.remus.RemusDB;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
+import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -534,36 +535,21 @@ public class KSServer extends RemusDB {
 			return keyValSlice.call();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		/*
-		ThriftSliceIterator<KeyValJSONPair> out = new ThriftSliceIterator<KeyValJSONPair>(clientPool, superColumn, curCF, startKey, "", count) {				
-			@Override
-			void processColumn(ColumnOrSuperColumn scol) {
-				String key = new String( scol.getSuper_column().getName() );
-				for ( Column col : scol.getSuper_column().getColumns() ) {
-					String itemName=new String(col.getName());
-					String [] tmp = itemName.split("_");
-					long jobID = Long.parseLong(  tmp[0] );
-					long emitID = Long.parseLong( tmp[1] );
-
-					KeyValJSONPair kv = new KeyValJSONPair(key, new String(col.getValue()), jobID, emitID);
-
-					addElement( kv );
-				}
-			}
-		};
-
-		LinkedList<KeyValJSONPair> outList = new LinkedList<KeyValJSONPair>();
-		for ( KeyValJSONPair kv : out ) {
-			outList.add(kv);
-		}
-		return outList;
-		 */
+		}	
 
 		return null;
 
 	}
 
+	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+			throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 	@Override
 	public PeerInfo getPeerInfo() {
 		PeerInfo out = new PeerInfo();
@@ -573,6 +559,8 @@ public class KSServer extends RemusDB {
 	}
 
 
+	
+	
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		// TODO Auto-generated method stub

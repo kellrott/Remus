@@ -72,17 +72,22 @@ public class MemoryDB extends RemusDB {
 
 	}
 
-	Map<String,StackMap> baseMap;
+	TreeMap<String,StackMap> baseMap;
 
 	@Override
 	public void init(Map params) throws ConnectionException {
-		baseMap = new HashMap<String,StackMap>();		
+		baseMap = new TreeMap<String,StackMap>();		
 	}
 
 	private String stackName(AppletRef stack) {
 		return stack.pipeline + "/" + stack.instance + "/" + stack.applet;
 	}
 
+	private AppletRef stackApplet(String name) {
+		String [] tmp = name.split("/");
+		return new AppletRef(tmp[0], tmp[1], tmp[2]);
+	}	
+		
 	@Override
 	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws NotImplemented, TException {
@@ -203,6 +208,21 @@ public class MemoryDB extends RemusDB {
 			return out;
 		}		
 		return new ArrayList<KeyValJSONPair>();
+	}
+
+	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+			throws NotImplemented, TException {		
+		NavigableSet<String> a = baseMap.navigableKeySet();
+		SortedSet<String> t = a.tailSet(startKey);
+		LinkedList<AppletRef> out = new LinkedList<AppletRef>();
+		for (String name : t) {
+			if (out.size() < count) {
+				out.add(stackApplet(name));
+			}
+		}
+		return out;
 	}
 
 

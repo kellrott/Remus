@@ -322,4 +322,11 @@ public abstract class RemusAttach extends RemusPeer {
 	public int jobCancel(String jobID) throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
+	
+	@Override
+	public List<AppletRef> stackSlice(String startKey, int count)
+			throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
+	
 }
