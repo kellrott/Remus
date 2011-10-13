@@ -235,6 +235,7 @@ public class WorkManager extends RemusManager {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		} catch (TException e) {
+			peerManager.peerFailure(rj.peerID);
 			e.printStackTrace();
 		}
 		peerStacks.get(rj.peerID).remove(rj);
@@ -280,6 +281,7 @@ public class WorkManager extends RemusManager {
 						e.printStackTrace();
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					logger.error(e.getMessage());
 				}
 				try {
@@ -395,7 +397,9 @@ public class WorkManager extends RemusManager {
 		for (String applet : subData.getInitApplets()) {
 			if (!pipe.hasAppletInstance(subData.getInstance(), applet)) {
 				RemusApplet ap = pipe.getApplet(applet);
-				ap.createInstance(subData, subData.getInstance());
+				if (ap != null) {
+					ap.createInstance(subData, subData.getInstance());
+				}
 			}
 		}					
 		return changed;
