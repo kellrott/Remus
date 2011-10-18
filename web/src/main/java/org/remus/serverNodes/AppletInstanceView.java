@@ -80,19 +80,6 @@ public class AppletInstanceView implements BaseNode {
 						e.printStackTrace();
 					}
 				}
-				/*
-				for ( KeyValuePair kv : applet.getDataStore().listKeyPairs( applet.getPath() , inst.toString() ) ) {			
-					Map out = new HashMap();
-					out.put( kv.getKey(), kv.getValue() );	
-					try {
-						os.write( serial.dumps( out ).getBytes() );
-						os.write("\n".getBytes());
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				 */		
 			} else {
 				try { 
 					for (String sliceKey : applet.getDataStore().keySlice(ar, "", sliceSize)) {
@@ -114,8 +101,9 @@ public class AppletInstanceView implements BaseNode {
 			try {
 				String [] tmp = name.split("/");
 				if (tmp.length == 1) {
+					String qName = URLDecoder.decode(name, "UTF-8");
 					if (sliceStr == null) {
-						for (Object obj : applet.getDataStore().get(ar, name)) {
+						for (Object obj : applet.getDataStore().get(ar, qName)) {
 							Map out = new HashMap();
 							out.put(name, obj);
 							try {
@@ -127,7 +115,7 @@ public class AppletInstanceView implements BaseNode {
 							}
 						}
 					} else {
-						for (String sliceKey : applet.getDataStore().keySlice(ar, name, sliceSize)) {
+						for (String sliceKey : applet.getDataStore().keySlice(ar, qName, sliceSize)) {
 							for (Object value : applet.getDataStore().get(ar, sliceKey)) {
 								Map oMap = new HashMap();
 								oMap.put(sliceKey, value);
@@ -143,7 +131,10 @@ public class AppletInstanceView implements BaseNode {
 					}
 				} else {				
 					try {
-						InputStream is = applet.getAttachStore().readAttachement(ar, tmp[0], tmp[1]);
+						String key = URLDecoder.decode(tmp[0], "UTF-8");
+						String fileName = URLDecoder.decode(tmp[1], "UTF-8");
+						
+						InputStream is = applet.getAttachStore().readAttachement(ar, key, fileName);
 						byte [] buffer = new byte[1024];
 						int len;
 						while ((len = is.read(buffer)) > 0) {
@@ -159,6 +150,9 @@ public class AppletInstanceView implements BaseNode {
 			} catch (TException e) {
 				e.printStackTrace();
 			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
