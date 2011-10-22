@@ -1,0 +1,24 @@
+#JavaScript Worker
+org.remus.js.JSWorker : ~
+
+#Jython Worker
+org.remus.jython.JythonWorker : ~
+
+#The Web Server
+org.remus.server.JettyServer : ~ 
+
+#Cassandra Data Server
+org.remus.cassandra.Server :
+    config :
+        columnFamily : remusTable
+        keySpace : remus
+
+#File System Attachment Server
+org.remus.fs.FileServer : 
+    config :
+        dir : /opt/remus
+        shared : false
+
+#Work Management Server
+org.remus.manage.WorkManager : ~
+
