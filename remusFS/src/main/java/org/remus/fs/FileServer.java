@@ -116,10 +116,10 @@ public class FileServer extends RemusAttach {
         try {
 			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
 			f.seek(offset);
-			ByteBuffer buffer = ByteBuffer.allocate(length);
-			f.read( buffer.array(), 0, length );			
+			byte data [] = new byte[length];
+			int readLen = f.read( data, 0, length );		
 			f.close();
-			return buffer;
+			return ByteBuffer.wrap(data, 0, readLen);
         } catch (FileNotFoundException e) {
 			throw new TException(e);
 		} catch (IOException e) {
