@@ -217,9 +217,9 @@ public class AppletInstance {
 					}
 				}
 			}
-			logger.debug("Ending JobScan: " + instance.toString() + ":" + applet.getID() + " " + newJobStart );
+			logger.debug("Ending JobScan: " + instance.toString() + ":" + applet.getID() + " " + newJobStart + " = " + curPos);
 			if (count > 0 && curPos == 0) {
-				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID());
+				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID() );
 				setComplete();
 			} else if (newJobStart.equals(jobStart)) {
 				logger.info("JobStart : " + instance.toString() + ":" + applet.getID() + " = " + jobStart);

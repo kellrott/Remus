@@ -458,6 +458,20 @@ public class WorkManager extends RemusManager {
 
 	private Map<AppletInstance,long []> workIDCache = new HashMap<AppletInstance, long[]>();
 
+	private void flushAppletWorkCache() {
+		synchronized (workIDCache) {			
+			List<AppletInstance> removeList = new LinkedList<AppletInstance>();
+			for (AppletInstance ai : workIDCache.keySet()) {
+				if (workIDCache.get(ai) == null || workIDCache.get(ai).length == 0) {
+					removeList.add(ai);
+				}
+			}
+			for (AppletInstance ai : removeList) {
+				workIDCache.remove(ai);
+			}
+		}
+	}
+	
 	private long [] getAppletWorkCache(AppletInstance ai) throws NotImplemented, TException {
 		Set<String> peers = peerManager.getWorkers();
 		long [] workIDs = null;
@@ -495,7 +509,7 @@ public class WorkManager extends RemusManager {
 			Arrays.sort(workIDs);
 			return workIDs;
 		} 
-		workIDCache.put(ai, null);
+		workIDCache.put(ai, new long [0]);
 		return null;
 	}
 
@@ -503,6 +517,7 @@ public class WorkManager extends RemusManager {
 		boolean workAdded = false;
 
 		try {
+			flushAppletWorkCache();
 			Set<String> peers = peerManager.getWorkers();
 			for (String peerID : peers) {
 				if (!peerStacks.containsKey(peerID)) {
