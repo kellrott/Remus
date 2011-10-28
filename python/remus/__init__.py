@@ -19,8 +19,26 @@ class Client(object):
         self.client = RemusNet.Client(self.protocol)
     
     def __getattr__(self,i):
-        if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 'containsKey', 'initAttachment', 'appendBlock' ]:
+        if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 
+        'containsKey', 'initAttachment', 'appendBlock', 'keyValJSONSlice',
+        'listAttachments', 'getAttachmentSize', 'readBlock']:
             return getattr(self.client,i)
+
+def getAppletRef(iface, pipeline, instance, applet):
+    inst = None
+    ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.INSTANCE_APPLET)
+    for a in iface.getValueJSON( ar, instance ):
+        inst = instance
+    
+    ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.SUBMIT_APPLET)
+    for a in iface.getValueJSON( ar, instance ):
+        try:
+            inst = json.loads(a)["_instance"]
+        except KeyError:
+            pass
+            
+    return RemusNet.AppletRef(pipeline, inst, applet)
+    
                 
 class PeerManager:
     def __init__(self, host, port):
