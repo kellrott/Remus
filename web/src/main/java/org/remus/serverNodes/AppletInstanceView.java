@@ -105,7 +105,7 @@ public class AppletInstanceView implements BaseNode {
 					if (sliceStr == null) {
 						for (Object obj : applet.getDataStore().get(ar, qName)) {
 							Map out = new HashMap();
-							out.put(name, obj);
+							out.put(qName, obj);
 							try {
 								os.write(JSON.dumps(out).getBytes());
 								os.write("\n".getBytes());

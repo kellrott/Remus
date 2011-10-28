@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class RemusApplet implements JSONAware {
+public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 
 	public static final int MAPPER = WorkMode.MAP.getValue();
 	public static final int MERGER = WorkMode.MERGE.getValue();
@@ -493,12 +493,18 @@ public class RemusApplet implements JSONAware {
 		return getID().hashCode();
 	};
 
+	
 	@Override
 	public boolean equals(Object obj) {
 		RemusApplet a = (RemusApplet) obj;
 		return a.getID().equals(getID());
 	}
 
+	@Override
+	public int compareTo(RemusApplet o) {
+		return getID().compareTo(o.getID());
+	}
+	
 	public RemusDB getDataStore() {
 		return datastore;
 	}
@@ -520,4 +526,5 @@ public class RemusApplet implements JSONAware {
 	public String toJSONString() {
 		return JSON.dumps(appletDesc);
 	}
+
 }
