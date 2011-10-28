@@ -1,6 +1,7 @@
 package org.remus.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -381,7 +382,7 @@ public class RemusApplet implements JSONAware {
 		}
 	}
 
-
+	private static final List<String> suppressFields = Arrays.asList("_instance", "_code", "_script", "_src", "_pipeline");
 
 
 	@SuppressWarnings("unchecked")
@@ -399,10 +400,17 @@ public class RemusApplet implements JSONAware {
 
 		if (params != null) {
 			for (Object key : params.base.keySet()) {
-				baseMap.put(key, params.base.get(key));
+				if ( !suppressFields.contains(key)) {
+					baseMap.put(key, params.base.get(key));
+				}
 			}
 		}
-
+		
+		baseMap.put("_instance", inst.toString());
+		baseMap.put("_applet", getID());
+		baseMap.put("_pipeline",pipeline.getID());
+		
+		
 		for (Object key : appletDesc.keySet()) {
 			baseMap.put(key, appletDesc.get(key));
 		}
