@@ -20,6 +20,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
@@ -52,7 +53,7 @@ public class WorkEngine implements Runnable {
 	@Override
 	public void run() {
 		AppletRef arWork = new AppletRef(work.workStack.pipeline, 
-				work.workStack.instance, work.workStack.applet + "/@work");
+				work.workStack.instance, work.workStack.applet + Constants.WORK_APPLET);
 		status = JobState.WORKING;
 		message = null;
 		Map stackInfo = (Map) JSON.loads(work.infoJSON);

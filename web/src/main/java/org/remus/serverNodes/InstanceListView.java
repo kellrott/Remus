@@ -15,6 +15,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class InstanceListView implements BaseNode {
@@ -36,7 +37,7 @@ public class InstanceListView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 
 		Map out = new HashMap();
-		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance");
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
 		try {
 			if ( name.length() == 0 ) {
 				for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {

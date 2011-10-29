@@ -8,6 +8,7 @@ import org.apache.thrift.TException;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONValue;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 
@@ -31,11 +32,7 @@ public class WorkStatus implements JSONAware {
 	public static final String TOTALCOUNT_FIELD = "_totalCount";
 	public static final String TIMESTAMP_FIELD = "_timeStamp";
 
-	public static final String WorkStatusName = "/@work";
-	public static final String WorkDoneName = "/@done";
 	Map base;
-
-
 	public WorkStatus(Map obj) {
 		base = obj;
 	}	
@@ -75,7 +72,7 @@ public class WorkStatus implements JSONAware {
 		}
 		//logger.info("UNSET COMPLETE: " + applet.getPath() );
 		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, false);
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
+		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.WORK_APPLET );
 		try {
 			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString(), statObj);
 		} catch (TException e ) {
@@ -83,12 +80,11 @@ public class WorkStatus implements JSONAware {
 		} catch (NotImplemented e) {
 			e.printStackTrace();
 		}
-		//datastore.delete( getPath() + "/@done", remusInstance.toString() );
 	}
 
 	public static void setComplete(RemusPipeline pipeline, RemusApplet applet, RemusInstance remusInstance) {
 		Object statObj = null;
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
+		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.WORK_APPLET );
 		try {
 			for (Object curObj : applet.getDataStore().get( arWork, remusInstance.toString())) {
 				statObj = curObj;
@@ -115,8 +111,8 @@ public class WorkStatus implements JSONAware {
 	public static void updateStatus( RemusPipeline pipeline, RemusApplet applet, RemusInstance inst, Map update ) {
 		Object statObj = null;
 		AppletRef arWork = new AppletRef(pipeline.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, applet.getID() 
-				+ WorkStatusName);
+				RemusInstance.STATIC_INSTANCE_STR, 
+				applet.getID() + Constants.WORK_APPLET);
 		try {
 			for (Object obj : applet.getDataStore().get(arWork, inst.toString())) {
 				statObj = obj;
@@ -141,43 +137,9 @@ public class WorkStatus implements JSONAware {
 		}
 	}
 
-	/*
-	public void setStatus( Map statObj ) {
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + WorkStatusName );
-		try {
-			applet.getDataStore().add( arWork, 0L, 0L, inst.toString(), statObj );
-		} catch (TException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			e.printStackTrace();
-		}
-	}
-	 */
-	/*
-	public static long getTimeStamp(RemusPipeline pipeline, RemusApplet applet, RemusInstance remusInstance) {
-		AppletRef ar = new AppletRef( pipeline.getID(), remusInstance.toString(), applet.getID() );
-		AppletRef arDone = new AppletRef( pipeline.getID(), remusInstance.toString(), applet.getID() + "/@done" );
-
-		try {
-			long val1 = applet.getDataStore().getTimeStamp(ar);
-			long val2 = applet.getDataStore().getTimeStamp(arDone);
-			return Math.max(val1, val2);
-		} catch (TException e) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			e.printStackTrace();
-		}
-		return 0;
-	}
-	 */
-
-	//public boolean isComplete() {
-	//	return isComplete(pipeline, applet, inst );
-	//}
-
 	public static boolean hasStatus(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
-		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID()+ WorkStatusName );
+		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, 
+				applet.getID() + Constants.WORK_APPLET);
 		try {
 			return applet.getDataStore().containsKey(ar, inst.toString());
 		} catch (TException e) {

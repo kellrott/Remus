@@ -18,6 +18,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class PipelineConfigView implements BaseNode {	
@@ -49,7 +50,7 @@ public class PipelineConfigView implements BaseNode {
 	throws FileNotFoundException {
 		if (name.length() == 0) {
 			Map out = new HashMap();		
-			AppletRef ar = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+			AppletRef ar = new AppletRef("@root", RemusInstance.STATIC_INSTANCE_STR, Constants.PIPELINE_APPLET);
 			for (KeyValPair kv : datastore.listKeyPairs(ar)) {
 				out.put(kv.getKey(), kv.getValue());
 			}		
