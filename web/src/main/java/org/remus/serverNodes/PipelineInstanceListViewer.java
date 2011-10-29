@@ -15,6 +15,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 
 public class PipelineInstanceListViewer implements BaseNode {
 
@@ -40,7 +41,7 @@ public class PipelineInstanceListViewer implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
 		for ( KeyValPair kv : datastore.listKeyPairs(ar) ) {
 			Map out = new HashMap();
 			out.put( kv.getKey(), kv.getValue() );	

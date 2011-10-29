@@ -189,31 +189,6 @@ public class RemusPipeline {
 		}
 	}
 
-	/*
-	private List<RemusApplet> loadApplet(String pipelineName, String name, RemusDB store ) throws TException, NotImplemented, RemusDatabaseException {
-		List<RemusApplet> out = new LinkedList<RemusApplet>();
-
-		AppletRef arPipeline = new AppletRef(pipelineName, RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
-		Map appletObj = null;
-		for (Object obj : store.get(arPipeline, name)) {
-			appletObj = (Map) obj;
-		}
-		RemusApplet applet = new RemusApplet(this, name, datastore, attachStore);		
-		if (appletObj.containsKey(RemusApplet.OUTPUT_FIELD)) {
-			for (Object nameObj : (List) appletObj.get(RemusApplet.OUTPUT_FIELD)) {
-				RemusApplet outApplet = new RemusApplet(this, name + ":" + (String) nameObj, datastore, attachStore);
-				outApplet.setMode(RemusApplet.OUTPUT);
-				for (String input : applet.getInputs()) {
-					outApplet.addInput(input);
-				}
-
-				out.add(outApplet);
-			}
-		}		
-		out.add(applet);		
-		return out;
-	}
-	 */
 
 	public void deleteApplet(RemusApplet applet) throws TException, NotImplemented {		
 		for (RemusInstance inst : applet.getInstanceList()) {
@@ -223,18 +198,6 @@ public class RemusPipeline {
 			new AppletRef(getID(), Constants.STATIC_INSTANCE, applet.getID());
 		datastore.deleteStack(arPipeline);
 	}
-	/*
-	public boolean isComplete(RemusInstance inst) {
-		boolean done = true;
-		for ( RemusAppletImpl applet : members.values() ) {
-			if ( ! WorkStatus.isComplete(applet, inst) )
-				done = false;
-		}
-		return done;
-	}
-	 */
-
-
 
 	public String getID() {
 		return name;

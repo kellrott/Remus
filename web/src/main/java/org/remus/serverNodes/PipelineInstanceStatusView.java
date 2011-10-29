@@ -16,6 +16,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class PipelineInstanceStatusView implements BaseNode {
@@ -43,7 +44,7 @@ public class PipelineInstanceStatusView implements BaseNode {
 
 			if ( name.length() == 0 ) {
 				for ( String appletName : pipeline.getMembers() ) {
-					AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance" );
+					AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + Constants.INSTANCE_APPLET);
 					try {
 						for (Object data : datastore.get(ap, inst.toString())) {
 							Map out = new HashMap();
@@ -61,7 +62,7 @@ public class PipelineInstanceStatusView implements BaseNode {
 				try {
 					RemusApplet applet = pipeline.getApplet(name);
 					if (applet != null) {
-						AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + "/@instance" );
+						AppletRef ap = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET );
 						for (Object data : applet.getDataStore().get(ap, inst.toString())) {
 							Map out = new HashMap();
 							out.put(applet.getID(), data);

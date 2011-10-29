@@ -38,7 +38,7 @@ public class SubmitView implements BaseNode {
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		try {
 			if (name.length() > 0) {
-				AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );		
+				AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET );		
 				datasource.deleteValue(ar, name);
 			}	
 		} catch (TException e) {
@@ -53,7 +53,7 @@ public class SubmitView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
+		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET );
 		try {
 			if (name.length() == 0) {
 				for (KeyValPair kv : datasource.listKeyPairs(ar)) {
