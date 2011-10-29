@@ -28,8 +28,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   private static final org.apache.thrift.protocol.TField PEER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("peerID", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField GROUP_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("groupName", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField WORK_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("workTypes", org.apache.thrift.protocol.TType.LIST, (short)5);
-  private static final org.apache.thrift.protocol.TField ADDR_FIELD_DESC = new org.apache.thrift.protocol.TField("addr", org.apache.thrift.protocol.TType.STRUCT, (short)6);
-  private static final org.apache.thrift.protocol.TField TIME_DELTA_FIELD_DESC = new org.apache.thrift.protocol.TField("timeDelta", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField CONFIG_JSON_FIELD_DESC = new org.apache.thrift.protocol.TField("configJSON", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField ADDR_FIELD_DESC = new org.apache.thrift.protocol.TField("addr", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField TIME_DELTA_FIELD_DESC = new org.apache.thrift.protocol.TField("timeDelta", org.apache.thrift.protocol.TType.I32, (short)8);
 
   /**
    * 
@@ -40,6 +41,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
   public String peerID;
   public String groupName;
   public List<String> workTypes;
+  public String configJSON;
   public PeerAddress addr;
   public int timeDelta;
 
@@ -54,8 +56,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     PEER_ID((short)3, "peerID"),
     GROUP_NAME((short)4, "groupName"),
     WORK_TYPES((short)5, "workTypes"),
-    ADDR((short)6, "addr"),
-    TIME_DELTA((short)7, "timeDelta");
+    CONFIG_JSON((short)6, "configJSON"),
+    ADDR((short)7, "addr"),
+    TIME_DELTA((short)8, "timeDelta");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -80,9 +83,11 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
           return GROUP_NAME;
         case 5: // WORK_TYPES
           return WORK_TYPES;
-        case 6: // ADDR
+        case 6: // CONFIG_JSON
+          return CONFIG_JSON;
+        case 7: // ADDR
           return ADDR;
-        case 7: // TIME_DELTA
+        case 8: // TIME_DELTA
           return TIME_DELTA;
         default:
           return null;
@@ -141,6 +146,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     tmpMap.put(_Fields.WORK_TYPES, new org.apache.thrift.meta_data.FieldMetaData("workTypes", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.CONFIG_JSON, new org.apache.thrift.meta_data.FieldMetaData("configJSON", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ADDR, new org.apache.thrift.meta_data.FieldMetaData("addr", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PeerAddress.class)));
     tmpMap.put(_Fields.TIME_DELTA, new org.apache.thrift.meta_data.FieldMetaData("timeDelta", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -186,6 +193,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       this.workTypes = __this__workTypes;
     }
+    if (other.isSetConfigJSON()) {
+      this.configJSON = other.configJSON;
+    }
     if (other.isSetAddr()) {
       this.addr = new PeerAddress(other.addr);
     }
@@ -203,6 +213,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     this.peerID = null;
     this.groupName = null;
     this.workTypes = null;
+    this.configJSON = null;
     this.addr = null;
     setTimeDeltaIsSet(false);
     this.timeDelta = 0;
@@ -351,6 +362,30 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     }
   }
 
+  public String getConfigJSON() {
+    return this.configJSON;
+  }
+
+  public PeerInfoThrift setConfigJSON(String configJSON) {
+    this.configJSON = configJSON;
+    return this;
+  }
+
+  public void unsetConfigJSON() {
+    this.configJSON = null;
+  }
+
+  /** Returns true if field configJSON is set (has been assigned a value) and false otherwise */
+  public boolean isSetConfigJSON() {
+    return this.configJSON != null;
+  }
+
+  public void setConfigJSONIsSet(boolean value) {
+    if (!value) {
+      this.configJSON = null;
+    }
+  }
+
   public PeerAddress getAddr() {
     return this.addr;
   }
@@ -440,6 +475,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       }
       break;
 
+    case CONFIG_JSON:
+      if (value == null) {
+        unsetConfigJSON();
+      } else {
+        setConfigJSON((String)value);
+      }
+      break;
+
     case ADDR:
       if (value == null) {
         unsetAddr();
@@ -476,6 +519,9 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
     case WORK_TYPES:
       return getWorkTypes();
 
+    case CONFIG_JSON:
+      return getConfigJSON();
+
     case ADDR:
       return getAddr();
 
@@ -503,6 +549,8 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       return isSetGroupName();
     case WORK_TYPES:
       return isSetWorkTypes();
+    case CONFIG_JSON:
+      return isSetConfigJSON();
     case ADDR:
       return isSetAddr();
     case TIME_DELTA:
@@ -566,6 +614,15 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
       if (!(this_present_workTypes && that_present_workTypes))
         return false;
       if (!this.workTypes.equals(that.workTypes))
+        return false;
+    }
+
+    boolean this_present_configJSON = true && this.isSetConfigJSON();
+    boolean that_present_configJSON = true && that.isSetConfigJSON();
+    if (this_present_configJSON || that_present_configJSON) {
+      if (!(this_present_configJSON && that_present_configJSON))
+        return false;
+      if (!this.configJSON.equals(that.configJSON))
         return false;
     }
 
@@ -653,6 +710,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetConfigJSON()).compareTo(typedOther.isSetConfigJSON());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetConfigJSON()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.configJSON, typedOther.configJSON);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetAddr()).compareTo(typedOther.isSetAddr());
     if (lastComparison != 0) {
       return lastComparison;
@@ -735,7 +802,14 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // ADDR
+        case 6: // CONFIG_JSON
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.configJSON = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 7: // ADDR
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.addr = new PeerAddress();
             this.addr.read(iprot);
@@ -743,7 +817,7 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 7: // TIME_DELTA
+        case 8: // TIME_DELTA
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.timeDelta = iprot.readI32();
             setTimeDeltaIsSet(true);
@@ -801,6 +875,13 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
           }
           oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+    }
+    if (this.configJSON != null) {
+      if (isSetConfigJSON()) {
+        oprot.writeFieldBegin(CONFIG_JSON_FIELD_DESC);
+        oprot.writeString(this.configJSON);
         oprot.writeFieldEnd();
       }
     }
@@ -867,6 +948,16 @@ public class PeerInfoThrift implements org.apache.thrift.TBase<PeerInfoThrift, P
         sb.append("null");
       } else {
         sb.append(this.workTypes);
+      }
+      first = false;
+    }
+    if (isSetConfigJSON()) {
+      if (!first) sb.append(", ");
+      sb.append("configJSON:");
+      if (this.configJSON == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.configJSON);
       }
       first = false;
     }

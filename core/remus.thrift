@@ -66,8 +66,9 @@ struct PeerInfoThrift {
 	3:optional string peerID;
 	4:optional string groupName;
 	5:optional list<string> workTypes;
-	6:optional PeerAddress addr;
-	7:optional i32 timeDelta;
+	6:optional string configJSON;
+	7:optional PeerAddress addr;
+	8:optional i32 timeDelta;
 }
 
 struct WorkDesc {
