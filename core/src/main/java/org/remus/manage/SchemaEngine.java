@@ -28,6 +28,13 @@ public class SchemaEngine {
 
 	public SchemaEngine(PeerManager pm) throws TException {
 		peerManager = pm;
+		/**
+		 * The miniDB is a shim placed infront of the database, that will allow you
+		 * to add additional, dynamic, applets to the database. For the work manager
+		 * it is used to create the '/@agent' applets, which view all the applet instance
+		 * records as a single stack
+		 */
+
 		miniDB = new RemusMiniDB(peerManager.getPeer(peerManager.getDataServer()));
 		miniDB.addBaseStack("@activity", new BaseStackNode() {			
 			@Override
