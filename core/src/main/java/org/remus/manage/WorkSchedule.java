@@ -183,6 +183,7 @@ public class WorkSchedule {
 				if (worker != null) {
 					activeCount++;
 					if (worker.isDone()) {
+						logger.debug("JOB DONE:" + worker.ai);
 						found = true;
 						removeSet.put(worker.ai, true);
 					} else {
@@ -191,6 +192,7 @@ public class WorkSchedule {
 				}	
 			}
 			for (AppletInstance ai : removeSet.keySet()) {
+				workerPool.returnWorker(workerMap.get(ai));
 				workerMap.remove(ai);
 			}
 			if (activeCount > 0) {

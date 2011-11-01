@@ -29,11 +29,13 @@ public class KeyWorker extends InstanceWorker {
 	public KeyWorker(PeerManager peerManager, AppletInstance ai) {
 		super(peerManager, ai);
 		logger.debug("KEYWORKER:" + ai + " started");
+		state = WORKING;
 	}
 
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
-
+	int state;
+	
 	Set<RemoteJob> remoteJobs = new HashSet<RemoteJob>();
 	Map<String,Set<Integer>> activeWork = new HashMap<String, Set<Integer>>();
 
@@ -80,6 +82,7 @@ public class KeyWorker extends InstanceWorker {
 			}
 		}
 		for (RemoteJob rj : removeSet.keySet()) {
+			returnPeer(rj.getPeerID());
 			removeRemoteJob(ai, rj, removeSet.get(rj));
 		}
 
@@ -160,7 +163,7 @@ public class KeyWorker extends InstanceWorker {
 		Set<String> peers = peerManager.getWorkers();
 		long [] workIDs = null;
 		synchronized (workIDCache) {			
-			if (workIDCache.containsKey(ai) && workIDCache.get(ai) != null) {
+			if (workIDCache.containsKey(ai) && workIDCache.get(ai) != null && workIDCache.get(ai).length != 0) {
 				workIDs = workIDCache.get(ai);
 				Arrays.sort(workIDs);
 			} else {
@@ -187,6 +190,12 @@ public class KeyWorker extends InstanceWorker {
 			Arrays.sort(workIDs);
 			return workIDs;
 		} 
+		if (ai.isComplete()) {
+			state = DONE;
+		} 
+		if (ai.isInError()) {
+			state = ERROR;
+		}
 		workIDCache.put(ai, new long [0]);
 		return null;
 	}
@@ -242,7 +251,9 @@ public class KeyWorker extends InstanceWorker {
 
 	@Override
 	public boolean isDone() {
-		// TODO Auto-generated method stub
+		if ( state == DONE ) {
+			return true;
+		}
 		return false;
 	}
 

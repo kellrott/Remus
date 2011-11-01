@@ -15,6 +15,11 @@ import org.slf4j.LoggerFactory;
 
 public abstract class InstanceWorker {
 
+	
+	protected static final int WORKING = 0;
+	protected static final int DONE = 1;
+	protected static final int ERROR = 2;
+
 	protected AppletInstance ai;
 	protected Logger logger;
 	protected Map<String,Boolean> peerList;
@@ -24,6 +29,7 @@ public abstract class InstanceWorker {
 		this.ai = ai;
 		this.peerManager = peerManager;
 		logger = LoggerFactory.getLogger(InstanceWorker.class);
+		logger.debug("INSTANCE WORKER STARTING:" + ai);
 	}
 	
 	public void addPeer(String peerID) {
