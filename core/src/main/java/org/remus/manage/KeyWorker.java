@@ -28,6 +28,7 @@ public class KeyWorker extends InstanceWorker {
 
 	public KeyWorker(PeerManager peerManager, AppletInstance ai) {
 		super(peerManager, ai);
+		logger.debug("KEYWORKER:" + ai + " started");
 	}
 
 

@@ -38,7 +38,11 @@ public class FileServer extends RemusAttach {
 	public void init(Map params) {
 		logger = LoggerFactory.getLogger(FileServer.class);
 		this.basePath = new File((String) params.get(DIR_NAME));
-		this.dirShared = Boolean.valueOf(params.get(DIR_SHARED).toString());
+		if (params.containsKey(DIR_SHARED)) {
+			this.dirShared = Boolean.valueOf(params.get(DIR_SHARED).toString());
+		} else {
+			this.dirShared = false;
+		}
 	}
 
 	@Override

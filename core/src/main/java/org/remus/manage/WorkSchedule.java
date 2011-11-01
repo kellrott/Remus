@@ -177,19 +177,21 @@ public class WorkSchedule {
 		boolean found = false;
 		synchronized (workerMap) {
 			int activeCount = 0;
+			Map<AppletInstance, Boolean> removeSet = new HashMap<AppletInstance, Boolean>();
 			for (AppletInstance ai : workerMap.keySet()) {			
-				Map<RemoteJob, Boolean> removeSet = new HashMap<RemoteJob, Boolean>();
 				InstanceWorker worker = workerMap.get(ai);
 				if (worker != null) {
 					activeCount++;
 					if (worker.isDone()) {
 						found = true;
+						removeSet.put(worker.ai, true);
 					} else {
 						
 					}
-					
-				}
-					
+				}	
+			}
+			for (AppletInstance ai : removeSet.keySet()) {
+				workerMap.remove(ai);
 			}
 			if (activeCount > 0) {
 				logger.info("Active RemoteJobs: " + activeCount);			
