@@ -42,29 +42,29 @@ public class SchemaEngine {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public List<String> getValueJSON(String key) {
 				// TODO Auto-generated method stub
 				return null;
 			}
-			
+
 			@Override
 			public void delete(String key) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
+
 			@Override
 			public boolean containsKey(String key) {
 				// TODO Auto-generated method stub
 				return false;
 			}
-			
+
 			@Override
 			public void add(String key, String data) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		});
 	}
@@ -73,9 +73,11 @@ public class SchemaEngine {
 	public void processSubmissions(RemusPipeline pipe) throws RemusDatabaseException, TException, NotImplemented {
 		for (String subKey : pipe.getSubmits()) {
 			PipelineSubmission subData = pipe.getSubmitData(subKey);
-			if (checkSubmission(pipe, subKey, subData)) {
-				pipe.setSubmit(subKey,subData);
-				pipe.setInstanceSubkey(subData.getInstance(), subKey);
+			if (subData != null) {
+				if (checkSubmission(pipe, subKey, subData)) {
+					pipe.setSubmit(subKey,subData);
+					pipe.setInstanceSubkey(subData.getInstance(), subKey);
+				}
 			}
 			//instList.add(subData.getInstance());
 		}	
@@ -178,7 +180,7 @@ public class SchemaEngine {
 		} else {			
 			miniDB.addDataJSON(stack, jobID, emitID, key, data);
 		}
-		
+
 	}
 
 

@@ -21,6 +21,11 @@ class WorkMode:
   PIPE = 3
   MATCH = 4
   MERGE = 5
+  REMAP = 6
+  REREDUCE = 7
+  STORE = 8
+  OUTPUT = 9
+  AGENT = 10
 
   _VALUES_TO_NAMES = {
     0: "SPLIT",
@@ -29,6 +34,11 @@ class WorkMode:
     3: "PIPE",
     4: "MATCH",
     5: "MERGE",
+    6: "REMAP",
+    7: "REREDUCE",
+    8: "STORE",
+    9: "OUTPUT",
+    10: "AGENT",
   }
 
   _NAMES_TO_VALUES = {
@@ -38,6 +48,11 @@ class WorkMode:
     "PIPE": 3,
     "MATCH": 4,
     "MERGE": 5,
+    "REMAP": 6,
+    "REREDUCE": 7,
+    "STORE": 8,
+    "OUTPUT": 9,
+    "AGENT": 10,
   }
 
 class JobState:
@@ -360,6 +375,7 @@ class PeerInfoThrift:
    - peerID
    - groupName
    - workTypes
+   - configJSON
    - addr
    - timeDelta
   """
@@ -371,16 +387,18 @@ class PeerInfoThrift:
     (3, TType.STRING, 'peerID', None, None, ), # 3
     (4, TType.STRING, 'groupName', None, None, ), # 4
     (5, TType.LIST, 'workTypes', (TType.STRING,None), None, ), # 5
-    (6, TType.STRUCT, 'addr', (PeerAddress, PeerAddress.thrift_spec), None, ), # 6
-    (7, TType.I32, 'timeDelta', None, None, ), # 7
+    (6, TType.STRING, 'configJSON', None, None, ), # 6
+    (7, TType.STRUCT, 'addr', (PeerAddress, PeerAddress.thrift_spec), None, ), # 7
+    (8, TType.I32, 'timeDelta', None, None, ), # 8
   )
 
-  def __init__(self, peerType=None, name=None, peerID=None, groupName=None, workTypes=None, addr=None, timeDelta=None,):
+  def __init__(self, peerType=None, name=None, peerID=None, groupName=None, workTypes=None, configJSON=None, addr=None, timeDelta=None,):
     self.peerType = peerType
     self.name = name
     self.peerID = peerID
     self.groupName = groupName
     self.workTypes = workTypes
+    self.configJSON = configJSON
     self.addr = addr
     self.timeDelta = timeDelta
 
@@ -424,12 +442,17 @@ class PeerInfoThrift:
         else:
           iprot.skip(ftype)
       elif fid == 6:
+        if ftype == TType.STRING:
+          self.configJSON = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 7:
         if ftype == TType.STRUCT:
           self.addr = PeerAddress()
           self.addr.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == 7:
+      elif fid == 8:
         if ftype == TType.I32:
           self.timeDelta = iprot.readI32();
         else:
@@ -467,12 +490,16 @@ class PeerInfoThrift:
         oprot.writeString(iter13)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
+    if self.configJSON != None:
+      oprot.writeFieldBegin('configJSON', TType.STRING, 6)
+      oprot.writeString(self.configJSON)
+      oprot.writeFieldEnd()
     if self.addr != None:
-      oprot.writeFieldBegin('addr', TType.STRUCT, 6)
+      oprot.writeFieldBegin('addr', TType.STRUCT, 7)
       self.addr.write(oprot)
       oprot.writeFieldEnd()
     if self.timeDelta != None:
-      oprot.writeFieldBegin('timeDelta', TType.I32, 7)
+      oprot.writeFieldBegin('timeDelta', TType.I32, 8)
       oprot.writeI32(self.timeDelta)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

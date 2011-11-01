@@ -92,7 +92,9 @@ public class WorkSchedule {
 
 				for (String subKey : pipe.getSubmits()) {
 					PipelineSubmission subData = pipe.getSubmitData(subKey);
-					instList.add(subData.getInstance());
+					if (subData != null) {
+						instList.add(subData.getInstance());
+					}
 				}
 				for (RemusInstance inst : instList) {
 					Set<AppletInstance> curSet = pipe.getActiveApplets(inst);
@@ -102,21 +104,23 @@ public class WorkSchedule {
 				//check for work that needs to be instanced
 				for ( String appletName : pipe.getMembers() ) {
 					RemusApplet applet = pipe.getApplet(appletName);
-					if (applet.getMode() != RemusApplet.STORE) {
-						for (RemusInstance inst : instList) {
-							if (!pipe.hasAppletInstance(inst, appletName)) {
-								boolean inputFound = false;
-								for (String input : applet.getSources()) {
-									if (pipe.hasAppletInstance(inst, input)) {
-										inputFound = true;
-									}
-									if (inputFound) {
-										AppletInstance src = pipe.getAppletInstance(inst, applet.getSource());
-										if (src != null) {
-											PipelineSubmission info = src.getInstanceInfo();
-											applet.createInstance(info, inst);
-											change = true;
-										} 
+					if (applet != null) {
+						if (applet.getMode() != RemusApplet.STORE) {
+							for (RemusInstance inst : instList) {
+								if (!pipe.hasAppletInstance(inst, appletName)) {
+									boolean inputFound = false;
+									for (String input : applet.getSources()) {
+										if (pipe.hasAppletInstance(inst, input)) {
+											inputFound = true;
+										}
+										if (inputFound) {
+											AppletInstance src = pipe.getAppletInstance(inst, applet.getSource());
+											if (src != null) {
+												PipelineSubmission info = src.getInstanceInfo();
+												applet.createInstance(info, inst);
+												change = true;
+											} 
+										}
 									}
 								}
 							}
@@ -141,11 +145,11 @@ public class WorkSchedule {
 		return change;
 	}
 
-	
+
 	public boolean workSchedule() {
 		boolean workAdded = false;
 		try {
-			
+
 			synchronized (workerMap) {
 				for (AppletInstance acur : workerMap.keySet()) {	
 					if (workerMap.get(acur) == null) {
@@ -170,7 +174,7 @@ public class WorkSchedule {
 		return workAdded;
 	}
 
-	
+
 
 
 	private boolean cleanJobs() throws TException, NotImplemented {
@@ -187,7 +191,7 @@ public class WorkSchedule {
 						found = true;
 						removeSet.put(worker.ai, true);
 					} else {
-						
+
 					}
 				}	
 			}

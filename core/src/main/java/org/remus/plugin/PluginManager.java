@@ -81,12 +81,19 @@ public class PluginManager {
 
 		plugins = new LinkedList<PluginInterface>();
 		servers = new HashMap<PluginInterface, ServerThread>();
+		
 		for (String className : params.keySet()) {
 			if (className.compareTo("config") == 0) {
 				Map pMap = (Map) params.get(className);
 				if (pMap.containsKey("log4jParamFile")) {
 					PropertyConfigurator.configure((String)pMap.get("log4jParamFile"));
 				}
+			} 
+		}
+		
+		for (String className : params.keySet()) {
+			if (className.compareTo("config") == 0) {
+	
 			} else if (className.compareTo("seeds") == 0) {
 
 			} else {
@@ -113,13 +120,14 @@ public class PluginManager {
 						defaultPort++;
 					}
 
-					logger.info("Opening " + className + " server on port " + port);
 					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
 					sThread.start();
 					servers.put(plug, sThread);
 					plug.setupPeer(peerManager);
 
-					peerManager.addLocalPeer(plug, new PeerAddress(PeerManager.getDefaultAddress(), port));
+					String peerAddr = PeerManager.getDefaultAddress();
+					logger.info("Opening " + className + " server " +  peerAddr + " on port " + port);
+					peerManager.addLocalPeer(plug, new PeerAddress(peerAddr, port));
 
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block

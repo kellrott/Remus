@@ -51,9 +51,11 @@ abstract public class AppletInstanceStack implements BaseStackNode {
 			TreeMap<String, String> aiList = new TreeMap<String, String>();		
 			for (String appletName : pipe.getMembers()) {
 				RemusApplet applet = pipe.getApplet(appletName);
-				for (RemusInstance inst : applet.getInstanceList()) {
-					AppletInstance ai = new AppletInstance(pipe, inst, applet, RemusDB.wrap(datastore));
-					aiList.put(inst.toString() + ":" + applet.getID(), JSON.dumps(ai.getInstanceInfo()));
+				if (applet != null) {
+					for (RemusInstance inst : applet.getInstanceList()) {
+						AppletInstance ai = new AppletInstance(pipe, inst, applet, RemusDB.wrap(datastore));
+						aiList.put(inst.toString() + ":" + applet.getID(), JSON.dumps(ai.getInstanceInfo()));
+					}
 				}
 			}
 			aiMap = aiList;

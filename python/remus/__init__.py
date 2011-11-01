@@ -75,6 +75,7 @@ class PeerManager:
     def getManager(self):
         self.connect()
         peers = self.server.peerInfo([])
+        print peers
         for p in peers:
             if p.peerType == RemusNet.PeerType.MANAGER:
                 return p.peerID
