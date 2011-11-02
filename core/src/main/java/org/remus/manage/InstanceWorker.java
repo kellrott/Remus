@@ -24,7 +24,7 @@ public abstract class InstanceWorker {
 	protected Logger logger;
 	protected Map<String,Boolean> peerList;
 	protected PeerManager peerManager;
-	
+	int state;
 	InstanceWorker(PeerManager peerManager, AppletInstance ai) {
 		this.ai = ai;
 		this.peerManager = peerManager;
@@ -59,7 +59,14 @@ public abstract class InstanceWorker {
 		peerList.put(peer, false);
 	}
 	
-	abstract public boolean checkWork() throws NotImplemented, TException;
+	protected void errorPeer(String peerID) throws InstanceWorkerException {
+		peerList.remove(peerID);
+		if (peerList.size() == 0) {
+			throw new InstanceWorkerException("All workers failed");
+		}
+	}
+
+	abstract public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException;
 	abstract public boolean isDone();
 	abstract public void removeJob();
 

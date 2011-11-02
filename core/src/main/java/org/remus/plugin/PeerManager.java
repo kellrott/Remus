@@ -57,8 +57,8 @@ public class PeerManager {
 		pThread.quit();
 	}
 
-	public static final int FAIL_COUNT = 5;
-	public static final int FAIL_TIMEPERIOD = 120000;
+	public static final int FAIL_COUNT = 4;
+	public static final int FAIL_TIMEPERIOD = 125000;
 	public static final int DEAD_TIMEPERIOD = 6000;
 
 	class PingThread extends Thread {
@@ -106,6 +106,7 @@ public class PeerManager {
 	}
 
 	public void peerFailure(String peerID) {
+		logger.info("FAILURE REPORTED: " + peerID);
 		synchronized (failTimes) {			
 			if (!failTimes.containsKey(peerID)) {
 				failTimes.put(peerID, new ArrayList<Long>());
@@ -133,6 +134,8 @@ public class PeerManager {
 				}
 				if (fail >= FAIL_COUNT) {
 					failList.add(name);
+				} else {
+					logger.debug("PEER " + name + " " + fail + " fail count");
 				}
 			}
 		}

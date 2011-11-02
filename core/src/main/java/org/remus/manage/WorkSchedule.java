@@ -151,6 +151,7 @@ public class WorkSchedule {
 		try {
 
 			synchronized (workerMap) {
+				Set<AppletInstance> removeSet = new HashSet<AppletInstance>();
 				for (AppletInstance acur : workerMap.keySet()) {	
 					if (workerMap.get(acur) == null) {
 						InstanceWorker worker = workerPool.getWorker(acur);
@@ -158,10 +159,19 @@ public class WorkSchedule {
 							workerMap.put(acur, worker);
 						}
 					} else {
-						if (workerMap.get(acur).checkWork()) {
-							workAdded = true;
+						try {
+							if (workerMap.get(acur).checkWork()) {
+								workAdded = true;
+							}
+						} catch (InstanceWorkerException e) {
+							removeSet.add(acur);
+							workAdded = true; //things are failing, so we tell the system to keep scanning									
 						}
 					}
+				}
+				for (AppletInstance ai : removeSet) {
+					workerPool.returnWorker(workerMap.get(ai));
+					workerMap.remove(ai);
 				}
 			}
 		} catch (TException e) {

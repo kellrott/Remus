@@ -1,6 +1,7 @@
 package org.remus.manage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,15 @@ public class WorkerPool {
 				peerInfo.put(peerID, new WorkerInfo(peerManager.getPeerInfo(peerID)));
 			}
 		}
+		Set<String> removeSet = new HashSet<String>();
+		for (String peer : peerInfo.keySet()) {
+			if (!peers.contains(peer)) {
+				removeSet.add(peer);
+			}
+		}
+		for (String peer : removeSet) {
+			peerInfo.remove(peer);
+		}
 
 		List<String> peerCollection = new LinkedList<String>();
 		String peerMaster = null;
@@ -57,7 +67,7 @@ public class WorkerPool {
 						Map config = (Map) JSON.loads(pi.info.configJSON);
 						String mode = (String)config.get("_allocMode");
 						if (mode != null && mode.compareTo("table") == 0){
-							peerMaster = null;
+							peerMaster = peer;
 						}
 					} else {
 						peerCollection.add(peer);
@@ -66,7 +76,9 @@ public class WorkerPool {
 			}
 		}
 		if (peerMaster != null ) {
-
+			InstanceWorker worker = new TableWorker(peerManager, ai);
+			worker.addPeer(peerMaster);
+			return worker;
 		} 
 		if (peerCollection.size() > 0) {
 			InstanceWorker worker = new KeyWorker(peerManager, ai);
