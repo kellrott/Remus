@@ -109,14 +109,36 @@ public class Server extends RemusDB {
 					client.system_add_keyspace(ksDesc);
 				} catch (Exception e2) {
 					throw new ConnectionException("Unable to connect or create keyspace " + keySpace + "\n" + e2.toString());
-				}
+				}			
+			
 			} catch (InvalidRequestException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (TException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}			
+			}
+			
+			ksDesc = client.describe_keyspace(keySpace);				
+			Boolean found = false;
+			for (CfDef cfdef : ksDesc.getCf_defs()) {
+				if (cfdef.name.compareTo(columnFamily) == 0) {
+					found = true;
+				}
+			}
+			if (!found) {
+				CfDef cfDesc = new CfDef(keySpace, columnFamily);
+				cfDesc.comparator_type =  "UTF8Type";
+				cfDesc.column_type = "Super";
+				//ksDesc.addToCf_defs(cfDesc);
+				try { 
+					client.set_keyspace(keySpace);
+					client.system_add_column_family(cfDesc);
+				} catch (Exception e2) {
+					throw new ConnectionException("Unable to find or create columnFamily " + columnFamily + "\n" + e2.toString());
+				}
+			}
+			
 			tf.close();
 
 		} catch (NoSuchElementException e) {
@@ -126,6 +148,15 @@ public class Server extends RemusDB {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TTransportException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
