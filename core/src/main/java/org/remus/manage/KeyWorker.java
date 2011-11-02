@@ -97,10 +97,15 @@ public class KeyWorker extends InstanceWorker {
 					int last = curPos;
 					do {
 						curPos++;
-					} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);						
-					workAssign(ai, borrowPeer(), workIDs[last], workIDs[curPos - 1] + 1);
-					for (int i = last; i < curPos; i++) {
-						workIDs[i] = -1;
+					} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);
+					String peerID = borrowPeer();
+					if (peerID != null) {
+						workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
+						for (int i = last; i < curPos; i++) {
+							workIDs[i] = -1;
+						}
+					} else {
+						logger.debug("Avalible peer not found");
 					}
 					workChange = true;
 				}

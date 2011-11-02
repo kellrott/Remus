@@ -21,7 +21,7 @@ class Client(object):
     def __getattr__(self,i):
         if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 
         'containsKey', 'initAttachment', 'appendBlock', 'keyValJSONSlice',
-        'listAttachments', 'getAttachmentSize', 'readBlock']:
+        'listAttachments', 'getAttachmentSize', 'readBlock', 'peerInfo']:
             return getattr(self.client,i)
 
 def getAppletRef(iface, pipeline, instance, applet):
