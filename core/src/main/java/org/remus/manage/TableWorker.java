@@ -25,22 +25,28 @@ public class TableWorker extends InstanceWorker {
 	@Override
 	public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException {
 
-		if (iface == null) {
-			logger.debug("TABLE_MANAGER Contact worker");
-			WorkDesc desc = new WorkDesc(ai.getApplet().getType(), 
-					WorkMode.findByValue(ai.getApplet().getMode()),
-					JSON.dumps(ai.getInstanceInfo()),
-					ai.getAppletRef(),
-					0L, -1L);
+		if (iface == null && state == WORKING) {
 
-			peerID = borrowPeer();		
-			iface = peerManager.getPeer(peerID);
-			try {
-				jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);
-			} catch (TException e) {
-				e.printStackTrace();
-				peerManager.peerFailure(peerID);
-				errorPeer(peerID);
+			ai.getReadyJobs(10);
+			if ( ai.isComplete())  {
+				state = DONE;
+			} else {			
+				logger.debug("TABLE_MANAGER Contact worker");
+				WorkDesc desc = new WorkDesc(ai.getApplet().getType(), 
+						WorkMode.findByValue(ai.getApplet().getMode()),
+						JSON.dumps(ai.getInstanceInfo()),
+						ai.getAppletRef(),
+						0L, -1L);
+
+				peerID = borrowPeer();		
+				iface = peerManager.getPeer(peerID);
+				try {
+					jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);
+				} catch (TException e) {
+					e.printStackTrace();
+					peerManager.peerFailure(peerID);
+					errorPeer(peerID);
+				}
 			}
 		} else {
 			try {

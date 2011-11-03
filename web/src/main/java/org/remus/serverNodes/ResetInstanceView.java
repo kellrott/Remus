@@ -76,7 +76,7 @@ public class ResetInstanceView implements BaseNode {
 						try {
 							applet.deleteInstance(inst);
 							String subKey = pipeline.getSubKey(inst);
-							PipelineSubmission params = pipeline.getSubmitData(subKey);
+							//PipelineSubmission params = pipeline.getSubmitData(subKey);
 							//BUG: Broken in new interface
 							//applet.createInstance(subKey, params, inst);
 						} catch (TException e) {

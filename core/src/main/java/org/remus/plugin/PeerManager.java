@@ -106,15 +106,17 @@ public class PeerManager {
 	}
 
 	public void peerFailure(String peerID) {
-		logger.info("FAILURE REPORTED: " + peerID);
-		synchronized (failTimes) {			
-			if (!failTimes.containsKey(peerID)) {
-				failTimes.put(peerID, new ArrayList<Long>());
-			}
-			ArrayList<Long> times = failTimes.get(peerID);
-			times.add((new Date()).getTime());
-			if (times.size() > FAIL_COUNT * 2) {
-				times.remove(0);
+		if (peerMap.containsKey(peerID)) {
+			logger.info("FAILURE REPORTED: " + peerID);
+			synchronized (failTimes) {			
+				if (!failTimes.containsKey(peerID)) {
+					failTimes.put(peerID, new ArrayList<Long>());
+				}
+				ArrayList<Long> times = failTimes.get(peerID);
+				times.add((new Date()).getTime());
+				if (times.size() > FAIL_COUNT * 2) {
+					times.remove(0);
+				}
 			}
 		}
 		removeFailed();
@@ -141,8 +143,10 @@ public class PeerManager {
 		}
 		synchronized (peerMap) {
 			for (String name : failList) {
-				logger.info("Setting Peer " + name + " DEAD");
-				peerMap.get(name).peerType = PeerType.DEAD;
+				if (peerMap.get(name).peerType != PeerType.DEAD) {
+					logger.info("Setting Peer " + name + " DEAD");
+					peerMap.get(name).peerType = PeerType.DEAD;
+				}
 			}
 		}
 		List<String> removeList = new LinkedList<String>();
@@ -253,7 +257,7 @@ public class PeerManager {
 
 
 	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-	throws NotImplemented, BadPeerName, TException {
+			throws NotImplemented, BadPeerName, TException {
 		boolean change = false;
 		List<PeerInfoThrift> out = new LinkedList<PeerInfoThrift>();
 		synchronized (peerMap) {			

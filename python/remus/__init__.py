@@ -23,6 +23,17 @@ class Client(object):
         'containsKey', 'initAttachment', 'appendBlock', 'keyValJSONSlice',
         'listAttachments', 'getAttachmentSize', 'readBlock', 'peerInfo']:
             return getattr(self.client,i)
+    
+    
+    def copyTo(self, path, ar, key, name):
+        self.client.initAttachment(ar, key, name)
+        handle = open(path)
+        while 1:
+            line = handle.read(10240)
+            if len(line) == 0:
+                break 
+            self.client.appendBlock(ar, key, name, line)
+        handle.close()
 
 def getAppletRef(iface, pipeline, instance, applet):
     inst = None
