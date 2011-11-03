@@ -21,8 +21,19 @@ class Client(object):
     def __getattr__(self,i):
         if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 
         'containsKey', 'initAttachment', 'appendBlock', 'keyValJSONSlice',
-        'listAttachments', 'getAttachmentSize', 'readBlock']:
+        'listAttachments', 'getAttachmentSize', 'readBlock', 'peerInfo']:
             return getattr(self.client,i)
+    
+    
+    def copyTo(self, path, ar, key, name):
+        self.client.initAttachment(ar, key, name)
+        handle = open(path)
+        while 1:
+            line = handle.read(10240)
+            if len(line) == 0:
+                break 
+            self.client.appendBlock(ar, key, name, line)
+        handle.close()
 
 def getAppletRef(iface, pipeline, instance, applet):
     inst = None
@@ -75,6 +86,7 @@ class PeerManager:
     def getManager(self):
         self.connect()
         peers = self.server.peerInfo([])
+        print peers
         for p in peers:
             if p.peerType == RemusNet.PeerType.MANAGER:
                 return p.peerID

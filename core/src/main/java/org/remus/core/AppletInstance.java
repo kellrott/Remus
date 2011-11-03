@@ -217,7 +217,7 @@ public class AppletInstance {
 					}
 				}
 			}
-			logger.debug("Ending JobScan: " + instance.toString() + ":" + applet.getID() + " " + newJobStart + " = " + curPos);
+			logger.debug("Ending JobScan: " + instance.toString() + ":" + applet.getID() + " " + newJobStart + " JobCount: " + curPos);
 			if (count > 0 && curPos == 0) {
 				logger.info("Work DONE: " + instance.toString() + ":" + applet.getID() );
 				setComplete();

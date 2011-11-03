@@ -30,6 +30,7 @@ import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 /**
@@ -53,7 +54,7 @@ public class PipelineAdmin {
 		File submitFile = new File(instDir, "@submit");
 		FileOutputStream fsOS = new FileOutputStream(submitFile);
 		AppletRef arSubmit = new AppletRef(pipe.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, "/@submit");
+				RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET);
 		for (KeyValPair kv : datastore.listKeyPairs(arSubmit)) {
 			Map subObj = (Map) kv.getValue();
 			if (instance.compareTo((String) subObj.get("_instance")) == 0) {
@@ -72,7 +73,7 @@ public class PipelineAdmin {
 		File globalInstFile = new File(instDir, "@instance");
 		FileOutputStream giOS = new FileOutputStream(globalInstFile);
 		AppletRef arInstance = new AppletRef(pipe.getID(),
-				RemusInstance.STATIC_INSTANCE_STR, "/@instance");
+				RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
 
 		for (KeyValPair kv : datastore.listKeyPairs(arInstance)) {
 			if (instance.compareTo(kv.getKey())  == 0) {
@@ -92,7 +93,7 @@ public class PipelineAdmin {
 			System.err.println("Dumping: " + appletName);
 			RemusApplet applet = pipe.getApplet(appletName);
 
-			File instanceFile = new File(instDir, applet.getID() + "@instance");
+			File instanceFile = new File(instDir, applet.getID() + Constants.INSTANCE_APPLET);
 			FileOutputStream insOS = new FileOutputStream(instanceFile);
 			for (KeyValPair kv : datastore.listKeyPairs(arInstance)) {
 				if (instance.compareTo(kv.getKey())  == 0) {
@@ -183,11 +184,11 @@ public class PipelineAdmin {
 			if (!stackFile.isDirectory()) {
 				if (stackFile.getName().compareTo("@submit") == 0) {
 					loadTableFile(datastore, 
-							stackFile, "/@submit", 
+							stackFile, Constants.SUBMIT_APPLET, 
 							RemusInstance.STATIC_INSTANCE_STR);
 				} else if (stackFile.getName().compareTo("@instance") == 0) {
 					loadTableFile(datastore, 
-							stackFile, "/@instance", 
+							stackFile, Constants.INSTANCE_APPLET, 
 							RemusInstance.STATIC_INSTANCE_STR);
 				} else if (stackFile.getName().endsWith("@data")) {
 					String appletName = 

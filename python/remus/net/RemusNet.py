@@ -90,6 +90,14 @@ class Iface:
     """
     pass
 
+  def stackSlice(self, startKey, count):
+    """
+    Parameters:
+     - startKey
+     - count
+    """
+    pass
+
   def getTimeStamp(self, stack):
     """
     Parameters:
@@ -519,6 +527,40 @@ class Client(Iface):
     if result.e != None:
       raise result.e
     return
+
+  def stackSlice(self, startKey, count):
+    """
+    Parameters:
+     - startKey
+     - count
+    """
+    self.send_stackSlice(startKey, count)
+    return self.recv_stackSlice()
+
+  def send_stackSlice(self, startKey, count):
+    self._oprot.writeMessageBegin('stackSlice', TMessageType.CALL, self._seqid)
+    args = stackSlice_args()
+    args.startKey = startKey
+    args.count = count
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_stackSlice(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = stackSlice_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success != None:
+      return result.success
+    if result.e != None:
+      raise result.e
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "stackSlice failed: unknown result");
 
   def getTimeStamp(self, stack):
     """
@@ -1014,6 +1056,7 @@ class Processor(Iface, TProcessor):
     self._processMap["keyValJSONSlice"] = Processor.process_keyValJSONSlice
     self._processMap["deleteStack"] = Processor.process_deleteStack
     self._processMap["deleteValue"] = Processor.process_deleteValue
+    self._processMap["stackSlice"] = Processor.process_stackSlice
     self._processMap["getTimeStamp"] = Processor.process_getTimeStamp
     self._processMap["initAttachment"] = Processor.process_initAttachment
     self._processMap["getAttachmentSize"] = Processor.process_getAttachmentSize
@@ -1163,6 +1206,20 @@ class Processor(Iface, TProcessor):
     except NotImplemented, e:
       result.e = e
     oprot.writeMessageBegin("deleteValue", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_stackSlice(self, seqid, iprot, oprot):
+    args = stackSlice_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = stackSlice_result()
+    try:
+      result.success = self._handler.stackSlice(args.startKey, args.count)
+    except NotImplemented, e:
+      result.e = e
+    oprot.writeMessageBegin("stackSlice", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -2651,6 +2708,157 @@ class deleteValue_result:
   def __ne__(self, other):
     return not (self == other)
 
+class stackSlice_args:
+  """
+  Attributes:
+   - startKey
+   - count
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'startKey', None, None, ), # 1
+    (2, TType.I32, 'count', None, None, ), # 2
+  )
+
+  def __init__(self, startKey=None, count=None,):
+    self.startKey = startKey
+    self.count = count
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.startKey = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.count = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('stackSlice_args')
+    if self.startKey != None:
+      oprot.writeFieldBegin('startKey', TType.STRING, 1)
+      oprot.writeString(self.startKey)
+      oprot.writeFieldEnd()
+    if self.count != None:
+      oprot.writeFieldBegin('count', TType.I32, 2)
+      oprot.writeI32(self.count)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class stackSlice_result:
+  """
+  Attributes:
+   - success
+   - e
+  """
+
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(AppletRef, AppletRef.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, e=None,):
+    self.success = success
+    self.e = e
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.LIST:
+          self.success = []
+          (_etype38, _size35) = iprot.readListBegin()
+          for _i39 in xrange(_size35):
+            _elem40 = AppletRef()
+            _elem40.read(iprot)
+            self.success.append(_elem40)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.e = NotImplemented()
+          self.e.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('stackSlice_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.LIST, 0)
+      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      for iter41 in self.success:
+        iter41.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.e != None:
+      oprot.writeFieldBegin('e', TType.STRUCT, 1)
+      self.e.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+    def validate(self):
+      return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class getTimeStamp_args:
   """
   Attributes:
@@ -3516,10 +3724,10 @@ class listAttachments_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype38, _size35) = iprot.readListBegin()
-          for _i39 in xrange(_size35):
-            _elem40 = iprot.readString();
-            self.success.append(_elem40)
+          (_etype45, _size42) = iprot.readListBegin()
+          for _i46 in xrange(_size42):
+            _elem47 = iprot.readString();
+            self.success.append(_elem47)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -3542,8 +3750,8 @@ class listAttachments_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter41 in self.success:
-        oprot.writeString(iter41)
+      for iter48 in self.success:
+        oprot.writeString(iter48)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
@@ -4521,11 +4729,11 @@ class peerInfo_args:
       if fid == 1:
         if ftype == TType.LIST:
           self.info = []
-          (_etype45, _size42) = iprot.readListBegin()
-          for _i46 in xrange(_size42):
-            _elem47 = PeerInfoThrift()
-            _elem47.read(iprot)
-            self.info.append(_elem47)
+          (_etype52, _size49) = iprot.readListBegin()
+          for _i53 in xrange(_size49):
+            _elem54 = PeerInfoThrift()
+            _elem54.read(iprot)
+            self.info.append(_elem54)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4542,8 +4750,8 @@ class peerInfo_args:
     if self.info != None:
       oprot.writeFieldBegin('info', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.info))
-      for iter48 in self.info:
-        iter48.write(oprot)
+      for iter55 in self.info:
+        iter55.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -4594,11 +4802,11 @@ class peerInfo_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
-          (_etype52, _size49) = iprot.readListBegin()
-          for _i53 in xrange(_size49):
-            _elem54 = PeerInfoThrift()
-            _elem54.read(iprot)
-            self.success.append(_elem54)
+          (_etype59, _size56) = iprot.readListBegin()
+          for _i60 in xrange(_size56):
+            _elem61 = PeerInfoThrift()
+            _elem61.read(iprot)
+            self.success.append(_elem61)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -4627,8 +4835,8 @@ class peerInfo_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter55 in self.success:
-        iter55.write(oprot)
+      for iter62 in self.success:
+        iter62.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.notImp != None:

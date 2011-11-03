@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,12 +40,15 @@ public class SubmitView implements BaseNode {
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
 		try {
 			if (name.length() > 0) {
-				AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );		
-				datasource.deleteValue(ar, name);
+				AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET );		
+				datasource.deleteValue(ar, URLDecoder.decode(name, "UTF-8"));
 			}	
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -53,7 +58,7 @@ public class SubmitView implements BaseNode {
 	public void doGet(String name, Map params, String workerID,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@submit" );
+		AppletRef ar = new AppletRef( pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET );
 		try {
 			if (name.length() == 0) {
 				for (KeyValPair kv : datasource.listKeyPairs(ar)) {

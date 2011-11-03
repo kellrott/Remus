@@ -24,6 +24,7 @@ import org.remus.core.RemusMiniDB;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.JobState;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.NotImplemented;
@@ -183,7 +184,7 @@ public class JettyServer extends RemusWeb {
 
 		String tmpStack = UUID.randomUUID().toString();
 		String tmpStackIn = tmpStack + "_IN";
-		String tmpStackWork = tmpStack + "/@work";
+		String tmpStackWork = tmpStack + Constants.WORK_APPLET;
 
 		WorkDesc work = new WorkDesc();
 		work.mode = mode;

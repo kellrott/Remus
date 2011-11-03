@@ -17,6 +17,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class PipelineErrorView implements BaseNode {
@@ -58,7 +59,7 @@ public class PipelineErrorView implements BaseNode {
 				for (RemusInstance inst : applet.getInstanceList()) {
 					Map<String, Map<String, Object>> out = new HashMap<String, Map<String, Object>>();
 
-					AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + "/@error");
+					AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID() + Constants.ERROR_APPLET);
 
 					for (KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
 						String key = inst.toString() + ":" + applet.getID();

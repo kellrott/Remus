@@ -17,6 +17,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 /**
@@ -65,7 +66,7 @@ public class PipelineView implements BaseNode {
 			throw new FileNotFoundException();
 		}
 		Map out = new HashMap();
-		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, "/@pipeline");
+		AppletRef ar = new AppletRef(pipe.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.PIPELINE_APPLET);
 		for (String subKey : pipe.getSubmits()) {
 			try {
 				os.write(JSON.dumps(subKey).getBytes());

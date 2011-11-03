@@ -57,8 +57,8 @@ public class PeerManager {
 		pThread.quit();
 	}
 
-	public static final int FAIL_COUNT = 5;
-	public static final int FAIL_TIMEPERIOD = 120000;
+	public static final int FAIL_COUNT = 4;
+	public static final int FAIL_TIMEPERIOD = 125000;
 	public static final int DEAD_TIMEPERIOD = 6000;
 
 	class PingThread extends Thread {
@@ -106,14 +106,17 @@ public class PeerManager {
 	}
 
 	public void peerFailure(String peerID) {
-		synchronized (failTimes) {			
-			if (!failTimes.containsKey(peerID)) {
-				failTimes.put(peerID, new ArrayList<Long>());
-			}
-			ArrayList<Long> times = failTimes.get(peerID);
-			times.add((new Date()).getTime());
-			if (times.size() > FAIL_COUNT * 2) {
-				times.remove(0);
+		if (peerMap.containsKey(peerID)) {
+			logger.info("FAILURE REPORTED: " + peerID);
+			synchronized (failTimes) {			
+				if (!failTimes.containsKey(peerID)) {
+					failTimes.put(peerID, new ArrayList<Long>());
+				}
+				ArrayList<Long> times = failTimes.get(peerID);
+				times.add((new Date()).getTime());
+				if (times.size() > FAIL_COUNT * 2) {
+					times.remove(0);
+				}
 			}
 		}
 		removeFailed();
@@ -133,13 +136,17 @@ public class PeerManager {
 				}
 				if (fail >= FAIL_COUNT) {
 					failList.add(name);
+				} else {
+					logger.debug("PEER " + name + " " + fail + " fail count");
 				}
 			}
 		}
 		synchronized (peerMap) {
 			for (String name : failList) {
-				logger.info("Setting Peer " + name + " DEAD");
-				peerMap.get(name).peerType = PeerType.DEAD;
+				if (peerMap.get(name).peerType != PeerType.DEAD) {
+					logger.info("Setting Peer " + name + " DEAD");
+					peerMap.get(name).peerType = PeerType.DEAD;
+				}
 			}
 		}
 		List<String> removeList = new LinkedList<String>();
@@ -250,7 +257,7 @@ public class PeerManager {
 
 
 	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-	throws NotImplemented, BadPeerName, TException {
+			throws NotImplemented, BadPeerName, TException {
 		boolean change = false;
 		List<PeerInfoThrift> out = new LinkedList<PeerInfoThrift>();
 		synchronized (peerMap) {			

@@ -17,6 +17,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 
 public class PipelineInstanceView implements BaseNode {
@@ -45,7 +46,7 @@ public class PipelineInstanceView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 		if (name.length() == 0)  {
 			for (String appletName : pipeline.getMembers()) {
-				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + "/@instance");
+				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + Constants.INSTANCE_APPLET);
 				try {
 					if (datastore.containsKey(ar, inst.toString())) {
 						try {
