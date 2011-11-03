@@ -21,6 +21,7 @@ import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 import org.remus.thrift.WorkMode;
+import org.slf4j.LoggerFactory;
 
 
 
@@ -28,6 +29,7 @@ public class KeyWorker extends InstanceWorker {
 
 	public KeyWorker(PeerManager peerManager, AppletInstance ai) {
 		super(peerManager, ai);
+		logger = LoggerFactory.getLogger(KeyWorker.class);
 		logger.debug("KEYWORKER:" + ai + " started");
 		state = WORKING;
 	}
@@ -86,7 +88,7 @@ public class KeyWorker extends InstanceWorker {
 			removeRemoteJob(ai, rj, removeSet.get(rj));
 		}
 
-		workIDs = getAppletWorkCache(ai);
+		workIDs = getActiveWork(ai);
 
 		if (workIDs != null) {
 			int curPos = 0;
@@ -140,18 +142,13 @@ public class KeyWorker extends InstanceWorker {
 			int mode = ai.getApplet().getMode();
 			if (mode == WorkMode.AGENT.getValue()) {
 				logger.info("Agent Operation");
-				wdesc.setMode(WorkMode.MAP);				
-
+				wdesc.setMode(WorkMode.MAP);
 				String jobID = worker.jobRequest(peerManager.getManager(), peerManager.getAttachStore(), wdesc);
-
 				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
-
 			} else {
 				wdesc.setMode(WorkMode.findByValue(mode));
 				String jobID = worker.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), wdesc);
-
 				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
-
 			}			
 			peerManager.returnPeer(worker);
 		} catch (TException e) {
@@ -164,18 +161,10 @@ public class KeyWorker extends InstanceWorker {
 
 	int assignRate = 1;
 
-	private long [] getAppletWorkCache(AppletInstance ai) throws NotImplemented, TException {
+	private long [] getActiveWork(AppletInstance ai) throws NotImplemented, TException {
 		Set<String> peers = peerManager.getWorkers();
-		long [] workIDs = null;
-		synchronized (workIDCache) {			
-			if (workIDCache.containsKey(ai) && workIDCache.get(ai) != null && workIDCache.get(ai).length != 0) {
-				workIDs = workIDCache.get(ai);
-				Arrays.sort(workIDs);
-			} else {
-				workIDs = ai.getReadyJobs(assignRate * peers.size());				
-				workIDCache.put(ai, workIDs);
-			}
-		}
+		long [] workIDs = workIDs = ai.getReadyJobs(assignRate * peers.size());				
+
 		for (RemoteJob rj :remoteJobs) {
 			for (int i = 0; i < workIDs.length; i++) {
 				if (workIDs[i] >= rj.getWorkStart() && workIDs[i] < rj.getWorkEnd()) {
@@ -183,7 +172,6 @@ public class KeyWorker extends InstanceWorker {
 				}
 			}
 		}
-
 
 		boolean valid = false;
 		for (int i = 0; i < workIDs.length; i++) {
@@ -201,28 +189,8 @@ public class KeyWorker extends InstanceWorker {
 		if (ai.isInError()) {
 			state = ERROR;
 		}
-		workIDCache.put(ai, new long [0]);
 		return null;
 	}
-
-
-
-	private Map<AppletInstance,long []> workIDCache = new HashMap<AppletInstance, long[]>();
-
-	private void flushAppletWorkCache() {
-		synchronized (workIDCache) {			
-			List<AppletInstance> removeList = new LinkedList<AppletInstance>();
-			for (AppletInstance ai : workIDCache.keySet()) {
-				if (workIDCache.get(ai) == null || workIDCache.get(ai).length == 0) {
-					removeList.add(ai);
-				}
-			}
-			for (AppletInstance ai : removeList) {
-				workIDCache.remove(ai);
-			}
-		}
-	}
-
 
 
 	private void addRemoteJob(AppletInstance ai, RemoteJob rj) {

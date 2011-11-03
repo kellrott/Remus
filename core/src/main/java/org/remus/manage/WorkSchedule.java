@@ -237,8 +237,10 @@ public class WorkSchedule {
 		}
 
 		for (AppletInstance ai : removeSet) {
-			workerMap.get(ai).removeJob();			
 			synchronized (workerMap) {
+				if (workerMap.get(ai) != null) {
+					workerMap.get(ai).removeJob();		
+				}
 				workerMap.remove(ai);				
 			}
 		}
