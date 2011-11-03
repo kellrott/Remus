@@ -35,6 +35,12 @@
       </includes>
     </fileSet>
 
+
+    <fileSet>
+      <directory>../var</directory>
+      <outputDirectory>var</outputDirectory>
+    </fileSet>
+
     <fileSet>
       <directory>../conf</directory>
       <outputDirectory>conf</outputDirectory>
