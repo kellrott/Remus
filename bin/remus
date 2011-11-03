@@ -1,16 +1,35 @@
 #!/bin/bash
+#$ -cwd
+#$ -S /bin/bash
 
 binpath=`dirname $0`
 basepath=`dirname $binpath`
 HOST=`hostname`
 
-confFile=${basepath}/etc/remus.prop
-if [ -e ${basepath}/etc/${HOST}.prop ]; then
-    confFile=${basepath}/etc/${HOST}.prop
+if [ ! -e `which java` ]; then
+	export PATH=$PATH:/usr/java/latest/bin/
 fi
 
-if [ "x$1" != "x" ]; then
-    confFile=$1
+if [ -e ${basepath}/conf/${HOST}.yaml ]; then
+    confFile=${basepath}/conf/${HOST}.yaml
 fi
 
-java ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
+backGround="false"
+while [ $# -gt 0 ] ; do
+	case $1 in
+		-d) backGround="true"; shift 1;;
+		*) confFile=$1; shift 1;;
+	esac
+done
+
+if [ "x$JOB_ID" == "x" ]; then
+    JOB_ID="localhost"
+fi
+
+export JAVA_OPTS=-Xmx3G
+
+if [ $backGround == "true" ]; then
+	setsid java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile} &
+else
+	java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
+fi
