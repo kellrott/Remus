@@ -58,11 +58,12 @@ status)
 	fi
 ;;
 start)
+	cd ${basepath}
 	if [ $backGround == "true" ]; then
-		setsid java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile} > /dev/null < /dev/null &
+		setsid java -Dorg.remus.logName=${procName} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile} > /dev/null < /dev/null &
 		echo $! > $PID_FILE
 	else
-		java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
+		java -Dorg.remus.logName=${procName} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
 	fi
 ;;
 esac
