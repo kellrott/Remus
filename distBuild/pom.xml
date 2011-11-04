@@ -3,10 +3,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.remus</groupId>
   <artifactId>remus-dist</artifactId>
+  <version>0.1</version>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
   <name>Remus Jython</name>
   <url>http://maven.apache.org</url>
+  
+  <properties>
+    <remusVersion>0.1-SNAPSHOT</remusVersion>
+  </properties>
+
+  
   <build>
     <plugins>
       <plugin>
@@ -22,6 +28,8 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2-beta-2</version>
         <configuration>
+	      <finalName>remus-bin-${distVersion}</finalName>
+	      <appendAssemblyId>false</appendAssemblyId>
           <descriptor>dep.xml</descriptor>
         </configuration>
       </plugin>
@@ -32,34 +40,36 @@
     <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-cassandra</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-core</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-fs</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-jsEngine</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
+    <dependency>
+      <groupId>org.remus</groupId>
+      <artifactId>remus-web</artifactId>
+      <version>${remusVersion}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-jython</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>
+    
     <dependency>
-      <groupId>org.remus</groupId>
-      <artifactId>remus-web</artifactId>
-      <version>0.1-SNAPSHOT</version>
-    </dependency>
-     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.6.1</version>

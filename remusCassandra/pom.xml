@@ -3,10 +3,17 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.remus</groupId>
   <artifactId>remus-cassandra</artifactId>
+  <version>${remusVersion}</version>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
   <name>Remus Cassandra</name>
   <url>http://maven.apache.org</url>
+
+  <parent>
+    <groupId>org.remus</groupId>
+    <artifactId>remus</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
   
   <build>
     <plugins>
@@ -21,21 +28,14 @@
       </plugin>
     </plugins>
   </build>
-
-
-  <parent>
-    <groupId>org.remus</groupId>
-    <artifactId>remus</artifactId>
-    <version>0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
   
   <dependencies>  
      <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-core</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
+    
     <dependency>
       <groupId>org.apache.cassandra</groupId>
       <artifactId>cassandra-thrift</artifactId>

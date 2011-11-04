@@ -4,8 +4,8 @@
   <groupId>org.remus</groupId>
   <artifactId>remus-core</artifactId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
   <name>remus-core</name>
+  <version>${remusVersion}</version>
   <url>http://maven.apache.org</url>
 
   <parent>

@@ -3,11 +3,20 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.remus</groupId>
   <artifactId>remus-web</artifactId>
+  <version>${remusVersion}</version>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
   <name>Remus Web Server</name>
   <url>http://maven.apache.org</url>
   
+  
+  <parent>
+    <groupId>org.remus</groupId>
+    <artifactId>remus</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+
   <build>
     <plugins>
       <plugin>
@@ -21,21 +30,14 @@
       </plugin>
     </plugins>
   </build>
-
-
-  <parent>
-    <groupId>org.remus</groupId>
-    <artifactId>remus</artifactId>
-    <version>0.1-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
   
   <dependencies>  
      <dependency>
       <groupId>org.remus</groupId>
       <artifactId>remus-core</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${remusVersion}</version>
     </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

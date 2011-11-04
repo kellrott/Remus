@@ -3,6 +3,9 @@
   <artifactId>remus</artifactId>
   <packaging>pom</packaging>
   <groupId>org.remus</groupId>
+  <properties>
+    <remusVersion>0.1-SNAPSHOT</remusVersion>
+  </properties>
   <version>0.1-SNAPSHOT</version>
   <name>Remus</name>
   <modules>
@@ -12,5 +15,5 @@
     <module>remusFS</module>
     <module>jsEngine</module>
     <module>tools</module>
-  </modules>
+  </modules>   
 </project>
