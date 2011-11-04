@@ -21,7 +21,7 @@ backGround="false"
 while [ $# -gt 0 ] ; do
 	case $1 in
 		-d) backGround="true"; shift 1;;
-		-n) procName=$1; shift 2;;
+		-n) procName=$2; shift 2;;
 		-stop) mode="stop"; shift 1;;
 		-status) mode="status"; shift 1;;
 		*) confFile=$1; shift 1;;
@@ -35,27 +35,31 @@ fi
 export JAVA_OPTS=-Xmx3G
 
 VARPATH=${basepath}/var
-PID_FILE=$VARPATH/$procName
+PID_FILE=$VARPATH/${procName}.pid
 
 case $mode in
 stop)
 	if [ -e $PID_FILE ]; then
 		PID=`cat $PID_FILE`
 		kill $PID
-		rm $PID_FILE
+		rm -f $PID_FILE
 	fi
 ;;
 status)
-	ps -p `cat $PID_FILE` > /dev/null
-	if [ $? == "0" ]; then
-		echo $procName "RUNNING"
+	if [ -e $PID_FILE ]; then
+		ps -p `cat $PID_FILE` > /dev/null
+		if [ $? == "0" ]; then
+			echo $procName "RUNNING"
+		else
+			echo $procName "DEAD"
+		fi
 	else
-		echo $procName "DEAD"
+		echo $procName "NOT_FOUND"
 	fi
 ;;
 start)
 	if [ $backGround == "true" ]; then
-		setsid java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile} &
+		setsid java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile} > /dev/null < /dev/null &
 		echo $! > $PID_FILE
 	else
 		java -Dorg.remus.logName=remusWorker_${JOB_ID} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
