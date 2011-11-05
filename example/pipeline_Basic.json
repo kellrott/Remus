@@ -1,9 +1,8 @@
 {
-"_id" : "testPipeline",
-"_include" : [ "test.file" ],
 
 "testSplit" : {
 	"_src" : "?",
+	"_include" : [ "test.file" ],
 	"_mode" : "split",
 	"_type" : "python",
 	"_code" : "codeBasic_testSplit.py"

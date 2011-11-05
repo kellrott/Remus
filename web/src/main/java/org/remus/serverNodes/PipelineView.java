@@ -12,7 +12,9 @@ import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.RemusDatabaseException;
 import org.remus.RemusWeb;
+import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
@@ -70,7 +72,7 @@ public class PipelineView implements BaseNode {
 			try {
 				os.write(JSON.dumps(subKey).getBytes());
 				os.write("\n".getBytes());
-				
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}	
@@ -93,7 +95,7 @@ public class PipelineView implements BaseNode {
 				}
 				System.err.println(sb.toString());
 				Object data = JSON.loads(sb.toString());
-				pipe.putApplet(pipe, name, data);
+				pipe.putApplet(name, data);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -133,26 +135,33 @@ public class PipelineView implements BaseNode {
 		@Override
 		public void doGet(String name, Map params, String workerID,
 				OutputStream os)
-		throws FileNotFoundException {
+						throws FileNotFoundException {
 			try {
-				InputStream ais = pipe.readAttachment(name);
-				if (ais != null) {
-					byte [] buffer = new byte[BLOCK_SIZE];
-					int len;
-					try {
-						while ((len = ais.read(buffer)) >= 0) {
-							os.write(buffer, 0, len);
-						}
-						os.close();
-						ais.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}			
+				if (name.contains("/")) {
+					String [] tmp = name.split("/");
+					RemusApplet applet = pipe.getApplet(tmp[0]);
+					InputStream ais = applet.readAttachment(name);
+					if (ais != null) {
+						byte [] buffer = new byte[BLOCK_SIZE];
+						int len;
+						try {
+							while ((len = ais.read(buffer)) >= 0) {
+								os.write(buffer, 0, len);
+							}
+							os.close();
+							ais.close();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}		
+					}
 				} else {
 					throw new FileNotFoundException();
 				}		
 			} catch (NotImplemented e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (RemusDatabaseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -162,77 +171,26 @@ public class PipelineView implements BaseNode {
 		public void doPut(String name, String workerID, InputStream is,
 				OutputStream os) throws FileNotFoundException {
 			try {
-				OutputStream aos = pipe.writeAttachment(name);
-				byte [] buffer = new byte[BLOCK_SIZE];
-				int len;
-				while ((len = is.read(buffer)) >= 0) {
-					aos.write(buffer, 0, len);
+				if (name.contains("/")) {
+					String [] tmp = name.split("/");
+					RemusApplet applet = pipe.getApplet(tmp[0]);
+					OutputStream aos = applet.writeAttachment(tmp[1]);
+					byte [] buffer = new byte[BLOCK_SIZE];
+					int len;
+					while ((len = is.read(buffer)) >= 0) {
+						aos.write(buffer, 0, len);
+					}
+					aos.close();
+					is.close();
 				}
-				aos.close();
-				is.close();
 			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (RemusDatabaseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
 		}
-
-		@Override
-		public void doSubmit(String name, String workerID, InputStream is,
-				OutputStream os) throws FileNotFoundException {}
-
-		@Override
-		public BaseNode getChild(String name) {
-			return null;
-		}
-	}
-
-	/**
-	 * A node to handle requests to specific file attachments.
-	 * @author kellrott
-	 *
-	 */
-	class PipelineAttachmentFile implements BaseNode {
-		RemusPipeline pipeline;
-		String fileName;
-		PipelineAttachmentFile(RemusPipeline pipeline, String fileName) {
-			this.fileName = fileName;
-			this.pipeline = pipeline;
-		}
-
-		@Override
-		public void doDelete(String name, Map params, String workerID) throws FileNotFoundException { }
-
-		@Override
-		public void doGet(String name, Map params, String workerID,
-				OutputStream os)
-		throws FileNotFoundException {
-			try {
-				InputStream fis = pipe.readAttachment(fileName);
-				if (fis != null) {
-					byte [] buffer = new byte[BLOCK_SIZE];
-					int len;
-					try {
-						while ((len = fis.read(buffer)) >= 0) {
-							os.write(buffer, 0, len);
-						}
-						os.close();
-						fis.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}			
-				} else {
-					throw new FileNotFoundException();
-				}		
-			} catch (NotImplemented e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		public void doPut(String name, String workerID, InputStream is,
-				OutputStream os) throws FileNotFoundException {}
 
 		@Override
 		public void doSubmit(String name, String workerID, InputStream is,
@@ -259,17 +217,6 @@ public class PipelineView implements BaseNode {
 		} catch (TException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (NotImplemented e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try { 
-			if (pipe.hasAttachment(name)) {
-				return new PipelineAttachmentFile(pipe, name);
-			}
-		} catch (TException e) {
-			e.printStackTrace();
 		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

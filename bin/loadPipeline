@@ -40,54 +40,50 @@ def parseRemus(server, pipelineName, path):
         pipelineData = json.loads( handle.read() )
 
     url = server + "/@pipeline/" + pipelineName 
-
-    if '_include' in pipelineData:
-        fileList = copy( pipelineData['_include'] )
-    else:
-        fileList = []
+    data = json.dumps( {} )
+    print url
+    print "pipeline:", data
+    print putData( url, data ).read()
 
     initData = {}
     initApplet = {}
     for name in pipelineData:
-        if name not in [ "_id", "_include" ]:
-            node = pipelineData[ name ]
-            if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
-                if node.has_key( "_code" ):
-                    if os.path.exists(  node[ "_code" ] ):
-                        fileList.append( node[ "_code" ] )                
+        node = pipelineData[ name ]
+        if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
+            fileList = []
+            if node.has_key( "_code" ):
+                if os.path.exists(  node[ "_code" ] ):
+                    fileList.append( node[ "_code" ] )                
+            
+            if node.has_key('_include'):
+                for f in node['_include']:
+                    fileList.append(f)
+            
+            if node.has_key( "_init" ):                    
+                if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
+                    initData[ node[ "_init" ][ "_submitKey" ] ] = {}
+                    initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
                 
-                if node.has_key( "_init" ):                    
-                    if not initData.has_key( node[ "_init" ][ "_submitKey" ] ):
-                        initData[ node[ "_init" ][ "_submitKey" ] ] = {}
-                        initApplet[ node[ "_init" ][ "_submitKey" ] ] = []
-                    
-                    if "_data" in node[ "_init" ]:
-                        initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data") )
-                    else:
-                        initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = None
+                if "_data" in node[ "_init" ]:
+                    initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = json.dumps( node[ "_init" ].get("_data") )
+                else:
+                    initData[ node[ "_init" ][ "_submitKey" ] ][ name ] = None
 
-                    initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
-                    del node[ "_init" ]
+                initApplet[node[ "_init" ][ "_submitKey" ]].append(name)
+                del node[ "_init" ]
 
-                """
-                url = server + "/" + pipelineName + "/@pipeline/" + name                  
-                print url
-                data = json.dumps( node )
-                print putData( url, data ).read()
-                """
+            url = server + "/" + pipelineName + "/@pipeline/" + name                  
+            data = json.dumps( node )
+            print "CREATE APPLET", url, data
+            print putData( url, data ).read()
 
-    data = json.dumps( pipelineData )
-    print url
-    print "pipeline:", data
-    print putData( url, data ).read()
-                
-    for file in fileList:
-        srcPath = os.path.join( baseDir, file ) 
-        url = server + "/" + pipelineName + "/@attach/" + file.replace('/', '%2F')
-        print "LOADING", url
-        handle = open( srcPath )
-        print putData( url, handle.read() ).read()
-        handle.close()
+            for file in fileList:
+                srcPath = os.path.join( baseDir, file ) 
+                url = server + "/" + pipelineName + "/@attach/" + name + "/" + file.replace('/', '%2F')
+                print "LOADING", url
+                handle = open( srcPath )
+                print putData( url, handle.read() ).read()
+                handle.close()
 
     for subKey in initData:
         submitData = { "_applets" : initApplet[subKey] }

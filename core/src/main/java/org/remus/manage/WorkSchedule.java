@@ -1,5 +1,6 @@
 package org.remus.manage;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -137,6 +138,9 @@ public class WorkSchedule {
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			peerManager.returnPeer(db);

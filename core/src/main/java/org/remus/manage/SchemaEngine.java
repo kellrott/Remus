@@ -1,5 +1,6 @@
 package org.remus.manage;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.thrift.TException;
@@ -70,7 +71,7 @@ public class SchemaEngine {
 	}
 
 
-	public void processSubmissions(RemusPipeline pipe) throws RemusDatabaseException, TException, NotImplemented {
+	public void processSubmissions(RemusPipeline pipe) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		for (String subKey : pipe.getSubmits()) {
 			PipelineSubmission subData = pipe.getSubmitData(subKey);
 			if (subData != null) {
@@ -85,7 +86,7 @@ public class SchemaEngine {
 
 
 	public boolean checkSubmission(RemusPipeline pipe, String subKey, PipelineSubmission subData) 
-			throws RemusDatabaseException, TException, NotImplemented {
+			throws RemusDatabaseException, TException, NotImplemented, IOException {
 		Boolean changed = false;
 		
 		//make sure the '_submitKey' field is correct
@@ -171,6 +172,9 @@ public class SchemaEngine {
 				} 
 			} catch (RemusDatabaseException e) {
 				throw new TException(e);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			} finally {
 				peerManager.returnPeer(attach);
 				peerManager.returnPeer(db);

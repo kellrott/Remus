@@ -2,6 +2,7 @@ package org.remus.work;
 
 import org.remus.thrift.Constants;
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
@@ -22,7 +23,7 @@ public class ReMapGenerator implements WorkGenerator {
 
 	@Override
 	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet,
-			RemusInstance instance, RemusDB datastore) {
+			RemusInstance instance, RemusDB datastore, RemusAttach attachstore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET );
@@ -33,7 +34,7 @@ public class ReMapGenerator implements WorkGenerator {
 				jobID++;							
 			}		
 			long t = datastore.getTimeStamp(ar);
-			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
+			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore, attachstore);
 			ai.setWorkStat(0, 0, 0, jobID, t);
 		} catch (TException e) {
 			e.printStackTrace();

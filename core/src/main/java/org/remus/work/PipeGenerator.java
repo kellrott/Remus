@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.core.AppletInstance;
 import org.remus.core.DataStackRef;
@@ -17,7 +18,7 @@ import org.remus.thrift.NotImplemented;
 public class PipeGenerator implements WorkGenerator {
 
 	@Override
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore, RemusAttach attachstore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
@@ -30,7 +31,7 @@ public class PipeGenerator implements WorkGenerator {
 			datastore.add(arWork, 0, 0, "0", arrayList);
 
 			long t = datastore.getTimeStamp(ar);
-			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
+			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore, attachstore);
 			ai.setWorkStat(0, 0, 0, 1, t);
 		} catch (TException e) {
 			e.printStackTrace();

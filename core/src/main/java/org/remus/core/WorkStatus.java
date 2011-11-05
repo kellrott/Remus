@@ -72,9 +72,9 @@ public class WorkStatus implements JSONAware {
 		}
 		//logger.info("UNSET COMPLETE: " + applet.getPath() );
 		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, false);
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.WORK_APPLET );
+		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.WORK_APPLET );
 		try {
-			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString(), statObj);
+			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString() + ":" + applet.getID(), statObj);
 		} catch (TException e ) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -84,9 +84,9 @@ public class WorkStatus implements JSONAware {
 
 	public static void setComplete(RemusPipeline pipeline, RemusApplet applet, RemusInstance remusInstance) {
 		Object statObj = null;
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.WORK_APPLET );
+		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.WORK_APPLET );
 		try {
-			for (Object curObj : applet.getDataStore().get( arWork, remusInstance.toString())) {
+			for (Object curObj : applet.getDataStore().get( arWork, remusInstance.toString() + ":" + applet.getID())) {
 				statObj = curObj;
 			}
 		} catch (TException e) {
@@ -112,9 +112,9 @@ public class WorkStatus implements JSONAware {
 		Object statObj = null;
 		AppletRef arWork = new AppletRef(pipeline.getID(), 
 				RemusInstance.STATIC_INSTANCE_STR, 
-				applet.getID() + Constants.WORK_APPLET);
+				Constants.WORK_APPLET);
 		try {
-			for (Object obj : applet.getDataStore().get(arWork, inst.toString())) {
+			for (Object obj : applet.getDataStore().get(arWork, inst.toString() + ":" + applet.getID())) {
 				statObj = obj;
 			}
 		} catch (TException e) {
@@ -139,9 +139,9 @@ public class WorkStatus implements JSONAware {
 
 	public static boolean hasStatus(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
 		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, 
-				applet.getID() + Constants.WORK_APPLET);
+				Constants.WORK_APPLET);
 		try {
-			return applet.getDataStore().containsKey(ar, inst.toString());
+			return applet.getDataStore().containsKey(ar, inst.toString() + ":" + applet.getID());
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {

@@ -62,7 +62,7 @@ public class AttachListView implements BaseNode {
 		} else {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet );
 			try {
-				InputStream is = attach.readAttachement(ar, key, name);
+				InputStream is = attach.readAttachment(ar, key, name);
 				if ( is != null ) {
 					byte [] buffer = new byte[10240];
 					int len;

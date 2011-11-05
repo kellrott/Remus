@@ -8,6 +8,7 @@ import java.util.TreeMap;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.NotImplemented;
@@ -53,7 +54,9 @@ abstract public class AppletInstanceStack implements BaseStackNode {
 				RemusApplet applet = pipe.getApplet(appletName);
 				if (applet != null) {
 					for (RemusInstance inst : applet.getInstanceList()) {
-						AppletInstance ai = new AppletInstance(pipe, inst, applet, RemusDB.wrap(datastore));
+						AppletInstance ai = new AppletInstance(pipe, inst, applet, 
+								RemusDB.wrap(datastore), 
+								RemusAttach.wrap(attachstore));
 						aiList.put(inst.toString() + ":" + applet.getID(), JSON.dumps(ai.getInstanceInfo()));
 					}
 				}

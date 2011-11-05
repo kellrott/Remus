@@ -1,6 +1,7 @@
 package org.remus.work;
 
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
@@ -14,7 +15,7 @@ import org.remus.thrift.NotImplemented;
 
 public class MergeGenerator implements WorkGenerator {
 	@Override
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore, RemusAttach attachstore) {
 
 		try {
 			int jobID = 0;
@@ -29,7 +30,7 @@ public class MergeGenerator implements WorkGenerator {
 			}
 
 			long t = datastore.getTimeStamp(ar);
-			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
+			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore, attachstore);
 			ai.setWorkStat(0, 0, 0, jobID, t);
 		} catch (TException e) {
 			e.printStackTrace();

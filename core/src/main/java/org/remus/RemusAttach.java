@@ -179,7 +179,7 @@ public abstract class RemusAttach extends RemusPeer {
 
 	}
 
-	public InputStream readAttachement(AppletRef stack, String key,
+	public InputStream readAttachment(AppletRef stack, String key,
 			String name) throws NotImplemented {
 		try {
 			return new BlockReader(stack, key, name);

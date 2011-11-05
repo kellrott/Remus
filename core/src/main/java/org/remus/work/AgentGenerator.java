@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class AgentGenerator implements WorkGenerator {
 
 	@Override
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore) {
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore, RemusAttach attachstore) {
 
 		AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 		AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
@@ -41,7 +42,7 @@ public class AgentGenerator implements WorkGenerator {
 		}
 		try {
 			long t = datastore.getTimeStamp(ar);
-			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
+			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore, attachstore);
 			ai.setWorkStat(0, 0, 0, jobID, t);
 		} catch (TException e) {
 			// TODO Auto-generated catch block

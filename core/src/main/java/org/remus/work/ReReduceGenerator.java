@@ -1,6 +1,7 @@
 package org.remus.work;
 
 import org.apache.thrift.TException;
+import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
@@ -17,6 +18,12 @@ public class ReReduceGenerator implements WorkGenerator {
 	@Override
 	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
 			RemusInstance instance, RemusDB datastore) {
+		
+	}
+
+	@Override
+	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet,
+			RemusInstance instance, RemusDB datastore, RemusAttach attachstore) {
 		try {
 			AppletRef ar = new AppletRef(pipeline.getID(), instance.toString(), applet.getID());
 			AppletRef arWork = new AppletRef(pipeline.getID(), instance.toString(), applet.getID() + Constants.WORK_APPLET);
@@ -29,7 +36,7 @@ public class ReReduceGenerator implements WorkGenerator {
 				jobID++;
 			}
 			long t = datastore.getTimeStamp(ar);
-			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore);
+			AppletInstance ai = new AppletInstance(pipeline, instance, applet, datastore, attachstore);
 			ai.setWorkStat(0, 0, 0, jobID, t);
 		} catch (TException e) {
 			e.printStackTrace();
@@ -39,13 +46,7 @@ public class ReReduceGenerator implements WorkGenerator {
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
-	}
-
-	@Override
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet,
-			RemusInstance instance, RemusDB datastore) {
-		// TODO Auto-generated method stub
+		}
 		
 	}
 

@@ -138,7 +138,7 @@ public class PipelineAdmin {
 						}
 						FileOutputStream attOS = 
 							new FileOutputStream(new File(keyDir, name));
-						InputStream is = att.readAttachement(ar, curKey, name);
+						InputStream is = att.readAttachment(ar, curKey, name);
 						byte [] buffer = new byte[4048];
 						int len;
 						while (((len = is.read(buffer)) > 0)) {

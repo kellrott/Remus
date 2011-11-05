@@ -24,17 +24,17 @@ public class Constants {
 
   public static final String STATIC_INSTANCE = "00000000-0000-0000-0000-000000000000";
 
-  public static final String PIPELINE_APPLET = "/@pipeline";
+  public static final String PIPELINE_APPLET = "@pipeline";
 
-  public static final String INSTANCE_APPLET = "/@instance";
+  public static final String INSTANCE_APPLET = "@instance";
 
-  public static final String SUBMIT_APPLET = "/@submit";
+  public static final String SUBMIT_APPLET = "@submit";
 
-  public static final String WORK_APPLET = "/@work";
+  public static final String WORK_APPLET = "@work";
 
-  public static final String ERROR_APPLET = "/@error";
+  public static final String ERROR_APPLET = "@error";
 
-  public static final String DONE_APPLET = "/@done";
+  public static final String DONE_APPLET = "@done";
 
   public static final String ROOT_PIPELINE = "@root";
 

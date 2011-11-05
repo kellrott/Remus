@@ -134,7 +134,7 @@ public class AppletInstanceView implements BaseNode {
 						String key = URLDecoder.decode(tmp[0], "UTF-8");
 						String fileName = URLDecoder.decode(tmp[1], "UTF-8");
 						
-						InputStream is = applet.getAttachStore().readAttachement(ar, key, fileName);
+						InputStream is = applet.getAttachStore().readAttachment(ar, key, fileName);
 						byte [] buffer = new byte[1024];
 						int len;
 						while ((len = is.read(buffer)) > 0) {

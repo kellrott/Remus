@@ -1,5 +1,8 @@
 package org.remus.core;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -292,7 +295,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 
 	public Set<AppletInstance> getActiveApplets(RemusInstance inst) {
 		HashSet<AppletInstance> out = new HashSet<AppletInstance>();		
-		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore);
+		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore, attachstore);
 		if (!ai.isComplete()) {
 			if (ai.isReady()) {
 				if (workGenerator != null) {
@@ -303,7 +306,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 							try {
 								logger.info("GENERATE WORK: " + pipeline.getID() + "/" + getID() + " " + inst.toString());
 								WorkGenerator gen = (WorkGenerator) workGenerator.newInstance();
-								gen.writeWorkTable(pipeline, this, inst, datastore);
+								gen.writeWorkTable(pipeline, this, inst, datastore, attachstore);
 							} catch (InstantiationException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
@@ -375,8 +378,8 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		ar.instance = RemusInstance.STATIC_INSTANCE_STR;
 		ar.applet = Constants.INSTANCE_APPLET;
 		datastore.deleteValue(ar, instance.toString() + ":" + getID());
-		ar.applet = getID() + Constants.WORK_APPLET;
-		datastore.deleteValue(ar, instance.toString());
+		ar.applet = Constants.WORK_APPLET;
+		datastore.deleteValue(ar, instance.toString() + ":" + getID());
 
 		if (attachstore != null) {
 			ar.applet = getID();
@@ -390,7 +393,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 
 	@SuppressWarnings("unchecked")
 	//public boolean createInstance(String submitKey, PipelineSubmission params, RemusInstance inst) throws TException, NotImplemented {
-	public boolean createInstance(PipelineSubmission params, RemusInstance inst) throws TException, NotImplemented {
+	public boolean createInstance(PipelineSubmission params, RemusInstance inst) throws TException, NotImplemented, IOException {
 
 		logger.info("Creating instance of " + getID() + " for " + inst.toString());
 		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
@@ -466,14 +469,28 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 					outputInfo.setInstance(inst);
 					outputInfo.setMode("output");
 					RemusApplet outApplet = new RemusApplet(pipeline, getID() + ":" + output, datastore, attachstore);
-					AppletInstance ai = new AppletInstance(pipeline, inst, outApplet, datastore);
+					AppletInstance ai = new AppletInstance(pipeline, inst, outApplet, datastore, attachstore);
 					ai.updateInstanceInfo(outputInfo);
 				} catch (RemusDatabaseException e) {
 				}
 			}
 		}
-		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore);
+		AppletInstance ai = new AppletInstance(pipeline, inst, this, datastore, attachstore);
 		ai.updateInstanceInfo(instInfo);
+		
+		AppletRef appletAR = new AppletRef(pipeline.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
+		for (String file : attachstore.listAttachments(appletAR, getID())) {
+			InputStream is = readAttachment(file);
+			OutputStream os = attachstore.writeAttachment(instApplet, inst.toString() + ":" + getID(), file);
+			byte [] buffer = new byte[10240];
+			int len;
+			while ((len=is.read(buffer)) > 0) {
+				os.write(buffer,0,len);
+			}
+			os.close();
+			is.close();			
+		}
+		
 		return true;
 	};
 
@@ -521,7 +538,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 	}
 
 	public AppletInstance getAppletInstance(String inst) throws TException, NotImplemented {
-		AppletInstance ai = new AppletInstance(pipeline, RemusInstance.getInstance(datastore, pipeline.getID(), inst), this, datastore);
+		AppletInstance ai = new AppletInstance(pipeline, RemusInstance.getInstance(datastore, pipeline.getID(), inst), this, datastore, attachstore);
 		return ai;
 	}
 
@@ -529,5 +546,20 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 	public String toJSONString() {
 		return JSON.dumps(appletDesc);
 	}
+
+	
+	public OutputStream writeAttachment(String name) throws IOException {
+		AppletRef arApplet = new AppletRef(pipeline.getID(), 
+				RemusInstance.STATIC_INSTANCE_STR, Constants.PIPELINE_APPLET);
+		return attachstore.writeAttachment(arApplet, getID(), name);
+	}
+
+	public InputStream readAttachment(String name) throws NotImplemented {
+		AppletRef arApplet = new AppletRef(pipeline.getID(), 
+				RemusInstance.STATIC_INSTANCE_STR, Constants.PIPELINE_APPLET);
+		return attachstore.readAttachment(arApplet, getID(), name);		
+
+	}
+	
 
 }
