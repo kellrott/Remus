@@ -46,9 +46,9 @@ public class PipelineInstanceView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 		if (name.length() == 0)  {
 			for (String appletName : pipeline.getMembers()) {
-				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, appletName + Constants.INSTANCE_APPLET);
+				AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
 				try {
-					if (datastore.containsKey(ar, inst.toString())) {
+					if (datastore.containsKey(ar, inst.toString() + ":" + appletName)) {
 						try {
 							os.write(JSON.dumps(appletName).getBytes());
 							os.write("\n".getBytes());

@@ -37,23 +37,19 @@ public class InstanceListView implements BaseNode {
 			OutputStream os) throws FileNotFoundException {
 
 		Map out = new HashMap();
-		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
-		try {
-			if ( name.length() == 0 ) {
-				for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
+		if ( name.length() == 0 ) {
+			for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
+				out.put(kv.getKey(), kv.getValue());
+			}
+		} else {
+			for ( KeyValPair kv : applet.getDataStore().listKeyPairs(ar)) {
+				if (kv.getKey().endsWith(applet.getID())) {
 					out.put(kv.getKey(), kv.getValue());
 				}
-			} else {
-				for ( Object obj : applet.getDataStore().get( ar, name )) {
-					out.put(name, obj );
-				}
 			}
-		} catch (TException e ) {
-			e.printStackTrace();
-		} catch (NotImplemented e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+
 		try {
 			os.write( JSON.dumps(out).getBytes() );
 		} catch (IOException e) {

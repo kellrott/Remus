@@ -1,6 +1,8 @@
 package org.remus.work;
 
 
+import java.util.Map;
+
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
@@ -60,7 +62,10 @@ public class AgentGenerator implements WorkGenerator {
 			AppletRef subAR = new AppletRef(pipeline.getID(), Constants.STATIC_INSTANCE, Constants.SUBMIT_APPLET);
 			try {
 				if (!datastore.containsKey(subAR, kv.getKey()) ) {
-					datastore.add(subAR, 0, 0, kv.getKey(), kv.getValue());
+					Map map = (Map) kv.getValue();
+					map.remove("_submitKey");
+					map.remove("_instance");
+					datastore.add(subAR, 0, 0, kv.getKey(), map);
 				}
 			} catch (NotImplemented e) {
 				e.printStackTrace();

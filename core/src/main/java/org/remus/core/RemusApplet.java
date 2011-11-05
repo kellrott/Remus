@@ -348,10 +348,13 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>();
 		AppletRef applet = new AppletRef(pipeline.getID(), 
-				RemusInstance.STATIC_INSTANCE_STR, getID()
-				+ Constants.INSTANCE_APPLET);
+				RemusInstance.STATIC_INSTANCE_STR, 
+				Constants.INSTANCE_APPLET);
 		for (String key : datastore.listKeys(applet)) {
-			out.add(new RemusInstance(key));
+			//BUG possible name match clashes
+			if (key.endsWith(":" + getID())) {
+				out.add(new RemusInstance(key.split(":")[0]));
+			}
 		}
 		return out;
 	}
@@ -370,8 +373,8 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		datastore.deleteStack(ar);
 
 		ar.instance = RemusInstance.STATIC_INSTANCE_STR;
-		ar.applet = getID() + Constants.INSTANCE_APPLET;
-		datastore.deleteValue(ar, instance.toString());
+		ar.applet = Constants.INSTANCE_APPLET;
+		datastore.deleteValue(ar, instance.toString() + ":" + getID());
 		ar.applet = getID() + Constants.WORK_APPLET;
 		datastore.deleteValue(ar, instance.toString());
 
@@ -390,9 +393,9 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 	public boolean createInstance(PipelineSubmission params, RemusInstance inst) throws TException, NotImplemented {
 
 		logger.info("Creating instance of " + getID() + " for " + inst.toString());
-		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, getID() + Constants.INSTANCE_APPLET);
+		AppletRef instApplet = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
 
-		if (datastore.containsKey(instApplet, inst.toString())) {
+		if (datastore.containsKey(instApplet, inst.toString() + ":" + getID())) {
 			return false;
 		}
 

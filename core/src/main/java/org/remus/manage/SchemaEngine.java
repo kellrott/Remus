@@ -76,7 +76,7 @@ public class SchemaEngine {
 			if (subData != null) {
 				if (checkSubmission(pipe, subKey, subData)) {
 					pipe.setSubmit(subKey,subData);
-					pipe.setInstanceSubkey(subData.getInstance(), subKey);
+					//pipe.setInstanceSubkey(subData.getInstance(), subKey);
 				}
 			}
 			//instList.add(subData.getInstance());
@@ -87,22 +87,20 @@ public class SchemaEngine {
 	public boolean checkSubmission(RemusPipeline pipe, String subKey, PipelineSubmission subData) 
 			throws RemusDatabaseException, TException, NotImplemented {
 		Boolean changed = false;
+		
+		//make sure the '_submitKey' field is correct
 		if (!subData.hasSubmitKey() || subData.getSubmitKey().compareTo(subKey) != 0 ) {
 			subData.setSubmitKey(subKey);
 			changed = true;
 		}
+		
+		//make sure the '_instance' field is correct
 		if (!subData.hasInstance()) {
 			subData.setInstance(new RemusInstance());
 			changed = true;
-		} else {
-			//If the instance field doesn't match the key stored in the '@instance' stack
-			String instKey = pipe.getSubKey(subData.getInstance());
-			if (instKey != null && subKey.compareTo(instKey) != 0) {
-				subData.setInstance(new RemusInstance());
-				changed = true;				
-			}
 		}
 
+		//make sure the applets listed in '_submitInit'
 		for (String applet : subData.getInitApplets()) {
 			if (!pipe.hasAppletInstance(subData.getInstance(), applet)) {
 				RemusApplet ap = pipe.getApplet(applet);
@@ -168,7 +166,7 @@ public class SchemaEngine {
 				if (pipe != null) {
 					if (checkSubmission(pipe, key, subData)) {
 						pipe.setSubmit(key, subData);
-						pipe.setInstanceSubkey(subData.getInstance(), key);
+						//pipe.setInstanceSubkey(subData.getInstance(), key);
 					}	
 				} 
 			} catch (RemusDatabaseException e) {

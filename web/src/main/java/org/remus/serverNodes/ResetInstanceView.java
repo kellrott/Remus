@@ -47,11 +47,10 @@ public class ResetInstanceView implements BaseNode {
 		if (name.length() > 0) {
 			String [] tmp = name.split(":");
 			if (tmp.length == 1) {
-
 				RemusInstance inst = pipeline.getInstance(name);
-				String subKey = pipeline.getSubKey(inst);
-				PipelineSubmission subMap = pipeline.getSubmitData(subKey);
-				if (inst == null || subKey == null || subMap == null) {
+				//String subKey = pipeline.getSubKey(inst);
+				//PipelineSubmission subMap = pipeline.getSubmitData(subKey);
+				if (inst == null ) { // || subKey == null || subMap == null) {
 					throw new FileNotFoundException();	
 				}			
 				try {
@@ -62,8 +61,7 @@ public class ResetInstanceView implements BaseNode {
 				}
 				try {
 					os.write(inst.toString().getBytes());
-					os.write(" Restarted as ".getBytes());
-					os.write(subKey.getBytes());
+					os.write(" Restarted".getBytes());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -75,7 +73,7 @@ public class ResetInstanceView implements BaseNode {
 					if (inst != null && applet != null) {
 						try {
 							applet.deleteInstance(inst);
-							String subKey = pipeline.getSubKey(inst);
+							//String subKey = pipeline.getSubKey(inst);
 							//PipelineSubmission params = pipeline.getSubmitData(subKey);
 							//BUG: Broken in new interface
 							//applet.createInstance(subKey, params, inst);

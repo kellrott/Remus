@@ -323,16 +323,16 @@ public class AppletInstance {
 	}
 
 	public PipelineSubmission getInstanceInfo() throws TException, NotImplemented {
-		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
-		for (Object obj : datastore.get(ar, instance.toString())) {
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
+		for (Object obj : datastore.get(ar, instance.toString() + ":" + applet.getID())) {
 			return new PipelineSubmission(obj);
 		}
 		return null;
 	}
 
 	public void updateInstanceInfo(PipelineSubmission instInfo) throws TException, NotImplemented {
-		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
-		datastore.add(ar, 0, 0, instance.toString(), instInfo);		
+		AppletRef ar = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
+		datastore.add(ar, 0, 0, instance.toString() + ":" + applet.getID(), instInfo);		
 	}
 
 	public AppletRef getAppletRef() {

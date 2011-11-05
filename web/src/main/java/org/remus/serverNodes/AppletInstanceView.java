@@ -52,7 +52,7 @@ public class AppletInstanceView implements BaseNode {
 
 		if (params.containsKey(DataStackInfo.PARAM_FLAG)) {
 			try {
-				os.write(JSON.dumps(DataStackInfo.formatInfo(PipelineStatusView.class, "status", pipeline)).getBytes());
+				os.write(JSON.dumps(DataStackInfo.formatInfo(AppletInstanceView.class, "status", pipeline)).getBytes());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

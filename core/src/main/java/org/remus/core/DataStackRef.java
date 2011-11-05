@@ -31,12 +31,12 @@ public class DataStackRef {
 		out.instance = instance;
 		out.ds = applet.getDataStore();
 		
-		AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() + Constants.INSTANCE_APPLET);
+		AppletRef arInstance = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.INSTANCE_APPLET);
 		AppletRef arSubmit   = new AppletRef(pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.SUBMIT_APPLET);
 		
 		
 		if ( applet.getSource().compareTo("?") == 0 ) {
-			for ( Object instObj : out.ds.get( arInstance, instance.toString() ) ) {
+			for ( Object instObj : out.ds.get(arInstance, instance.toString() + ":" + applet.getID()) ) {
 				Map inputInfo = (Map)((Map)instObj).get(PipelineSubmission.InputField);
 				if (inputInfo == null) {
 					throw new RemusDatabaseException("Submission missing _input field");

@@ -32,7 +32,7 @@
 },
 
 "testPipe" : {
-	"_src" : "testReduce",
+	"_src" : ["testReduce"],
 	"_mode" : "pipe",
 	"_type" : "python",
 	"_code" : "codeBasic_testPipe.py"
