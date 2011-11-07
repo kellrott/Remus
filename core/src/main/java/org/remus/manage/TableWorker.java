@@ -31,7 +31,7 @@ public class TableWorker extends InstanceWorker {
 			if ( ai.isComplete())  {
 				state = DONE;
 			} else {			
-				logger.debug("TABLE_MANAGER Contact worker");
+				logger.debug("TABLE_MANAGER Assign worker: " + ai.getAppletRef());
 				WorkDesc desc = new WorkDesc(ai.getApplet().getType(), 
 						WorkMode.findByValue(ai.getApplet().getMode()),
 						JSON.dumps(ai.getInstanceInfo()),
