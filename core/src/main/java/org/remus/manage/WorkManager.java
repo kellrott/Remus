@@ -10,6 +10,7 @@ import org.remus.RemusManager;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 
@@ -113,25 +114,11 @@ public class WorkManager extends RemusManager {
 
 	}
 
-	
-
-	@Override
-	public void scheduleRequest() throws TException, NotImplemented {
-		sThread.touch();
-	}
-
-
 	@Override
 	public void stop() {
 		sThread.quit();
 	}
-
-	@Override
-	public String scheduleInfoJSON() throws NotImplemented, TException {
-		Object out = schedule.getScheduleInfo();
-		return JSON.dumps(out);
-	}
-
+	
 	@Override
 	public List<String> keySlice(AppletRef stack, String keyStart, int count)
 	throws NotImplemented, TException {
@@ -165,4 +152,5 @@ public class WorkManager extends RemusManager {
 	public String status() throws TException {
 		return "OK";
 	}
+	
 }

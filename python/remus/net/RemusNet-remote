@@ -33,7 +33,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '   stackSlice(string startKey, i32 count)'
   print '  i64 getTimeStamp(AppletRef stack)'
   print '  void initAttachment(AppletRef stack, string key, string name)'
-  print '  i64 getAttachmentSize(AppletRef stack, string key, string name)'
+  print '  AttachmentInfo getAttachmentInfo(AppletRef stack, string key, string name)'
   print '  string readBlock(AppletRef stack, string key, string name, i64 offset, i32 length)'
   print '  void appendBlock(AppletRef stack, string key, string name, string data)'
   print '   listAttachments(AppletRef stack, string key)'
@@ -42,8 +42,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  string jobRequest(string dataServer, string attachServer, WorkDesc work)'
   print '  JobStatus jobStatus(string jobID)'
   print '  i32 jobCancel(string jobID)'
-  print '  void scheduleRequest()'
-  print '  string scheduleInfoJSON()'
   print '   peerInfo( info)'
   print ''
   sys.exit(0)
@@ -167,11 +165,11 @@ elif cmd == 'initAttachment':
     sys.exit(1)
   pp.pprint(client.initAttachment(eval(args[0]),args[1],args[2],))
 
-elif cmd == 'getAttachmentSize':
+elif cmd == 'getAttachmentInfo':
   if len(args) != 3:
-    print 'getAttachmentSize requires 3 args'
+    print 'getAttachmentInfo requires 3 args'
     sys.exit(1)
-  pp.pprint(client.getAttachmentSize(eval(args[0]),args[1],args[2],))
+  pp.pprint(client.getAttachmentInfo(eval(args[0]),args[1],args[2],))
 
 elif cmd == 'readBlock':
   if len(args) != 5:
@@ -220,18 +218,6 @@ elif cmd == 'jobCancel':
     print 'jobCancel requires 1 args'
     sys.exit(1)
   pp.pprint(client.jobCancel(args[0],))
-
-elif cmd == 'scheduleRequest':
-  if len(args) != 0:
-    print 'scheduleRequest requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.scheduleRequest())
-
-elif cmd == 'scheduleInfoJSON':
-  if len(args) != 0:
-    print 'scheduleInfoJSON requires 0 args'
-    sys.exit(1)
-  pp.pprint(client.scheduleInfoJSON())
 
 elif cmd == 'peerInfo':
   if len(args) != 1:

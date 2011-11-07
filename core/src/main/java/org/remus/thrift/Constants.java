@@ -38,4 +38,6 @@ public class Constants {
 
   public static final String ROOT_PIPELINE = "@root";
 
+  public static final String WORKSTAT_APPLET = "@workstat";
+
 }

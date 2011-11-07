@@ -10,6 +10,7 @@ const string WORK_APPLET = "@work";
 const string ERROR_APPLET = "@error";
 const string DONE_APPLET = "@done";
 const string ROOT_PIPELINE = "@root";
+const string WORKSTAT_APPLET = "@workstat";
 
 struct InstanceRef {
 	1: required string pipeline,
@@ -93,6 +94,12 @@ struct JobStatus {
 	3:optional string errorMsg;
 }
 
+struct AttachmentInfo {
+	1:required string name;
+	2:optional i64 size;
+	3:optional bool exists;
+}
+
 exception NotImplemented {
 
 }
@@ -132,21 +139,13 @@ service RemusNet {
 	i64 getTimeStamp( 1:AppletRef stack ) throws (1:NotImplemented e);
 
 	/**
-	 * Work results methods
-	 *
-	 */
-
-	//void emitWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:i64 emitID, 5:string key 6:string data ) throws (1:NotImplemented e);
-	//void errorWork( 1:string workerID, 2:AppletRef applet, 3:i64 jobID, 4:string message) throws (1:NotImplemented e);
-
-	/**
 	 * Attachment methods
 	 *
 	 */
 
 	void initAttachment(1:AppletRef stack, 2:string key, 3:string name) throws (1:NotImplemented e);
 	
-	i64 getAttachmentSize(1:AppletRef stack, 2:string key, 3:string name)  throws (1:NotImplemented e);
+	AttachmentInfo getAttachmentInfo(1:AppletRef stack, 2:string key, 3:string name) throws (1:NotImplemented e);
 	
 	binary readBlock( 1:AppletRef stack, 2:string key, 3:string name, 4:i64 offset, 5:i32 length ) throws (1:NotImplemented e);
 	
@@ -166,12 +165,6 @@ service RemusNet {
 	string jobRequest( 1:string dataServer, 2:string attachServer, 3:WorkDesc work ) throws (1:NotImplemented e);
 	JobStatus jobStatus( 1:string jobID ) throws (1:NotImplemented e);
 	i32 jobCancel( 1:string jobID ) throws (1:NotImplemented e);
-
-	/**
-	 * Manager methods
-	 */
-	void scheduleRequest() throws (1:NotImplemented e); 
-	string scheduleInfoJSON() throws (1:NotImplemented e);
 
 	/**
 	 * Name service methods

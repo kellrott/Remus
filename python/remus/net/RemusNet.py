@@ -117,7 +117,7 @@ class Iface:
     """
     pass
 
-  def getAttachmentSize(self, stack, key, name):
+  def getAttachmentInfo(self, stack, key, name):
     """
     Parameters:
      - stack
@@ -197,15 +197,6 @@ class Iface:
     Parameters:
      - jobID
     """
-    pass
-
-  def scheduleRequest(self, ):
-    """
-    Manager methods
-    """
-    pass
-
-  def scheduleInfoJSON(self, ):
     pass
 
   def peerInfo(self, info):
@@ -631,19 +622,19 @@ class Client(Iface):
       raise result.e
     return
 
-  def getAttachmentSize(self, stack, key, name):
+  def getAttachmentInfo(self, stack, key, name):
     """
     Parameters:
      - stack
      - key
      - name
     """
-    self.send_getAttachmentSize(stack, key, name)
-    return self.recv_getAttachmentSize()
+    self.send_getAttachmentInfo(stack, key, name)
+    return self.recv_getAttachmentInfo()
 
-  def send_getAttachmentSize(self, stack, key, name):
-    self._oprot.writeMessageBegin('getAttachmentSize', TMessageType.CALL, self._seqid)
-    args = getAttachmentSize_args()
+  def send_getAttachmentInfo(self, stack, key, name):
+    self._oprot.writeMessageBegin('getAttachmentInfo', TMessageType.CALL, self._seqid)
+    args = getAttachmentInfo_args()
     args.stack = stack
     args.key = key
     args.name = name
@@ -651,21 +642,21 @@ class Client(Iface):
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_getAttachmentSize(self, ):
+  def recv_getAttachmentInfo(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = getAttachmentSize_result()
+    result = getAttachmentInfo_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
     if result.e != None:
       raise result.e
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "getAttachmentSize failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "getAttachmentInfo failed: unknown result");
 
   def readBlock(self, stack, key, name, offset, length):
     """
@@ -950,61 +941,6 @@ class Client(Iface):
       raise result.e
     raise TApplicationException(TApplicationException.MISSING_RESULT, "jobCancel failed: unknown result");
 
-  def scheduleRequest(self, ):
-    """
-    Manager methods
-    """
-    self.send_scheduleRequest()
-    self.recv_scheduleRequest()
-
-  def send_scheduleRequest(self, ):
-    self._oprot.writeMessageBegin('scheduleRequest', TMessageType.CALL, self._seqid)
-    args = scheduleRequest_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_scheduleRequest(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = scheduleRequest_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.e != None:
-      raise result.e
-    return
-
-  def scheduleInfoJSON(self, ):
-    self.send_scheduleInfoJSON()
-    return self.recv_scheduleInfoJSON()
-
-  def send_scheduleInfoJSON(self, ):
-    self._oprot.writeMessageBegin('scheduleInfoJSON', TMessageType.CALL, self._seqid)
-    args = scheduleInfoJSON_args()
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_scheduleInfoJSON(self, ):
-    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(self._iprot)
-      self._iprot.readMessageEnd()
-      raise x
-    result = scheduleInfoJSON_result()
-    result.read(self._iprot)
-    self._iprot.readMessageEnd()
-    if result.success != None:
-      return result.success
-    if result.e != None:
-      raise result.e
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
-
   def peerInfo(self, info):
     """
     Name service methods
@@ -1059,7 +995,7 @@ class Processor(Iface, TProcessor):
     self._processMap["stackSlice"] = Processor.process_stackSlice
     self._processMap["getTimeStamp"] = Processor.process_getTimeStamp
     self._processMap["initAttachment"] = Processor.process_initAttachment
-    self._processMap["getAttachmentSize"] = Processor.process_getAttachmentSize
+    self._processMap["getAttachmentInfo"] = Processor.process_getAttachmentInfo
     self._processMap["readBlock"] = Processor.process_readBlock
     self._processMap["appendBlock"] = Processor.process_appendBlock
     self._processMap["listAttachments"] = Processor.process_listAttachments
@@ -1068,8 +1004,6 @@ class Processor(Iface, TProcessor):
     self._processMap["jobRequest"] = Processor.process_jobRequest
     self._processMap["jobStatus"] = Processor.process_jobStatus
     self._processMap["jobCancel"] = Processor.process_jobCancel
-    self._processMap["scheduleRequest"] = Processor.process_scheduleRequest
-    self._processMap["scheduleInfoJSON"] = Processor.process_scheduleInfoJSON
     self._processMap["peerInfo"] = Processor.process_peerInfo
 
   def process(self, iprot, oprot):
@@ -1252,16 +1186,16 @@ class Processor(Iface, TProcessor):
     oprot.writeMessageEnd()
     oprot.trans.flush()
 
-  def process_getAttachmentSize(self, seqid, iprot, oprot):
-    args = getAttachmentSize_args()
+  def process_getAttachmentInfo(self, seqid, iprot, oprot):
+    args = getAttachmentInfo_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = getAttachmentSize_result()
+    result = getAttachmentInfo_result()
     try:
-      result.success = self._handler.getAttachmentSize(args.stack, args.key, args.name)
+      result.success = self._handler.getAttachmentInfo(args.stack, args.key, args.name)
     except NotImplemented, e:
       result.e = e
-    oprot.writeMessageBegin("getAttachmentSize", TMessageType.REPLY, seqid)
+    oprot.writeMessageBegin("getAttachmentInfo", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -1374,34 +1308,6 @@ class Processor(Iface, TProcessor):
     except NotImplemented, e:
       result.e = e
     oprot.writeMessageBegin("jobCancel", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_scheduleRequest(self, seqid, iprot, oprot):
-    args = scheduleRequest_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = scheduleRequest_result()
-    try:
-      self._handler.scheduleRequest()
-    except NotImplemented, e:
-      result.e = e
-    oprot.writeMessageBegin("scheduleRequest", TMessageType.REPLY, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_scheduleInfoJSON(self, seqid, iprot, oprot):
-    args = scheduleInfoJSON_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = scheduleInfoJSON_result()
-    try:
-      result.success = self._handler.scheduleInfoJSON()
-    except NotImplemented, e:
-      result.e = e
-    oprot.writeMessageBegin("scheduleInfoJSON", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -3134,7 +3040,7 @@ class initAttachment_result:
   def __ne__(self, other):
     return not (self == other)
 
-class getAttachmentSize_args:
+class getAttachmentInfo_args:
   """
   Attributes:
    - stack
@@ -3188,7 +3094,7 @@ class getAttachmentSize_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getAttachmentSize_args')
+    oprot.writeStructBegin('getAttachmentInfo_args')
     if self.stack != None:
       oprot.writeFieldBegin('stack', TType.STRUCT, 1)
       self.stack.write(oprot)
@@ -3218,7 +3124,7 @@ class getAttachmentSize_args:
   def __ne__(self, other):
     return not (self == other)
 
-class getAttachmentSize_result:
+class getAttachmentInfo_result:
   """
   Attributes:
    - success
@@ -3226,7 +3132,7 @@ class getAttachmentSize_result:
   """
 
   thrift_spec = (
-    (0, TType.I64, 'success', None, None, ), # 0
+    (0, TType.STRUCT, 'success', (AttachmentInfo, AttachmentInfo.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
   )
 
@@ -3244,8 +3150,9 @@ class getAttachmentSize_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.I64:
-          self.success = iprot.readI64();
+        if ftype == TType.STRUCT:
+          self.success = AttachmentInfo()
+          self.success.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -3263,10 +3170,10 @@ class getAttachmentSize_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('getAttachmentSize_result')
+    oprot.writeStructBegin('getAttachmentInfo_result')
     if self.success != None:
-      oprot.writeFieldBegin('success', TType.I64, 0)
-      oprot.writeI64(self.success)
+      oprot.writeFieldBegin('success', TType.STRUCT, 0)
+      self.success.write(oprot)
       oprot.writeFieldEnd()
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)
@@ -4468,219 +4375,6 @@ class jobCancel_result:
     if self.success != None:
       oprot.writeFieldBegin('success', TType.I32, 0)
       oprot.writeI32(self.success)
-      oprot.writeFieldEnd()
-    if self.e != None:
-      oprot.writeFieldBegin('e', TType.STRUCT, 1)
-      self.e.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class scheduleRequest_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('scheduleRequest_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class scheduleRequest_result:
-  """
-  Attributes:
-   - e
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, e=None,):
-    self.e = e
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.e = NotImplemented()
-          self.e.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('scheduleRequest_result')
-    if self.e != None:
-      oprot.writeFieldBegin('e', TType.STRUCT, 1)
-      self.e.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class scheduleInfoJSON_args:
-
-  thrift_spec = (
-  )
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('scheduleInfoJSON_args')
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-    def validate(self):
-      return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class scheduleInfoJSON_result:
-  """
-  Attributes:
-   - success
-   - e
-  """
-
-  thrift_spec = (
-    (0, TType.STRING, 'success', None, None, ), # 0
-    (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, success=None, e=None,):
-    self.success = success
-    self.e = e
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 0:
-        if ftype == TType.STRING:
-          self.success = iprot.readString();
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.e = NotImplemented()
-          self.e.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('scheduleInfoJSON_result')
-    if self.success != None:
-      oprot.writeFieldBegin('success', TType.STRING, 0)
-      oprot.writeString(self.success)
       oprot.writeFieldEnd()
     if self.e != None:
       oprot.writeFieldBegin('e', TType.STRUCT, 1)

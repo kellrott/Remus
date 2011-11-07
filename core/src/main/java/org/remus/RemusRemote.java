@@ -8,6 +8,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
@@ -87,16 +88,6 @@ public class RemusRemote implements RemusNet.Iface {
 			iface.deleteValue(stack, key);
 		}
 	}
-
-	@Override
-	public long getAttachmentSize(AppletRef stack, String key, String name)
-	throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.getAttachmentSize(stack, key, name);
-		}	
-	}
-
 
 	@Override
 	public long getTimeStamp(AppletRef stack) throws NotImplemented,
@@ -205,22 +196,6 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public String scheduleInfoJSON() throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.scheduleInfoJSON();
-		}
-	}
-
-	@Override
-	public void scheduleRequest() throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			iface.scheduleRequest();
-		}
-	}
-
-	@Override
 	public String status() throws TException {
 		synchronized (lock) {
 			checkIface();
@@ -258,6 +233,15 @@ public class RemusRemote implements RemusNet.Iface {
 	public void close() {
 		((RemusNet.Client) iface).getInputProtocol().getTransport().close();
 		iface = null;
+	}
+
+	@Override
+	public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+			String name) throws NotImplemented, TException {
+		synchronized (lock) {
+			checkIface();
+			return iface.getAttachmentInfo(stack, key, name);
+		}
 	}
 
 }

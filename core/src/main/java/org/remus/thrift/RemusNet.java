@@ -63,7 +63,7 @@ public class RemusNet {
      */
     public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException;
 
-    public long getAttachmentSize(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException;
+    public AttachmentInfo getAttachmentInfo(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException;
 
     public ByteBuffer readBlock(AppletRef stack, String key, String name, long offset, int length) throws NotImplemented, org.apache.thrift.TException;
 
@@ -88,13 +88,6 @@ public class RemusNet {
     public JobStatus jobStatus(String jobID) throws NotImplemented, org.apache.thrift.TException;
 
     public int jobCancel(String jobID) throws NotImplemented, org.apache.thrift.TException;
-
-    /**
-     * Manager methods
-     */
-    public void scheduleRequest() throws NotImplemented, org.apache.thrift.TException;
-
-    public String scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException;
 
     /**
      * Name service methods
@@ -132,7 +125,7 @@ public class RemusNet {
 
     public void initAttachment(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.initAttachment_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void getAttachmentSize(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getAttachmentSize_call> resultHandler) throws org.apache.thrift.TException;
+    public void getAttachmentInfo(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getAttachmentInfo_call> resultHandler) throws org.apache.thrift.TException;
 
     public void readBlock(AppletRef stack, String key, String name, long offset, int length, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.readBlock_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -149,10 +142,6 @@ public class RemusNet {
     public void jobStatus(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobStatus_call> resultHandler) throws org.apache.thrift.TException;
 
     public void jobCancel(String jobID, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.jobCancel_call> resultHandler) throws org.apache.thrift.TException;
-
-    public void scheduleRequest(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleRequest_call> resultHandler) throws org.apache.thrift.TException;
-
-    public void scheduleInfoJSON(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.scheduleInfoJSON_call> resultHandler) throws org.apache.thrift.TException;
 
     public void peerInfo(List<PeerInfoThrift> info, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.peerInfo_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -662,16 +651,16 @@ public class RemusNet {
       return;
     }
 
-    public long getAttachmentSize(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException
+    public AttachmentInfo getAttachmentInfo(AppletRef stack, String key, String name) throws NotImplemented, org.apache.thrift.TException
     {
-      send_getAttachmentSize(stack, key, name);
-      return recv_getAttachmentSize();
+      send_getAttachmentInfo(stack, key, name);
+      return recv_getAttachmentInfo();
     }
 
-    public void send_getAttachmentSize(AppletRef stack, String key, String name) throws org.apache.thrift.TException
+    public void send_getAttachmentInfo(AppletRef stack, String key, String name) throws org.apache.thrift.TException
     {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentSize", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      getAttachmentSize_args args = new getAttachmentSize_args();
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentInfo", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      getAttachmentInfo_args args = new getAttachmentInfo_args();
       args.setStack(stack);
       args.setKey(key);
       args.setName(name);
@@ -680,7 +669,7 @@ public class RemusNet {
       oprot_.getTransport().flush();
     }
 
-    public long recv_getAttachmentSize() throws NotImplemented, org.apache.thrift.TException
+    public AttachmentInfo recv_getAttachmentInfo() throws NotImplemented, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -689,9 +678,9 @@ public class RemusNet {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getAttachmentSize failed: out of sequence response");
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getAttachmentInfo failed: out of sequence response");
       }
-      getAttachmentSize_result result = new getAttachmentSize_result();
+      getAttachmentInfo_result result = new getAttachmentInfo_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
@@ -700,7 +689,7 @@ public class RemusNet {
       if (result.e != null) {
         throw result.e;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getAttachmentSize failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getAttachmentInfo failed: unknown result");
     }
 
     public ByteBuffer readBlock(AppletRef stack, String key, String name, long offset, int length) throws NotImplemented, org.apache.thrift.TException
@@ -1021,79 +1010,6 @@ public class RemusNet {
         throw result.e;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "jobCancel failed: unknown result");
-    }
-
-    public void scheduleRequest() throws NotImplemented, org.apache.thrift.TException
-    {
-      send_scheduleRequest();
-      recv_scheduleRequest();
-    }
-
-    public void send_scheduleRequest() throws org.apache.thrift.TException
-    {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleRequest", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      scheduleRequest_args args = new scheduleRequest_args();
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public void recv_scheduleRequest() throws NotImplemented, org.apache.thrift.TException
-    {
-      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
-        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "scheduleRequest failed: out of sequence response");
-      }
-      scheduleRequest_result result = new scheduleRequest_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.e != null) {
-        throw result.e;
-      }
-      return;
-    }
-
-    public String scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException
-    {
-      send_scheduleInfoJSON();
-      return recv_scheduleInfoJSON();
-    }
-
-    public void send_scheduleInfoJSON() throws org.apache.thrift.TException
-    {
-      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
-      scheduleInfoJSON_args args = new scheduleInfoJSON_args();
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public String recv_scheduleInfoJSON() throws NotImplemented, org.apache.thrift.TException
-    {
-      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
-        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "scheduleInfoJSON failed: out of sequence response");
-      }
-      scheduleInfoJSON_result result = new scheduleInfoJSON_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      if (result.e != null) {
-        throw result.e;
-      }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "scheduleInfoJSON failed: unknown result");
     }
 
     public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info) throws NotImplemented, BadPeerName, org.apache.thrift.TException
@@ -1582,18 +1498,18 @@ public class RemusNet {
       }
     }
 
-    public void getAttachmentSize(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<getAttachmentSize_call> resultHandler) throws org.apache.thrift.TException {
+    public void getAttachmentInfo(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<getAttachmentInfo_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getAttachmentSize_call method_call = new getAttachmentSize_call(stack, key, name, resultHandler, this, protocolFactory, transport);
+      getAttachmentInfo_call method_call = new getAttachmentInfo_call(stack, key, name, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
-    public static class getAttachmentSize_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class getAttachmentInfo_call extends org.apache.thrift.async.TAsyncMethodCall {
       private AppletRef stack;
       private String key;
       private String name;
-      public getAttachmentSize_call(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<getAttachmentSize_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getAttachmentInfo_call(AppletRef stack, String key, String name, org.apache.thrift.async.AsyncMethodCallback<getAttachmentInfo_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.stack = stack;
         this.key = key;
@@ -1601,8 +1517,8 @@ public class RemusNet {
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentSize", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getAttachmentSize_args args = new getAttachmentSize_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentInfo", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getAttachmentInfo_args args = new getAttachmentInfo_args();
         args.setStack(stack);
         args.setKey(key);
         args.setName(name);
@@ -1610,13 +1526,13 @@ public class RemusNet {
         prot.writeMessageEnd();
       }
 
-      public long getResult() throws NotImplemented, org.apache.thrift.TException {
+      public AttachmentInfo getResult() throws NotImplemented, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getAttachmentSize();
+        return (new Client(prot)).recv_getAttachmentInfo();
       }
     }
 
@@ -1918,64 +1834,6 @@ public class RemusNet {
       }
     }
 
-    public void scheduleRequest(org.apache.thrift.async.AsyncMethodCallback<scheduleRequest_call> resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      scheduleRequest_call method_call = new scheduleRequest_call(resultHandler, this, protocolFactory, transport);
-      this.currentMethod = method_call;
-      manager.call(method_call);
-    }
-
-    public static class scheduleRequest_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public scheduleRequest_call(org.apache.thrift.async.AsyncMethodCallback<scheduleRequest_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleRequest", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        scheduleRequest_args args = new scheduleRequest_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public void getResult() throws NotImplemented, org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_scheduleRequest();
-      }
-    }
-
-    public void scheduleInfoJSON(org.apache.thrift.async.AsyncMethodCallback<scheduleInfoJSON_call> resultHandler) throws org.apache.thrift.TException {
-      checkReady();
-      scheduleInfoJSON_call method_call = new scheduleInfoJSON_call(resultHandler, this, protocolFactory, transport);
-      this.currentMethod = method_call;
-      manager.call(method_call);
-    }
-
-    public static class scheduleInfoJSON_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public scheduleInfoJSON_call(org.apache.thrift.async.AsyncMethodCallback<scheduleInfoJSON_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
-        super(client, protocolFactory, transport, resultHandler, false);
-      }
-
-      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        scheduleInfoJSON_args args = new scheduleInfoJSON_args();
-        args.write(prot);
-        prot.writeMessageEnd();
-      }
-
-      public String getResult() throws NotImplemented, org.apache.thrift.TException {
-        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
-          throw new IllegalStateException("Method call not finished!");
-        }
-        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
-        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_scheduleInfoJSON();
-      }
-    }
-
     public void peerInfo(List<PeerInfoThrift> info, org.apache.thrift.async.AsyncMethodCallback<peerInfo_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       peerInfo_call method_call = new peerInfo_call(info, resultHandler, this, protocolFactory, transport);
@@ -2027,7 +1885,7 @@ public class RemusNet {
       processMap_.put("stackSlice", new stackSlice());
       processMap_.put("getTimeStamp", new getTimeStamp());
       processMap_.put("initAttachment", new initAttachment());
-      processMap_.put("getAttachmentSize", new getAttachmentSize());
+      processMap_.put("getAttachmentInfo", new getAttachmentInfo());
       processMap_.put("readBlock", new readBlock());
       processMap_.put("appendBlock", new appendBlock());
       processMap_.put("listAttachments", new listAttachments());
@@ -2036,8 +1894,6 @@ public class RemusNet {
       processMap_.put("jobRequest", new jobRequest());
       processMap_.put("jobStatus", new jobStatus());
       processMap_.put("jobCancel", new jobCancel());
-      processMap_.put("scheduleRequest", new scheduleRequest());
-      processMap_.put("scheduleInfoJSON", new scheduleInfoJSON());
       processMap_.put("peerInfo", new peerInfo());
     }
 
@@ -2513,38 +2369,37 @@ public class RemusNet {
 
     }
 
-    private class getAttachmentSize implements ProcessFunction {
+    private class getAttachmentInfo implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
-        getAttachmentSize_args args = new getAttachmentSize_args();
+        getAttachmentInfo_args args = new getAttachmentInfo_args();
         try {
           args.read(iprot);
         } catch (org.apache.thrift.protocol.TProtocolException e) {
           iprot.readMessageEnd();
           org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentSize", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        getAttachmentSize_result result = new getAttachmentSize_result();
+        getAttachmentInfo_result result = new getAttachmentInfo_result();
         try {
-          result.success = iface_.getAttachmentSize(args.stack, args.key, args.name);
-          result.setSuccessIsSet(true);
+          result.success = iface_.getAttachmentInfo(args.stack, args.key, args.name);
         } catch (NotImplemented e) {
           result.e = e;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing getAttachmentSize", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing getAttachmentSize");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentSize", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing getAttachmentInfo", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing getAttachmentInfo");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentInfo", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentSize", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getAttachmentInfo", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2851,82 +2706,6 @@ public class RemusNet {
           return;
         }
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("jobCancel", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
-    private class scheduleRequest implements ProcessFunction {
-      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
-      {
-        scheduleRequest_args args = new scheduleRequest_args();
-        try {
-          args.read(iprot);
-        } catch (org.apache.thrift.protocol.TProtocolException e) {
-          iprot.readMessageEnd();
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleRequest", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        scheduleRequest_result result = new scheduleRequest_result();
-        try {
-          iface_.scheduleRequest();
-        } catch (NotImplemented e) {
-          result.e = e;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing scheduleRequest", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing scheduleRequest");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleRequest", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleRequest", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
-    private class scheduleInfoJSON implements ProcessFunction {
-      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
-      {
-        scheduleInfoJSON_args args = new scheduleInfoJSON_args();
-        try {
-          args.read(iprot);
-        } catch (org.apache.thrift.protocol.TProtocolException e) {
-          iprot.readMessageEnd();
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        scheduleInfoJSON_result result = new scheduleInfoJSON_result();
-        try {
-          result.success = iface_.scheduleInfoJSON();
-        } catch (NotImplemented e) {
-          result.e = e;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing scheduleInfoJSON", th);
-          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing scheduleInfoJSON");
-          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("scheduleInfoJSON", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -12114,8 +11893,8 @@ public class RemusNet {
 
   }
 
-  public static class getAttachmentSize_args implements org.apache.thrift.TBase<getAttachmentSize_args, getAttachmentSize_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getAttachmentSize_args");
+  public static class getAttachmentInfo_args implements org.apache.thrift.TBase<getAttachmentInfo_args, getAttachmentInfo_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getAttachmentInfo_args");
 
     private static final org.apache.thrift.protocol.TField STACK_FIELD_DESC = new org.apache.thrift.protocol.TField("stack", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("key", org.apache.thrift.protocol.TType.STRING, (short)2);
@@ -12201,13 +11980,13 @@ public class RemusNet {
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getAttachmentSize_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getAttachmentInfo_args.class, metaDataMap);
     }
 
-    public getAttachmentSize_args() {
+    public getAttachmentInfo_args() {
     }
 
-    public getAttachmentSize_args(
+    public getAttachmentInfo_args(
       AppletRef stack,
       String key,
       String name)
@@ -12221,7 +12000,7 @@ public class RemusNet {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getAttachmentSize_args(getAttachmentSize_args other) {
+    public getAttachmentInfo_args(getAttachmentInfo_args other) {
       if (other.isSetStack()) {
         this.stack = new AppletRef(other.stack);
       }
@@ -12233,8 +12012,8 @@ public class RemusNet {
       }
     }
 
-    public getAttachmentSize_args deepCopy() {
-      return new getAttachmentSize_args(this);
+    public getAttachmentInfo_args deepCopy() {
+      return new getAttachmentInfo_args(this);
     }
 
     @Override
@@ -12248,7 +12027,7 @@ public class RemusNet {
       return this.stack;
     }
 
-    public getAttachmentSize_args setStack(AppletRef stack) {
+    public getAttachmentInfo_args setStack(AppletRef stack) {
       this.stack = stack;
       return this;
     }
@@ -12272,7 +12051,7 @@ public class RemusNet {
       return this.key;
     }
 
-    public getAttachmentSize_args setKey(String key) {
+    public getAttachmentInfo_args setKey(String key) {
       this.key = key;
       return this;
     }
@@ -12296,7 +12075,7 @@ public class RemusNet {
       return this.name;
     }
 
-    public getAttachmentSize_args setName(String name) {
+    public getAttachmentInfo_args setName(String name) {
       this.name = name;
       return this;
     }
@@ -12381,12 +12160,12 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getAttachmentSize_args)
-        return this.equals((getAttachmentSize_args)that);
+      if (that instanceof getAttachmentInfo_args)
+        return this.equals((getAttachmentInfo_args)that);
       return false;
     }
 
-    public boolean equals(getAttachmentSize_args that) {
+    public boolean equals(getAttachmentInfo_args that) {
       if (that == null)
         return false;
 
@@ -12425,13 +12204,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(getAttachmentSize_args other) {
+    public int compareTo(getAttachmentInfo_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getAttachmentSize_args typedOther = (getAttachmentSize_args)other;
+      getAttachmentInfo_args typedOther = (getAttachmentInfo_args)other;
 
       lastComparison = Boolean.valueOf(isSetStack()).compareTo(typedOther.isSetStack());
       if (lastComparison != 0) {
@@ -12538,7 +12317,7 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getAttachmentSize_args(");
+      StringBuilder sb = new StringBuilder("getAttachmentInfo_args(");
       boolean first = true;
 
       sb.append("stack:");
@@ -12590,13 +12369,13 @@ public class RemusNet {
 
   }
 
-  public static class getAttachmentSize_result implements org.apache.thrift.TBase<getAttachmentSize_result, getAttachmentSize_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getAttachmentSize_result");
+  public static class getAttachmentInfo_result implements org.apache.thrift.TBase<getAttachmentInfo_result, getAttachmentInfo_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getAttachmentInfo_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I64, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public long success;
+    public AttachmentInfo success;
     public NotImplemented e;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -12661,84 +12440,81 @@ public class RemusNet {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AttachmentInfo.class)));
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getAttachmentSize_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getAttachmentInfo_result.class, metaDataMap);
     }
 
-    public getAttachmentSize_result() {
+    public getAttachmentInfo_result() {
     }
 
-    public getAttachmentSize_result(
-      long success,
+    public getAttachmentInfo_result(
+      AttachmentInfo success,
       NotImplemented e)
     {
       this();
       this.success = success;
-      setSuccessIsSet(true);
       this.e = e;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getAttachmentSize_result(getAttachmentSize_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
+    public getAttachmentInfo_result(getAttachmentInfo_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new AttachmentInfo(other.success);
+      }
       if (other.isSetE()) {
         this.e = new NotImplemented(other.e);
       }
     }
 
-    public getAttachmentSize_result deepCopy() {
-      return new getAttachmentSize_result(this);
+    public getAttachmentInfo_result deepCopy() {
+      return new getAttachmentInfo_result(this);
     }
 
     @Override
     public void clear() {
-      setSuccessIsSet(false);
-      this.success = 0;
+      this.success = null;
       this.e = null;
     }
 
-    public long getSuccess() {
+    public AttachmentInfo getSuccess() {
       return this.success;
     }
 
-    public getAttachmentSize_result setSuccess(long success) {
+    public getAttachmentInfo_result setSuccess(AttachmentInfo success) {
       this.success = success;
-      setSuccessIsSet(true);
       return this;
     }
 
     public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+      this.success = null;
     }
 
     /** Returns true if field success is set (has been assigned a value) and false otherwise */
     public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+      return this.success != null;
     }
 
     public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+      if (!value) {
+        this.success = null;
+      }
     }
 
     public NotImplemented getE() {
       return this.e;
     }
 
-    public getAttachmentSize_result setE(NotImplemented e) {
+    public getAttachmentInfo_result setE(NotImplemented e) {
       this.e = e;
       return this;
     }
@@ -12764,7 +12540,7 @@ public class RemusNet {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Long)value);
+          setSuccess((AttachmentInfo)value);
         }
         break;
 
@@ -12782,7 +12558,7 @@ public class RemusNet {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return new Long(getSuccess());
+        return getSuccess();
 
       case E:
         return getE();
@@ -12810,21 +12586,21 @@ public class RemusNet {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getAttachmentSize_result)
-        return this.equals((getAttachmentSize_result)that);
+      if (that instanceof getAttachmentInfo_result)
+        return this.equals((getAttachmentInfo_result)that);
       return false;
     }
 
-    public boolean equals(getAttachmentSize_result that) {
+    public boolean equals(getAttachmentInfo_result that) {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
-        if (this.success != that.success)
+        if (!this.success.equals(that.success))
           return false;
       }
 
@@ -12845,13 +12621,13 @@ public class RemusNet {
       return 0;
     }
 
-    public int compareTo(getAttachmentSize_result other) {
+    public int compareTo(getAttachmentInfo_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getAttachmentSize_result typedOther = (getAttachmentSize_result)other;
+      getAttachmentInfo_result typedOther = (getAttachmentInfo_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -12891,9 +12667,9 @@ public class RemusNet {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == org.apache.thrift.protocol.TType.I64) {
-              this.success = iprot.readI64();
-              setSuccessIsSet(true);
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.success = new AttachmentInfo();
+              this.success.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -12922,7 +12698,7 @@ public class RemusNet {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
+        this.success.write(oprot);
         oprot.writeFieldEnd();
       } else if (this.isSetE()) {
         oprot.writeFieldBegin(E_FIELD_DESC);
@@ -12935,11 +12711,15 @@ public class RemusNet {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getAttachmentSize_result(");
+      StringBuilder sb = new StringBuilder("getAttachmentInfo_result(");
       boolean first = true;
 
       sb.append("success:");
-      sb.append(this.success);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
       first = false;
       if (!first) sb.append(", ");
       sb.append("e:");
@@ -19527,1092 +19307,6 @@ public class RemusNet {
 
       sb.append("success:");
       sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("e:");
-      if (this.e == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.e);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class scheduleRequest_args implements org.apache.thrift.TBase<scheduleRequest_args, scheduleRequest_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleRequest_args");
-
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleRequest_args.class, metaDataMap);
-    }
-
-    public scheduleRequest_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public scheduleRequest_args(scheduleRequest_args other) {
-    }
-
-    public scheduleRequest_args deepCopy() {
-      return new scheduleRequest_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof scheduleRequest_args)
-        return this.equals((scheduleRequest_args)that);
-      return false;
-    }
-
-    public boolean equals(scheduleRequest_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(scheduleRequest_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      scheduleRequest_args typedOther = (scheduleRequest_args)other;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleRequest_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class scheduleRequest_result implements org.apache.thrift.TBase<scheduleRequest_result, scheduleRequest_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleRequest_result");
-
-    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-
-    public NotImplemented e;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      E((short)1, "e");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // E
-            return E;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleRequest_result.class, metaDataMap);
-    }
-
-    public scheduleRequest_result() {
-    }
-
-    public scheduleRequest_result(
-      NotImplemented e)
-    {
-      this();
-      this.e = e;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public scheduleRequest_result(scheduleRequest_result other) {
-      if (other.isSetE()) {
-        this.e = new NotImplemented(other.e);
-      }
-    }
-
-    public scheduleRequest_result deepCopy() {
-      return new scheduleRequest_result(this);
-    }
-
-    @Override
-    public void clear() {
-      this.e = null;
-    }
-
-    public NotImplemented getE() {
-      return this.e;
-    }
-
-    public scheduleRequest_result setE(NotImplemented e) {
-      this.e = e;
-      return this;
-    }
-
-    public void unsetE() {
-      this.e = null;
-    }
-
-    /** Returns true if field e is set (has been assigned a value) and false otherwise */
-    public boolean isSetE() {
-      return this.e != null;
-    }
-
-    public void setEIsSet(boolean value) {
-      if (!value) {
-        this.e = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case E:
-        if (value == null) {
-          unsetE();
-        } else {
-          setE((NotImplemented)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case E:
-        return getE();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case E:
-        return isSetE();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof scheduleRequest_result)
-        return this.equals((scheduleRequest_result)that);
-      return false;
-    }
-
-    public boolean equals(scheduleRequest_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_e = true && this.isSetE();
-      boolean that_present_e = true && that.isSetE();
-      if (this_present_e || that_present_e) {
-        if (!(this_present_e && that_present_e))
-          return false;
-        if (!this.e.equals(that.e))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(scheduleRequest_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      scheduleRequest_result typedOther = (scheduleRequest_result)other;
-
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetE()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // E
-            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.e = new NotImplemented();
-              this.e.read(iprot);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetE()) {
-        oprot.writeFieldBegin(E_FIELD_DESC);
-        this.e.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleRequest_result(");
-      boolean first = true;
-
-      sb.append("e:");
-      if (this.e == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.e);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class scheduleInfoJSON_args implements org.apache.thrift.TBase<scheduleInfoJSON_args, scheduleInfoJSON_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfoJSON_args");
-
-
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-;
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfoJSON_args.class, metaDataMap);
-    }
-
-    public scheduleInfoJSON_args() {
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public scheduleInfoJSON_args(scheduleInfoJSON_args other) {
-    }
-
-    public scheduleInfoJSON_args deepCopy() {
-      return new scheduleInfoJSON_args(this);
-    }
-
-    @Override
-    public void clear() {
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof scheduleInfoJSON_args)
-        return this.equals((scheduleInfoJSON_args)that);
-      return false;
-    }
-
-    public boolean equals(scheduleInfoJSON_args that) {
-      if (that == null)
-        return false;
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(scheduleInfoJSON_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      scheduleInfoJSON_args typedOther = (scheduleInfoJSON_args)other;
-
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleInfoJSON_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws org.apache.thrift.TException {
-      // check for required fields
-    }
-
-    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-      try {
-        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-      try {
-        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-      } catch (org.apache.thrift.TException te) {
-        throw new java.io.IOException(te);
-      }
-    }
-
-  }
-
-  public static class scheduleInfoJSON_result implements org.apache.thrift.TBase<scheduleInfoJSON_result, scheduleInfoJSON_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("scheduleInfoJSON_result");
-
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
-    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-
-    public String success;
-    public NotImplemented e;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      E((short)1, "e");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // E
-            return E;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(scheduleInfoJSON_result.class, metaDataMap);
-    }
-
-    public scheduleInfoJSON_result() {
-    }
-
-    public scheduleInfoJSON_result(
-      String success,
-      NotImplemented e)
-    {
-      this();
-      this.success = success;
-      this.e = e;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public scheduleInfoJSON_result(scheduleInfoJSON_result other) {
-      if (other.isSetSuccess()) {
-        this.success = other.success;
-      }
-      if (other.isSetE()) {
-        this.e = new NotImplemented(other.e);
-      }
-    }
-
-    public scheduleInfoJSON_result deepCopy() {
-      return new scheduleInfoJSON_result(this);
-    }
-
-    @Override
-    public void clear() {
-      this.success = null;
-      this.e = null;
-    }
-
-    public String getSuccess() {
-      return this.success;
-    }
-
-    public scheduleInfoJSON_result setSuccess(String success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been assigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
-    }
-
-    public NotImplemented getE() {
-      return this.e;
-    }
-
-    public scheduleInfoJSON_result setE(NotImplemented e) {
-      this.e = e;
-      return this;
-    }
-
-    public void unsetE() {
-      this.e = null;
-    }
-
-    /** Returns true if field e is set (has been assigned a value) and false otherwise */
-    public boolean isSetE() {
-      return this.e != null;
-    }
-
-    public void setEIsSet(boolean value) {
-      if (!value) {
-        this.e = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((String)value);
-        }
-        break;
-
-      case E:
-        if (value == null) {
-          unsetE();
-        } else {
-          setE((NotImplemented)value);
-        }
-        break;
-
-      }
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
-      case E:
-        return getE();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      if (field == null) {
-        throw new IllegalArgumentException();
-      }
-
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case E:
-        return isSetE();
-      }
-      throw new IllegalStateException();
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof scheduleInfoJSON_result)
-        return this.equals((scheduleInfoJSON_result)that);
-      return false;
-    }
-
-    public boolean equals(scheduleInfoJSON_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
-      boolean this_present_e = true && this.isSetE();
-      boolean that_present_e = true && that.isSetE();
-      if (this_present_e || that_present_e) {
-        if (!(this_present_e && that_present_e))
-          return false;
-        if (!this.e.equals(that.e))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(scheduleInfoJSON_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      scheduleInfoJSON_result typedOther = (scheduleInfoJSON_result)other;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetE()).compareTo(typedOther.isSetE());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetE()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, typedOther.e);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public _Fields fieldForId(int fieldId) {
-      return _Fields.findByThriftId(fieldId);
-    }
-
-    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-      org.apache.thrift.protocol.TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.success = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 1: // E
-            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-              this.e = new NotImplemented();
-              this.e.read(iprot);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeString(this.success);
-        oprot.writeFieldEnd();
-      } else if (this.isSetE()) {
-        oprot.writeFieldBegin(E_FIELD_DESC);
-        this.e.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("scheduleInfoJSON_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
       first = false;
       if (!first) sb.append(", ");
       sb.append("e:");

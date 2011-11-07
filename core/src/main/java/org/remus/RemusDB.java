@@ -9,6 +9,7 @@ import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
@@ -173,13 +174,6 @@ public abstract class RemusDB extends RemusPeer {
 
 
 	@Override
-	public long getAttachmentSize(AppletRef stack, String key, String name)
-			throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-
-	@Override
 	public boolean hasAttachment(AppletRef stack, String key, String name)
 			throws NotImplemented, TException {
 		throw new NotImplemented();
@@ -215,12 +209,6 @@ public abstract class RemusDB extends RemusPeer {
 
 
 	@Override
-	public void scheduleRequest() throws TException, NotImplemented {
-		throw new NotImplemented();
-	}
-
-
-	@Override
 	public JobStatus jobStatus(String jobID) throws TException, NotImplemented {
 		throw new NotImplemented();
 	}
@@ -233,13 +221,13 @@ public abstract class RemusDB extends RemusPeer {
 	}
 
 	@Override
-	public String scheduleInfoJSON() throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
 	public int jobCancel(String jobID) throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
 	
+	@Override
+	public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+			String name) throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
 }

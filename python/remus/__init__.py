@@ -21,7 +21,7 @@ class Client(object):
     def __getattr__(self,i):
         if i in [ 'keySlice', 'addDataJSON', 'getValueJSON', 
         'containsKey', 'initAttachment', 'appendBlock', 'keyValJSONSlice',
-        'listAttachments', 'getAttachmentSize', 'readBlock', 'peerInfo']:
+        'listAttachments', 'getAttachmentInfo', 'readBlock', 'peerInfo']:
             return getattr(self.client,i)
     
     

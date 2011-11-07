@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
@@ -42,12 +43,6 @@ abstract public class RemusWorker extends RemusPeer {
 	@Override
 	public void deleteValue(AppletRef stack, String key) throws NotImplemented,
 	TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public long getAttachmentSize(AppletRef stack, String key, String name)
-	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -105,18 +100,8 @@ abstract public class RemusWorker extends RemusPeer {
 	}
 
 	@Override
-	public void scheduleRequest() throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
 	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) 
 	throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public String scheduleInfoJSON() throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
@@ -126,4 +111,9 @@ abstract public class RemusWorker extends RemusPeer {
 		throw new NotImplemented();
 	}
 
+	@Override
+	public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+			String name) throws NotImplemented, TException {
+		throw new NotImplemented();	
+	}
 }

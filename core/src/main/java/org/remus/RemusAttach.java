@@ -14,6 +14,7 @@ import org.apache.thrift.TException;
 import org.remus.plugin.PluginInterface;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
@@ -71,12 +72,6 @@ public abstract class RemusAttach extends RemusPeer {
 			}
 			
 			@Override
-			public long getAttachmentSize(AppletRef stack, String key, String name)
-					throws NotImplemented, TException {
-				return attach.getAttachmentSize(stack, key, name);
-			}
-			
-			@Override
 			public void deleteStack(AppletRef stack) throws NotImplemented, TException {
 				attach.deleteStack(stack);
 			}
@@ -102,6 +97,11 @@ public abstract class RemusAttach extends RemusPeer {
 				attach.appendBlock(stack, key, name, data);
 			}
 
+			@Override
+			public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+					String name) throws NotImplemented, TException {
+				return attach.getAttachmentInfo(stack, key, name);
+			}
 			
 		};
 	}
@@ -126,8 +126,9 @@ public abstract class RemusAttach extends RemusPeer {
 	}
 
 	public long copyFrom(File file, AppletRef stack, String key, String name) throws TException, IOException, NotImplemented {
-		long fileSize = getAttachmentSize(stack, key, name);
-
+		AttachmentInfo info = getAttachmentInfo(stack, key, name);
+		long fileSize = info.size;
+		
 		FileOutputStream fos = new FileOutputStream(file);
 
 		long offset = 0;
@@ -150,7 +151,8 @@ public abstract class RemusAttach extends RemusPeer {
 			this.stack = stack;
 			this.name = name;
 			this.key = key;
-			fileSize = getAttachmentSize(stack, key, name);
+			AttachmentInfo info = getAttachmentInfo(stack, key, name);
+			fileSize = info.size;
 			offset = 0;
 			fileOffset = 0;
 			buffer = null;
@@ -303,21 +305,11 @@ public abstract class RemusAttach extends RemusPeer {
 	}
 
 	@Override
-	public void scheduleRequest() throws NotImplemented, TException {
-		throw new NotImplemented();	
-	}
-
-	@Override
 	public JobStatus jobStatus(String jobID) throws NotImplemented,
 			TException {
 		throw new NotImplemented();
 	}
 	
-	@Override
-	public String scheduleInfoJSON() throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
 	@Override
 	public int jobCancel(String jobID) throws NotImplemented, TException {
 		throw new NotImplemented();	
@@ -328,5 +320,6 @@ public abstract class RemusAttach extends RemusPeer {
 			throws NotImplemented, TException {
 		throw new NotImplemented();	
 	}
+	
 	
 }
