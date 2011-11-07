@@ -49,7 +49,7 @@ def parseRemus(server, pipelineName, path):
     initApplet = {}
     for name in pipelineData:
         node = pipelineData[ name ]
-        if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent" ]:
+        if node[ '_mode' ] in [ "split", "map", "reduce", "merge", "match", "pipe", "store", "agent", "remap" ]:
             fileList = []
             if node.has_key( "_code" ):
                 if os.path.exists(  node[ "_code" ] ):
