@@ -52,6 +52,8 @@ public class PipelineView implements BaseNode {
 		children.put("@error", new PipelineErrorView(pipe));
 		children.put("@reset", new ResetInstanceView(pipe));
 
+		children.put("@work", new PipelineWorkView(pipe, datastore));		
+		
 		children.put("@attach", new PipelineAttachmentList(pipe));
 	}
 
