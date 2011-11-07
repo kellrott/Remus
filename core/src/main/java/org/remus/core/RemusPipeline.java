@@ -187,9 +187,8 @@ public class RemusPipeline {
 
 
 	public void deleteApplet(RemusApplet applet) throws TException, NotImplemented {		
-		for (RemusInstance inst : applet.getInstanceList()) {
-			applet.deleteInstance(inst);
-		}
+		AppletRef arPipeline = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);
+		datastore.deleteValue(arPipeline, applet.getID());		
 	}
 
 	public String getID() {

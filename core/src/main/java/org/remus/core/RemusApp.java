@@ -43,7 +43,11 @@ public class RemusApp {
 	public void deletePipeline(RemusPipeline pipe) throws TException, RemusDatabaseException {		
 		try {
 			for (String appletName : pipe.getMembers()) {
-				pipe.deleteApplet(pipe.getApplet(appletName));
+				RemusApplet applet = pipe.getApplet(appletName);
+				for (RemusInstance inst : applet.getInstanceList()) {
+					applet.deleteInstance(inst);
+				}
+				pipe.deleteApplet(applet);
 			}
 			rootStore.deleteValue(new AppletRef(Constants.ROOT_PIPELINE, Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET), pipe.getID());
 			rootStore.deleteStack(new AppletRef(pipe.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET));
