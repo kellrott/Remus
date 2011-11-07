@@ -91,15 +91,17 @@ public class ReMapTest {
 		
 		RemusNet.Iface manage = pm.getPeer(pm.getManager());
 
+		AppletRef workStatAR = new AppletRef("testPipeline", Constants.STATIC_INSTANCE, Constants.WORKSTAT_APPLET);
 		boolean done = false;
 		do {
-			manage.scheduleRequest();		
 			Thread.sleep(10000);
-			Map info = (Map) JSON.loads(manage.scheduleInfoJSON());
-			if (((String) info.get("activeCount")).compareTo("0") == 0) {
-				done = true;
+			for (String workStat : manage.getValueJSON(workStatAR, "@active") ) {
+				Map info = (Map)JSON.loads(workStat);
+				if ( ((String) info.get("activeCount")).compareTo("0") == 0) {
+					done = true;
+				}
+				System.out.println(info);
 			}
-			System.out.println(info);
 		} while (!done);
 		
 		//System.out.println(dataServer);
