@@ -28,7 +28,18 @@ public class AppletConfigView implements BaseNode {
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 			throws FileNotFoundException {
-		throw new FileNotFoundException();
+		try {
+			RemusApplet applet = pipe.getApplet(name);
+			if (applet != null) {
+				pipe.deleteApplet(applet);
+			}
+		} catch (TException e) {
+			throw new FileNotFoundException();
+		} catch (RemusDatabaseException e) {
+			throw new FileNotFoundException();
+		} catch (NotImplemented e) {
+			throw new FileNotFoundException();
+		}
 	}
 
 	@Override
