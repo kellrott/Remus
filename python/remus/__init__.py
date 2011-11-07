@@ -36,11 +36,7 @@ class Client(object):
         handle.close()
 
 def getAppletRef(iface, pipeline, instance, applet):
-    inst = None
-    ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.INSTANCE_APPLET)
-    for a in iface.getValueJSON( ar, instance ):
-        inst = instance
-    
+    inst = instance
     ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.SUBMIT_APPLET)
     for a in iface.getValueJSON( ar, instance ):
         try:
@@ -101,16 +97,12 @@ class PeerManager:
     
     def lookupInstance(self,pipeline,instance):
         pid = self.getDataServer()
-        iface = self.getIface(pid)
-        ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.INSTANCE_APPLET)
-        for a in iface.getValueJSON( ar, instance ):
-            return instance
-        
+        iface = self.getIface(pid)        
         ar = RemusNet.AppletRef(pipeline, constants.STATIC_INSTANCE, constants.SUBMIT_APPLET)
         for a in iface.getValueJSON( ar, instance ):
             try:
                 return json.loads(a)["_instance"]
             except KeyError:
                 pass
-        return None
+        return instance
         
