@@ -134,8 +134,8 @@ public abstract class RemusAttach extends RemusPeer {
 		long offset = 0;
 		while (offset < fileSize) {
 			ByteBuffer buf = readBlock(stack, key, name, offset, BLOCK_SIZE);
-			fos.write(buf.array());
-			offset += buf.array().length;
+			fos.write(buf.array(), 0, buf.limit());
+			offset += buf.limit();
 		}
 		return fileSize;
 	}
