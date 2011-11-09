@@ -86,7 +86,7 @@ var statusScan = function( pipeline ) {
 			submit.append("Scan");
 			submit.bind( "click", function() {
 				output.empty();
-				$.post( "/" + pipeline + "/@status", text.val(), function(data) {
+				$.post( "/" + pipeline + "/@instance", text.val(), function(data) {
 					var lines = data.split("\n");
 					for ( a in lines) {
 						var valData = JSON.parse(lines[a]);		
@@ -146,7 +146,7 @@ var appletSelector = function( pipeline, instance, callback ) {
 	var data;
 	var selectStr = "function(key,val) { if (key.indexOf('" + instance + "')==0) {remus.emit( key, { '_name' : key.split(':')[1], '_instance' : val['_instance'] } );} }";	
 	$.ajax( {
-		url:"/" + pipeline + "/@status",
+		url:"/" + pipeline + "/@instance",
 	    type: 'POST',
 	    async: false,
 	    cache: false,
@@ -447,7 +447,7 @@ var instanceTree = function( pipeline ) {
 			var data = "";
 			var selectStr = "function(key,val) { remus.emit( key, val._group) }";	
 			$.ajax( {
-				url:"/" + pipeline + "/@status",
+				url:"/" + pipeline + "/@instance",
 			    type: 'POST',
 			    async: false,
 			    cache: false,
