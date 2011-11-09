@@ -45,7 +45,7 @@ public class PipelineView implements BaseNode {
 		this.attachstore = web.getAttachStore();
 		children = new HashMap<String, BaseNode>();
 		children.put("@submit", new SubmitView(pipe, datastore, web));
-		children.put("@instance", new PipelineInstanceListViewer(pipe, datastore));
+		children.put("@instance", new PipelineInstanceListViewer(pipe, web));
 
 		children.put("@pipeline", new AppletConfigView(pipe));
 
