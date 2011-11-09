@@ -24,6 +24,7 @@ while [ $# -gt 0 ] ; do
 		-n) procName=$2; shift 2;;
 		-stop) mode="stop"; shift 1;;
 		-status) mode="status"; shift 1;;
+		-debug) mode="debug"; shift 1;;
 		*) confFile=$1; shift 1;;
 	esac
 done
@@ -65,5 +66,8 @@ start)
 	else
 		java -Dorg.remus.logName=${procName} ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
 	fi
+;;
+debug)
+	java -Xdebug -Xrunjdwp:transport=dt_socket,address=8998,server=y  ${JAVA_OPTS} -Djava.ext.dirs=${basepath}/lib org.remus.Boot ${confFile}
 ;;
 esac
