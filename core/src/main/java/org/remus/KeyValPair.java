@@ -1,8 +1,12 @@
 package org.remus;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.simple.JSONAware;
 import org.remus.thrift.KeyValJSONPair;
 
-public class KeyValPair extends KeyValJSONPair{
+public class KeyValPair extends KeyValJSONPair implements JSONAware {
 
 	/**
 	 * 
@@ -19,5 +23,12 @@ public class KeyValPair extends KeyValJSONPair{
 	
 	public Object getValue() {
 		return JSON.loads( getValueJson() );
+	}
+
+	@Override
+	public String toJSONString() {
+		Map out = new HashMap();
+		out.put(key, getValue());
+		return JSON.dumps(out);
 	}
 }
