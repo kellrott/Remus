@@ -80,6 +80,7 @@ public class WorkEngine implements Runnable {
 				);
 
 				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
+					int keyCount = 0;
 					for (Object key : db.get(arWork, Long.toString(jobID))) {
 						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
 								work.workStack.instance, work.workStack.applet,
@@ -91,6 +92,11 @@ public class WorkEngine implements Runnable {
 							cb.writeEmits(outRef, jobID);
 							logger.debug(work.workStack.instance + ":" + work.workStack.applet + ":" + jobID + " EmitTotal: " + cb.emitCount);
 						}
+						keyCount+=1;
+					}
+					if (keyCount == 0) {
+						logger.error("WORK KEY not found:" + jobID);
+						throw new Exception("Work Key not found");
 					}
 				}
 				status = JobState.DONE;
