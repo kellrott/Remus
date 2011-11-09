@@ -106,10 +106,10 @@ public class KeyWorker extends InstanceWorker {
 						for (int i = last; i < curPos; i++) {
 							workIDs[i] = -1;
 						}
+						workChange = true;
 					} else {
 						logger.debug("Avalible peer not found");
 					}
-					workChange = true;
 				}
 			}
 		}
