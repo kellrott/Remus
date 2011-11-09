@@ -119,7 +119,7 @@ public abstract class RemusAttach extends RemusPeer {
 		while ((size = fis.read(buffer)) > 0) {
 			ByteBuffer buff = ByteBuffer.wrap(buffer, 0, size);
 			appendBlock(stack, key, name, buff);
-			total += buff.array().length;
+			total += size;
 		}
 		fis.close();
 		return total;

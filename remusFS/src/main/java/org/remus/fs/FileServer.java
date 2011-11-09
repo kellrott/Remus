@@ -139,7 +139,7 @@ public class FileServer extends RemusAttach {
 		try {
 			FileOutputStream f = new FileOutputStream(attachFile, true);
 			byte [] array = data.array();
-			f.write(array);
+			f.write(array, data.arrayOffset(), data.limit() - data.arrayOffset());
 			f.close();
 			//logger.debug("Appending block " + stack + " " + key + " " + name + " length: " + array.length);
 		} catch (FileNotFoundException e) {
