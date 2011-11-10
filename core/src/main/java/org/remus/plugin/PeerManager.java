@@ -307,7 +307,7 @@ public class PeerManager {
 		}
 	}
 
-	public void addLocalPeer(PluginInterface pi, PeerAddress serverAddr) throws UnknownHostException, SocketException {
+	public String addLocalPeer(PluginInterface pi, PeerAddress serverAddr) throws UnknownHostException, SocketException {
 		PeerInfoThrift info = pi.getPeerInfo();
 		info.setPeerID(UUID.randomUUID().toString());
 		info.setAddr(serverAddr);
@@ -315,6 +315,7 @@ public class PeerManager {
 		ifaceMap.put(info.peerID, pi);
 		ifaceAlloc.put(info.getPeerID(), 0);
 		localPeers.add(info.peerID);
+		return info.peerID;
 	}
 
 

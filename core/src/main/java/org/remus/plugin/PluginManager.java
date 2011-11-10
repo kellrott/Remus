@@ -12,6 +12,7 @@ import org.apache.thrift.protocol.TBinaryProtocol.Factory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 
 import org.remus.thrift.BadPeerName;
 import org.remus.thrift.NotImplemented;
@@ -31,19 +32,20 @@ public class PluginManager {
 	private PeerManager peerManager;
 
 	private class ServerThread extends Thread {
-		public ServerThread(int port, RemusNet.Iface plug) {
-			try {
-				this.port = port;
-				TServerSocket serverTransport = new TServerSocket(port);
-				Processor processor = new RemusNet.Processor((RemusNet.Iface) plug);
-				Factory protFactory = new TBinaryProtocol.Factory(true, true);
-				TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport);
-				args.inputProtocolFactory(protFactory);
-				args.processor(processor);
-				server = new TThreadPoolServer(args);		
-			} catch (TException e) {
-				e.printStackTrace();
-			}
+		public ServerThread(int port, RemusNet.Iface plug) throws TTransportException {
+			//try {
+			this.port = port;
+
+			TServerSocket serverTransport = new TServerSocket(port);
+			Processor processor = new RemusNet.Processor((RemusNet.Iface) plug);
+			Factory protFactory = new TBinaryProtocol.Factory(true, true);
+			TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport);
+			args.inputProtocolFactory(protFactory);
+			args.processor(processor);
+			server = new TThreadPoolServer(args);		
+			//} catch (TException e) {
+			//	e.printStackTrace();
+			//}
 		}
 		TServer server;
 		int port;
@@ -81,7 +83,7 @@ public class PluginManager {
 
 		plugins = new LinkedList<PluginInterface>();
 		servers = new HashMap<PluginInterface, ServerThread>();
-		
+
 		for (String className : params.keySet()) {
 			if (className.compareTo("config") == 0) {
 				Map pMap = (Map) params.get(className);
@@ -90,17 +92,17 @@ public class PluginManager {
 				}
 			} 
 		}
-		
+
 		for (String className : params.keySet()) {
 			if (className.compareTo("config") == 0) {
-	
+
 			} else if (className.compareTo("seeds") == 0) {
 
 			} else {
 				try {
 					Map pMap = (Map) params.get(className);
 					Class<PluginInterface> pClass = 
-						(Class<PluginInterface>) Class.forName(className);
+							(Class<PluginInterface>) Class.forName(className);
 
 					Map config = null;
 					Map serverConf = null;
@@ -120,15 +122,24 @@ public class PluginManager {
 						defaultPort++;
 					}
 
-					ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
-					sThread.start();
-					servers.put(plug, sThread);
-					plug.setupPeer(peerManager);
+					int retryCount = 25;
+					do { 
+						try {
+							ServerThread sThread = new ServerThread(port, (RemusNet.Iface) plug);
+							sThread.start();
+							servers.put(plug, sThread);
+							plug.setupPeer(peerManager);
+							String peerAddr = PeerManager.getDefaultAddress();
+							String peerid = peerManager.addLocalPeer(plug, new PeerAddress(peerAddr, port));
+							logger.info("Opening " + className + " server " + peerid + " at " +  peerAddr + " on port " + port);
+							
+							retryCount = 0;
 
-					String peerAddr = PeerManager.getDefaultAddress();
-					logger.info("Opening " + className + " server " +  peerAddr + " on port " + port);
-					peerManager.addLocalPeer(plug, new PeerAddress(peerAddr, port));
-
+						} catch (TTransportException e) {
+							retryCount--;
+							port+=1;
+						}
+					} while (retryCount > 0);
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
