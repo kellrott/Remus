@@ -21,18 +21,18 @@ import org.remus.plugin.PluginManager;
 import org.remus.tools.antlr.RemusCliLexer;
 import org.remus.tools.antlr.RemusCliParser;
 
-public class CLI {
+public class CLI extends CLIInterface {
 
 	private PluginManager pm;
 	private String curPipeline = null;
 	private ConsoleReader reader;
+
 	public CLI(PluginManager pm) {
 		this.pm = pm;
 	}
-
+	
 	public void start() throws IOException {
 		reader = new ConsoleReader();		
-		boolean quit = false;
 		do {
 			String userInput = null;
 			if (curPipeline == null) {
@@ -41,23 +41,7 @@ public class CLI {
 				userInput = reader.readLine("remus:" + curPipeline + ">");
 			}
 			if (userInput.length() > 0) {
-				ANTLRStringStream sstream = new ANTLRStringStream(userInput);
-				RemusCliLexer lex = new RemusCliLexer(sstream);
-				TokenStream tokens = new CommonTokenStream(lex);
-				RemusCliParser parser = new RemusCliParser(tokens);
-				try { 
-					if (!parser.failed()) {
-						CLICommand cmd = parser.cmd();
-						if (cmd.getType() == CLICommand.QUIT) {
-							quit = true;	
-						} else {
-							cmd.runCommand(pm.getPeerManager(), this);
-						}
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					reader.printString("UNKNOWN COMMAND\n");
-				}
+				exec(userInput);
 			}
 		} while (!quit);
 	}		

@@ -34,6 +34,7 @@ public class AppView implements BaseNode {
 		children.put("@pipeline", new PipelineConfigView(app, datastore));
 		children.put("@status", new ServerStatusView(app));
 		children.put("@manage", new ManageApp());
+		children.put("@console", new ConsoleApp(web));
 		children.put("@db", new StoreInfoView(web));
 	}
 

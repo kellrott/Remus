@@ -37,7 +37,11 @@
       <artifactId>remus-core</artifactId>
       <version>${remusVersion}</version>
     </dependency>
-    
+    <dependency>
+      <groupId>org.remus</groupId>
+      <artifactId>remus-tools</artifactId>
+      <version>${remusVersion}</version>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

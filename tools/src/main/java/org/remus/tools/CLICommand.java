@@ -63,10 +63,10 @@ public class CLICommand {
 		return type;
 	}
 
-	public void runCommand(PeerManager pm, CLI cli) throws NotImplemented, TException, RemusDatabaseException, IOException {
+	public void runCommand(CLIInterface cli) throws NotImplemented, TException, RemusDatabaseException, IOException {
 		switch (type) {
 		case SHOW: {
-			doShow(pm, cli);
+			doShow(cli);
 		}
 		break;
 		case USE: {
@@ -74,29 +74,29 @@ public class CLICommand {
 		}
 		break;
 		case SELECT: {
-			doSelect(pm, cli);
+			doSelect(cli);
 		}
 		break;
 		case DELETE: {
-			doDelete(pm, cli);
+			doDelete(cli);
 		}
 		break;		
 		case DROP: {
-			doDrop(pm, cli);
+			doDrop(cli);
 		}
 		break;
 		case LOAD: {
-			doLoad(pm,cli);
+			doLoad(cli);
 		}
 		break;
 		}
 	}
 
-	private void doLoad(PeerManager pm, CLI cli) throws IOException {
+	private void doLoad(CLIInterface cli) throws IOException {
 		cli.println("LOADING: " + path);
 	}
 
-	private void doDrop(PeerManager pm, CLI cli) throws RemusDatabaseException, TException {
+	private void doDrop(CLIInterface cli) throws RemusDatabaseException, TException {
 		RemusApp app = cli.getRemusApp();
 		if (pipelineName != null) {
 			RemusPipeline pipe = app.getPipeline(pipelineName);
@@ -105,7 +105,7 @@ public class CLICommand {
 		}
 	}
 
-	private void doSelect(PeerManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
+	private void doSelect(final CLIInterface cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		String [] tmp = stack.split(":");
 		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
@@ -126,7 +126,7 @@ public class CLICommand {
 				@Override
 				public void add(String key, String data) {
 					// TODO Auto-generated method stub
-					
+
 				}
 			};
 		}
@@ -172,7 +172,7 @@ public class CLICommand {
 		}
 	}
 
-	private void doDelete(PeerManager pm, final CLI cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
+	private void doDelete(final CLIInterface cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		String [] tmp = stack.split(":");
 		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
@@ -232,14 +232,14 @@ public class CLICommand {
 		}
 	}
 
-	private void doShow(PeerManager pm, CLI cli) throws NotImplemented, TException, IOException, RemusDatabaseException {
+	private void doShow(CLIInterface cli) throws NotImplemented, TException, IOException, RemusDatabaseException {
 		switch (system) {
-		case SERVERS: {
-			for (PeerInfoThrift info : pm.getPeers()) {
-				cli.println(info.name + "\t" + info.addr.host + ":" + info.addr.port + "\t" + info.peerID);				
-			}
-		}
-		break;
+		//case SERVERS: {
+		//	for (PeerInfoThrift info : pm.getPeers()) {
+		//		cli.println(info.name + "\t" + info.addr.host + ":" + info.addr.port + "\t" + info.peerID);				
+		//	}
+		//}
+		//break;
 		case PIPELINES:{
 			RemusApp app = cli.getRemusApp();
 			for (String name : app.getPipelines()) {
