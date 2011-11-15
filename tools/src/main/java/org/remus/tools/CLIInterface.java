@@ -20,6 +20,9 @@ public abstract class CLIInterface {
 	Boolean quit = false;
 	
 	public void exec(String command) throws IOException {
+		if (command == null || command.length() == 0) {
+			return;
+		}
 		ANTLRStringStream sstream = new ANTLRStringStream(command);
 		RemusCliLexer lex = new RemusCliLexer(sstream);
 		TokenStream tokens = new CommonTokenStream(lex);

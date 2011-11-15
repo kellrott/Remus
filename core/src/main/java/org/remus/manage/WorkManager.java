@@ -1,9 +1,13 @@
 package org.remus.manage;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import org.apache.thrift.TException;
+import org.remus.JSON;
 import org.remus.PeerInfo;
 import org.remus.RemusManager;
 import org.remus.core.BaseStackNode;
@@ -65,13 +69,19 @@ public class WorkManager extends RemusManager {
 
 		@Override
 		public List<String> getValueJSON(String key) {
-			return null;
+			return Arrays.asList(JSON.dumps(schedule.workerMap.get(key)));
 		}
 
 		@Override
 		public List<String> keySlice(String keyStart, int count) {
-			// TODO Auto-generated method stub
-			return null;
+			SortedMap<String, InstanceWorker> set = schedule.workerMap.tailMap(keyStart);
+			List<String> out = new ArrayList<String>(count);
+			for (String key : set.keySet()) {
+				if (out.size() < count) {
+					out.add(key);
+				}
+			}
+			return out;
 		}
 
 		@Override

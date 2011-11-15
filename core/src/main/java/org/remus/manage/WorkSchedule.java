@@ -31,11 +31,12 @@ public class WorkSchedule {
 	private PeerManager peerManager;
 	//private Map<AppletInstance, Set<RemoteJob>> activeStacks;
 
-	private Map<AppletInstance, Integer> assignRate;
+	private Map<String, Integer> assignRate;
 	private Logger logger;
 	private SchemaEngine schemaEngine;
 	private WorkerPool workerPool;
-	TreeMap<AppletInstance, InstanceWorker> workerMap;
+	TreeMap<String, InstanceWorker> workerMap;
+	HashMap<String, AppletInstance> appletInstanceMap;
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
@@ -43,10 +44,11 @@ public class WorkSchedule {
 		logger = LoggerFactory.getLogger(WorkSchedule.class);
 		this.peerManager = peerManager;
 		//activeStacks = new HashMap<AppletInstance, Set<RemoteJob>>();
-		assignRate = new HashMap<AppletInstance, Integer>();
+		assignRate = new HashMap<String, Integer>();
 		this.schemaEngine = schemaEngine;
 		workerPool = new WorkerPool(peerManager);
-		workerMap = new TreeMap<AppletInstance, InstanceWorker>();
+		workerMap = new TreeMap<String, InstanceWorker>();
+		appletInstanceMap = new HashMap<String,AppletInstance>();
 	}
 
 
@@ -156,10 +158,10 @@ public class WorkSchedule {
 		try {
 
 			synchronized (workerMap) {
-				Set<AppletInstance> removeSet = new HashSet<AppletInstance>();
-				for (AppletInstance acur : workerMap.keySet()) {	
+				Set<String> removeSet = new HashSet<String>();
+				for (String acur : workerMap.keySet()) {	
 					if (workerMap.get(acur) == null) {
-						InstanceWorker worker = workerPool.getWorker(acur);
+						InstanceWorker worker = workerPool.getWorker(appletInstanceMap.get(acur));
 						if (worker != null) {
 							workerMap.put(acur, worker);
 						}
@@ -174,7 +176,7 @@ public class WorkSchedule {
 						}
 					}
 				}
-				for (AppletInstance ai : removeSet) {
+				for (String ai : removeSet) {
 					workerPool.returnWorker(workerMap.get(ai));
 					workerMap.remove(ai);
 				}
@@ -197,7 +199,7 @@ public class WorkSchedule {
 		synchronized (workerMap) {
 			int activeCount = 0;
 			Map<AppletInstance, Boolean> removeSet = new HashMap<AppletInstance, Boolean>();
-			for (AppletInstance ai : workerMap.keySet()) {			
+			for (String ai : workerMap.keySet()) {			
 				InstanceWorker worker = workerMap.get(ai);
 				if (worker != null) {
 					activeCount++;
@@ -226,22 +228,25 @@ public class WorkSchedule {
 
 
 	private void syncAppletList(Set<AppletInstance> aiSet) {
-		Set<AppletInstance> removeSet = new HashSet<AppletInstance>();		
+		Set<String> removeSet = new HashSet<String>();	
+		Set<String> aiNameSet = new HashSet<String>();
 		synchronized (workerMap) {		
 			for (AppletInstance ai : aiSet) {
-				if (!workerMap.containsKey(ai)) {
-					workerMap.put(ai, null);
-					assignRate.put(ai, 1);
+				aiNameSet.add(ai.toString());
+				if (!workerMap.containsKey(ai.toString())) {
+					workerMap.put(ai.toString(), null);
+					appletInstanceMap.put(ai.toString(), ai);
+					assignRate.put(ai.toString(), 1);
 				}
 			}
-			for (AppletInstance ai : workerMap.keySet()) {
-				if (!aiSet.contains(ai)) {
+			for (String ai : workerMap.keySet()) {
+				if (!aiNameSet.contains(ai)) {
 					removeSet.add(ai);
 				}
 			}
 		}
 
-		for (AppletInstance ai : removeSet) {
+		for (String ai : removeSet) {
 			synchronized (workerMap) {
 				if (workerMap.get(ai) != null) {
 					workerMap.get(ai).removeJob();		
@@ -260,7 +265,7 @@ public class WorkSchedule {
 			int outCount = workerMap.size();
 			out.put("activeCount", Integer.toString(outCount));			
 			Map aiMap = new HashMap();
-			for (AppletInstance ai : workerMap.keySet()) {
+			for (String ai : workerMap.keySet()) {
 				List o = new LinkedList();
 				//for (RemoteJob rj : workerMap.get(ai)) {
 				//	o.add(rj.getPeerID());

@@ -122,7 +122,7 @@ quoteStr returns [String str]
 	: s=QUOTESTR {String t=s.getText(); $str=t.substring(1,t.length()-1);}
 ;
 
-STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'\.'|'@')+ ;
+STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'\.')+ ;
 
 
 QUOTE : '"';

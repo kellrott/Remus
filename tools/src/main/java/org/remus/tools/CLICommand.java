@@ -110,6 +110,10 @@ public class CLICommand {
 	private void doSelect(final CLIInterface cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
 		BaseStackNode curStack = null;
 
+		if (stack == null) {
+			cli.println("NO TABLE listed");
+			return;
+		}
 		if (stack.compareTo("@instance") == 0) {
 			RemusDB db = cli.getDataSource();
 			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
