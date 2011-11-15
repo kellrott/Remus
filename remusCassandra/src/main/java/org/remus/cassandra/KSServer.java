@@ -543,7 +543,7 @@ public class KSServer extends RemusDB {
 
 	
 	@Override
-	public List<AppletRef> stackSlice(String startKey, int count)
+	public List<String> stackSlice(String startKey, int count)
 			throws NotImplemented, TException {
 		// TODO Auto-generated method stub
 		return null;

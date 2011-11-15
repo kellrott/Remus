@@ -85,7 +85,7 @@ public class RemusMiniDB extends RemusDB {
 	@Override
 	public long keyCount(AppletRef stack, int maxCount) throws NotImplemented,
 	TException {
-		throw new NotImplemented();
+		return base.keyCount(stack, maxCount);
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class RemusMiniDB extends RemusDB {
 	}
 	
 	@Override
-	public List<AppletRef> stackSlice(String startKey, int count)
+	public List<String> stackSlice(String startKey, int count)
 			throws NotImplemented, TException {
 		throw new NotImplemented();
 	}

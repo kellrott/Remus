@@ -36,6 +36,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.remus.ConnectionException;
 import org.remus.PeerInfo;
 import org.remus.RemusDB;
+import org.remus.core.TableUtils;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
@@ -168,27 +169,12 @@ public class Server extends RemusDB {
 	}
 
 
-	private String stack2column(AppletRef stack) {
-		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
-	}
-
-	private AppletRef column2stack(String name) {
-		String [] tmp = name.split("/");
-		StringBuilder s = new StringBuilder(tmp[2]);
-		for (int i = 3; i < tmp.length; i++) {
-			s.append("/");
-			s.append(tmp[i]);
-		}
-		return new AppletRef(tmp[1], tmp[0], s.toString());
-	}
-
-
 	@Override
 	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
 			String data) throws TException {
 
 
-		final String column = stack2column(stack);
+		final String column = TableUtils.RefToString(stack);
 		final ByteBuffer superColumn = ByteBuffer.wrap(key.getBytes());
 		final String colName = 
 			Long.toString(jobID) + "_" + Long.toString(emitID);
@@ -225,7 +211,7 @@ public class Server extends RemusDB {
 	@Override
 	public boolean containsKey(AppletRef stack, String key) throws TException {
 
-		final String superColumn = stack2column(stack);
+		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
@@ -258,7 +244,7 @@ public class Server extends RemusDB {
 	@Override
 	public void deleteStack(AppletRef stack) throws TException {
 
-		final String superColumn = stack2column(stack);
+		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
@@ -282,7 +268,7 @@ public class Server extends RemusDB {
 
 	@Override
 	public void deleteValue(AppletRef stack, String key) throws TException {
-		final String column = stack2column(stack);
+		final String column = TableUtils.RefToString(stack);
 		final ColumnPath cp = new ColumnPath(columnFamily);
 
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
@@ -308,7 +294,7 @@ public class Server extends RemusDB {
 
 	@Override
 	public long getTimeStamp(AppletRef stack) throws TException {
-		String superColumn = stack2column(stack);
+		String superColumn = TableUtils.RefToString(stack);
 		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, columnFamily, "","") {				
 			@Override
 			void processColumn(ColumnOrSuperColumn scol) {
@@ -331,7 +317,7 @@ public class Server extends RemusDB {
 	@Override
 	public List<String> getValueJSON(AppletRef stack, String key) throws TException {
 
-		final String superColumn = stack2column(stack);		
+		final String superColumn = TableUtils.RefToString(stack);		
 		final ColumnPath cp = new ColumnPath(columnFamily);
 		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
 		ThriftCaller<List<String>> getCall = new ThriftCaller<List<String>>(clientPool) {
@@ -365,7 +351,7 @@ public class Server extends RemusDB {
 
 	@Override
 	public long keyCount(AppletRef stack, final int maxCount) throws TException {
-		final String superColumn = stack2column(stack);
+		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnParent cp = new ColumnParent(columnFamily);
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>(clientPool) {
 			@Override
@@ -393,7 +379,7 @@ public class Server extends RemusDB {
 	@Override
 	public List<String> keySlice(AppletRef stack, final String keyStart, final int count)
 	throws TException {
-		final String superColumn = stack2column(stack);		
+		final String superColumn = TableUtils.RefToString(stack);		
 		final ColumnParent cp = new ColumnParent(columnFamily);
 		ThriftCaller<List<String>> keySliceCall = new ThriftCaller<List<String>>(clientPool) {
 			@Override
@@ -424,7 +410,7 @@ public class Server extends RemusDB {
 	@Override
 	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, final String startKey,
 			final int count) throws TException {
-		final String superColumn = stack2column(stack);
+		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnParent cp = new ColumnParent(columnFamily);
 
 		ThriftCaller<List<KeyValJSONPair>> keyValSlice = new ThriftCaller<List<KeyValJSONPair>>(clientPool) {			
@@ -465,11 +451,11 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public List<AppletRef> stackSlice(final String startKey, final int count)
+	public List<String> stackSlice(final String startKey, final int count)
 	throws NotImplemented, TException {
-		ThriftCaller<List<AppletRef>> stackSlice = new ThriftCaller<List<AppletRef>>(clientPool) {
+		ThriftCaller<List<String>> stackSlice = new ThriftCaller<List<String>>(clientPool) {
 			@Override
-			protected List<AppletRef> request(Client client)
+			protected List<String> request(Client client)
 			throws InvalidRequestException, UnavailableException,
 			TimedOutException, TException {
 				final ColumnParent cp = new ColumnParent(columnFamily);
@@ -480,11 +466,11 @@ public class Server extends RemusDB {
 				kr.start_key = ByteBuffer.wrap(startKey.getBytes());
 				kr.end_key = ByteBuffer.wrap("".getBytes());				
 				List<KeySlice> res = client.get_range_slices(cp, slice, kr, CL);
-				List<AppletRef> out = new ArrayList<AppletRef>(res.size());
+				List<String> out = new ArrayList<String>(res.size());
 				for (KeySlice key : res) {
 					if (!key.columns.isEmpty()) {
-						AppletRef a = column2stack(new String(key.getKey()));
-						out.add(a);
+						AppletRef a = TableUtils.StringToRef(new String(key.getKey()));
+						out.add( TableUtils.RefToString(a));
 					}
 				}
 				return out;

@@ -1,11 +1,14 @@
 package org.remus.tools;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
+import org.remus.JSON;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
@@ -20,6 +23,7 @@ import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
+import org.remus.core.TableUtils;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.Constants;
@@ -125,7 +129,51 @@ public class CLICommand {
 		} else if (stack.compareTo("@workstat") == 0) {
 			RemusNet.Iface manager = cli.getManager();
 			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.WORKSTAT_APPLET);
-			curStack = new DataStackNode(manager, ar);			
+			curStack = new DataStackNode(manager, ar);
+		} else if (stack.compareTo("@db") == 0) {
+			final RemusDB db = cli.getDataSource();		
+
+			curStack = new BaseStackNode() {
+
+				@Override
+				public void add(String key, String data) {
+
+				}
+
+				@Override
+				public boolean containsKey(String key) {
+					return false;
+				}
+
+				@Override
+				public List<String> getValueJSON(String key) {					
+					return Arrays.asList(JSON.dumps(null));
+				}
+
+				@Override
+				public List<String> keySlice(String keyStart, int count) {
+					List<String> out = new ArrayList<String>(count);
+					try {
+						for (String ref : db.stackSlice(keyStart, count)) {
+							out.add(ref);
+						}
+					} catch (NotImplemented e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (TException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return out;
+				}
+
+				@Override
+				public void delete(String key) {
+					// TODO Auto-generated method stub
+
+				}			
+			};
+
 		} else {
 			String [] tmp = stack.split(":");
 			RemusPipeline pipeline = cli.getPipeline();

@@ -134,7 +134,7 @@ service RemusNet {
 	
 	void deleteValue( 1:AppletRef stack, 2:string key ) throws (1:NotImplemented e);
 	
-	list<AppletRef> stackSlice(1:string startKey, 2:i32 count) throws (1:NotImplemented e);
+	list<string> stackSlice(1:string startKey, 2:i32 count) throws (1:NotImplemented e);
 	
 	i64 getTimeStamp( 1:AppletRef stack ) throws (1:NotImplemented e);
 

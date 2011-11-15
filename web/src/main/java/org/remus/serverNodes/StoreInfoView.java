@@ -11,6 +11,7 @@ import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
+import org.remus.core.TableUtils;
 import org.remus.server.BaseNode;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
@@ -37,8 +38,9 @@ public class StoreInfoView implements BaseNode {
 		RemusNet.Iface db = web.getDataStore();
 		
 		try {
-			for (AppletRef ar : db.stackSlice("", 500)) {
+			for (String arName : db.stackSlice("", 500)) {
 				Map out = new HashMap();
+				AppletRef ar = TableUtils.StringToRef(arName);
 				out.put("_instance", ar.instance);
 				out.put("_pipeline", ar.pipeline);
 				out.put("_applet", ar.applet);

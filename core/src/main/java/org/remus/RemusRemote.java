@@ -222,7 +222,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 	
 	@Override
-	public List<AppletRef> stackSlice(String startKey, int count)
+	public List<String> stackSlice(String startKey, int count)
 			throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();

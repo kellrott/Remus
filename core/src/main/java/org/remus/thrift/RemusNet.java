@@ -49,7 +49,7 @@ public class RemusNet {
 
     public void deleteValue(AppletRef stack, String key) throws NotImplemented, org.apache.thrift.TException;
 
-    public List<AppletRef> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException;
+    public List<String> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException;
 
     public long getTimeStamp(AppletRef stack) throws NotImplemented, org.apache.thrift.TException;
 
@@ -534,7 +534,7 @@ public class RemusNet {
       return;
     }
 
-    public List<AppletRef> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException
+    public List<String> stackSlice(String startKey, int count) throws NotImplemented, org.apache.thrift.TException
     {
       send_stackSlice(startKey, count);
       return recv_stackSlice();
@@ -551,7 +551,7 @@ public class RemusNet {
       oprot_.getTransport().flush();
     }
 
-    public List<AppletRef> recv_stackSlice() throws NotImplemented, org.apache.thrift.TException
+    public List<String> recv_stackSlice() throws NotImplemented, org.apache.thrift.TException
     {
       org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
       if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
@@ -1418,7 +1418,7 @@ public class RemusNet {
         prot.writeMessageEnd();
       }
 
-      public List<AppletRef> getResult() throws NotImplemented, org.apache.thrift.TException {
+      public List<String> getResult() throws NotImplemented, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -10020,7 +10020,7 @@ public class RemusNet {
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
     private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public List<AppletRef> success;
+    public List<String> success;
     public NotImplemented e;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -10091,7 +10091,7 @@ public class RemusNet {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AppletRef.class))));
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
       tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -10102,7 +10102,7 @@ public class RemusNet {
     }
 
     public stackSlice_result(
-      List<AppletRef> success,
+      List<String> success,
       NotImplemented e)
     {
       this();
@@ -10115,9 +10115,9 @@ public class RemusNet {
      */
     public stackSlice_result(stackSlice_result other) {
       if (other.isSetSuccess()) {
-        List<AppletRef> __this__success = new ArrayList<AppletRef>();
-        for (AppletRef other_element : other.success) {
-          __this__success.add(new AppletRef(other_element));
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
         }
         this.success = __this__success;
       }
@@ -10140,22 +10140,22 @@ public class RemusNet {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public java.util.Iterator<AppletRef> getSuccessIterator() {
+    public java.util.Iterator<String> getSuccessIterator() {
       return (this.success == null) ? null : this.success.iterator();
     }
 
-    public void addToSuccess(AppletRef elem) {
+    public void addToSuccess(String elem) {
       if (this.success == null) {
-        this.success = new ArrayList<AppletRef>();
+        this.success = new ArrayList<String>();
       }
       this.success.add(elem);
     }
 
-    public List<AppletRef> getSuccess() {
+    public List<String> getSuccess() {
       return this.success;
     }
 
-    public stackSlice_result setSuccess(List<AppletRef> success) {
+    public stackSlice_result setSuccess(List<String> success) {
       this.success = success;
       return this;
     }
@@ -10205,7 +10205,7 @@ public class RemusNet {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((List<AppletRef>)value);
+          setSuccess((List<String>)value);
         }
         break;
 
@@ -10335,12 +10335,11 @@ public class RemusNet {
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
-                this.success = new ArrayList<AppletRef>(_list20.size);
+                this.success = new ArrayList<String>(_list20.size);
                 for (int _i21 = 0; _i21 < _list20.size; ++_i21)
                 {
-                  AppletRef _elem22;
-                  _elem22 = new AppletRef();
-                  _elem22.read(iprot);
+                  String _elem22;
+                  _elem22 = iprot.readString();
                   this.success.add(_elem22);
                 }
                 iprot.readListEnd();
@@ -10374,10 +10373,10 @@ public class RemusNet {
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (AppletRef _iter23 : this.success)
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
+          for (String _iter23 : this.success)
           {
-            _iter23.write(oprot);
+            oprot.writeString(_iter23);
           }
           oprot.writeListEnd();
         }

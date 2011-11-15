@@ -7,6 +7,7 @@ import org.json.simple.parser.ParseException;
 public class JSON {
 
 	public static String dumps( Object obj ){
+		JSONValue j = new JSONValue();
 		return JSONValue.toJSONString(obj);
 	}
 	

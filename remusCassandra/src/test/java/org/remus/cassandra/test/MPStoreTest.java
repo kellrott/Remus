@@ -180,8 +180,8 @@ public class MPStoreTest {
 			ds.add( aRef1, 0L, i, key1, "value_" + Long.toString(i) );
 		}
 		
-		List<AppletRef> stacks = ds.stackSlice("", 500);
-		for (AppletRef ar : stacks) {
+		List<String> stacks = ds.stackSlice("", 500);
+		for (String ar : stacks) {
 			System.out.println("Stack: " + ar);
 		}		
 		ds.deleteStack(aRef1);

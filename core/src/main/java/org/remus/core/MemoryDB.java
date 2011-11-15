@@ -212,14 +212,14 @@ public class MemoryDB extends RemusDB {
 
 	
 	@Override
-	public List<AppletRef> stackSlice(String startKey, int count)
+	public List<String> stackSlice(String startKey, int count)
 			throws NotImplemented, TException {		
 		NavigableSet<String> a = baseMap.navigableKeySet();
 		SortedSet<String> t = a.tailSet(startKey);
-		LinkedList<AppletRef> out = new LinkedList<AppletRef>();
+		LinkedList<String> out = new LinkedList<String>();
 		for (String name : t) {
 			if (out.size() < count) {
-				out.add(stackApplet(name));
+				out.add(TableUtils.RefToString(stackApplet(name)));
 			}
 		}
 		return out;

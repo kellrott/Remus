@@ -560,6 +560,14 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		return attachstore.readAttachment(arApplet, getID(), name);		
 
 	}
+
+	public boolean hasInstance(RemusInstance instance) throws NotImplemented, TException {
+		AppletRef inst = new AppletRef(pipeline.getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
+		if ( datastore.containsKey(inst, instance.toString() + ":" + getID())) {
+			return true;
+		}
+		return false;
+	}
 	
 
 }

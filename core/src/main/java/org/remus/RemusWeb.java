@@ -129,7 +129,7 @@ public abstract class RemusWeb extends RemusPeer {
 	}
 	
 	@Override
-	public List<AppletRef> stackSlice(String startKey, int count)
+	public List<String> stackSlice(String startKey, int count)
 	throws NotImplemented, TException {
 		throw new NotImplemented();
 	}

@@ -21,11 +21,14 @@ import org.remus.thrift.AppletRef;
 import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SchemaEngine {
 
 	private RemusMiniDB miniDB;
 	private PeerManager peerManager;
+	private Logger logger;
 
 	public SchemaEngine(PeerManager pm) throws TException {
 		peerManager = pm;
@@ -37,7 +40,7 @@ public class SchemaEngine {
 		 */
 
 		miniDB = new RemusMiniDB(peerManager.getPeer(peerManager.getDataServer()));
-		
+		logger = LoggerFactory.getLogger(SchemaEngine.class);
 	}
 
 
@@ -79,7 +82,23 @@ public class SchemaEngine {
 					ap.createInstance(subData, subData.getInstance());
 				}
 			}
-		}					
+		}	
+		
+		//if store tables have been created, make sure they have an instance record
+		for (String appletName : pipe.getMembers()) {
+			RemusApplet applet = pipe.getApplet(appletName);
+			if (applet.getMode() == RemusApplet.STORE) {
+				if (!applet.hasInstance(subData.getInstance())) {
+					AppletRef dataRef = new AppletRef(pipe.getID(), subData.getInstance().toString(), applet.getID());
+					
+					if (miniDB.keyCount(dataRef, 1)!= 0) {
+						applet.createInstance(subData, subData.getInstance());
+						logger.info("Creating Instance record for data store:" + subData.getInstance() + " " + applet.getID() );
+					}
+				}
+			}
+		}
+		
 		return changed;
 	}
 

@@ -2693,7 +2693,7 @@ class stackSlice_result:
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(AppletRef, AppletRef.thrift_spec)), None, ), # 0
+    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'e', (NotImplemented, NotImplemented.thrift_spec), None, ), # 1
   )
 
@@ -2715,8 +2715,7 @@ class stackSlice_result:
           self.success = []
           (_etype38, _size35) = iprot.readListBegin()
           for _i39 in xrange(_size35):
-            _elem40 = AppletRef()
-            _elem40.read(iprot)
+            _elem40 = iprot.readString();
             self.success.append(_elem40)
           iprot.readListEnd()
         else:
@@ -2739,9 +2738,9 @@ class stackSlice_result:
     oprot.writeStructBegin('stackSlice_result')
     if self.success != None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
+      oprot.writeListBegin(TType.STRING, len(self.success))
       for iter41 in self.success:
-        iter41.write(oprot)
+        oprot.writeString(iter41)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.e != None:
