@@ -1,4 +1,4 @@
-// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-09-13 11:50:51
+// $ANTLR 3.2 Sep 23, 2009 14:05:07 RemusCli.g 2011-11-15 09:11:11
 
 package org.remus.tools.antlr;
 
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class RemusCliParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "QUOTESTR", "QUOTE", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'show'", "'servers'", "'pipelines'", "'stacks'", "'applets'", "'use'", "'select'", "'from'", "'where'", "'limit'", "'delete'", "'drop'", "'pipeline'", "'load'", "'infile'", "'into'", "':'", "'@'", "','", "'*'", "'KEY'", "'='", "'!='", "'like'", "'not'"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "STRING", "QUOTESTR", "QUOTE", "SEMICOLON", "WHITESPACE", "DIGIT", "'quit'", "'show'", "'servers'", "'pipelines'", "'tables'", "'applets'", "'use'", "'select'", "'from'", "'where'", "'limit'", "'delete'", "'drop'", "'pipeline'", "'load'", "'infile'", "'into'", "':'", "'@'", "','", "'*'", "'KEY'", "'='", "'!='", "'like'", "'not'"
     };
     public static final int QUOTESTR=5;
     public static final int T__29=29;
@@ -259,12 +259,12 @@ public class RemusCliParser extends Parser {
 
 
     // $ANTLR start "showCmd"
-    // RemusCli.g:40:1: showCmd returns [CLICommand cmd] : ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'stacks' | 'show' 'applets' );
+    // RemusCli.g:40:1: showCmd returns [CLICommand cmd] : ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'tables' | 'show' 'applets' );
     public final CLICommand showCmd() throws RecognitionException {
         CLICommand cmd = null;
 
         try {
-            // RemusCli.g:41:2: ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'stacks' | 'show' 'applets' )
+            // RemusCli.g:41:2: ( 'show' 'servers' | 'show' 'pipelines' | 'show' 'tables' | 'show' 'applets' )
             int alt2=4;
             int LA2_0 = input.LA(1);
 
@@ -324,7 +324,7 @@ public class RemusCliParser extends Parser {
                     }
                     break;
                 case 3 :
-                    // RemusCli.g:43:4: 'show' 'stacks'
+                    // RemusCli.g:43:4: 'show' 'tables'
                     {
                     match(input,11,FOLLOW_11_in_showCmd155); 
                     match(input,14,FOLLOW_14_in_showCmd157); 

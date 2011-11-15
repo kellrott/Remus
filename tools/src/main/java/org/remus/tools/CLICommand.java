@@ -22,6 +22,7 @@ import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.AppletRef;
+import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
 
@@ -106,29 +107,40 @@ public class CLICommand {
 	}
 
 	private void doSelect(final CLIInterface cli) throws RemusDatabaseException, TException, NotImplemented, IOException {
-		String [] tmp = stack.split(":");
-		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
-		RemusDB db = cli.getDataSource();
-		RemusAttach attach = cli.getAttachStore();
-		if (tmp.length == 2) {
-			RemusApplet applet = pipeline.getApplet(tmp[1]);
-			AppletInstance ai = applet.getAppletInstance(tmp[0]);
-			AppletRef ar = ai.getAppletRef();
-			curStack = new DataStackNode(db, ar);
-		} else if (tmp.length == 3) {
-			RemusApplet applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
-			AppletInstance ai = applet.getAppletInstance(tmp[0]);
-			AppletRef ar = ai.getAppletRef();
-			curStack = new DataStackNode(db, ar);
-		} else {
-			curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID()) {
-				@Override
-				public void add(String key, String data) {
-					// TODO Auto-generated method stub
 
-				}
-			};
+		if (stack.compareTo("@instance") == 0) {
+			RemusDB db = cli.getDataSource();
+			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
+			curStack = new DataStackNode(db, ar);
+		} else if (stack.compareTo("@work") == 0) {
+			RemusDB db = cli.getDataSource();
+			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.WORK_APPLET);
+			curStack = new DataStackNode(db, ar);			
+		} else {
+			String [] tmp = stack.split(":");
+			RemusPipeline pipeline = cli.getPipeline();
+			RemusDB db = cli.getDataSource();
+			RemusAttach attach = cli.getAttachStore();
+			if (tmp.length == 2) {
+				RemusApplet applet = pipeline.getApplet(tmp[1]);
+				AppletInstance ai = applet.getAppletInstance(tmp[0]);
+				AppletRef ar = ai.getAppletRef();
+				curStack = new DataStackNode(db, ar);
+			} else if (tmp.length == 3) {
+				RemusApplet applet = pipeline.getApplet(tmp[1] + ":" + tmp[2]);
+				AppletInstance ai = applet.getAppletInstance(tmp[0]);
+				AppletRef ar = ai.getAppletRef();
+				curStack = new DataStackNode(db, ar);
+			} else {
+				curStack = new AppletInstanceStack(db, attach, cli.getPipeline().getID()) {
+					@Override
+					public void add(String key, String data) {
+						// TODO Auto-generated method stub
+
+					}
+				};
+			}
 		}
 		if (curStack != null) {
 			BaseStackIterator<Object> iter = new BaseStackIterator<Object>(curStack, "", "", true) {

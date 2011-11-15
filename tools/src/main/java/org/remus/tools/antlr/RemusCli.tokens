@@ -32,9 +32,9 @@ DIGIT=9
 STRING=4
 'infile'=25
 'where'=19
+'tables'=14
 'load'=24
 'drop'=22
-'stacks'=14
 'show'=11
 'KEY'=31
 '='=32

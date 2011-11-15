@@ -40,7 +40,7 @@ quitCmd returns [CLICommand cmd]
 showCmd returns [CLICommand cmd]
 	: 'show' 'servers' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.SERVERS);}
 	| 'show' 'pipelines' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.PIPELINES);}
-	| 'show' 'stacks' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.STACKS);}
+	| 'show' 'tables' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.STACKS);}
 	| 'show' 'applets' {$cmd = new CLICommand(CLICommand.LIST); $cmd.setSystem(CLICommand.APPLETS);}
 ;
 
@@ -122,7 +122,7 @@ quoteStr returns [String str]
 	: s=QUOTESTR {String t=s.getText(); $str=t.substring(1,t.length()-1);}
 ;
 
-STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'\.')+ ;
+STRING : ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'\.'|'@')+ ;
 
 
 QUOTE : '"';

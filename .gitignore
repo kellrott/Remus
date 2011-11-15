@@ -9,3 +9,4 @@ target
 gen-java
 gen-py
 lib
+*~
