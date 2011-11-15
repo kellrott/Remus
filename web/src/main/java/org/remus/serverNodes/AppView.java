@@ -16,6 +16,7 @@ import org.remus.RemusDB;
 import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
 import org.remus.server.BaseNode;
+import org.remus.serverNodes.console.ConsoleApp;
 
 public class AppView implements BaseNode {
 

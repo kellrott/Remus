@@ -1,4 +1,4 @@
-package org.remus.serverNodes;
+package org.remus.serverNodes.console;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,7 +25,7 @@ public class ConsoleApp implements BaseNode {
 	public ConsoleApp(RemusWeb web) {
 		this.web = web;
 	}
-	
+
 	@Override
 	public BaseNode getChild(String name) {
 		// TODO Auto-generated method stub
@@ -35,7 +35,25 @@ public class ConsoleApp implements BaseNode {
 	@Override
 	public void doGet(String name, Map params, String workerID, OutputStream os)
 			throws FileNotFoundException {
-		// TODO Auto-generated method stub
+		if (name.length()==0) {
+			name = "terminal.html";
+		}
+
+		try {
+			InputStream rs = ConsoleApp.class.getResourceAsStream(name);
+			if (rs != null) {
+				int len;
+				byte [] buffer = new byte[10240];
+				while ((len=rs.read(buffer))>0) {
+					os.write(buffer,0,len);
+				}
+				rs.close();
+				os.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 	}
 
@@ -59,22 +77,26 @@ public class ConsoleApp implements BaseNode {
 			}
 			System.err.println(sb.toString());
 			Map data = (Map)JSON.loads(sb.toString());
-			final String pipeline = (String)data.get("pipeline");
+			String pipelineName = null;
+			if (data.containsKey("pipeline")) {
+				pipelineName = (String)data.get("pipeline");
+			}
+			final String pipeline = pipelineName;
 			final String command = (String)data.get("command");
-			
+
 			final PrintWriter pw = new PrintWriter(os);
-			
+
 			CLIInterface cli = new CLIInterface() {
 
 				@Override
 				public RemusApp getRemusApp() throws RemusDatabaseException,
-						TException {
+				TException {
 					return new RemusApp(web.getDataStore(), web.getAttachStore());
 				}
 
 				@Override
 				public void changePipeline(String pipelineName) {
-					
+
 				}
 
 				@Override
@@ -85,7 +107,7 @@ public class ConsoleApp implements BaseNode {
 
 				@Override
 				public RemusDB getDataSource() throws RemusDatabaseException,
-						TException {
+				TException {
 					return web.getDataStore();
 				}
 
@@ -99,12 +121,12 @@ public class ConsoleApp implements BaseNode {
 				public void println(String string) throws IOException {
 					pw.println(string);					
 				}
-				
+
 			};
 			cli.exec(command);
 			pw.flush();
 			os.close();
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
