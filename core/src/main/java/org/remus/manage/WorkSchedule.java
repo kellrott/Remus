@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.thrift.TException;
 import org.remus.RemusAttach;
@@ -34,7 +35,7 @@ public class WorkSchedule {
 	private Logger logger;
 	private SchemaEngine schemaEngine;
 	private WorkerPool workerPool;
-	private HashMap<AppletInstance, InstanceWorker> workerMap;
+	TreeMap<AppletInstance, InstanceWorker> workerMap;
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 
@@ -45,7 +46,7 @@ public class WorkSchedule {
 		assignRate = new HashMap<AppletInstance, Integer>();
 		this.schemaEngine = schemaEngine;
 		workerPool = new WorkerPool(peerManager);
-		workerMap = new HashMap<AppletInstance, InstanceWorker>();
+		workerMap = new TreeMap<AppletInstance, InstanceWorker>();
 	}
 
 

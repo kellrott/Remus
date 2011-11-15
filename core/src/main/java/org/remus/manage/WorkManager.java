@@ -4,13 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.JSON;
 import org.remus.PeerInfo;
 import org.remus.RemusManager;
+import org.remus.core.BaseStackNode;
 import org.remus.plugin.PeerManager;
 import org.remus.plugin.PluginManager;
 import org.remus.thrift.AppletRef;
-import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerType;
 
@@ -50,11 +49,45 @@ public class WorkManager extends RemusManager {
 		logger = LoggerFactory.getLogger(WorkManager.class);	
 	}
 
+	
+	class WorkStatusStack implements BaseStackNode {
+
+		@Override
+		public void add(String key, String data) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public boolean containsKey(String key) {
+			return schedule.workerMap.containsKey(key);
+		}
+
+		@Override
+		public List<String> getValueJSON(String key) {
+			return null;
+		}
+
+		@Override
+		public List<String> keySlice(String keyStart, int count) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public void delete(String key) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
 	@Override
 	public void start(PluginManager pluginManager) throws Exception {
 		peerManager = pluginManager.getPeerManager();
 		schemaEngine = new SchemaEngine(peerManager);
 		schemaEngine.setupAIStack();
+		schemaEngine.addWorkStatus( new WorkStatusStack() );
 		schedule = new WorkSchedule(peerManager, schemaEngine);		
 		sThread = new ScheduleThread();
 		sThread.start();

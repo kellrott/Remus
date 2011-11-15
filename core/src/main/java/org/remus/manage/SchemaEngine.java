@@ -37,37 +37,7 @@ public class SchemaEngine {
 		 */
 
 		miniDB = new RemusMiniDB(peerManager.getPeer(peerManager.getDataServer()));
-		miniDB.addBaseStack("@activity", new BaseStackNode() {			
-			@Override
-			public List<String> keySlice(String keyStart, int count) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public List<String> getValueJSON(String key) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public void delete(String key) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public boolean containsKey(String key) {
-				// TODO Auto-generated method stub
-				return false;
-			}
-
-			@Override
-			public void add(String key, String data) {
-				// TODO Auto-generated method stub
-
-			}
-		});
+		
 	}
 
 
@@ -183,6 +153,11 @@ public class SchemaEngine {
 			miniDB.addDataJSON(stack, jobID, emitID, key, data);
 		}
 
+	}
+
+
+	public void addWorkStatus(BaseStackNode workStatusStack) {
+		miniDB.addBaseStack(Constants.WORKSTAT_APPLET, workStatusStack);
 	}
 
 

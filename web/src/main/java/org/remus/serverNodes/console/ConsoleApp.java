@@ -16,6 +16,7 @@ import org.remus.RemusWeb;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
 import org.remus.server.BaseNode;
+import org.remus.thrift.RemusNet.Iface;
 import org.remus.tools.CLIInterface;
 
 public class ConsoleApp implements BaseNode {
@@ -120,6 +121,11 @@ public class ConsoleApp implements BaseNode {
 				@Override
 				public void println(String string) throws IOException {
 					pw.println(string);					
+				}
+
+				@Override
+				public Iface getManager() throws TException {
+					return web.getMaster();
 				}
 
 			};

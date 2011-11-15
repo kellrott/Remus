@@ -18,6 +18,7 @@ import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
 import org.remus.plugin.PluginManager;
+import org.remus.thrift.RemusNet.Iface;
 import org.remus.tools.antlr.RemusCliLexer;
 import org.remus.tools.antlr.RemusCliParser;
 
@@ -89,6 +90,11 @@ public class CLI extends CLIInterface {
 
 	public RemusAttach getAttachStore() throws TException {
 		return RemusAttach.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
+	}
+
+	@Override
+	public Iface getManager() throws TException {
+		return pm.getPeerManager().getPeer(pm.getPeerManager().getManager());
 	}
 
 }

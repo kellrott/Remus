@@ -11,6 +11,7 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusPipeline;
+import org.remus.thrift.RemusNet;
 import org.remus.tools.antlr.RemusCliLexer;
 import org.remus.tools.antlr.RemusCliParser;
 
@@ -45,5 +46,5 @@ public abstract class CLIInterface {
 	public abstract RemusDB getDataSource()  throws RemusDatabaseException, TException;
 	public abstract RemusAttach getAttachStore()  throws RemusDatabaseException, TException;
 	public abstract void println(String string) throws IOException;
-
+	public abstract RemusNet.Iface getManager() throws TException;
 }

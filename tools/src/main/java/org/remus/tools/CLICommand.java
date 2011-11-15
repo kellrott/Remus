@@ -25,6 +25,7 @@ import org.remus.thrift.AppletRef;
 import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.PeerInfoThrift;
+import org.remus.thrift.RemusNet;
 
 public class CLICommand {
 
@@ -117,6 +118,10 @@ public class CLICommand {
 			RemusDB db = cli.getDataSource();
 			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.WORK_APPLET);
 			curStack = new DataStackNode(db, ar);			
+		} else if (stack.compareTo("@workstat") == 0) {
+			RemusNet.Iface manager = cli.getManager();
+			AppletRef ar = new AppletRef(cli.getPipeline().getID(), Constants.STATIC_INSTANCE, Constants.WORKSTAT_APPLET);
+			curStack = new DataStackNode(manager, ar);			
 		} else {
 			String [] tmp = stack.split(":");
 			RemusPipeline pipeline = cli.getPipeline();
