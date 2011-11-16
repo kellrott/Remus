@@ -62,32 +62,32 @@ public class PeerManager {
 	public static final int DEAD_TIMEPERIOD = 6000;
 
 	class PingThread extends Thread {
-		private static final long SLEEPTIME = 30000;
-		private static final long PAUSETIME = 3000;
+		private static final long SLEEPTIME_MAX = 30000;
+		private static final long SLEEPTIME_MIN = 3000;
+		private static final long SLEEPTIME_INC = 1000;
+		private long curSleep;
 		boolean quit = false;
 		Integer waitLock = new Integer(0);
 
 		@Override
 		public void run() {
 			while (!quit) {
-				boolean change = false;
 				if (update()) {
-					change = true;
+					curSleep = SLEEPTIME_MIN;
 				}
 				if (removeFailed()) {
-					change = true;
+					curSleep = SLEEPTIME_MIN;
 				}
 				synchronized (waitLock) {			
 					try {
-						if (change) {
-							waitLock.wait(PAUSETIME);
-						} else {
-							waitLock.wait(SLEEPTIME);
-						}
+						waitLock.wait(curSleep);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				}
+				if (curSleep < SLEEPTIME_MAX) {
+					curSleep += SLEEPTIME_INC;
 				}
 			}
 		}
@@ -127,6 +127,7 @@ public class PeerManager {
 		long minTime = (new Date()).getTime() - FAIL_TIMEPERIOD;
 		List<String> failList = new LinkedList<String>();
 		synchronized (failTimes) {
+			Set<String> removeList = new HashSet<String>();
 			for (String name : failTimes.keySet()) {
 				int fail = 0;
 				for (long time : failTimes.get(name)) {
@@ -137,8 +138,15 @@ public class PeerManager {
 				if (fail >= FAIL_COUNT) {
 					failList.add(name);
 				} else {
-					logger.debug("PEER " + name + " " + fail + " fail count");
+					if (fail == 0) {
+						removeList.add(name);
+					} else {
+						logger.debug("PEER " + name + " " + fail + " fail count");
+					}
 				}
+			}
+			for (String name : removeList) {
+				failTimes.remove(name);
 			}
 		}
 		synchronized (peerMap) {
