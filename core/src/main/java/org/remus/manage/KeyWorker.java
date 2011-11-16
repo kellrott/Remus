@@ -1,5 +1,6 @@
 package org.remus.manage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
+import org.json.simple.JSONAware;
 import org.remus.JSON;
 import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
@@ -25,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class KeyWorker extends InstanceWorker {
+public class KeyWorker extends InstanceWorker implements JSONAware {
 
 	public KeyWorker(PeerManager peerManager, AppletInstance ai) {
 		super(peerManager, ai);
@@ -39,7 +41,6 @@ public class KeyWorker extends InstanceWorker {
 	int state;
 	
 	Set<RemoteJob> remoteJobs = new HashSet<RemoteJob>();
-	Map<String,Set<Integer>> activeWork = new HashMap<String, Set<Integer>>();
 
 	public boolean checkWork() throws NotImplemented, TException {
 		long [] workIDs;
@@ -235,6 +236,15 @@ public class KeyWorker extends InstanceWorker {
 	public void removeJob() {
 		// TODO Auto-generated method stub
 
+	}
+
+
+	@Override
+	public String toJSONString() {
+		Map out = new HashMap();
+		out.put("remote", new ArrayList(remoteJobs));
+		out.put("assignRate", assignRate);
+		return JSON.dumps(out);
 	}
 
 }

@@ -7,13 +7,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
+import org.json.simple.JSONAware;
 import org.remus.core.AppletInstance;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.NotImplemented;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class InstanceWorker {
+public abstract class InstanceWorker implements JSONAware {
 
 	
 	protected static final int WORKING = 0;

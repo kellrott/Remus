@@ -1,9 +1,14 @@
 package org.remus.manage;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.simple.JSONAware;
+import org.remus.JSON;
 
 
-public class RemoteJob {
+public class RemoteJob implements JSONAware {
 	private String peerID;
 	private String jobID;
 	private long workStart;
@@ -55,6 +60,14 @@ public class RemoteJob {
 
 	public long getWorkEnd() {
 		return workEnd;
+	}
+
+	@Override
+	public String toJSONString() {
+		Map out = new HashMap();
+		out.put("peer", peerID);
+		out.put("jobID", getJobID());
+		return JSON.dumps(out);
 	}
 
 	

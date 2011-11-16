@@ -1,5 +1,8 @@
 package org.remus.manage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.core.AppletInstance;
@@ -82,6 +85,15 @@ public class TableWorker extends InstanceWorker {
 	public void removeJob() {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public String toJSONString() {
+		Map out = new HashMap();
+		out.put("appletInstance", ai);
+		out.put("peer", peerID);
+		out.put("jobID", jobID);
+		return JSON.dumps(out);
 	}
 
 }

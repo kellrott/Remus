@@ -69,7 +69,8 @@ public class WorkManager extends RemusManager {
 
 		@Override
 		public List<String> getValueJSON(String key) {
-			return Arrays.asList(JSON.dumps(schedule.workerMap.get(key)));
+			InstanceWorker val = schedule.workerMap.get(key);
+			return Arrays.asList(JSON.dumps(val));
 		}
 
 		@Override

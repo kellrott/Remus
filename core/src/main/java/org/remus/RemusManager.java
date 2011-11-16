@@ -4,15 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import org.apache.thrift.TException;
-import org.remus.plugin.PluginInterface;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.AttachmentInfo;
-import org.remus.thrift.BadPeerName;
 import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerInfoThrift;
-import org.remus.thrift.RemusNet;
 import org.remus.thrift.WorkDesc;
 
 abstract public class RemusManager extends RemusPeer {
