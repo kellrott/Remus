@@ -1,8 +1,6 @@
 package org.remus.manage;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,47 +23,22 @@ public abstract class InstanceWorker implements JSONAware {
 	protected Logger logger;
 	protected Map<String,Boolean> peerList;
 	protected PeerManager peerManager;
+	protected WorkerPool workPool;
+	
 	int state;
-	InstanceWorker(PeerManager peerManager, AppletInstance ai) {
+	InstanceWorker(PeerManager peerManager, WorkerPool workPool, AppletInstance ai) {
 		this.ai = ai;
 		this.peerManager = peerManager;
+		this.workPool = workPool;
 		logger = LoggerFactory.getLogger(InstanceWorker.class);
 		logger.debug("INSTANCE WORKER STARTING:" + ai);
 	}
 	
-	public void addPeer(String peerID) {
-		if (peerList == null) {
-			peerList = new HashMap<String,Boolean>();
-		}
-		peerList.put(peerID,false);
-	}
 	
 	public Set<String> getPeerSet() {
 		return peerList.keySet();
 	}
 	
-	
-	protected String borrowPeer() {
-		for (String peer : peerList.keySet()) {
-			if (!peerList.get(peer)) {
-				peerList.put(peer, true);
-				return peer;
-			}
-		}
-		return null;
-	}
-
-	
-	protected void returnPeer(String peer) {
-		peerList.put(peer, false);
-	}
-	
-	protected void errorPeer(String peerID) throws InstanceWorkerException {
-		peerList.remove(peerID);
-		if (peerList.size() == 0) {
-			throw new InstanceWorkerException("All workers failed");
-		}
-	}
 
 	abstract public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException;
 	abstract public boolean isDone();

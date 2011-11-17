@@ -20,8 +20,8 @@ public class TableWorker extends InstanceWorker {
 	RemusNet.Iface iface;
 	String peerID;
 
-	public TableWorker(PeerManager peerManager, AppletInstance ai) throws TException, NotImplemented {
-		super(peerManager,ai);
+	public TableWorker(PeerManager peerManager, WorkerPool wp, AppletInstance ai) throws TException, NotImplemented {
+		super(peerManager, wp, ai);
 		state = WORKING;
 	}
 
@@ -41,14 +41,14 @@ public class TableWorker extends InstanceWorker {
 						ai.getAppletRef(),
 						0L, -1L);
 
-				peerID = borrowPeer();		
+				peerID = workPool.borrowWorker(ai.getApplet().getType(), this);
 				iface = peerManager.getPeer(peerID);
 				try {
 					jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);
 				} catch (TException e) {
 					e.printStackTrace();
 					peerManager.peerFailure(peerID);
-					errorPeer(peerID);
+					workPool.errorPeer(peerID);
 				}
 			}
 		} else {
@@ -65,7 +65,7 @@ public class TableWorker extends InstanceWorker {
 			} catch (TException e) {
 				e.printStackTrace();
 				peerManager.peerFailure(peerID);
-				errorPeer(peerID);
+				workPool.errorPeer(peerID);
 			}
 		}
 		return false;

@@ -161,7 +161,7 @@ public class WorkSchedule {
 				Set<String> removeSet = new HashSet<String>();
 				for (String acur : workerMap.keySet()) {	
 					if (workerMap.get(acur) == null) {
-						InstanceWorker worker = workerPool.getWorker(appletInstanceMap.get(acur));
+						InstanceWorker worker = workerPool.getInstanceWorker(appletInstanceMap.get(acur));
 						if (worker != null) {
 							workerMap.put(acur, worker);
 						}
@@ -177,7 +177,7 @@ public class WorkSchedule {
 					}
 				}
 				for (String ai : removeSet) {
-					workerPool.returnWorker(workerMap.get(ai));
+					workerPool.returnInstanceWorker(workerMap.get(ai));
 					workerMap.remove(ai);
 				}
 			}
@@ -213,7 +213,7 @@ public class WorkSchedule {
 				}	
 			}
 			for (AppletInstance ai : removeSet.keySet()) {
-				workerPool.returnWorker(workerMap.get(ai));
+				workerPool.returnInstanceWorker(workerMap.get(ai));
 				workerMap.remove(ai);
 			}
 			if (activeCount > 0) {

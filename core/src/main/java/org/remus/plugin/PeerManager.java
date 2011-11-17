@@ -65,29 +65,33 @@ public class PeerManager {
 		private static final long SLEEPTIME_MAX = 30000;
 		private static final long SLEEPTIME_MIN = 3000;
 		private static final long SLEEPTIME_INC = 1000;
-		private long curSleep;
+		private long curSleep = SLEEPTIME_MIN;
 		boolean quit = false;
 		Integer waitLock = new Integer(0);
 
 		@Override
 		public void run() {
 			while (!quit) {
-				if (update()) {
-					curSleep = SLEEPTIME_MIN;
-				}
-				if (removeFailed()) {
-					curSleep = SLEEPTIME_MIN;
-				}
-				synchronized (waitLock) {			
-					try {
-						waitLock.wait(curSleep);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				try {
+					if (update()) {
+						curSleep = SLEEPTIME_MIN;
 					}
-				}
-				if (curSleep < SLEEPTIME_MAX) {
-					curSleep += SLEEPTIME_INC;
+					if (removeFailed()) {
+						curSleep = SLEEPTIME_MIN;
+					}
+					synchronized (waitLock) {			
+						try {
+							waitLock.wait(curSleep);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					if (curSleep < SLEEPTIME_MAX) {
+						curSleep += SLEEPTIME_INC;
+					}
+				} catch (Exception e) {
+					logger.error(e.getLocalizedMessage());
 				}
 			}
 		}
@@ -248,6 +252,7 @@ public class PeerManager {
 				RemusNet.Iface remote = getPeer(pi.peerID);
 				if (remote != null) {
 					change = reqPeerInfo(remote);
+					logger.debug("Gossip with:" + pi.peerID);
 					returnPeer(remote);
 				}
 			} catch (TException e) {

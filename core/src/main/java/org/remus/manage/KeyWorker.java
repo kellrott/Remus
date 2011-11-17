@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,8 +27,8 @@ import org.slf4j.LoggerFactory;
 
 public class KeyWorker extends InstanceWorker implements JSONAware {
 
-	public KeyWorker(PeerManager peerManager, AppletInstance ai) {
-		super(peerManager, ai);
+	public KeyWorker(PeerManager peerManager, WorkerPool wp, AppletInstance ai) {
+		super(peerManager, wp, ai);
 		logger = LoggerFactory.getLogger(KeyWorker.class);
 		logger.debug("KEYWORKER:" + ai + " started");
 		state = WORKING;
@@ -85,7 +83,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			}
 		}
 		for (RemoteJob rj : removeSet.keySet()) {
-			returnPeer(rj.getPeerID());
+			workPool.returnWorker(rj.getPeerID());
 			removeRemoteJob(ai, rj, removeSet.get(rj));
 		}
 
@@ -101,7 +99,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 					do {
 						curPos++;
 					} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);
-					String peerID = borrowPeer();
+					String peerID = workPool.borrowWorker(ai.getApplet().getType(), this);
 					if (peerID != null) {
 						workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
 						for (int i = last; i < curPos; i++) {
