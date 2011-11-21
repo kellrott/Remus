@@ -235,13 +235,13 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 			inMap.put("_applet", "/@agent?" + pipeline.getID());
 			baseMap.put("_input", inMap);
 		} else if (ai.getMode() == AppletInstanceRecord.PIPE || ai.getMode() == AppletInstanceRecord.REMAPPER || ai.getMode() == AppletInstanceRecord.REREDUCER) {
-			if (!ai.isAuto()) {
-				List outList = new ArrayList();
+			if (ai.isAuto()) {
+				Map outList = new HashMap();
 				for (String input : ai.getSources()) {
 					Map inMap = new HashMap();
 					inMap.put("_instance", inst.toString());
 					inMap.put("_applet", input);
-					outList.add(inMap);
+					outList.put(input, inMap);
 				}
 				baseMap.put("_input", outList);
 			}
@@ -249,7 +249,9 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 			Map inMap = new HashMap();
 			inMap.put("_instance", inst.toString());
 			inMap.put("_applet", ai.getSource());
-			baseMap.put("_input", inMap);			
+			Map srcMap = new HashMap();
+			srcMap.put(ai.getSource(), inMap);
+			baseMap.put("_input", srcMap);			
 		}
 
 		if (params.hasSubmitInput()) {

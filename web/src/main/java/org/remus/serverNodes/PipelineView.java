@@ -53,7 +53,7 @@ public class PipelineView implements BaseNode {
 		children.put("@reset", new ResetInstanceView(pipe));
 
 		children.put("@work", new PipelineWorkView(pipe, datastore));		
-		
+		children.put("@done", new PipelineDoneView(pipe, datastore));
 		children.put("@attach", new PipelineAttachmentList(pipe));
 	}
 

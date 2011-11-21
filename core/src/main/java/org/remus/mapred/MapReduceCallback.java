@@ -10,6 +10,8 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
+import org.remus.core.AppletInput;
+import org.remus.core.AppletInstanceRecord;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusInstance;
 import org.remus.thrift.AppletRef;
@@ -35,16 +37,16 @@ public class MapReduceCallback {
 	List<MapReduceEmit> outList;
 	private RemusDB db;
 	private RemusAttach attach;
-	private PipelineSubmission jobInfo;
+	private AppletInstanceRecord jobInfo;
 	private String pipeline;
 	private String applet;
 	private String instance;
 
-	public MapReduceCallback(String pipeline, String instance, String applet, PipelineSubmission jobInfo, RemusDB db, RemusAttach attach) {
+	public MapReduceCallback(String pipeline, String instance, String applet, AppletInstanceRecord jobInfo, RemusDB db, RemusAttach attach) {
 		init(pipeline, instance, applet, jobInfo, db, attach);
 	}
-	
-	public void init(String pipeline, String instance, String applet, PipelineSubmission jobInfo, RemusDB db, RemusAttach attach) {
+
+	public void init(String pipeline, String instance, String applet, AppletInstanceRecord jobInfo, RemusDB db, RemusAttach attach) {
 		emitCount = 0;
 		this.jobInfo = jobInfo;
 		this.pipeline = pipeline;
@@ -65,7 +67,7 @@ public class MapReduceCallback {
 		emitCount++;
 	}
 
-	
+
 	public void writeEmits(AppletRef ar, long jobID) throws TException, NotImplemented {
 		for (MapReduceEmit mpe : outList) {
 			if (mpe.outStack == null) {
@@ -80,6 +82,7 @@ public class MapReduceCallback {
 		outList.clear();
 	}
 
+	/*
 	public InputStream openInput(String key, String name) {
 		Map inMap = (Map)jobInfo.get(PipelineSubmission.InputField);
 		try {
@@ -96,11 +99,12 @@ public class MapReduceCallback {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+	 */
+
 	public void copyTo(File file, String key, String name) {
 		RemusInstance inst;
-		try {
-			inst = RemusInstance.getInstance(db, pipeline, (String)jobInfo.get(PipelineSubmission.INSTANCE_FIELD));
+		try {			
+			inst = RemusInstance.getInstance(db, pipeline, jobInfo.getInstance());
 			AppletRef arAttach =  new AppletRef(pipeline, inst.toString(), applet);
 			attach.copyTo(file, arAttach, key, name);
 		} catch (TException e) {
@@ -115,10 +119,28 @@ public class MapReduceCallback {
 		}
 	}
 
+	public void copyFrom(File path, String key, String name) {
+		try {
+			AppletInput input = jobInfo.getInput(jobInfo.getSource(), db);
+			AppletRef arAttach =  new AppletRef(input.getPipeline(), input.getInstance().toString(), input.getApplet());
+			attach.copyFrom(path, arAttach, key, name);
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotImplemented e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+
 	public RemusDB getDatabase() {
 		return db;
 	}
-	
+
 	public String getPipeline() {
 		return pipeline;
 	}
@@ -127,7 +149,7 @@ public class MapReduceCallback {
 		return applet;
 	}
 
-	public PipelineSubmission getJobInfo() {
+	public AppletInstanceRecord getJobInfo() {
 		return jobInfo;
 	}
 
