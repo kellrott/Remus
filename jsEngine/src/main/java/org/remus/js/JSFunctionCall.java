@@ -15,6 +15,7 @@ import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrapFactory;
+import org.remus.core.UserCodeError;
 import org.remus.mapred.MapReduceCallback;
 import org.remus.mapred.MapReduceFunction;
 import org.remus.mapred.NotSupported;
@@ -74,8 +75,11 @@ public class JSFunctionCall implements MapReduceFunction {
 		}
 	}
 
-	private JSFunction compileFunction(String source, String fileName) {
+	private JSFunction compileFunction(String source, String fileName) throws UserCodeError {
 		try {
+			if (source == null) {
+				throw new UserCodeError("No Source code found");
+			}
 			Scriptable scope = cx.initStandardObjects();
 			cx.enter();
 			cx.setWrapFactory(wrap);
@@ -84,12 +88,10 @@ public class JSFunctionCall implements MapReduceFunction {
 			Function out = cx.compileFunction(scope, source, fileName, 1, null);
 			jfunc.func = out;
 			prepScope(scope, jfunc.emit);
-
 			return jfunc;
 		} catch (EcmaError e) {
-			e.printStackTrace();
+			throw new UserCodeError(e.toString());
 		} 
-		return null; 
 	}
 
 	void prepScope(Scriptable scope, EmitInterface emit) {		
@@ -142,8 +144,8 @@ public class JSFunctionCall implements MapReduceFunction {
 	}
 
 	@Override
-	public void init(Map instanceInfo) {
-		String jsCode = (String)instanceInfo.get("jsCode");
+	public void init(Map instanceInfo) throws UserCodeError  {
+		String jsCode = (String)instanceInfo.get("_script");
 		currentFunction = compileFunction(jsCode, "view");
 	}
 

@@ -14,6 +14,7 @@ import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
+import org.remus.core.AppletInstanceRecord;
 import org.remus.core.PipelineSubmission;
 import org.remus.core.RemusApp;
 import org.remus.core.RemusApplet;
@@ -89,46 +90,12 @@ public class WorkSchedule {
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
 			for (String name : app.getPipelines()) {
-				List<RemusInstance> instList = new LinkedList<RemusInstance>();
 				RemusPipeline pipe = app.getPipeline(name);
-
 				schemaEngine.processSubmissions(pipe);
-
-				for (String subKey : pipe.getSubmits()) {
-					PipelineSubmission subData = pipe.getSubmitData(subKey);
-					if (subData != null) {
-						instList.add(subData.getInstance());
-					}
-				}
-				for (RemusInstance inst : instList) {
-					Set<AppletInstance> curSet = pipe.getActiveApplets(inst);
-					activeCount += curSet.size();
-					fullSet.addAll(curSet);
-				}
-				//check for work that needs to be instanced
-				for ( String appletName : pipe.getMembers() ) {
-					RemusApplet applet = pipe.getApplet(appletName);
-					if (applet != null) {
-						if (applet.getMode() != RemusApplet.STORE) {
-							for (RemusInstance inst : instList) {
-								if (!pipe.hasAppletInstance(inst, appletName)) {
-									boolean inputFound = false;
-									for (String input : applet.getSources()) {
-										if (pipe.hasAppletInstance(inst, input)) {
-											inputFound = true;
-										}
-										if (inputFound) {
-											AppletInstance src = pipe.getAppletInstance(inst, applet.getSource());
-											if (src != null) {
-												PipelineSubmission info = src.getInstanceInfo();
-												applet.createInstance(info, inst);
-												change = true;
-											} 
-										}
-									}
-								}
-							}
-						}
+				schemaEngine.processInstances(pipe);
+				for (AppletInstance ai : pipe.getAppletInstanceList()) {
+					if (!ai.isComplete()) {
+						fullSet.add(ai);
 					}
 				}
 			}
@@ -186,6 +153,8 @@ public class WorkSchedule {
 		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
+			e.printStackTrace();
 		}
 
 		return workAdded;
@@ -198,7 +167,7 @@ public class WorkSchedule {
 		boolean found = false;
 		synchronized (workerMap) {
 			int activeCount = 0;
-			Map<AppletInstance, Boolean> removeSet = new HashMap<AppletInstance, Boolean>();
+			Map<String, Boolean> removeSet = new HashMap<String, Boolean>();
 			for (String ai : workerMap.keySet()) {			
 				InstanceWorker worker = workerMap.get(ai);
 				if (worker != null) {
@@ -206,13 +175,13 @@ public class WorkSchedule {
 					if (worker.isDone()) {
 						logger.debug("JOB DONE:" + worker.ai);
 						found = true;
-						removeSet.put(worker.ai, true);
+						removeSet.put(worker.ai.toString(), true);
 					} else {
 
 					}
 				}	
 			}
-			for (AppletInstance ai : removeSet.keySet()) {
+			for (String ai : removeSet.keySet()) {
 				workerPool.returnInstanceWorker(workerMap.get(ai));
 				workerMap.remove(ai);
 			}

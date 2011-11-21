@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
+import org.remus.core.AppletInstanceRecord;
 import org.remus.core.BaseStackNode;
 import org.remus.core.DataStackInfo;
 import org.remus.core.PipelineSubmission;
@@ -247,7 +248,7 @@ public class AppletInstanceView implements BaseNode {
 
 		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
 
-		if (applet.getMode() == RemusApplet.STORE) {
+		if (applet.getMode() == AppletInstanceRecord.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
 			//UUID as the key if none is provided
 			try {
@@ -277,7 +278,7 @@ public class AppletInstanceView implements BaseNode {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}			
-		} else if (applet.getMode() == RemusApplet.AGENT) {
+		} else if (applet.getMode() == AppletInstanceRecord.AGENT) {
 							
 		} else {		
 			try {

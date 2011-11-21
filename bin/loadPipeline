@@ -86,7 +86,7 @@ def parseRemus(server, pipelineName, path):
                 handle.close()
 
     for subKey in initData:
-        submitData = { "_applets" : initApplet[subKey] }
+        submitData = { "_submitInit" : initApplet[subKey] }
         url = "%s/%s/@submit/%s" % (server, pipelineName, subKey)
         print "INIT: ", url, json.dumps(submitData)        
         print urlopen( url, json.dumps(submitData) ).read()

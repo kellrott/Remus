@@ -106,11 +106,11 @@ public class WorkerPool {
 
 	public InstanceWorker getInstanceWorker(AppletInstance ai) throws NotImplemented, TException {
 		updateWorkers();
-		if ( getTableWorkerCount(ai.getApplet().getType()) > 0 ) {
+		if ( getTableWorkerCount(ai.getRecord().getType()) > 0 ) {
 			InstanceWorker worker = new TableWorker(peerManager, this, ai);
 			return worker;
 		} 
-		if ( getKeyWorkerCount(ai.getApplet().getType()) > 0) {
+		if ( getKeyWorkerCount(ai.getRecord().getType()) > 0) {
 			InstanceWorker worker = new KeyWorker(peerManager, this, ai);
 			return worker;
 		}

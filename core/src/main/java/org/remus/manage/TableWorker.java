@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
+import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.JobState;
@@ -26,7 +27,7 @@ public class TableWorker extends InstanceWorker {
 	}
 
 	@Override
-	public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException {
+	public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException, RemusDatabaseException {
 
 		if (iface == null && state == WORKING) {
 
@@ -35,13 +36,13 @@ public class TableWorker extends InstanceWorker {
 				state = DONE;
 			} else {			
 				logger.debug("TABLE_MANAGER Assign worker: " + ai.getAppletRef());
-				WorkDesc desc = new WorkDesc(ai.getApplet().getType(), 
-						WorkMode.findByValue(ai.getApplet().getMode()),
+				WorkDesc desc = new WorkDesc(ai.getRecord().getType(), 
+						WorkMode.findByValue(ai.getRecord().getMode()),
 						JSON.dumps(ai.getInstanceInfo()),
 						ai.getAppletRef(),
 						0L, -1L);
 
-				peerID = workPool.borrowWorker(ai.getApplet().getType(), this);
+				peerID = workPool.borrowWorker(ai.getRecord().getType(), this);
 				iface = peerManager.getPeer(peerID);
 				try {
 					jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);

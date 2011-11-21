@@ -3,6 +3,7 @@ package org.remus.work;
 
 import org.remus.RemusDB;
 import org.remus.RemusAttach;
+import org.remus.core.AppletInstanceRecord;
 import org.remus.core.RemusApplet;
 import org.remus.core.RemusInstance;
 import org.remus.core.RemusPipeline;
@@ -22,8 +23,6 @@ import org.remus.core.RemusPipeline;
  */
 
 public interface WorkGenerator {
-	public void writeWorkTable(RemusPipeline pipeline, RemusApplet applet, RemusInstance instance, RemusDB datastore, RemusAttach attachstore);
-
-	public void finalizeWork(RemusPipeline pipeline, RemusApplet applet,
-			RemusInstance instance, RemusDB datastore);
+	public void writeWorkTable(AppletInstanceRecord ai, RemusDB datastore, RemusAttach attachstore);
+	public void finalizeWork(AppletInstanceRecord ai, RemusDB datastore);
 }

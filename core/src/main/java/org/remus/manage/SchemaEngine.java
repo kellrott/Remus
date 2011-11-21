@@ -1,13 +1,17 @@
 package org.remus.manage;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.RemusAttach;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
+import org.remus.core.AppletInstance;
+import org.remus.core.AppletInstanceRecord;
 import org.remus.core.AppletInstanceStack;
 import org.remus.core.BaseStackNode;
 import org.remus.core.PipelineSubmission;
@@ -61,13 +65,13 @@ public class SchemaEngine {
 	public boolean checkSubmission(RemusPipeline pipe, String subKey, PipelineSubmission subData) 
 			throws RemusDatabaseException, TException, NotImplemented, IOException {
 		Boolean changed = false;
-		
+
 		//make sure the '_submitKey' field is correct
 		if (!subData.hasSubmitKey() || subData.getSubmitKey().compareTo(subKey) != 0 ) {
 			subData.setSubmitKey(subKey);
 			changed = true;
 		}
-		
+
 		//make sure the '_instance' field is correct
 		if (!subData.hasInstance()) {
 			subData.setInstance(new RemusInstance());
@@ -83,14 +87,14 @@ public class SchemaEngine {
 				}
 			}
 		}	
-		
+
 		//if store tables have been created, make sure they have an instance record
 		for (String appletName : pipe.getMembers()) {
 			RemusApplet applet = pipe.getApplet(appletName);
-			if (applet.getMode() == RemusApplet.STORE) {
+			if (applet.getMode() == AppletInstanceRecord.STORE) {
 				if (!applet.hasInstance(subData.getInstance())) {
 					AppletRef dataRef = new AppletRef(pipe.getID(), subData.getInstance().toString(), applet.getID());
-					
+
 					if (miniDB.keyCount(dataRef, 1)!= 0) {
 						applet.createInstance(subData, subData.getInstance());
 						logger.info("Creating Instance record for data store:" + subData.getInstance() + " " + applet.getID() );
@@ -98,7 +102,9 @@ public class SchemaEngine {
 				}
 			}
 		}
-		
+
+
+
 		return changed;
 	}
 
@@ -177,6 +183,57 @@ public class SchemaEngine {
 
 	public void addWorkStatus(BaseStackNode workStatusStack) {
 		miniDB.addBaseStack(Constants.WORKSTAT_APPLET, workStatusStack);
+	}
+
+
+	public boolean processInstances(RemusPipeline pipe) {
+		//check for work that needs to be instanced
+		boolean change = false;
+		List<RemusApplet> staticApplets = new LinkedList<RemusApplet>();
+		for (String applet : pipe.getMembers()) {
+			try {
+				staticApplets.add(pipe.getApplet(applet));
+			} catch (RemusDatabaseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		Set<AppletInstance> instList = pipe.getAppletInstanceList();
+		for ( AppletInstance ai : instList ) {
+			RemusInstance inst = new RemusInstance(ai.getRecord().getInstance());
+			for (RemusApplet applet : staticApplets ) {
+				if (applet.getMode() != AppletInstanceRecord.STORE && applet.isAuto()) {
+					boolean inputFound = false;
+					for (String input : applet.getSources()) {
+						if (pipe.hasAppletInstance( inst, input)) {
+							inputFound = true;
+						}
+					}
+					if (inputFound) {
+						if (!pipe.hasAppletInstance(inst, applet.getID())) {
+							try {
+								PipelineSubmission info = new PipelineSubmission(ai.getRecord().getBase());
+								applet.createInstance(info, inst);
+								change = true;
+							} catch (TException e) {
+								e.printStackTrace();
+							} catch (NotImplemented e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (RemusDatabaseException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						} 
+					}
+				}
+			}
+		}
+		return change;
 	}
 
 

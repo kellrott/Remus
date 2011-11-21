@@ -16,7 +16,8 @@ public class PipelineSubmission implements JSONAware {
 	public static final String KeysField = "_keys";
 	public static final String INSTANCE_FIELD = "_instance";
 	public static final String InputField = "_input";
-	public static final String AppletField = "_applets";
+	public static final String SUBMIT_INIT_FIELD = "_submitInit";
+	public static final String SUBMIT_INPUT_FIELD = "_submitInput";
 	public static final String AXIS_FIELD = "_axis";
 	
 	public static final int RIGHT_AXIS = 1;
@@ -37,8 +38,8 @@ public class PipelineSubmission implements JSONAware {
 
 	public List<String> getInitApplets() {
 		List<String> out = new LinkedList<String>();
-		if (base.containsKey(PipelineSubmission.AppletField)) {
-			out = (List) ((Map) base).get(PipelineSubmission.AppletField);
+		if (base.containsKey(PipelineSubmission.SUBMIT_INIT_FIELD)) {
+			out = (List) ((Map) base).get(PipelineSubmission.SUBMIT_INIT_FIELD);
 		}
 		return out;
 	}
@@ -52,14 +53,14 @@ public class PipelineSubmission implements JSONAware {
 	}
 
 	public void setInitApplets(List<String> asList) {
-		base.put(AppletField, asList);		
+		base.put(SUBMIT_INIT_FIELD, asList);		
 	}
 
 	public String getInputInstance() {
 		Map inputInfo = (Map) base.get("_input");
 		return (String) inputInfo.get("_instance");
 	}
-
+	
 	public String getInputApplet() {
 		Map inputInfo = (Map) base.get("_input");
 		return (String) inputInfo.get("_applet");
@@ -133,6 +134,18 @@ public class PipelineSubmission implements JSONAware {
 
 	public Map getMap() {		
 		return base;
+	}
+
+	public boolean hasSubmitInput() {
+		return base.containsKey(SUBMIT_INPUT_FIELD);
+	}
+
+	public boolean hasSubmitInputApplet(String id) {
+		return ((Map)base.get(SUBMIT_INPUT_FIELD)).containsKey(id);
+	}
+
+	public Map getSubmitInputAppletMap(String id) {
+		return (Map) ((Map)base.get(SUBMIT_INPUT_FIELD)).get(id);
 	}
 
 	

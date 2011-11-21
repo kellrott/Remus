@@ -7,6 +7,7 @@ import org.apache.thrift.TException;
 
 import org.json.simple.JSONAware;
 import org.json.simple.JSONValue;
+import org.remus.RemusDB;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.Constants;
 import org.remus.thrift.NotImplemented;
@@ -55,11 +56,11 @@ public class WorkStatus implements JSONAware {
 		return base.toString();
 	}
 
-	public static void unsetComplete(RemusPipeline pipeline, RemusApplet applet, RemusInstance remusInstance) {
+	public static void unsetComplete(String pipeline, RemusInstance remusInstance, String applet, RemusDB datastore) {
 		Object statObj = null;
-		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, applet.getID() );
+		AppletRef ar = new AppletRef( pipeline, RemusInstance.STATIC_INSTANCE_STR, applet );
 		try {
-			for ( Object curObj : applet.getDataStore().get( ar, remusInstance.toString() ) ) {
+			for ( Object curObj : datastore.get( ar, remusInstance.toString() ) ) {
 				statObj = curObj;
 			}
 		} catch (TException e) {
@@ -72,9 +73,9 @@ public class WorkStatus implements JSONAware {
 		}
 		//logger.info("UNSET COMPLETE: " + applet.getPath() );
 		((Map)statObj).put( WorkStatus.WORKDONE_FIELD, false);
-		AppletRef arWork = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, Constants.WORK_APPLET );
+		AppletRef arWork = new AppletRef( pipeline, RemusInstance.STATIC_INSTANCE_STR, Constants.WORK_APPLET );
 		try {
-			applet.getDataStore().add(arWork, 0, 0, remusInstance.toString() + ":" + applet.getID(), statObj);
+			datastore.add(arWork, 0, 0, remusInstance.toString() + ":" + applet, statObj);
 		} catch (TException e ) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -137,11 +138,11 @@ public class WorkStatus implements JSONAware {
 		}
 	}
 
-	public static boolean hasStatus(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
-		AppletRef ar = new AppletRef( pipeline.getID(), RemusInstance.STATIC_INSTANCE_STR, 
+	public static boolean hasStatus(String pipeline, RemusInstance inst, String applet, RemusDB datastore) {
+		AppletRef ar = new AppletRef( pipeline, RemusInstance.STATIC_INSTANCE_STR, 
 				Constants.WORK_APPLET);
 		try {
-			return applet.getDataStore().containsKey(ar, inst.toString() + ":" + applet.getID());
+			return datastore.containsKey(ar, inst.toString() + ":" + applet);
 		} catch (TException e) {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
@@ -182,6 +183,11 @@ public class WorkStatus implements JSONAware {
 
 	public void setWorkDone(boolean b) {
 		base.put(WORKDONE_FIELD, b);
+	}
+
+
+	public boolean workCountSet() {
+		return base.containsKey(TOTALCOUNT_FIELD);
 	}
 
 }

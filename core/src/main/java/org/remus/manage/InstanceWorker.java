@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.json.simple.JSONAware;
+import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
 import org.remus.plugin.PeerManager;
 import org.remus.thrift.NotImplemented;
@@ -40,7 +41,7 @@ public abstract class InstanceWorker implements JSONAware {
 	}
 	
 
-	abstract public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException;
+	abstract public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException, RemusDatabaseException;
 	abstract public boolean isDone();
 	abstract public void removeJob();
 

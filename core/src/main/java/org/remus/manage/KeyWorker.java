@@ -11,6 +11,7 @@ import java.util.Set;
 import org.apache.thrift.TException;
 import org.json.simple.JSONAware;
 import org.remus.JSON;
+import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
 import org.remus.core.PipelineSubmission;
 import org.remus.plugin.PeerManager;
@@ -99,7 +100,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 					do {
 						curPos++;
 					} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);
-					String peerID = workPool.borrowWorker(ai.getApplet().getType(), this);
+					String peerID = workPool.borrowWorker(ai.getRecord().getType(), this);
 					if (peerID != null) {
 						workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
 						for (int i = last; i < curPos; i++) {
@@ -125,12 +126,12 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			}
 			WorkDesc wdesc = new WorkDesc();
 			wdesc.setWorkStack(new AppletRef());		
-			wdesc.workStack.setPipeline(ai.getPipeline().getID());
-			wdesc.workStack.setInstance(ai.getInstance().toString());
-			wdesc.workStack.setApplet(ai.getApplet().getID());
+			wdesc.workStack.setPipeline(ai.getRecord().getPipeline());
+			wdesc.workStack.setInstance(ai.getRecord().getInstance());
+			wdesc.workStack.setApplet(ai.getRecord().getApplet());
 			wdesc.setWorkStart(workStart);
 			wdesc.setWorkEnd(workEnd);
-			wdesc.setLang(ai.getApplet().getType());
+			wdesc.setLang(ai.getRecord().getType());
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
 			wdesc.setInfoJSON(JSON.dumps(instanceInfo));
 
@@ -138,7 +139,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			if (worker == null) {
 				return;
 			}
-			int mode = ai.getApplet().getMode();
+			int mode = ai.getRecord().getMode();
 			if (mode == WorkMode.AGENT.getValue()) {
 				logger.info("Agent Operation");
 				wdesc.setMode(WorkMode.MAP);
@@ -154,6 +155,8 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			e.printStackTrace();
 		} catch (NotImplemented e) {
 			e.printStackTrace();
+		} catch (RemusDatabaseException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -162,8 +165,8 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 
 	private long [] getActiveWork(AppletInstance ai) throws NotImplemented, TException {
 		Set<String> peers = peerManager.getWorkers();
-		long [] workIDs = workIDs = ai.getReadyJobs(assignRate * peers.size());				
-
+		long [] workIDs = ai.getReadyJobs(assignRate * peers.size());
+		if ( workIDs != null ) {
 		for (RemoteJob rj :remoteJobs) {
 			for (int i = 0; i < workIDs.length; i++) {
 				if (workIDs[i] >= rj.getWorkStart() && workIDs[i] < rj.getWorkEnd()) {
@@ -182,6 +185,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			Arrays.sort(workIDs);
 			return workIDs;
 		} 
+		}
 		if (ai.isComplete()) {
 			state = DONE;
 		} 

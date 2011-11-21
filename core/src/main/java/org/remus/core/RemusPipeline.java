@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
+
 import org.apache.thrift.TException;
 import org.remus.KeyValPair;
 import org.remus.RemusAttach;
@@ -50,6 +52,7 @@ public class RemusPipeline {
 	}	
 
 
+	/*
 	public Set<AppletInstance> getActiveApplets(RemusInstance inst) throws TException, NotImplemented, RemusDatabaseException {
 		Set<AppletInstance> out = new HashSet<AppletInstance>();
 		for (String appletName : getMembers()) {
@@ -61,6 +64,7 @@ public class RemusPipeline {
 		}
 		return out;
 	}
+	*/
 
 
 	public Collection<String> getMembers() {
@@ -96,8 +100,7 @@ public class RemusPipeline {
 	
 	public AppletInstance getAppletInstance( RemusInstance inst, String applet) throws RemusDatabaseException {
 		if (hasAppletInstance(inst, applet)) {
-			RemusApplet app = getApplet(applet);
-			return new AppletInstance(this, inst, app, datastore, attachStore);
+			return new AppletInstance(this.getID(), inst, applet, datastore, attachStore);
 		}
 		return null;
 	}
@@ -227,6 +230,17 @@ public class RemusPipeline {
 				(Long) 0L,
 				subKey,
 				subData);
+	}
+
+
+
+	public Set<AppletInstance> getAppletInstanceList() {
+		Set<AppletInstance> out = new HashSet<AppletInstance>();
+		AppletRef arInstance = new AppletRef(getID(), Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
+		for ( KeyValPair kv : datastore.listKeyPairs(arInstance)) {
+			out.add( new AppletInstance(new AppletInstanceRecord(kv.getValue()), datastore, attachStore) );
+		}
+		return out;
 	}
 
 }
