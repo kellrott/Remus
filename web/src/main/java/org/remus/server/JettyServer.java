@@ -189,11 +189,14 @@ public class JettyServer extends RemusWeb {
 		WorkDesc work = new WorkDesc();
 		work.mode = mode;
 		Map infoMap = new HashMap();
-		infoMap.put("jsCode", string);
+		infoMap.put("_script", string);
 		Map inMap = new HashMap();
 		inMap.put("_instance", RemusInstance.STATIC_INSTANCE);
 		inMap.put("_applet", tmpStackIn);
-		infoMap.put("_input", inMap);
+		Map dataMap = new HashMap();
+		dataMap.put("data", inMap);
+		infoMap.put("_input", dataMap);
+		infoMap.put("_src", "data");
 		work.setInfoJSON(JSON.dumps(infoMap));
 		work.workStart = 0;
 
