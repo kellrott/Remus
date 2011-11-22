@@ -45,7 +45,9 @@ public class TableWorker extends InstanceWorker {
 				peerID = workPool.borrowWorker(ai.getRecord().getType(), this);
 				iface = peerManager.getPeer(peerID);
 				try {
-					jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);
+					if (iface != null) {
+						jobID = iface.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), desc);
+					}
 				} catch (TException e) {
 					e.printStackTrace();
 					peerManager.peerFailure(peerID);
@@ -67,6 +69,7 @@ public class TableWorker extends InstanceWorker {
 				e.printStackTrace();
 				peerManager.peerFailure(peerID);
 				workPool.errorPeer(peerID);
+				state = DONE;
 			}
 		}
 		return false;

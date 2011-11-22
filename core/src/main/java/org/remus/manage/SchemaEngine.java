@@ -3,6 +3,7 @@ package org.remus.manage;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.thrift.TException;
@@ -84,6 +85,19 @@ public class SchemaEngine {
 				RemusApplet ap = pipe.getApplet(applet);
 				if (ap != null) {
 					ap.createInstance(subData, subData.getInstance());
+					if (subData.hasSubmitData()) {
+						Map initData = (Map) subData.getSubmitData();
+						for (Object appletName : initData.keySet()) {
+							RemusApplet dataAp = pipe.getApplet((String)appletName);
+							dataAp.createInstance(subData, subData.getInstance());
+							Map appletData = (Map) initData.get(appletName);
+							
+							AppletInstance ai = dataAp.getAppletInstance(subData.getInstance().toString());
+							for (Object dataKey : appletData.keySet()) {
+								dataAp.getDataStore().add(ai.getAppletRef(), 0, 0, (String)dataKey, appletData.get(dataKey));
+							}							
+						}
+					}
 				}
 			}
 		}	

@@ -153,8 +153,10 @@ public class WorkerPool {
 
 	public void errorPeer(String peerID) {
 		synchronized (peerInfo) {
-			peerInfo.get(peerID).inUse = false;
-			peerInfo.get(peerID).owner = null;
+			if (peerInfo.containsKey(peerID)) {
+				peerInfo.get(peerID).inUse = false;
+				peerInfo.get(peerID).owner = null;
+			}
 			peerManager.peerFailure(peerID);
 		}
 	}

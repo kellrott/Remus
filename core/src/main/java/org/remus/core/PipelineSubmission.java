@@ -18,6 +18,7 @@ public class PipelineSubmission implements JSONAware {
 	public static final String InputField = "_input";
 	public static final String SUBMIT_INIT_FIELD = "_submitInit";
 	public static final String SUBMIT_INPUT_FIELD = "_submitInput";
+	public static final String SUBMIT_DATA_FIELD = "_submitData";
 	public static final String AXIS_FIELD = "_axis";
 	
 	public static final int RIGHT_AXIS = 1;
@@ -146,6 +147,15 @@ public class PipelineSubmission implements JSONAware {
 
 	public Map getSubmitInputAppletMap(String id) {
 		return (Map) ((Map)base.get(SUBMIT_INPUT_FIELD)).get(id);
+	}
+
+	public boolean hasSubmitData() {
+		return base.containsKey(SUBMIT_DATA_FIELD);
+	}
+
+	public Object getSubmitData() {
+		return base.get(SUBMIT_DATA_FIELD);
+
 	}
 
 	

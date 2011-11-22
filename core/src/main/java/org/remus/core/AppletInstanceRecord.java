@@ -192,7 +192,13 @@ public class AppletInstanceRecord implements JSONAware {
 	}
 
 	public AppletInput getInput(String source, RemusDB datasource) {
+		if (!base.containsKey(INPUT_FIELD)) {
+			return null;
+		}
 		Map input = (Map) ((Map) base.get(INPUT_FIELD)).get(source);
+		if (input == null) {
+			return null;
+		}
 		try {
 			String pipeline = (String)input.get("_pipeline");
 			if (pipeline == null) {
