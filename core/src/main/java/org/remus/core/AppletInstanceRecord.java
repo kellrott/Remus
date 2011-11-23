@@ -1,5 +1,6 @@
 package org.remus.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -287,6 +288,14 @@ public class AppletInstanceRecord implements JSONAware {
 		}
 		return false;
  	}
+
+
+	public List<String> getOutputs() {
+		if ( !base.containsKey(OUTPUT_FIELD)) {
+			return new ArrayList<String>();
+		}
+		return (List<String>) base.get(OUTPUT_FIELD);
+	}
 
 
 }

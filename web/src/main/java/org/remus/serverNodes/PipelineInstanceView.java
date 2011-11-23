@@ -110,6 +110,10 @@ public class PipelineInstanceView implements BaseNode {
 		if (name.compareTo("@query") == 0) {
 			return new PipelineInstanceQueryView(web, pipeline, inst);
 		}
+		
+		if (name.compareTo("@done") == 0) {
+			return new PipelineInstanceDoneView(web, pipeline, inst);
+		}
 
 		return null;		
 	}

@@ -97,21 +97,14 @@ public class AppletInstance {
 				boolean allReady = true;
 				for (String src : appletInstance.getSources()) {
 					try {
-
 						AppletInstanceRecord input = getInput(src);
-
 						if (input != null) {
-							if (input.getMode() == AppletInstanceRecord.OUTPUT) {
-								//BUG: not watching output ports correctly
-							}
-							if (input.getMode() != AppletInstanceRecord.STORE) {
-								AppletInstance ai = new AppletInstance(getRecord().getPipeline(), 
-										new RemusInstance(getRecord().getInstance()),
-										input.getApplet(), datastore, attachstore);
-								if (!ai.isComplete()) {
-									allReady = false;
-								}
-							}
+							AppletInstance ai = new AppletInstance(getRecord().getPipeline(), 
+									new RemusInstance(getRecord().getInstance()),
+									input.getApplet(), datastore, attachstore);
+							if (!ai.isComplete()) {
+								allReady = false;
+							}							
 						} else {
 							allReady = false;
 						}
@@ -142,7 +135,7 @@ public class AppletInstance {
 			if (input.instance == null) {
 				input.instance = RemusInstance.getInstance(datastore, input.pipeline, appletInstance.getInstance());
 			}
-				AppletRef instTable = new AppletRef(input.pipeline, Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
+			AppletRef instTable = new AppletRef(input.pipeline, Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
 			for (Object obj : datastore.get(instTable, input.instance + ":" + input.applet) ) {
 				return new AppletInstanceRecord(obj);
 			}
@@ -347,6 +340,17 @@ public class AppletInstance {
 		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		for (String output : appletInstance.getOutputs()) {
+			try {
+				AppletInstance ai = new AppletInstance(getRecord().getPipeline(), 
+						new RemusInstance(getRecord().getInstance()),
+						getRecord().getApplet() + ":" + output, datastore, attachstore);
+				ai.setComplete();
+			} catch (RemusDatabaseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
