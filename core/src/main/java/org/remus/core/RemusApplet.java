@@ -256,7 +256,21 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 
 		if (params.hasSubmitInput()) {
 			if (params.hasSubmitInputApplet(getID())) {
-				Map inMap = params.getSubmitInputAppletMap(getID());
+				Map inBaseMap = params.getSubmitInputAppletMap(getID());
+				Map<String,Map> inMap = new HashMap<String,Map>();
+				for ( String src : ai.getSources() ) {
+					if (inBaseMap.containsKey(src)) {
+						inMap.put(src, (Map)inBaseMap.get(src));
+					} else {
+						Map appMap = new HashMap();
+						appMap.put("_applet", src);
+						inMap.put(src, appMap);
+					}
+					if (!inMap.get(src).containsKey("_instance")) {
+						inMap.get(src).put("_instance", inst);
+					}
+				}
+				
 				baseMap.put("_input", inMap);
 			}
 		}

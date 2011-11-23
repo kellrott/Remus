@@ -133,6 +133,9 @@ public class AppletInstance {
 	private AppletInstanceRecord getInput(String src) {
 		try {
 			AppletInput input = appletInstance.getInput(src, datastore);
+			if (input == null ) {
+				return null;
+			}
 			if (input.pipeline == null) {
 				input.pipeline = appletInstance.getPipeline();
 			}

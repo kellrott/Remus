@@ -31,8 +31,9 @@ public class TableWorker extends InstanceWorker {
 
 		if (iface == null && state == WORKING) {
 
-			ai.getReadyJobs(10);
-			if ( ai.isComplete())  {
+			long [] jobs = ai.getReadyJobs(10);
+			if ( ai.isComplete() || jobs.length == 0 || ai.isInError())  {
+				logger.info("TABLE_MANAGER DONE:" + ai);
 				state = DONE;
 			} else {			
 				logger.debug("TABLE_MANAGER Assign worker: " + ai.getAppletRef());
@@ -50,6 +51,7 @@ public class TableWorker extends InstanceWorker {
 					}
 				} catch (TException e) {
 					e.printStackTrace();
+					state=DONE;
 					peerManager.peerFailure(peerID);
 					workPool.errorPeer(peerID);
 				}

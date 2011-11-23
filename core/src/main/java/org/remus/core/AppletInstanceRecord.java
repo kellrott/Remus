@@ -281,4 +281,12 @@ public class AppletInstanceRecord implements JSONAware {
 	}
 
 
+	public boolean isStore() {
+		if ( ((String)base.get("_mode")).compareTo("store") == 0  ) {
+			return true;
+		}
+		return false;
+ 	}
+
+
 }
