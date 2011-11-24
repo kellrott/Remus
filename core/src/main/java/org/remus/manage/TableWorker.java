@@ -30,9 +30,8 @@ public class TableWorker extends InstanceWorker {
 	public boolean checkWork() throws NotImplemented, TException, InstanceWorkerException, RemusDatabaseException {
 
 		if (iface == null && state == WORKING) {
-
 			long [] jobs = ai.getReadyJobs(10);
-			if ( ai.isComplete() || jobs.length == 0 || ai.isInError())  {
+			if ( jobs == null || jobs.length == 0 || ai.isComplete() || ai.isInError())  {
 				logger.info("TABLE_MANAGER DONE:" + ai);
 				state = DONE;
 			} else {			

@@ -99,8 +99,8 @@ public class AppletInstance {
 					try {
 						AppletInstanceRecord input = getInput(src);
 						if (input != null) {
-							AppletInstance ai = new AppletInstance(getRecord().getPipeline(), 
-									new RemusInstance(getRecord().getInstance()),
+							AppletInstance ai = new AppletInstance(input.getPipeline(), 
+									new RemusInstance(input.getInstance()),
 									input.getApplet(), datastore, attachstore);
 							if (!ai.isComplete()) {
 								allReady = false;
