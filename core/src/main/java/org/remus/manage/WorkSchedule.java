@@ -94,8 +94,12 @@ public class WorkSchedule {
 				schemaEngine.processSubmissions(pipe);
 				schemaEngine.processInstances(pipe);
 				for (AppletInstance ai : pipe.getAppletInstanceList()) {
-					if (!ai.getRecord().isStore() && !ai.isComplete() && ai.isReady()) {
-						fullSet.add(ai);
+					if (!ai.getRecord().isStore() && !ai.isComplete()) {
+						if (ai.isReady()) {
+							fullSet.add(ai);
+						} else {
+							logger.debug("AppletInstance not ready: " + ai);
+						}
 					}
 				}
 			}

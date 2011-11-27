@@ -56,22 +56,19 @@ public class PipelineDoneView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override
 	public void doDelete(String name, Map params, String workerID)
 			throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 }

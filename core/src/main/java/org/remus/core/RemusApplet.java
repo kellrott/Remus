@@ -91,55 +91,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		return appletDesc.getWorkGenerator();
 	}
 
-	/*
-	public Set<AppletInstance> getActiveApplets(RemusInstance inst) throws RemusDatabaseException {
-		HashSet<AppletInstance> out = new HashSet<AppletInstance>();		
-		AppletInstance ai = new AppletInstance(pipeline.getID(), inst, this.getID(), datastore, attachstore);
-		if (!ai.isComplete()) {
-			if (ai.isReady()) {
-				try {
-					WorkGenerator gen = getWorkGenerator();
-					if (gen != null) {
-						long infoTime = ai.getStatusTimeStamp();
-						long dataTime = ai.inputTimeStamp();
-						if (infoTime < dataTime || !WorkStatus.hasStatus(pipeline, this, inst)) {
-							logger.info("GENERATE WORK: " + pipeline.getID() + "/" + getID() + " " + inst.toString());
-							gen.writeWorkTable(ai.getRecord(), datastore, attachstore);
-						} else {
-							//logger.info("Active Work Stack: " + inst.toString() + ":" + this.getID());
-						}
-						out.add(ai);
-					}
-				} catch (TException e) {
-					e.printStackTrace();
-				} catch (NotImplemented e) {
-					e.printStackTrace();
-				}
-
-			}
-
-		} else {
-			if (ai.getRecord().hasSources()) {
-				try {
-					long thisTime = ai.getStatusTimeStamp();
-					long inTime = ai.inputTimeStamp();
-					//System.err.println( this.getPath() + ":" + thisTime + "  " + "IN:" + inTime );			
-					if (inTime > thisTime) {
-						logger.info("YOUNG INPUT (applet reset):" + inst + ":" + getID() );
-						WorkStatus.unsetComplete(pipeline, this, inst);
-					}
-				} catch (TException e){
-					e.printStackTrace();
-				} catch (NotImplemented e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		return out;
-	}
-	*/
-
+	
 
 	public Collection<RemusInstance> getInstanceList() {
 		Collection<RemusInstance> out = new HashSet<RemusInstance>();
@@ -181,7 +133,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		}
 	}
 
-	private static final List<String> suppressFields = Arrays.asList("_instance", "_code", "_script", "_src", "_pipeline");
+	private static final List<String> suppressFields = Arrays.asList("_instance", "_code", "_script", "_src", "_pipeline", "_auto", "_input");
 
 
 	@SuppressWarnings("unchecked")
@@ -229,11 +181,6 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 			inMap.put("_right", rMap);				
 			inMap.put("_axis", "_left");
 			baseMap.put("_input", inMap);
-		} else if (ai.getMode() == AppletInstanceRecord.AGENT) {
-			Map inMap = new HashMap();
-			inMap.put("_instance", RemusInstance.STATIC_INSTANCE_STR);
-			inMap.put("_applet", "/@agent?" + pipeline.getID());
-			baseMap.put("_input", inMap);
 		} else if (ai.getMode() == AppletInstanceRecord.PIPE || ai.getMode() == AppletInstanceRecord.REMAPPER || ai.getMode() == AppletInstanceRecord.REREDUCER) {
 			if (ai.isAuto()) {
 				Map outList = new HashMap();
@@ -273,10 +220,6 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 				
 				baseMap.put("_input", inMap);
 			}
-		}
-
-		if (ai.getMode() == AppletInstanceRecord.STORE || ai.getMode() == AppletInstanceRecord.AGENT) {
-			//	baseMap.put(WORKDONE_OP, true);
 		}
 
 		PipelineSubmission instInfo = new PipelineSubmission(baseMap);

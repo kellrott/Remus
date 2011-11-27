@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.thrift.TException;
@@ -36,8 +35,7 @@ public class PipelineInstanceView implements BaseNode {
 
 	@Override
 	public void doDelete(String name, Map params, String workerID) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -71,15 +69,13 @@ public class PipelineInstanceView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-
+		throw new FileNotFoundException();
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 
 	public static final int MAX_REFRESH_TIME = 30 * 1000;
 	int state;
-	
+
 	Set<RemoteJob> remoteJobs = new HashSet<RemoteJob>();
 
 	public boolean checkWork() throws NotImplemented, TException {
@@ -108,7 +108,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 						}
 						workChange = true;
 					} else {
-						logger.debug("Avalible peer not found");
+						logger.debug("Avalible worker " + ai.getRecord().getType() + "not found");
 					}
 				}
 			}
@@ -131,6 +131,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			wdesc.workStack.setApplet(ai.getRecord().getApplet());
 			wdesc.setWorkStart(workStart);
 			wdesc.setWorkEnd(workEnd);
+			wdesc.setMode(WorkMode.findByValue(ai.getRecord().getMode()));
 			wdesc.setLang(ai.getRecord().getType());
 			logger.info("Assigning " + ai + ":" + workStart + "-" + workEnd + " to " + peerID + " " + wdesc.workStack);
 			wdesc.setInfoJSON(JSON.dumps(instanceInfo));
@@ -139,17 +140,8 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			if (worker == null) {
 				return;
 			}
-			int mode = ai.getRecord().getMode();
-			if (mode == WorkMode.AGENT.getValue()) {
-				logger.info("Agent Operation");
-				wdesc.setMode(WorkMode.MAP);
-				String jobID = worker.jobRequest(peerManager.getManager(), peerManager.getAttachStore(), wdesc);
-				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
-			} else {
-				wdesc.setMode(WorkMode.findByValue(mode));
-				String jobID = worker.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), wdesc);
-				addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
-			}			
+			String jobID = worker.jobRequest(peerManager.getManager(), peerManager.getAttachStore(), wdesc);
+			addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 			peerManager.returnPeer(worker);
 		} catch (TException e) {
 			e.printStackTrace();
@@ -167,24 +159,24 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 		Set<String> peers = peerManager.getWorkers();
 		long [] workIDs = ai.getReadyJobs(assignRate * peers.size());
 		if ( workIDs != null ) {
-		for (RemoteJob rj :remoteJobs) {
-			for (int i = 0; i < workIDs.length; i++) {
-				if (workIDs[i] >= rj.getWorkStart() && workIDs[i] < rj.getWorkEnd()) {
-					workIDs[i] = -1;
+			for (RemoteJob rj :remoteJobs) {
+				for (int i = 0; i < workIDs.length; i++) {
+					if (workIDs[i] >= rj.getWorkStart() && workIDs[i] < rj.getWorkEnd()) {
+						workIDs[i] = -1;
+					}
 				}
 			}
-		}
 
-		boolean valid = false;
-		for (int i = 0; i < workIDs.length; i++) {
-			if (workIDs[i] != -1) {
-				valid = true;
+			boolean valid = false;
+			for (int i = 0; i < workIDs.length; i++) {
+				if (workIDs[i] != -1) {
+					valid = true;
+				}
 			}
-		}
-		if (valid) {
-			Arrays.sort(workIDs);
-			return workIDs;
-		} 
+			if (valid) {
+				Arrays.sort(workIDs);
+				return workIDs;
+			} 
 		}
 		if (ai.isComplete()) {
 			state = DONE;

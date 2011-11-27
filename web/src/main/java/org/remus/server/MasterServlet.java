@@ -25,9 +25,7 @@ import org.remus.serverNodes.AppView;
  */
 
 public class MasterServlet extends HttpServlet {
-	RemusApp app;
-	AppView  appView;
-	//	String workDir;
+
 	String srcDir;
 	Map<String, String> configMap;
 	private RemusWeb web;
@@ -54,16 +52,6 @@ public class MasterServlet extends HttpServlet {
 		return workerID;
 	}
 
-	private void appInit() {
-		if (appView == null) {
-			try {
-				app = new RemusApp(web.getDataStore(), web.getAttachStore());
-				appView = new AppView(app, web);
-			} catch (RemusDatabaseException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -73,12 +61,15 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			OutputStream os = resp.getOutputStream();
 			InputStream is = req.getInputStream();
-			appInit();
+			RemusApp app = new RemusApp(web.getDataStore(), web.getAttachStore());
+			AppView appView = new AppView(app, web);
 			appView.passCall(AppView.GET_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
 		} catch (FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} catch (RemusDatabaseException e) {
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}		
 	}
 
@@ -93,12 +84,15 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appInit();
+			RemusApp app = new RemusApp(web.getDataStore(), web.getAttachStore());
+			AppView appView = new AppView(app, web);
 			appView.passCall(AppView.SUBMIT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
 		} catch (FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} catch (RemusDatabaseException e) {
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}	
 
 
@@ -114,12 +108,15 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appInit();
+			RemusApp app = new RemusApp(web.getDataStore(), web.getAttachStore());
+			AppView appView = new AppView(app, web);
 			appView.passCall(AppView.PUT_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
 		} catch (FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} catch (RemusDatabaseException e) {
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}		
 	}
 
@@ -133,12 +130,15 @@ public class MasterServlet extends HttpServlet {
 			String workerID = getWorkerID(req);
 			InputStream is = req.getInputStream();
 			OutputStream os = resp.getOutputStream();
-			appInit();
+			RemusApp app = new RemusApp(web.getDataStore(), web.getAttachStore());
+			AppView appView = new AppView(app, web);
 			appView.passCall(AppView.DELETE_CALL, fullPath, req.getParameterMap(), workerID, is, os);
 			os.close();
 			is.close();
 		} catch (FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+		} catch (RemusDatabaseException e) {
+			resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}					
 	}
 }

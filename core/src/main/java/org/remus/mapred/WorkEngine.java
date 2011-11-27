@@ -240,14 +240,14 @@ public class WorkEngine implements Runnable {
 				List<String> sourceList = sub.getSources();
 				Object remapInfo = null;
 				AppletRef remapAR = null;
-				
+
 				List<AppletRef> mappedList = new LinkedList<AppletRef>();
 				for (String sourceName : sourceList) {
 					if (remapInfo == null) {
 						remapInfo = sourceName;
-						
+
 						AppletInput input = sub.getInput(sourceName, db);
-						
+
 						remapAR = new AppletRef(
 								input.getPipeline(),
 								input.getInstance().toString(),
@@ -255,9 +255,9 @@ public class WorkEngine implements Runnable {
 					} else {
 						AppletInput input = sub.getInput(sourceName, db);						
 						AppletRef mapAR = new AppletRef(input.getPipeline(),
-						input.getInstance().toString(),
-						input.getApplet());
-						
+								input.getInstance().toString(),
+								input.getApplet());
+
 						mappedList.add(mapAR);				
 					}
 				}
@@ -329,7 +329,7 @@ public class WorkEngine implements Runnable {
 				List<String> sourceList = sub.getSources();
 				Object remapInfo = null;
 				AppletRef remapAR = null;
-				
+
 
 				Map<String, AppletRef> mappedList = new HashMap<String,AppletRef>();
 				for (String sourceName : sourceList) {
@@ -373,7 +373,37 @@ public class WorkEngine implements Runnable {
 					}
 				}
 				status = JobState.DONE;
-			} else {
+			} else if ( work.mode == WorkMode.AGENT) {
+				AppletInput input = sub.getInput(sub.getSource(), db);				
+				AppletRef ar = new AppletRef(
+						input.getPipeline(),
+						Constants.STATIC_INSTANCE,
+						Constants.INSTANCE_APPLET
+						);
+
+				for (long jobID = work.workStart; jobID < work.workEnd; jobID++) {
+					int keyCount = 0;
+					for (Object key : db.get(arWork, Long.toString(jobID))) {
+						MapReduceCallback cb = new MapReduceCallback(work.workStack.pipeline,
+								work.workStack.instance, work.workStack.applet,
+								new AppletInstanceRecord(stackInfo), db, attach);
+						for (Object value : db.get(ar, (String) key)) {
+							mapred.map((String) key, value, cb);
+						}
+						if (!canceled) {
+							cb.writeEmits(outRef, jobID);
+							logger.debug(work.workStack.instance + ":" + work.workStack.applet + ":" + jobID + " EmitTotal: " + cb.emitCount);
+						}
+						keyCount+=1;
+					}
+					if (keyCount == 0) {
+						logger.error("WORK KEY not found:" + jobID);
+						throw new Exception("Work Key not found");
+					}
+				}
+				status = JobState.DONE;
+				
+			}  else {
 				status = JobState.ERROR;
 			}
 		} catch (Exception e) {

@@ -57,20 +57,46 @@ public class AppletConfigView implements BaseNode {
 				}
 			}			
 		} else {
-			RemusApplet applet;
-			try {
-				applet = pipe.getApplet(name);
-			} catch (RemusDatabaseException e1) {
-				throw new FileNotFoundException();
-			}
-			if (applet == null) {
-				throw new FileNotFoundException();
-			}
-			try {
-				os.write(JSON.dumps(applet).getBytes());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			String [] tmp = name.split("/");
+			if (tmp.length == 1) {
+				try {
+					RemusApplet applet = pipe.getApplet(name);
+					if (applet == null) {
+						throw new FileNotFoundException();
+					}
+					try {
+						os.write(JSON.dumps(applet).getBytes());
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} catch (RemusDatabaseException e1) {
+					throw new FileNotFoundException();
+				}
+			} else {
+				try {
+					RemusApplet applet = pipe.getApplet(tmp[0]);
+					if (applet == null) {
+						throw new FileNotFoundException();
+					}
+					try {
+						InputStream is = applet.readAttachment(tmp[1]);
+						byte [] buffer = new byte[10240];
+						int len;
+						while ((len=is.read(buffer))> 0) {
+							os.write(buffer,0,len);
+						}
+						is.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (NotImplemented e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				} catch (RemusDatabaseException e1) {
+					throw new FileNotFoundException();
+				}
 			}
 		}
 
