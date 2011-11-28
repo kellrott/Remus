@@ -343,17 +343,6 @@ public class AppletInstance {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for (String output : appletInstance.getOutputs()) {
-			try {
-				AppletInstance ai = new AppletInstance(getRecord().getPipeline(), 
-						new RemusInstance(getRecord().getInstance()),
-						getRecord().getApplet() + ":" + output, datastore, attachstore);
-				ai.setComplete();
-			} catch (RemusDatabaseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 	}
 
 	public void setWorkStat(WorkStatus status) throws TException, NotImplemented {
