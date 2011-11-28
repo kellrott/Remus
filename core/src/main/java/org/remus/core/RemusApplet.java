@@ -8,10 +8,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.remus.thrift.Constants;
 import org.apache.thrift.TException;
@@ -22,15 +20,6 @@ import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
-import org.remus.work.AgentGenerator;
-import org.remus.work.MapGenerator;
-import org.remus.work.MatchGenerator;
-import org.remus.work.MergeGenerator;
-import org.remus.work.PipeGenerator;
-import org.remus.work.ReMapGenerator;
-import org.remus.work.ReReduceGenerator;
-import org.remus.work.ReduceGenerator;
-import org.remus.work.SplitGenerator;
 import org.remus.work.WorkGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +32,8 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 	@SuppressWarnings("unchecked")
 	private String id;
 	private RemusPipeline pipeline;
-
 	private RemusDB datastore;
 	private RemusAttach attachstore;
-	private ArrayList<String> outputs;
 
 
 	private AppletInstanceRecord appletDesc;
@@ -133,7 +120,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 		}
 	}
 
-	private static final List<String> suppressFields = Arrays.asList("_instance", "_code", "_script", "_src", "_pipeline", "_auto", "_input");
+	private static final List<String> suppressFields = Arrays.asList("_instance", "_code", "_script", "_src", "_pipeline", "_auto", "_input", "_output");
 
 
 	@SuppressWarnings("unchecked")
@@ -224,6 +211,7 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 
 		PipelineSubmission instInfo = new PipelineSubmission(baseMap);
 
+		/*
 		if (outputs != null) {
 			for (String output : outputs) {
 				try {
@@ -237,7 +225,8 @@ public class RemusApplet implements JSONAware, Comparable<RemusApplet> {
 				}
 			}
 		}
-
+		 */
+		
 		datastore.add(instApplet, 0, 0, inst.toString() + ":" + getID(), instInfo);
 
 		AppletRef appletAR = new AppletRef(pipeline.getID(), Constants.STATIC_INSTANCE, Constants.PIPELINE_APPLET);

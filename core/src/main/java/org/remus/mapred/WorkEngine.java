@@ -442,14 +442,14 @@ public class WorkEngine implements Runnable {
 		private AppletInstance ai;
 		private RemusDB db;
 		private RemusAttach attach;
-		private AppletRef stack;
-		public StackInterface(RemusDB db, RemusAttach attach, AppletRef stack) throws RemusDatabaseException {
+		private AppletRef table;
+		public StackInterface(RemusDB db, RemusAttach attach, AppletRef table) throws RemusDatabaseException {
 			this.db = db;
 			this.attach = attach;
-			this.stack = stack;
+			this.table = table;
 			app = new RemusApp(db, attach);
-			pipe = app.getPipeline(stack.pipeline);
-			ai = pipe.getAppletInstance(new RemusInstance(stack.instance), stack.applet);
+			pipe = app.getPipeline(table.pipeline);
+			ai = pipe.getAppletInstance(new RemusInstance(table.instance), table.applet);
 		}
 
 		public Map get_info() throws TException, NotImplemented {
@@ -458,7 +458,7 @@ public class WorkEngine implements Runnable {
 
 		@Override
 		public Iterator iterator() {
-			return new StackIterator(db, stack);
+			return new StackIterator(db, table);
 		}	
 
 	}

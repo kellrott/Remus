@@ -109,7 +109,8 @@ public class RemusPipeline {
 	public boolean hasAppletInstance(RemusInstance instance, String applet) {
 		AppletRef arInst = new AppletRef(name, Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
 		try {
-			return datastore.containsKey(arInst, instance.toString() + ":" + applet);
+			String [] tmp = applet.split(":");
+			return datastore.containsKey(arInst, instance.toString() + ":" + tmp[0]);
 		} catch (NotImplemented e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

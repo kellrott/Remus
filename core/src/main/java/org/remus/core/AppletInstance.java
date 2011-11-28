@@ -39,7 +39,8 @@ public class AppletInstance {
 		AppletRef instTable = new AppletRef(pipeline, Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET );
 
 		try {
-			for (Object obj : datastore.get(instTable, instance.toString() + ":" + applet )) {
+			String [] appletArray = applet.split(":");
+			for (Object obj : datastore.get(instTable, instance.toString() + ":" + appletArray[0])) {
 				this.appletInstance = new AppletInstanceRecord(obj);
 			}
 		} catch (TException e) {
@@ -136,7 +137,8 @@ public class AppletInstance {
 				input.instance = RemusInstance.getInstance(datastore, input.pipeline, appletInstance.getInstance());
 			}
 			AppletRef instTable = new AppletRef(input.pipeline, Constants.STATIC_INSTANCE, Constants.INSTANCE_APPLET);
-			for (Object obj : datastore.get(instTable, input.instance + ":" + input.applet) ) {
+			String [] appletNames = input.applet.split(":");
+			for (Object obj : datastore.get(instTable, input.instance + ":" + appletNames[0]) ) {
 				return new AppletInstanceRecord(obj);
 			}
 		} catch (TException e) {

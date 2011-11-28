@@ -445,7 +445,7 @@ var instanceTree = function( pipeline ) {
 		getDiv : function() {
 			var div = $("<div>");
 			var data = "";
-			var selectStr = "function(key,val) { remus.emit( key, val._group) }";	
+			var selectStr = "function(key,val) { remus.emit( key, [val._group, val._output] ); }";	
 			$.ajax( {
 				url:"/" + pipeline + "/@instance",
 			    type: 'POST',
@@ -467,7 +467,10 @@ var instanceTree = function( pipeline ) {
 			for ( i in lines ) {
 				var d = $.parseJSON( lines[i] );
 				for ( e in d ) {
-					dirList[ d[e] + "/" + e ] = e;
+					dirList[ d[e][0] + "/" + e ] = e;
+					for ( f in d[e][1] ) {
+						dirList[ d[e][0] + "/" + e + ":" + d[e][1][f] ] = e + ":" + d[e][1][f];						
+					}
 				}
 			}
 			var dirSet = dirDecomp( dirList );			

@@ -140,7 +140,7 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			if (worker == null) {
 				return;
 			}
-			String jobID = worker.jobRequest(peerManager.getManager(), peerManager.getAttachStore(), wdesc);
+			String jobID = worker.jobRequest(peerManager.getDataServer(), peerManager.getAttachStore(), wdesc);
 			addRemoteJob(ai, new RemoteJob(peerID, jobID, workStart, workEnd));
 			peerManager.returnPeer(worker);
 		} catch (TException e) {

@@ -1,6 +1,5 @@
 package org.remus.core;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.remus.RemusDB;
@@ -20,6 +19,11 @@ public class AppletInput {
 		this.keys = keys;
 	}
 
+	@Override
+	public String toString() {
+		return this.pipeline + ":" + this.instance + ":" + this.applet;
+	}
+	
 	public Iterable<String> listKeys(RemusDB datastore) {
 		if (keys != null) {
 			return keys;

@@ -82,15 +82,20 @@ public class PipelineInstanceView implements BaseNode {
 	public BaseNode getChild(String name) {
 		RemusApplet applet = null;
 		try {
-			applet = pipeline.getApplet(name);
+			String [] appletA = name.split(":");
+			applet = pipeline.getApplet(appletA[0]);
+			if (applet != null) {
+				if (appletA.length == 2) {		
+					return new AppletInstanceView(pipeline, inst, applet, appletA[1]);
+				} else { 
+					return new AppletInstanceView(pipeline, inst, applet, null);
+				}
+			}
+
 		} catch (RemusDatabaseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (applet != null) {
-			return new AppletInstanceView(pipeline, applet, inst);
-		}
-
 		if (name.compareTo("@error") == 0) {
 			return new InstanceErrorView(pipeline, inst);
 		}
@@ -106,7 +111,7 @@ public class PipelineInstanceView implements BaseNode {
 		if (name.compareTo("@query") == 0) {
 			return new PipelineInstanceQueryView(web, pipeline, inst);
 		}
-		
+
 		if (name.compareTo("@done") == 0) {
 			return new PipelineInstanceDoneView(web, pipeline, inst);
 		}

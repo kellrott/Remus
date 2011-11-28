@@ -31,14 +31,20 @@ import org.remus.thrift.NotImplemented;
 
 public class AppletInstanceView implements BaseNode {
 
-	RemusPipeline pipeline;
-	RemusApplet applet;
-	RemusInstance inst;
+	private RemusPipeline pipeline;
+	private RemusApplet applet;
+	private RemusInstance inst;
+	private String tableName;
 
-	public AppletInstanceView(RemusPipeline pipeline, RemusApplet applet, RemusInstance inst) {
+	public AppletInstanceView(RemusPipeline pipeline, RemusInstance inst, RemusApplet applet, String port) {
 		this.pipeline = pipeline;
 		this.applet = applet;
 		this.inst = inst;
+		if (port != null) {
+			tableName = applet.getID() + ":" + port;
+		} else {
+			tableName = applet.getID();
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -68,7 +74,7 @@ public class AppletInstanceView implements BaseNode {
 			sliceSize = Integer.parseInt(sliceStr);
 		}
 
-		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
+		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), tableName);
 
 		if (name.length() == 0) {
 			if (sliceStr == null) {
@@ -165,7 +171,7 @@ public class AppletInstanceView implements BaseNode {
 	@Override
 	public void doPut(String name, String workerID, InputStream is, OutputStream os) throws FileNotFoundException {
 		try {
-			AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
+			AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), tableName);
 
 			if (name.length() > 0) {
 				String [] tmp = name.split("/");
@@ -246,7 +252,7 @@ public class AppletInstanceView implements BaseNode {
 	public void doSubmit(String name, String workerID, InputStream is,
 			OutputStream os) throws FileNotFoundException {
 
-		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), applet.getID());
+		AppletRef ar = new AppletRef(pipeline.getID(), inst.toString(), tableName);
 
 		if (applet.getMode() == AppletInstanceRecord.STORE) {
 			//A submit to an agent is translated from URL encoding to JSON and stored with a
