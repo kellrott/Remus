@@ -125,7 +125,10 @@ public class FileServer extends RemusAttach {
 			byte data [] = new byte[length];
 			int readLen = f.read( data, 0, length );		
 			f.close();
-			return ByteBuffer.wrap(data, 0, readLen);
+			if (readLen > 0) {
+				return ByteBuffer.wrap(data, 0, readLen);
+			}
+			return ByteBuffer.wrap(data, 0, 0);
 		} catch (FileNotFoundException e) {
 			throw new TException(e);
 		} catch (IOException e) {

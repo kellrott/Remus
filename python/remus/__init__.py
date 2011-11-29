@@ -34,6 +34,19 @@ class Client(object):
                 break 
             self.client.appendBlock(ar, key, name, line)
         handle.close()
+    
+    def copyFrom(self, path, ar, key, name):
+        handle = open(path, "w")
+        offset = 0
+        while 1:
+            line = self.client.readBlock(ar, key, name, offset, 10240)
+            if len(line) == 0:
+                break 
+            offset += len(line)
+            handle.write(line)                
+        handle.close()
+    
+    
 
 def getAppletRef(iface, pipeline, instance, applet):
     inst = instance
