@@ -88,31 +88,38 @@ public class KeyWorker extends InstanceWorker implements JSONAware {
 			removeRemoteJob(ai, rj, removeSet.get(rj));
 		}
 
-		workIDs = getActiveWork(ai);
-
-		if (workIDs != null) {
-			int curPos = 0;
-			while (curPos < workIDs.length) {
-				if (workIDs[curPos] == -1) {
-					curPos++;
+		boolean assigning = false;
+		do {
+			assigning = false;
+			String peerID = workPool.borrowWorker(ai.getRecord().getType(), this);
+			if (peerID ==  null) {
+				logger.debug("Avalible worker " + ai.getRecord().getType() + " not found");
+			} else {
+				workIDs = getActiveWork(ai);
+				if (workIDs == null) {
+					logger.debug("No avalible work found");
+					workPool.returnWorker(peerID);
 				} else {
-					int last = curPos;
-					do {
-						curPos++;
-					} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);
-					String peerID = workPool.borrowWorker(ai.getRecord().getType(), this);
-					if (peerID != null) {
-						workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
-						for (int i = last; i < curPos; i++) {
-							workIDs[i] = -1;
-						}
-						workChange = true;
-					} else {
-						logger.debug("Avalible worker " + ai.getRecord().getType() + "not found");
+					int curPos = 0;
+					while (curPos < workIDs.length) {
+						if (workIDs[curPos] == -1) {
+							curPos++;
+						} else {
+							int last = curPos;
+							do {
+								curPos++;
+							} while (curPos < workIDs.length && workIDs[curPos] - workIDs[last] == curPos - last);
+							workAssign(ai, peerID, workIDs[last], workIDs[curPos - 1] + 1);
+							for (int i = last; i < curPos; i++) {
+								workIDs[i] = -1;
+							}
+							workChange = true;
+							assigning = true;
+						} 
 					}
 				}
 			}
-		}
+		} while (assigning);
 
 		return workChange;
 	}

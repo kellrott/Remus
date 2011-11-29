@@ -89,6 +89,7 @@ public class WorkSchedule {
 			RemusApp app = new RemusApp(RemusDB.wrap(db), RemusAttach.wrap(attach));
 			int activeCount = 0;
 			Set<AppletInstance> fullSet = new HashSet<AppletInstance>();
+			int reportCount = 0;
 			for (String name : app.getPipelines()) {
 				RemusPipeline pipe = app.getPipeline(name);
 				schemaEngine.processSubmissions(pipe);
@@ -98,7 +99,10 @@ public class WorkSchedule {
 						if (ai.isReady()) {
 							fullSet.add(ai);
 						} else {
-							logger.debug("AppletInstance not ready: " + ai);
+							if (reportCount < 10) {
+								logger.debug("AppletInstance not ready: " + ai);
+								reportCount++;
+							}
 						}
 					}
 				}
