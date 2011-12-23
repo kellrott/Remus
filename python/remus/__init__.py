@@ -8,6 +8,52 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 
+
+from remus.db.table import FSKeyTable
+
+
+class RemusApplet(object):
+	def __init__(self):
+		self.__manager__ = None
+
+	def __setmanager__(self, manager):
+		self.__manager__ = manager
+	
+	def __setpath__(self, instance, tablePath):
+		self.__instance__ = instance
+		self.__tablepath__ = tablePath
+
+class RootApplet(RemusApplet):
+	def __init__(self):
+		RemusApplet.__init__(self)
+	
+	def addChild(self, obj, callback):
+		self.__manager__.addChild(self, obj, callback)
+
+class ChildApplet(object):
+	def __init__(self):
+		pass
+
+class PipeApplet(object):
+	def __init__(self):
+		self.created_tables = []
+	
+	def createTable(self, tableName):
+		t = FSKeyTable(self.runInfo, tableName, True)
+		self.created_tables.append(t)
+		return t
+
+
+class MapApplet(object):
+	def __init__(self, inputTable):
+		self.input = inputTable
+	
+	def run(self):
+		for key, value in self.input:
+			self.map(key, value)
+
+
+
 class Client(object):
     def __init__(self, host, port):
         self.host = host

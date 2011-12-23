@@ -1,6 +1,7 @@
 
 import remus
 
+__manifest__ = [ "__init__.py" ]
 
 class PipelineRoot(remus.RootApplet):
 	def __init__(self, config):
@@ -8,10 +9,10 @@ class PipelineRoot(remus.RootApplet):
 		self.config = config
 	
 	def run(self):
-		self.run( GenerateTable(), self.tableScan )
+		self.addChild( GenerateTable(), 'tableScan' )
 	
 	def tableScan(self, tables):
-		self.run( TableMap(tables['inTable']), self.final )
+		self.addChild( TableMap(tables['inTable']), self.final )
 
 
 startText = """probe	exp_1	exp_2	exp_3	exp_4	exp_5	exp_6	exp_7	exp_8	exp_9
