@@ -30,14 +30,14 @@ class RootApplet(RemusApplet):
     def __init__(self):
         RemusApplet.__init__(self)
     
-    def addChild(self, obj, callback):
-        self.__manager__.addChild(self, obj, callback)
+    def addChild(self, child_name, child, callback=None):
+        self.__manager__.addChild(self, child_name, child, callback)
 
-class ChildApplet(object):
+class ChildApplet(RemusApplet):
     def __init__(self):
         pass
 
-class PipeApplet(object):
+class PipeApplet(RemusApplet):
     def __init__(self):
         self.created_tables = []
     

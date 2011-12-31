@@ -2,8 +2,14 @@
 import uuid
 import imp
 import os
+import sys
+import tempfile
+import logging
+import pickle
 
 import remus.db
+
+logging.basicConfig(level=logging.DEBUG)
 
 global process_submission
 global process_runinfo
@@ -62,6 +68,62 @@ class Applet(str):
     
     def getClass(self):
         return getattr(self.module, self.className)
+
+
+class Worker:
+    def __init__(self, config, instance, appletPath):
+        self.config = config
+        self.instance = instance
+        self.appletPath = appletPath
+    
+    def run(self):
+        db = remus.db.FileDB( self.config.dbpath )
+        
+        tmpdir = tempfile.mkdtemp(dir="./")
+        
+        app = self.appletPath.split(":")
+        
+        instRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@applet")
+        print instRef
+        if len(app) == 0:
+            appName = None
+            for key in db.listKeys(instRef):
+                appName = key
+        else:
+            appName = app[-1]
+        
+        runVal = None
+        for val in db.getValue(instRef, appName):
+            runVal = val
+        if runVal is None:
+            raise Exception("Instance Entry not found")
+            
+        for name in db.listAttachments(instRef, appName):
+            opath = os.path.join(tmpdir, name)
+            if not os.path.exists(os.path.dirname(opath)):
+                os.makedirs(os.path.dirname(opath))
+            db.copyFrom(opath, instRef, appName, name) 
+
+        manager = remus.manage.Manager(self.config)
+
+        if '_submitInit' in runVal:
+            runClass = runVal['_submitInit'][0]
+            sys.path.insert( 0, os.path.abspath(tmpdir) )
+            os.chdir(tmpdir)               
+            applet = remus.manage.Applet( runClass )        
+            cls = applet.getClass()
+            obj = cls(val)
+        elif db.hasAttachment(instRef, appName, "pickle"):
+            db.copyFrom(tmpdir + "/pickle", instRef, appName, "pickle")
+            handle = open(tmpdir + "/pickle")
+            obj = pickle.loads(handle.read())
+            handle.close()
+        
+        obj.__setpath__(self.instance, self.appletPath)
+        obj.__setmanager__(manager)
+        obj.run()
+
+
         
 class Manager:
     def __init__(self, config):
@@ -85,15 +147,27 @@ class Manager:
         
         modbase = os.path.dirname(os.path.abspath(a.module.__file__)) + "/"
         if a.module.__package__ is not None:
-        	modbase = os.path.dirname( modbase ) + "/"
+            modbase = os.path.dirname( modbase ) + "/"
 
         dirname = os.path.abspath(a.getBase())
         for f in a.getManifest():
-        	self.db.copyTo( os.path.join(a.getBase(), f), instRef, submitName, os.path.join( dirname, f ).replace(modbase, "") )
+            self.db.copyTo( os.path.join(a.getBase(), f), instRef, submitName, os.path.join( dirname, f ).replace(modbase, "") )
 
-    def addChild(self, obj, child, callback):
+    def scan(self):
+        for instance in self.db.listInstances():
+            for table in self.db.listTables(instance):
+                if table.endswith("@applet"):
+                    tableRef = remus.db.TableRef(instance,table)
+                    for key in self.db.listKeys(tableRef):
+                        print instance, table, key
+
+    def addChild(self, obj, child_name, child, callback):
         print obj.__tablepath__
         instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "@applet")
-        self.db.addData(instRef, child.__class__, {})
-        
-        
+        logging.info("Adding Child %s" % (child_name)) 
+        self.db.addData(instRef, child_name, {})        
+        tmp = tempfile.NamedTemporaryFile()
+        tmp.write(pickle.dumps(child))
+        tmp.flush()        
+        self.db.copyTo(tmp.name, instRef, child_name, "pickle")
+        tmp.close()
