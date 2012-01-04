@@ -1,5 +1,6 @@
 
 import remus
+import csv
 
 __manifest__ = [ "__init__.py" ]
 
@@ -9,7 +10,7 @@ class PipelineRoot(remus.RootApplet):
 		self.config = config
 	
 	def run(self):
-		self.addChild( GenerateTable(), 'tableScan' )
+		self.addChild( 'tableScan', GenerateTable() )
 	
 	def tableScan(self, tables):
 		self.addChild( TableMap(tables['inTable']), self.final )
@@ -122,19 +123,20 @@ class GenerateTable(remus.ChildApplet):
 		remus.ChildApplet.__init__(self)
 	
 	def run(self):
-		inTable = self.openTable( "inputTable" )
+		inTable = self.createTable( "inputTable" )
 		reader = csv.reader( startText.split("\n"), delimiter="\t" )
 		header = None
 		for row in reader:
-			if header is None:
-				header = {}
-				for i, col in enumerate( row[1:] ):
-					header[ i ] = col
-			else:
-				out = {}
-				for i, col in enumerate( row[1:] ):
-					out[ header[i] ] = float(col)
-				inTable.emit( row[0], out )
+			if len(row):
+				if header is None:
+					header = {}
+					for i, col in enumerate( row[1:] ):
+						header[ i ] = col
+				else:
+					out = {}
+					for i, col in enumerate( row[1:] ):
+						out[ header[i] ] = float(col)
+					inTable.emit( row[0], out )
 
 class TableMap(remus.MapApplet):
 	def __init__(self):

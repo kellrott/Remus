@@ -19,13 +19,13 @@ def main( names ):
         test_path, distutils.util.get_platform(), sys.version[:3]))
     if os.access(build_path, os.F_OK):
         sys.path.insert(1, build_path)
+        os.environ[ "PYTHONPATH" ] = build_path + ":.:" + os.environ.get("PYTHONPATH", "")
+    else:
+        src_path = os.path.abspath("%s/../python" % (test_path) )
+        if os.access(src_path, os.F_OK):
+            sys.path.insert(1, src_path)
+            os.environ[ "PYTHONPATH" ] = src_path + ":.:" + os.environ.get("PYTHONPATH", "")
     
-    src_path = os.path.abspath("%s/../python" % (test_path) )
-    if os.access(src_path, os.F_OK):
-        sys.path.insert(1, src_path)
-    print sys.path
-    os.environ[ "PYTHONPATH" ] = build_path + ":.:" + os.environ.get("PYTHONPATH", "")
-
     moduleList = []
     for moduleName in names:
         testClass = (__import__( moduleName )).TestCase 

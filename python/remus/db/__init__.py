@@ -70,6 +70,10 @@ class FileDB(DBBase):
             handle.close()
         return out
     
+    def hasKey(self, table, key):
+        o = self.listKeys(table)
+        return key in o
+    
     def listInstances(self):
         out = []
         for path in glob(os.path.join(self.basedir, "*")):

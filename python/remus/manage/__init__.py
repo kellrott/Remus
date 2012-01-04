@@ -6,8 +6,10 @@ import sys
 import tempfile
 import logging
 import pickle
+import time
 
 import remus.db
+import remus.db.table
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -16,6 +18,10 @@ global process_runinfo
 
 process_submission = None
 process_runinfo = None
+
+class UnimplementedMethod(Exception):
+    def __init__(self):
+        Exception.__init__(self)
 
 def config():
     return {}
@@ -42,9 +48,20 @@ def run(target):
     return r
 
 class Config:
-    def __init__(self, basedir, dbpath):
-        self.basedir = os.path.abspath(basedir)
+    def __init__(self, workdir, dbpath, executorName=None):
+        self.workdir = os.path.abspath(workdir)
         self.dbpath = os.path.abspath(dbpath)
+        if executorName is not None:
+            tmp = executorName.split('.')
+            modName = ".".join(tmp[:-1])
+            className = tmp[-1]
+            mod = __import__(modName)            
+            cls = mod
+            for n in tmp[1:]:
+                cls = getattr(cls, n)
+            self.executor = cls()
+        else:
+            self.executor = None
 
 class Instance:
     def __init__(self, uuid):
@@ -78,8 +95,9 @@ class Worker:
     
     def run(self):
         db = remus.db.FileDB( self.config.dbpath )
-        
-        tmpdir = tempfile.mkdtemp(dir="./")
+        if not os.path.exists(self.config.workdir):
+            os.mkdir(self.config.workdir)
+        tmpdir = tempfile.mkdtemp(dir=self.config.workdir)
         
         app = self.appletPath.split(":")
         
@@ -122,14 +140,67 @@ class Worker:
         obj.__setpath__(self.instance, self.appletPath)
         obj.__setmanager__(manager)
         obj.run()
-
-
         
+        doneRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@done")
+        db.addData(doneRef, appName, {})
+
+
+
+class TaskExecutor:
+
+    def runTask(self, task):
+        raise UnimplementedMethod()
+    
+    def getMaxJobs(self):
+        raise UnimplementedMethod()
+    
+    def getActiveCount(self):
+        raise UnimplementedMethod()
+
+
+class Task:
+    def __init__(self, manager, instance, tablePath, key = None):
+        self.instance = instance
+        self.tablePath = tablePath
+        self.key = key
+        self.manager = manager
+    
+    def getName(self):
+        return "%s:%s:%s" % (self.instance, self.tablePath, self.key)
+    
+    def getCmdLine(self):        
+        return "%s -m remus.manage.worker %s %s %s %s:%s" % (sys.executable, self.manager.config.workdir, self.manager.config.dbpath, self.instance, self.tablePath, self.key )
+
+class TaskManager:
+    def __init__(self, manager, executor):
+        self.manager = manager
+        self.task_queue = {}
+        self.executor = executor
+        self.active_tasks = {}
+
+    def addTask(self, task):
+        if task.getName() not in self.task_queue:
+            self.task_queue[ task.getName() ] = task
+    
+    def taskCount(self):
+        return len(self.task_queue)
+    
+    def cycle(self):
+        for t in self.task_queue:
+            if t not in self.active_tasks:
+                if len(self.active_tasks) < self.executor.getMaxJobs():
+                    self.executor.runTask(self.task_queue[t])
+                    self.active_tasks[t] = True
+    
 class Manager:
     def __init__(self, config):
         self.config = config
         self.applet_map = {}
         self.db = remus.db.FileDB(self.config.dbpath)
+        if self.config.executor is not None:
+            self.task_manager = TaskManager(self, self.config.executor)
+        else:
+            self.task_manager = None
     
     def submit(self, submitName, module, submitData):
         inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
@@ -141,25 +212,45 @@ class Manager:
 
     def init_applet(self, inst, submitName, applet, appletInfo):
         a = Applet(applet)
-        instRef = remus.db.TableRef(inst, "@applet")
+        instRef = remus.db.TableRef(inst, "@base@applet")
         self.db.createTable(instRef)
         self.db.addData( instRef, submitName, appletInfo)
         
         modbase = os.path.dirname(os.path.abspath(a.module.__file__)) + "/"
         if a.module.__package__ is not None:
-            modbase = os.path.dirname( modbase ) + "/"
+            modbase = os.path.dirname(os.path.dirname( modbase )) + "/"
 
         dirname = os.path.abspath(a.getBase())
         for f in a.getManifest():
+            print "copy", modbase,  os.path.join( dirname, f ).replace(modbase, "")
             self.db.copyTo( os.path.join(a.getBase(), f), instRef, submitName, os.path.join( dirname, f ).replace(modbase, "") )
 
     def scan(self):
+        found = False
         for instance in self.db.listInstances():
             for table in self.db.listTables(instance):
                 if table.endswith("@applet"):
+                    tableBase = table.replace("@applet","")
                     tableRef = remus.db.TableRef(instance,table)
+                    doneRef = remus.db.TableRef(instance,tableBase + "@done")
                     for key in self.db.listKeys(tableRef):
-                        print instance, table, key
+                        if not self.db.hasKey(doneRef, key):
+                            print "FOUND TASK", instance, table, key
+                            self.task_manager.addTask(Task(self, instance, tableBase, key))
+                            found = True
+        return found
+
+    def wait(self):
+        if self.task_manager is None:
+            raise Exception("Executor not defined")
+        while self.scan():
+            self.task_manager.cycle()
+            time.sleep(1)
+            
+    def createTable(self, inst, tablePath):
+        ref = remus.db.TableRef(inst, tablePath)
+        fs = remus.db.FileDB(self.config.dbpath)
+        return remus.db.table.KeyTable(fs, ref)
 
     def addChild(self, obj, child_name, child, callback):
         print obj.__tablepath__

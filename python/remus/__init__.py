@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-from remus.db.table import FSKeyTable
+from remus.db import FileDB
 
 
 class RemusApplet(object):
@@ -36,6 +36,10 @@ class RootApplet(RemusApplet):
 class ChildApplet(RemusApplet):
     def __init__(self):
         pass
+
+    def createTable(self, tableName):
+        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
+
 
 class PipeApplet(RemusApplet):
     def __init__(self):
