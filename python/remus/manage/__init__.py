@@ -2,6 +2,7 @@
 import uuid
 import imp
 import os
+import re
 import sys
 import tempfile
 import logging
@@ -52,6 +53,10 @@ executorMap = {
 }
 
 class Config:
+    """
+    Remus Manager Configuration. Defines the database path, working directory
+    and execution engine name(optional)
+    """
     def __init__(self, workdir, dbpath, executorName=None):
         self.workdir = os.path.abspath(workdir)
         self.dbpath = os.path.abspath(dbpath)
@@ -78,9 +83,8 @@ class Instance:
 
 
 class Worker:
-    def __init__(self, config, instance, appletPath):
+    def __init__(self, config, appletPath):
         self.config = config
-        self.instance = instance
         self.appletPath = appletPath
     
     def run(self):
@@ -91,14 +95,14 @@ class Worker:
         
         app = self.appletPath.split(":")
         
-        instRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@request")
-        print instRef
-        if len(app) == 0:
-            appName = None
-            for key in db.listKeys(instRef):
-                appName = key
-        else:
-            appName = app[-1]
+        instRef = remus.db.TableRef(app[0], app[1])
+        parentName = re.sub("@request$", "", app[1] )
+        appName = app[2]
+        appPath = parentName + app[2]
+        
+        print "instanceREF", instRef
+        print "parent", parentName
+        print "appname", appName
         
         runVal = None
         for val in db.getValue(instRef, appName):
@@ -107,7 +111,7 @@ class Worker:
             raise Exception("Instance Entry not found")
         
         if "_environment" in runVal:
-            envRef = remus.db.TableRef(self.instance, "@environment")
+            envRef = remus.db.TableRef(instRef.instance, "@environment")
             for env in runVal["_environment"]:
                 for name in db.listAttachments(envRef, env):
                     opath = os.path.join(tmpdir, name)
@@ -120,7 +124,6 @@ class Worker:
         if '_submitInit' in runVal:
             runClass = runVal['_submitInit']
             sys.path.insert( 0, os.path.abspath(tmpdir) )
-            os.chdir(tmpdir)               
             
             tmp = runClass.split('.')
             mod = __import__(tmp[0])
@@ -137,15 +140,16 @@ class Worker:
             handle = open(tmpdir + "/pickle")
             obj = pickle.loads(handle.read())
             handle.close()
-        
-        obj.__setpath__(self.instance, self.appletPath)
+
+        os.chdir(tmpdir)
+        obj.__setpath__(instRef.instance, appPath)
         obj.__setmanager__(manager)
         if isinstance(obj, remus.SubmitTarget):
             obj.run(runVal)
         else:
             obj.run()
         
-        doneRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@done")
+        doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
         db.addData(doneRef, appName, {})
 
 
@@ -173,7 +177,7 @@ class Task:
         return "%s:%s:%s" % (self.instance, self.tablePath, self.key)
     
     def getCmdLine(self):        
-        return "%s -m remus.manage.worker %s %s %s %s:%s" % (sys.executable, self.manager.config.workdir, self.manager.config.dbpath, self.instance, self.tablePath, self.key )
+        return "%s -m remus.manage.worker %s %s %s:%s:%s" % (sys.executable, self.manager.config.workdir, self.manager.config.dbpath, self.instance, self.tablePath, self.key )
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -217,6 +221,8 @@ class Applet(str):
     
 class Manager:
     """
+    :param config: A :class:`remus.manage.Config`
+    
     Usage::
         
         if __name__ == '__main__':
@@ -226,12 +232,14 @@ class Manager:
                 'genomicDist.MakeGenomicDistMatrix', 
                 {'basedir' : os.path.abspath(sys.argv[1])} 
             )    
-            work = remus.manage.Worker(config, instance, "test")
-            work.run()
     
     """
     
     def __init__(self, config):
+        """
+        :param config: A :class:`remus.manage.Config`
+        
+        """
         self.config = config
         self.applet_map = {}
         self.db = remus.db.FileDB(self.config.dbpath)
@@ -241,6 +249,17 @@ class Manager:
             self.task_manager = None
     
     def submit(self, submitName, className, submitData):
+        """
+        Create new pipeline instance.
+        
+        :param submitName: A string to name the root target.
+        
+        :param className: A string defining the name of a :class:`remus.SubmitTarget` 
+            that will be started with the submission data
+        
+        :param submitData: A block of data that can be processed via :func:`json.dumps` 
+            and will be passed to an instance of the named class at run time 
+        """
         inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
         submitData['_submitKey'] = submitName
         submitData['_submitInit'] = className
@@ -297,11 +316,17 @@ class Manager:
                     for key in self.db.listKeys(tableRef):
                         if not self.db.hasKey(doneRef, key):
                             print "FOUND TASK", instance, table, key
-                            self.task_manager.addTask(Task(self, instance, tableBase, key))
+                            self.task_manager.addTask(Task(self, instance, table, key))
                             found = True
         return found
 
     def wait(self):
+        """
+        Wait for the completion of a pipeline.
+        
+        :raises: If an exector has not been defined in the configuration, then 
+            an exception will be raised
+        """
         if self.task_manager is None:
             raise Exception("Executor not defined")
         while self.scan():
@@ -311,16 +336,21 @@ class Manager:
     def createTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
+        fs.createTable(ref)
         return remus.db.table.WriteTable(fs, ref)
 
     def openTable(self, inst, tablePath):
+        print "openTable", tablePath
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
 
-    def addChild(self, obj, child_name, child, callback):
-        print obj.__tablepath__
-        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "@request")
+    def addChild(self, obj, child_name, child):
+        print "child:", obj.__tablepath__
+        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
+        if not self.db.hasTable(instRef):
+            print "create", instRef
+            self.db.createTable(instRef)
         logging.info("Adding Child %s" % (child_name)) 
         self.db.addData(instRef, child_name, {})        
         tmp = tempfile.NamedTemporaryFile()

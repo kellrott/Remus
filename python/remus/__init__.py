@@ -49,6 +49,12 @@ class Target(RemusApplet):
         """
         Add child target to be executed
         
+        :param child_name:
+            Unique name of child to be executed
+        
+        :param child:
+            Target object to be pickled and run as a remote 
+            
         Example::
             
             class MyWorker(remus.Target):
@@ -60,11 +66,7 @@ class Target(RemusApplet):
                     c = MyOtherTarget(dataBlock.pass_to_child)
                     self.addChildTarget('child', c )
         
-        child_name:
-            Unique name of child to be executed
         
-        child:
-            Target object to be pickled and run as a remote 
         """
         self.__manager__.addChild(self, child_name, child)
 
@@ -77,7 +79,7 @@ class Target(RemusApplet):
         :return: :class:`remus.db.table.WriteTable`
 
         """
-        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
+        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + "/" + tableName)
 
     def openTable(self, tableName):
         """
@@ -88,8 +90,8 @@ class Target(RemusApplet):
         
         :return: :class:`remus.db.table.ReadTable`
         """
-        parentTable = ":".join( self.__tablepath__.split(":")[:-1] )
-        return self.__manager__.openTable(self.__instance__, parentTable + ":" + tableName)
+        parentTable = "/".join( self.__tablepath__.split("/")[:-1] )
+        return self.__manager__.openTable(self.__instance__, parentTable + "/" + tableName)
 
 
 class SubmitTarget(Target):
@@ -110,30 +112,38 @@ class SubmitTarget(Target):
         The run method is user provided and run in a seperate process,
         possible on a remote node.
         
-        params:
+        :param params:
             Data structure containing submission data
         """
         raise Exception()
 
-
-class PipeApplet(RemusApplet):
-    def __init__(self):
-        self.created_tables = []
+class LocalSubmitTarget(Target):
+    """
+    Local Submit target.
     
-    def createTable(self, tableName):
-        t = FSKeyTable(self.runInfo, tableName, True)
-        self.created_tables.append(t)
-        return t
+    This target class is used to help setup a pipeline run during initialization.
+    The primary difference between this class and other, is that it is run 
+    on the submission node (as opposed to a remote node), so it has access to the local 
+    file system and can be used to setup tables and input data based on the local files,
+    before calculation start up on remote nodes.    
+    """
+    
+    def run(self):
+        """
+        The run method is user provided and run on the local node during the 
+        pipeline initialization.
+        """
+        raise Exception()
 
-
-class MapApplet(object):
+class MapTarget(object):
+    """
+    
+    """
     def __init__(self, inputTable):
         self.input = inputTable
     
-    def run(self):
-        for key, value in self.input:
-            self.map(key, value)
-
+    def map(self, key, value):
+        raise Exception("Map method not implemented")
 
 
 class Client(object):

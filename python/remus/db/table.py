@@ -53,3 +53,9 @@ class ReadTable(object):
         Iterator through stack and return sets of key, value pairs
         """
         return self.db.listKeyValue(self.table_ref).__iter__()
+    
+    def get(self, key):
+        return self.db.getValue(self.table_ref, key)
+    
+    def copyFrom(self, path, key, name):
+        return self.db.copyFrom(path, self.table_ref, key, name)
