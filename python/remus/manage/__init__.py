@@ -216,6 +216,21 @@ class Applet(str):
 
     
 class Manager:
+    """
+    Usage::
+        
+        if __name__ == '__main__':
+            config = remus.manage.Config(os.getcwd(), 'workdir')
+            manager = remus.manage.Manager(config)
+            instance = manager.submit('test', 
+                'genomicDist.MakeGenomicDistMatrix', 
+                {'basedir' : os.path.abspath(sys.argv[1])} 
+            )    
+            work = remus.manage.Worker(config, instance, "test")
+            work.run()
+    
+    """
+    
     def __init__(self, config):
         self.config = config
         self.applet_map = {}

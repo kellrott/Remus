@@ -16,6 +16,9 @@ from remus.db import FileDB
 
 
 class RemusApplet(object):
+    """
+    Base Remus Class
+    """
     def __init__(self):
         self.__manager__ = None
 
@@ -26,34 +29,91 @@ class RemusApplet(object):
         self.__instance__ = instance
         self.__tablepath__ = tablePath
 
-class SubmitTarget(RemusApplet):
-    def __init__(self):
-        RemusApplet.__init__(self)
-    
-    def addChildTarget(self, child_name, child, callback=None):
-        self.__manager__.addChild(self, child_name, child, callback)
 
-    def createTable(self, tableName):
-        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
-    
-    def openTable(self, tableName):
-        parentTable = ":".join( self.__tablepath__.split(":")[:-1] )
-        return self.__manager__.openTable(self.__instance__, parentTable + ":" + tableName)
-    
-    
 
 
 class Target(RemusApplet):
+    """
+    The target class describes a python class to be pickel'd and 
+    run as a remote process at a later time.
+    """
 
-    def addChildTarget(self, child_name, child, callback=None):
-        self.__manager__.addChild(self, child_name, child, callback)
+    def run(self):
+        """
+        The run method is user provided and run in a seperate process,
+        possible on a remote node.
+        """
+        raise Exception()
+
+    def addChildTarget(self, child_name, child):
+        """
+        Add child target to be executed
+        
+        Example::
+            
+            class MyWorker(remus.Target):
+                
+                def __init__(self, dataBlock):
+                    self.dataBlock = dataBlock
+                
+                def run(self):
+                    c = MyOtherTarget(dataBlock.pass_to_child)
+                    self.addChildTarget('child', c )
+        
+        child_name:
+            Unique name of child to be executed
+        
+        child:
+            Target object to be pickled and run as a remote 
+        """
+        self.__manager__.addChild(self, child_name, child)
 
     def createTable(self, tableName):
+        """
+        Create a table to output to
+
+        :param tableName: Name of the table to be opened
+        
+        :return: :class:`remus.db.table.WriteTable`
+
+        """
         return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
 
     def openTable(self, tableName):
+        """
+        Open a table input from. By default, tables belong to the parents,
+        because they have already finished executing
+        
+        :param tableName: Name of the table to be opened
+        
+        :return: :class:`remus.db.table.ReadTable`
+        """
         parentTable = ":".join( self.__tablepath__.split(":")[:-1] )
         return self.__manager__.openTable(self.__instance__, parentTable + ":" + tableName)
+
+
+class SubmitTarget(Target):
+    """
+    Submission target
+    
+    This is a target class, but unlike the original target class, which 
+    is generated from a stored pickle, the SubmitTarget receives information from
+    a JSON style'd data structure from a submission table.
+    This allows for it to be instantiated outside of a python environment, ie from the command 
+    line or via web request.
+    """
+    def __init__(self):
+        RemusApplet.__init__(self)
+    
+    def run(self, params):
+        """
+        The run method is user provided and run in a seperate process,
+        possible on a remote node.
+        
+        params:
+            Data structure containing submission data
+        """
+        raise Exception()
 
 
 class PipeApplet(RemusApplet):
