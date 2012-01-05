@@ -47,11 +47,17 @@ def run(target):
         a.close()
     return r
 
+executorMap = {
+    'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor'
+}
+
 class Config:
     def __init__(self, workdir, dbpath, executorName=None):
         self.workdir = os.path.abspath(workdir)
         self.dbpath = os.path.abspath(dbpath)
         if executorName is not None:
+            if executorName in executorMap:
+                executorName = executorMap[executorName]
             tmp = executorName.split('.')
             modName = ".".join(tmp[:-1])
             className = tmp[-1]
@@ -71,22 +77,6 @@ class Instance:
         return str(self.uuid)
 
 
-class Applet(str):
-    def __init__(self, applet):
-        self.moduleName = ".".join(applet.split(".")[:-1])
-        self.className = applet.split(".")[-1]
-        self.module = __import__( self.moduleName )
-    
-    def getBase(self):
-        return os.path.dirname( self.module.__file__ )
-        
-    def getManifest(self):
-        return self.module.__manifest__
-    
-    def getClass(self):
-        return getattr(self.module, self.className)
-
-
 class Worker:
     def __init__(self, config, instance, appletPath):
         self.config = config
@@ -101,7 +91,7 @@ class Worker:
         
         app = self.appletPath.split(":")
         
-        instRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@applet")
+        instRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@request")
         print instRef
         if len(app) == 0:
             appName = None
@@ -115,22 +105,33 @@ class Worker:
             runVal = val
         if runVal is None:
             raise Exception("Instance Entry not found")
-            
-        for name in db.listAttachments(instRef, appName):
-            opath = os.path.join(tmpdir, name)
-            if not os.path.exists(os.path.dirname(opath)):
-                os.makedirs(os.path.dirname(opath))
-            db.copyFrom(opath, instRef, appName, name) 
+        
+        if "_environment" in runVal:
+            envRef = remus.db.TableRef(self.instance, "@environment")
+            for env in runVal["_environment"]:
+                for name in db.listAttachments(envRef, env):
+                    opath = os.path.join(tmpdir, name)
+                    if not os.path.exists(os.path.dirname(opath)):
+                        os.makedirs(os.path.dirname(opath))
+                    db.copyFrom(opath, envRef, env, name) 
 
         manager = remus.manage.Manager(self.config)
 
         if '_submitInit' in runVal:
-            runClass = runVal['_submitInit'][0]
+            runClass = runVal['_submitInit']
             sys.path.insert( 0, os.path.abspath(tmpdir) )
             os.chdir(tmpdir)               
-            applet = remus.manage.Applet( runClass )        
-            cls = applet.getClass()
-            obj = cls(val)
+            
+            tmp = runClass.split('.')
+            mod = __import__(tmp[0])
+            cls = mod
+            for n in tmp[1:]:
+                cls = getattr(cls, n)
+
+            if issubclass(cls, remus.SubmitTarget):
+                obj = cls()
+            else:
+                obj = cls(runVal)
         elif db.hasAttachment(instRef, appName, "pickle"):
             db.copyFrom(tmpdir + "/pickle", instRef, appName, "pickle")
             handle = open(tmpdir + "/pickle")
@@ -139,7 +140,10 @@ class Worker:
         
         obj.__setpath__(self.instance, self.appletPath)
         obj.__setmanager__(manager)
-        obj.run()
+        if isinstance(obj, remus.SubmitTarget):
+            obj.run(runVal)
+        else:
+            obj.run()
         
         doneRef = remus.db.TableRef(self.instance, ":".join(app[:-1]) + "@done")
         db.addData(doneRef, appName, {})
@@ -191,6 +195,25 @@ class TaskManager:
                 if len(self.active_tasks) < self.executor.getMaxJobs():
                     self.executor.runTask(self.task_queue[t])
                     self.active_tasks[t] = True
+
+class Applet(str):
+    def __init__(self, applet):
+        self.moduleName = applet
+        self.module = __import__( self.moduleName )
+    
+    def getBase(self):
+        return os.path.dirname( self.module.__file__ )
+        
+    def getManifest(self):
+        return self.module.__manifest__
+    
+    def getIncludes(self):
+        return getattr( self.module, '__include__', [] )
+    
+    def getName(self):
+        return self.module.__name__
+    
+
     
 class Manager:
     def __init__(self, config):
@@ -202,35 +225,58 @@ class Manager:
         else:
             self.task_manager = None
     
-    def submit(self, submitName, module, submitData):
+    def submit(self, submitName, className, submitData):
         inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
         submitData['_submitKey'] = submitName
-        submitData['_submitInit'] = [module]
+        submitData['_submitInit'] = className
         submitData['_instance'] = inst
-        self.init_applet(inst, submitName, module, submitData)
+        submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
+
+        instRef = remus.db.TableRef(inst, "@request")
+        self.db.createTable(instRef)
+        self.db.addData( instRef, submitName, submitData)
+        
         return inst
 
-    def init_applet(self, inst, submitName, applet, appletInfo):
+    def import_applet(self, inst, applet, appletInfo):
+
         a = Applet(applet)
-        instRef = remus.db.TableRef(inst, "@base@applet")
-        self.db.createTable(instRef)
-        self.db.addData( instRef, submitName, appletInfo)
         
-        modbase = os.path.dirname(os.path.abspath(a.module.__file__)) + "/"
-        if a.module.__package__ is not None:
-            modbase = os.path.dirname(os.path.dirname( modbase )) + "/"
-
-        dirname = os.path.abspath(a.getBase())
-        for f in a.getManifest():
-            print "copy", modbase,  os.path.join( dirname, f ).replace(modbase, "")
-            self.db.copyTo( os.path.join(a.getBase(), f), instRef, submitName, os.path.join( dirname, f ).replace(modbase, "") )
-
+        impList = [ a.getName() ]
+        added = { a.getName() : True }
+        
+        envRef = remus.db.TableRef(inst, "@environment")
+        self.db.createTable(envRef)        
+        while len(impList):
+            n = {}
+            for modName in impList:
+                added[modName] = True
+                a = Applet(modName)                
+                modbase = os.path.dirname(os.path.abspath(a.module.__file__)) + "/"
+                if a.module.__package__ is not None:
+                    modbase = os.path.dirname(os.path.dirname( modbase )) + "/"
+                
+                self.db.addData(envRef, modName, {})
+                dirname = os.path.abspath(a.getBase())
+                for f in a.getManifest():
+                    print "copy", modbase,  os.path.join( dirname, f ).replace(modbase, "")
+                    self.db.copyTo( os.path.join(a.getBase(), f), envRef, modName, os.path.join( dirname, f ).replace(modbase, "") )
+                
+                for inc in a.getIncludes():
+                    n[inc] = True
+            
+            impList = []
+            for inc in n:
+                if not self.db.hasKey( envRef, inc ):
+                    impList.append(inc)
+        return added.keys()
+        
     def scan(self):
         found = False
         for instance in self.db.listInstances():
             for table in self.db.listTables(instance):
-                if table.endswith("@applet"):
-                    tableBase = table.replace("@applet","")
+                if table.endswith("@request"):
+                    tableBase = table.replace("@request","")
                     tableRef = remus.db.TableRef(instance,table)
                     doneRef = remus.db.TableRef(instance,tableBase + "@done")
                     for key in self.db.listKeys(tableRef):
@@ -250,11 +296,16 @@ class Manager:
     def createTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
-        return remus.db.table.KeyTable(fs, ref)
+        return remus.db.table.WriteTable(fs, ref)
+
+    def openTable(self, inst, tablePath):
+        ref = remus.db.TableRef(inst, tablePath)
+        fs = remus.db.FileDB(self.config.dbpath)
+        return remus.db.table.ReadTable(fs, ref)
 
     def addChild(self, obj, child_name, child, callback):
         print obj.__tablepath__
-        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "@applet")
+        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "@request")
         logging.info("Adding Child %s" % (child_name)) 
         self.db.addData(instRef, child_name, {})        
         tmp = tempfile.NamedTemporaryFile()

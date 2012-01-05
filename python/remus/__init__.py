@@ -26,19 +26,34 @@ class RemusApplet(object):
         self.__instance__ = instance
         self.__tablepath__ = tablePath
 
-class RootApplet(RemusApplet):
+class SubmitTarget(RemusApplet):
     def __init__(self):
         RemusApplet.__init__(self)
     
-    def addChild(self, child_name, child, callback=None):
+    def addChildTarget(self, child_name, child, callback=None):
         self.__manager__.addChild(self, child_name, child, callback)
-
-class ChildApplet(RemusApplet):
-    def __init__(self):
-        pass
 
     def createTable(self, tableName):
         return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
+    
+    def openTable(self, tableName):
+        parentTable = ":".join( self.__tablepath__.split(":")[:-1] )
+        return self.__manager__.openTable(self.__instance__, parentTable + ":" + tableName)
+    
+    
+
+
+class Target(RemusApplet):
+
+    def addChildTarget(self, child_name, child, callback=None):
+        self.__manager__.addChild(self, child_name, child, callback)
+
+    def createTable(self, tableName):
+        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + ":" + tableName)
+
+    def openTable(self, tableName):
+        parentTable = ":".join( self.__tablepath__.split(":")[:-1] )
+        return self.__manager__.openTable(self.__instance__, parentTable + ":" + tableName)
 
 
 class PipeApplet(RemusApplet):

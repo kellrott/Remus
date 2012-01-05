@@ -32,7 +32,7 @@ def path_quote(word):
 class FileDB(DBBase):
     def __init__(self, basedir):
         self.basedir = os.path.abspath(basedir)
-        self.out_handle = None
+        self.out_handle = {}
 
     def createTable(self, tableRef):
         instDir = os.path.join( self.basedir, str(tableRef.instance))
@@ -41,13 +41,13 @@ class FileDB(DBBase):
     
     
     def addData(self, table, key, value):
-        if self.out_handle is None:
-            self.out_handle = tempfile.NamedTemporaryFile(dir=os.path.join(self.basedir, table.instance), prefix=table.table + "@data.", delete=False)
-        self.out_handle.write( key )
-        self.out_handle.write( "\t" )
-        self.out_handle.write(json.dumps(value))
-        self.out_handle.write( "\n" )
-        self.out_handle.flush() 
+        if table not in self.out_handle:
+            self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.join(self.basedir, table.instance), prefix=table.table + "@data.", delete=False)
+        self.out_handle[table].write( key )
+        self.out_handle[table].write( "\t" )
+        self.out_handle[table].write(json.dumps(value))
+        self.out_handle[table].write( "\n" )
+        self.out_handle[table].flush() 
 
     def getValue(self, table, key):
         out = []
@@ -57,6 +57,16 @@ class FileDB(DBBase):
                 tmp = line.split("\t")
                 if tmp[0] == key:
                     out.append(json.loads(tmp[1]))
+            handle.close()
+        return out
+    
+    def listKeyValue(self, table):
+        out = []
+        for path in glob(os.path.join(self.basedir, table.instance, table.table + "@data") + "*"):
+            handle = open(path)
+            for line in handle:
+                tmp = line.split("\t")
+                out.append( (tmp[0], json.loads(tmp[1]) ) )
             handle.close()
         return out
 
