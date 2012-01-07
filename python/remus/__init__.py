@@ -1,5 +1,6 @@
 
 import json
+from copy import copy
 
 try:
     from remus.net import RemusNet
@@ -11,8 +12,7 @@ try:
 except ImportError:
     pass
 
-
-from remus.db import FileDB
+from remus.db import FileDB, TableRef
 
 
 class RemusApplet(object):
@@ -135,7 +135,15 @@ class LocalSubmitTarget(Target):
         """
         raise Exception()
 
-class MapTarget(object):
+
+
+class MultiApplet(RemusApplet):
+    
+    def __run__(self):
+        raise Exception("Map method not implemented")
+
+
+class MapTarget(MultiApplet):
     """
     
     """
@@ -145,7 +153,65 @@ class MapTarget(object):
     def map(self, key, value):
         raise Exception("Map method not implemented")
 
+class RemapTarget(MultiApplet):
 
+    def __init__(self, keyTable, srcTables):
+        self.keyTable = TableRef(keyTable)
+        self.srcTables = []
+        self.outTable = None
+        for src in srcTables:
+            self.srcTables.append(TableRef(src))
+    
+    def __run__(self):
+        keySrc = self.__manager__.openTable(self.keyTable.instance, self.keyTable.table)
+        src = {}
+        for i, srcName in enumerate(self.__inputs__):
+            src[srcName] = self.__manager__.openTable(self.srcTables[i].instance, self.srcTables[i].table)
+        for srcKey, keys in keySrc:
+            valMap = {}
+            i = 0
+            for srcName in self.__inputs__:
+                valList = []
+                for oVal in src[srcName].get(keys[i]):
+                    valList.append( (keys[i], oVal) )
+                valMap[srcName] = valList
+                i += 1
+            #print srcKey, self.__inputs__, valMap
+            self.__remapCall__(srcKey, self.__inputs__, valMap)        
+    
+    def __remapCall__(self, key, srcNames, inputs, keys={}, vals={}):
+        if len(srcNames):
+            passKeys = copy(keys)
+            passVals = copy(vals)
+            for val in inputs[srcNames[0]]:
+                passKeys[srcNames[0]] = val[0]
+                passVals[srcNames[0]] = val[1]
+                self.__remapCall__(key, srcNames[1:], inputs, passKeys, passVals)
+        else:
+            print key, keys, vals
+            self.remap(key, keys, vals)
+    
+    def copyFrom(self, path, srcTable, key, name):
+        print "opening", key, name
+        for i, t in enumerate(self.__inputs__):
+            if t == srcTable:
+                st = self.__manager__.openTable(self.srcTables[i].instance, self.srcTables[i].table)
+                st.copyFrom(path, key, name)
+    
+    def emit(self, key, value):
+        if self.outTable is None:
+            self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
+        self.outTable.emit(key, value)
+    
+    def copyTo(self, path, key, name):
+        if self.outTable is None:
+            self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
+        self.outTable.copyTo(path, key, name)
+    
+    def remap(self, srcKey, keys, vals):
+        raise Exception("Map method not implemented")
+
+        
 class Client(object):
     def __init__(self, host, port):
         self.host = host

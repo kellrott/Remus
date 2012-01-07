@@ -43,6 +43,10 @@ class WriteTable(object):
         """
         self.db.copyTo(path, self.table_ref, key, name)
 
+
+    def getPath(self):
+        return self.table_ref.toPath()
+        
 class ReadTable(object):
     def __init__(self, db, table_ref):
         self.db = db
@@ -59,3 +63,6 @@ class ReadTable(object):
     
     def copyFrom(self, path, key, name):
         return self.db.copyFrom(path, self.table_ref, key, name)
+
+    def getPath(self):
+        return self.table_ref.toPath()

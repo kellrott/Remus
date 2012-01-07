@@ -146,6 +146,8 @@ class Worker:
         obj.__setmanager__(manager)
         if isinstance(obj, remus.SubmitTarget):
             obj.run(runVal)
+        elif isinstance(obj, remus.MultiApplet):
+            obj.__run__()
         else:
             obj.run()
         
@@ -155,6 +157,9 @@ class Worker:
 
 
 class TaskExecutor:
+    """
+    The process executor handles the execution of child tasks. 
+    """
 
     def runTask(self, task):
         raise UnimplementedMethod()
@@ -164,10 +169,31 @@ class TaskExecutor:
     
     def getActiveCount(self):
         raise UnimplementedMethod()
+    
+    def poll(self):
+        raise UnimplementedMethod()
 
 
 class Task:
+    """
+    A task represents a target workload to be run by an executor
+    """
     def __init__(self, manager, instance, tablePath, key = None):
+        """
+        
+        :param manager:
+            The manager the task belongs to
+            
+        :param instance:
+            The pipeline instance the work belongs to
+        
+        :param tablePath:
+            The path to the @request table that holds the work request
+        
+        :param key:
+            The name of the particular task
+        
+        """
         self.instance = instance
         self.tablePath = tablePath
         self.key = key
@@ -199,6 +225,10 @@ class TaskManager:
                 if len(self.active_tasks) < self.executor.getMaxJobs():
                     self.executor.runTask(self.task_queue[t])
                     self.active_tasks[t] = True
+        dmap = self.executor.poll()
+        for t in dmap:
+            del self.task_queue[t]
+            del self.active_tasks[t]
 
 class Applet(str):
     def __init__(self, applet):

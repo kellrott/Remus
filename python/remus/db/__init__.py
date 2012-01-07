@@ -24,6 +24,9 @@ class TableRef(object):
     
     def __str__(self):
         return "%s:%s" % (self.instance, self.table)
+       
+    def toPath(self):
+        return "%s:%s" % (self.instance, self.table)
 
 
 class DBBase:
