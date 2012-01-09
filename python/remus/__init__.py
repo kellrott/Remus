@@ -151,10 +151,11 @@ class MapTarget(MultiApplet):
     
     """
     def __init__(self, inputTable):
-        self.inTable = inputTable
-    
+        self.__inTable__ = inputTable
+        self.__outTable__ = None
+        
     def __run__(self):
-        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.inTable))
+        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.__inTable__))
 
         src = self.__manager__.openTable(self.__instance__, tpath)
         for key, val in src:
@@ -162,6 +163,12 @@ class MapTarget(MultiApplet):
             
     def map(self, key, value):
         raise Exception("Map method not implemented")
+    
+    def emit(self, key, value):
+        if self.__outTable__ is None:
+            self.__outTable__ = self.__manager__.createTable(self.__instance__, self.__tablepath__)
+        
+        self.__outTable__.emit(key, value)
 
 class RemapTarget(MultiApplet):
 

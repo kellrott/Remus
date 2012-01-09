@@ -96,7 +96,7 @@ class Worker:
         app = self.appletPath.split(":")
         
         instRef = remus.db.TableRef(app[0], app[1])
-        parentName = re.sub("@request$", "", app[1] )
+        parentName = re.sub("(@request|@follow)$", "", app[1] )
         appName = app[2]
         appPath = parentName + app[2]
         
@@ -178,7 +178,7 @@ class Task:
     """
     A task represents a target workload to be run by an executor
     """
-    def __init__(self, manager, instance, tablePath, key = None):
+    def __init__(self, manager, instance, tablePath, jobInfo, key = None):
         """
         
         :param manager:
@@ -190,6 +190,9 @@ class Task:
         :param tablePath:
             The path to the @request table that holds the work request
         
+        :param jobInfo:
+            Job Information
+        
         :param key:
             The name of the particular task
         
@@ -198,6 +201,7 @@ class Task:
         self.tablePath = tablePath
         self.key = key
         self.manager = manager
+        self.jobInfo = jobInfo
     
     def getName(self):
         return "%s:%s:%s" % (self.instance, self.tablePath, self.key)
@@ -337,18 +341,22 @@ class Manager:
         
     def scan(self):
         found = False
+        jobTree = {}
         for instance in self.db.listInstances():
             for table in self.db.listTables(instance):
-                if table.endswith("@request"):
-                    tableBase = table.replace("@request","")
+                if table.endswith("@request") or table.endswith("@follow"):
+                    tableBase = re.sub(r'(@request|@follow)$', '', table)
                     tableRef = remus.db.TableRef(instance,table)
                     doneRef = remus.db.TableRef(instance,tableBase + "@done")
-                    for key in self.db.listKeys(tableRef):
+                    for key, value in self.db.listKeyValue(tableRef):
                         if not self.db.hasKey(doneRef, key):
                             print "FOUND TASK", instance, table, key
-                            self.task_manager.addTask(Task(self, instance, table, key))
+                            #self.task_manager.addTask(Task(self, instance, table, key))
+                            task = Task(self, instance, table, value, key)
+                            jobTree[ task.getName() ] = task
                             found = True
-        return found
+        #return found
+        return jobTree
 
     def wait(self):
         """
@@ -359,7 +367,25 @@ class Manager:
         """
         if self.task_manager is None:
             raise Exception("Executor not defined")
-        while self.scan():
+        while 1:
+            jobTree = self.scan()
+            if len(jobTree) == 0:
+                break
+            print "tree", jobTree
+            for j in jobTree:
+                print "info", jobTree[j].jobInfo
+                dfound = False
+                if "_depends" in jobTree[j].jobInfo:
+                    dpath = jobTree[j].instance + ":" + jobTree[j].jobInfo["_depends"] + "/@request"
+                    print "dpath", dpath
+                    for k in jobTree:
+                        if k.startswith(dpath):
+                            dfound = True
+                if not dfound:
+                    self.task_manager.addTask(jobTree[j])
+                else:
+                    print "delay", j
+            print jobTree
             self.task_manager.cycle()
             time.sleep(1)
             
@@ -377,7 +403,10 @@ class Manager:
 
     def addChild(self, obj, child_name, child, depends=None):
         print "child:", obj.__tablepath__
-        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
+        if depends is None:
+            instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
+        else:
+            instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@follow")            
         if not self.db.hasTable(instRef):
             print "create", instRef
             self.db.createTable(instRef)
