@@ -9,6 +9,8 @@ import logging
 import pickle
 import time
 
+import traceback
+
 import remus.db
 import remus.db.table
 
@@ -130,7 +132,6 @@ class Worker:
             cls = mod
             for n in tmp[1:]:
                 cls = getattr(cls, n)
-
             if issubclass(cls, remus.SubmitTarget):
                 obj = cls()
             else:
@@ -144,16 +145,18 @@ class Worker:
         os.chdir(tmpdir)
         obj.__setpath__(instRef.instance, appPath)
         obj.__setmanager__(manager)
-        if isinstance(obj, remus.SubmitTarget):
-            obj.run(runVal)
-        elif isinstance(obj, remus.MultiApplet):
-            obj.__run__()
-        else:
-            obj.run()
-        
-        doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
-        db.addData(doneRef, appName, {})
-
+        try:
+            if isinstance(obj, remus.SubmitTarget):
+                obj.run(runVal)
+            elif isinstance(obj, remus.MultiApplet):
+                obj.__run__()
+            else:
+                obj.run()
+            doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
+            db.addData(doneRef, appName, {})
+        except Exception:
+            errorRef = remus.db.TableRef(instRef.instance, parentName + "@error")
+            db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
 
 
 class TaskExecutor:
@@ -348,8 +351,9 @@ class Manager:
                     tableBase = re.sub(r'(@request|@follow)$', '', table)
                     tableRef = remus.db.TableRef(instance,table)
                     doneRef = remus.db.TableRef(instance,tableBase + "@done")
+                    errorRef = remus.db.TableRef(instance,tableBase + "@error")
                     for key, value in self.db.listKeyValue(tableRef):
-                        if not self.db.hasKey(doneRef, key):
+                        if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
                             print "FOUND TASK", instance, table, key
                             #self.task_manager.addTask(Task(self, instance, table, key))
                             task = Task(self, instance, table, value, key)
