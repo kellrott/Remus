@@ -4,17 +4,12 @@ import csv
 
 __manifest__ = [ "__init__.py" ]
 
-class PipelineRoot(remus.RootApplet):
-	def __init__(self, config):
-		remus.RootApplet.__init__(self)
-		self.config = config
+class PipelineRoot(remus.SubmitTarget):
 	
-	def run(self):
-		self.addChild( 'tableScan', GenerateTable() )
+	def run(self, params):
+		self.addChildTarget( 'tableScan', GenerateTable('inputTable') )
+		self.addFollowTarget( 'tableMap', TableMap( 'tableScan/inputTable') )
 	
-	def tableScan(self, tables):
-		self.addChild( TableMap(tables['inTable']), self.final )
-
 
 startText = """probe	exp_1	exp_2	exp_3	exp_4	exp_5	exp_6	exp_7	exp_8	exp_9
 gene_1	0.262491117231548	0.0196498045697808	0.216511648381129	0.109295522794127	0.168183598667383	0.176425657933578	0.478054876904935	0.511331603862345	0.253156918566674
@@ -118,12 +113,13 @@ gene_98	3.41238452401012	0.451945505104959	7.14488439657725	4.69970748014748	8.9
 gene_99	3.14989340677857	0.432295700535178	6.92837274819613	4.59041195735335	8.74554713070393	10.9383907918818	34.4199511371553	41.9291915167123	23.290436508134
 """
 
-class GenerateTable(remus.ChildApplet):
-	def __init__(self):
-		remus.ChildApplet.__init__(self)
+class GenerateTable(remus.Target):
+	def __init__(self, tableName):
+		remus.Target.__init__(self)
+		self.tableName = tableName
 	
 	def run(self):
-		inTable = self.createTable( "inputTable" )
+		inTable = self.createTable( self.tableName )
 		reader = csv.reader( startText.split("\n"), delimiter="\t" )
 		header = None
 		for row in reader:
@@ -138,9 +134,7 @@ class GenerateTable(remus.ChildApplet):
 						out[ header[i] ] = float(col)
 					inTable.emit( row[0], out )
 
-class TableMap(remus.MapApplet):
-	def __init__(self):
-		remus.MapApplet.__init__(self)
+class TableMap(remus.MapTarget):
 	
 	def map(self, key, val):
 		total = sum(val.values())

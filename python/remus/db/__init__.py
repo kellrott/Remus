@@ -12,6 +12,7 @@ class NotImplementedException(Exception):
         Exception.__init__(self)
 
 
+
 class TableRef(object):
     def __init__(self, instance, table=None):
         if table is None and instance.count(":"):

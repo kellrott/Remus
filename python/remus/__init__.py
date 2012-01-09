@@ -1,4 +1,4 @@
-
+import os
 import json
 from copy import copy
 
@@ -69,6 +69,9 @@ class Target(RemusApplet):
         
         """
         self.__manager__.addChild(self, child_name, child)
+    
+    def addFollowTarget(self, child_name, child):
+        self.__manager__.addChild(self, child_name, child, self.__tablepath__)
 
     def createTable(self, tableName):
         """
@@ -148,8 +151,15 @@ class MapTarget(MultiApplet):
     
     """
     def __init__(self, inputTable):
-        self.input = inputTable
+        self.inTable = inputTable
     
+    def __run__(self):
+        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.inTable))
+
+        src = self.__manager__.openTable(self.__instance__, tpath)
+        for key, val in src:
+            self.map(key, val)
+            
     def map(self, key, value):
         raise Exception("Map method not implemented")
 

@@ -375,14 +375,17 @@ class Manager:
         fs = remus.db.FileDB(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
 
-    def addChild(self, obj, child_name, child):
+    def addChild(self, obj, child_name, child, depends=None):
         print "child:", obj.__tablepath__
         instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         if not self.db.hasTable(instRef):
             print "create", instRef
             self.db.createTable(instRef)
         logging.info("Adding Child %s" % (child_name)) 
-        self.db.addData(instRef, child_name, {})        
+        meta = {}
+        if depends is not None:
+            meta["_depends"]= depends
+        self.db.addData(instRef, child_name, meta)        
         tmp = tempfile.NamedTemporaryFile()
         tmp.write(pickle.dumps(child))
         tmp.flush()        
