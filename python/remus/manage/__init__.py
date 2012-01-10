@@ -371,11 +371,13 @@ class Manager:
         """
         if self.task_manager is None:
             raise Exception("Executor not defined")
+        sleepTime = 1
         while 1:
             jobTree = self.scan()
             if len(jobTree) == 0:
                 break
             print "tree", jobTree
+            added = False
             for j in jobTree:
                 print "info", jobTree[j].jobInfo
                 dfound = False
@@ -386,12 +388,18 @@ class Manager:
                         if k.startswith(dpath):
                             dfound = True
                 if not dfound:
-                    self.task_manager.addTask(jobTree[j])
+                    if self.task_manager.addTask(jobTree[j]):
+                        added = True
                 else:
                     print "delay", j
             print jobTree
             self.task_manager.cycle()
-            time.sleep(1)
+            if added:
+                sleepTime = 1
+            else:
+                if sleepTime < 30:
+                    sleepTime += 1
+            time.sleep(sleepTime)
             
     def createTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
