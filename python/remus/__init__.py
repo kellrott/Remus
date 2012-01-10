@@ -71,6 +71,10 @@ class Target(RemusApplet):
         self.__manager__.addChild(self, child_name, child)
     
     def addFollowTarget(self, child_name, child):
+        """
+        A follow target is a delayed callback, that isn't run until all 
+        of a targets children have complete
+        """
         self.__manager__.addChild(self, child_name, child, self.__tablepath__)
 
     def createTable(self, tableName):
@@ -138,6 +142,64 @@ class LocalSubmitTarget(Target):
         """
         raise Exception()
 
+    def openTable(self, tableName):
+        """
+        LocalSubmitTarget inherits openTable from :class:`remus.Target`
+        but it doesn't make sence in this context because the target has 
+        no parents. It only raises an exception
+        
+        :raises: Exception
+        """
+        raise Exception()
+        
+
+
+class TableTarget(Target):
+    """
+    A target class with an emit method. During initilization, the TableTarget
+    expects to get that name of a table to output to. Multiple TableTargets can point 
+    to the same output table
+    """
+    
+    def __init__(self, outTable):
+        """
+        
+        :param outTable: Name of the table to output to
+        """
+        self.__outTableRef__ = outTable
+        self.__outTable__ = None
+    
+    def run(self):
+        """
+        The run method is user provided and run on the local node during the 
+        pipeline initialization.
+        """
+        raise Exception()
+
+    
+    def emit(self, key, value):
+        """
+        Emit a value to be stored in the output table
+        """
+        if self.__outTable__ is None:
+            self.__outTable__ = self.__manager__.createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)) )
+        
+        self.__outTable__.emit(key, value)
+
+    def copyTo(self, path, key, name):
+        """
+        Copy out file
+        
+        :param path: Path of the file
+        
+        :param key: Key the file is associated with
+        
+        :param name: Name of the attachment  
+        """
+        if self.__outTable__ is None:
+            self.__outTable__ = self.__manager__.createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)) )
+        self.__outTable__.copyTo(path, key, name)
+    
 
 
 class MultiApplet(RemusApplet):
@@ -148,7 +210,7 @@ class MultiApplet(RemusApplet):
 
 class MapTarget(MultiApplet):
     """
-    
+    A Target Map operation, which will run on one table.
     """
     def __init__(self, inputTable):
         self.__inTable__ = inputTable
@@ -162,9 +224,19 @@ class MapTarget(MultiApplet):
             self.map(key, val)
             
     def map(self, key, value):
+        """
+        The user provided method that will be called on each key-value pair in a table
+        
+        :param key: The key to be mapped
+        
+        :param value: The value to be mapped
+        """
         raise Exception("Map method not implemented")
     
     def emit(self, key, value):
+        """
+        Emit a value to be stored in the output table
+        """
         if self.__outTable__ is None:
             self.__outTable__ = self.__manager__.createTable(self.__instance__, self.__tablepath__)
         
@@ -209,18 +281,41 @@ class RemapTarget(MultiApplet):
             self.remap(key, keys, vals)
     
     def copyFrom(self, path, srcTable, key, name):
-        print "opening", key, name
+        """
+        Copy file to output table
+        
+        :param path: Path to store attachment at
+        
+        :param srcTable: of the table to copy from
+        
+        :param key: The key the file is attached to
+        
+        :param name: Name of the attachment
+        """
         for i, t in enumerate(self.__inputs__):
             if t == srcTable:
                 st = self.__manager__.openTable(self.srcTables[i].instance, self.srcTables[i].table)
                 st.copyFrom(path, key, name)
     
     def emit(self, key, value):
+        """
+        Emit a value to be stored in the output table
+        """
         if self.outTable is None:
             self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
         self.outTable.emit(key, value)
     
     def copyTo(self, path, key, name):
+        """
+        Copy a file to the output stack
+        
+        :param path: Path of the file to be copied
+        
+        :param key: Key the attachment is to be copied to
+        
+        :param name: 
+        
+        """
         if self.outTable is None:
             self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
         self.outTable.copyTo(path, key, name)

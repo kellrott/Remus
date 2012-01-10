@@ -10,32 +10,63 @@ Remus Dynamic Pipeline Engine
 Manager Interface
 =================
 
-.. autoclass:: remus.manage.Config
-    :members:
+.. automodule:: remus.manage
+	:members:
 
+Remus Database
+===============
 
-.. autoclass:: remus.manage.Manager
-    :members:
+.. automodule:: remus.db
+	:members: TableRef, DBBase, FileDB
+
 
 Target Classes
 ==============
 
+------------
+SubmitTarget
+------------
+.. autoclass:: remus.SubmitTarget
+    :members:
+    :inherited-members:
+
+-----------------
+LocalSubmitTarget
+-----------------
 .. autoclass:: remus.LocalSubmitTarget
     :members:
     :inherited-members:
 
-.. autoclass:: remus.SubmitTarget
-    :members:
-    :inherited-members:
-    
+------
+Target
+------
 .. autoclass:: remus.Target
     :members:
+
+-----------
+TableTarget
+-----------
+.. autoclass:: remus.TableTarget
+    :members: 
+
+---------
+MapTarget
+---------
+.. autoclass:: remus.MapTarget
+    :members:
+
+-----------
+RemapTarget
+-----------
+.. autoclass:: remus.RemapTarget
+    :members:
+
 
 Table Interfaces
 ================
 
 .. autoclass:: remus.db.table.ReadTable
-    :members: __iter__
+    :members:
     
 
 .. autoclass:: remus.db.table.WriteTable

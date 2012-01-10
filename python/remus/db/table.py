@@ -45,6 +45,12 @@ class WriteTable(object):
 
 
     def getPath(self):
+        """
+        Get absolute path of table
+        
+        :returns: Sting of table's absolute path
+        """
+
         return self.table_ref.toPath()
         
 class ReadTable(object):
@@ -59,10 +65,32 @@ class ReadTable(object):
         return self.db.listKeyValue(self.table_ref).__iter__()
     
     def get(self, key):
+        """
+        Get values associated with key
+        
+        :param key: Key to get
+        
+        :returns: List of values associated with key
+        """
         return self.db.getValue(self.table_ref, key)
     
     def copyFrom(self, path, key, name):
+        """
+        Copy file from table
+        
+        :param path: Path to store file at:
+        
+        :param key: Key to copy attachment from
+        
+        :param name: Name of the attachment
+        
+        """
         return self.db.copyFrom(path, self.table_ref, key, name)
 
     def getPath(self):
+        """
+        Get absolute path of table
+        
+        :returns: Sting of table's absolute path
+        """
         return self.table_ref.toPath()

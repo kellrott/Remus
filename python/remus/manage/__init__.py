@@ -1,3 +1,27 @@
+"""
+The remus.manage module provide classes related to job submission/control 
+and task running.
+
+
+A python module can easily be turned into a Remus module with some simple 
+additions. File that need to be copied to the server for later execution on 
+remote nodes need to be identified. When a class is submitted to the remus
+manager, it examines the module the class comes from, and looks for two fields
+
+* __manifest__ : A list of files in the module to be copied to the server. 
+
+* __includes__ : A list of dependent remus modules that need to be copied as well
+
+
+So a module defined in file 'pipeline.py' could have the entries::
+    
+    __manifest__ = ['pipeline.py']
+    __include__ = ['hugoConvert', 'segmentMap']
+
+Remus would then copy the files pipeline.py and then scan the modules 'hugoConvert' 
+and 'segmentMap' for their manifest entries as well.
+
+"""
 
 import uuid
 import imp
@@ -14,41 +38,13 @@ import traceback
 import remus.db
 import remus.db.table
 
+
+
 logging.basicConfig(level=logging.DEBUG)
-
-global process_submission
-global process_runinfo
-
-process_submission = None
-process_runinfo = None
 
 class UnimplementedMethod(Exception):
     def __init__(self):
         Exception.__init__(self)
-
-def config():
-    return {}
-
-
-def get_submission():
-    global process_submission
-    return process_submission
-
-def set_submission(sub):
-    global process_submission
-    process_submission = sub
-
-def set_runInfo(info):
-    global process_runinfo
-    process_runinfo = info
-
-def run(target):
-    global process_runinfo
-    target.runInfo = process_runinfo
-    r = target.run()
-    for a in target.created_tables:
-        a.close()
-    return r
 
 executorMap = {
     'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor'
@@ -75,13 +71,6 @@ class Config:
             self.executor = cls()
         else:
             self.executor = None
-
-class Instance:
-    def __init__(self, uuid):
-        self.uuid = uuid
-    
-    def __str__(self):
-        return str(self.uuid)
 
 
 class Worker:
