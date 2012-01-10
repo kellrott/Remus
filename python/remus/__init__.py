@@ -84,6 +84,19 @@ class Target(RemusApplet):
         :param tableName: Name of the table to be opened
         
         :return: :class:`remus.db.table.WriteTable`
+        
+        In the case of a target::
+            
+            e02d038d-98a3-494a-9a27-c04b4516ced4:/submit_20120110/the_child
+        
+        The call::
+            
+            self.openTable('output')
+        
+        Would create the table::
+            
+            e02d038d-98a3-494a-9a27-c04b4516ced4:/submit_20120110/the_child/output
+       
 
         """
         return self.__manager__.createTable(self.__instance__, self.__tablepath__ + "/" + tableName)
@@ -96,6 +109,22 @@ class Target(RemusApplet):
         :param tableName: Name of the table to be opened
         
         :return: :class:`remus.db.table.ReadTable`
+        
+        In the case of a target::
+            
+            e02d038d-98a3-494a-9a27-c04b4516ced4:/submit_20120110/the_child
+        
+        The call::
+            
+            self.openTable('input')
+        
+        Would open the table::
+            
+            e02d038d-98a3-494a-9a27-c04b4516ced4:/submit_20120110/input
+        
+        Because openTable opens in the parent directory (because the parent has already completed)
+        
+        
         """
         parentTable = "/".join( self.__tablepath__.split("/")[:-1] )
         return self.__manager__.openTable(self.__instance__, parentTable + "/" + tableName)
@@ -110,6 +139,21 @@ class SubmitTarget(Target):
     a JSON style'd data structure from a submission table.
     This allows for it to be instantiated outside of a python environment, ie from the command 
     line or via web request.
+    
+    Example pipeline.py::
+        
+        class PipelineRoot(remus.SubmitTarget):
+	
+            def run(self, params):
+                self.addChildTarget( 'tableScan', GenerateTable(params['tableBase']) )
+        
+        if __name__ == '__main__':
+            config = remus.manage.Config('tmpdir', 'datadir', 'processExecutor')
+            manager = remus.manage.Manager(config)    
+            instance = manager.submit('test', 'pipeline.PipelineRoot', {'tableBase' : sys.argv[1]} )
+            manager.wait()
+
+    
     """
     def __init__(self):
         RemusApplet.__init__(self)
@@ -124,6 +168,17 @@ class SubmitTarget(Target):
         """
         raise Exception()
 
+    def openTable(self, tableName):
+        """
+        LocalSubmitTarget inherits openTable from :class:`remus.Target`
+        but it doesn't make sence in this context because the target has 
+        no parents. It only raises an exception
+        
+        :raises: Exception
+        """
+        raise Exception()
+        
+
 class LocalSubmitTarget(Target):
     """
     Local Submit target.
@@ -132,7 +187,34 @@ class LocalSubmitTarget(Target):
     The primary difference between this class and other, is that it is run 
     on the submission node (as opposed to a remote node), so it has access to the local 
     file system and can be used to setup tables and input data based on the local files,
-    before calculation start up on remote nodes.    
+    before calculation start up on remote nodes. 
+    
+    Example::
+        
+        #this class will be run remotely
+        class RemoteChild(remus.Target):
+            def run(self):
+                o = self.createTable("output")
+                o.emit("test", 2)
+                o.close()
+
+
+        #this class will be run locally, during the submission process
+        class LocalSubmission(remus.LocalSubmitTarget):    
+            def run(self):
+                o = self.createTable("output")
+                o.emit("test", 1)
+                o.close()        
+                r = RemoteChild()
+                self.addChildTarget('child', r)
+
+        
+        if __name__ == '__main__':
+            config = remus.manage.Config("tmp_dir", 'data_dir', 'processExecutor')
+            manager = remus.manage.Manager(config)
+            l = LocalSubmission()
+            instance = manager.submit('test', l)
+       
     """
     
     def run(self):
@@ -211,6 +293,24 @@ class MultiApplet(RemusApplet):
 class MapTarget(MultiApplet):
     """
     A Target Map operation, which will run on one table.
+
+    Example::
+        
+        
+        class TableMap(remus.MapTarget):            
+            def map(self, key, val):
+                total = sum(val.values())
+                self.emit( key, total / len(val.values()) )
+        
+        class SubmitRoot(remus.SubmitTarget):
+            ...
+            Create a table named inputTable
+            ...
+            self.addChildTarget( 'tableMap', TableMap( 'inputTable') )
+
+    The TableMap child of SubmitRoot will run on the table 'inputTable' and output to 
+    the 'tableMap' table
+    
     """
     def __init__(self, inputTable):
         self.__inTable__ = inputTable
@@ -243,6 +343,58 @@ class MapTarget(MultiApplet):
         self.__outTable__.emit(key, value)
 
 class RemapTarget(MultiApplet):
+    
+    """
+    A RemapTarget operates is a similar fashion to the MapTarget, except it is designed to 
+    merge multiple table togeather using a set of mapped permutations.
+    
+    For example, in the case of three tables that need to be merge via some set of 
+    determined permutations, named table_a, table_b and table_c. We also need a table 
+    of the valid permutations, table_perm
+    
+    table_perm takes that form:    
+
+    ================= =============================================
+    key               value
+    ================= =============================================
+    permkey_1         [table_a_key_1, table_b_key_1, table_c_key_1]
+    permkey_2         [table_a_key_2, table_b_key_2, table_c_key_2]
+    permkey_3         [table_a_key_3, table_b_key_3, table_c_key_3]
+    ================= =============================================
+    
+    Example::
+        
+        class Convert(remus.RemapTarget):
+            __inputs__ = [ 'gmap', 'amap' ]
+        
+            def remap(self, srcKey, keys, vals):
+                gKey = keys['gmap']
+                gValue = vals['gmap']
+                
+                ....
+                
+                self.emit(someKey, someValue)
+        
+        
+        
+        class ConvertSchedule(remus.Target):
+            gTable = self.openTable('genomicMatrix')
+            aTable = self.openTable('aliasMap')      
+        
+            permTable = self.createTable('convReqest')
+        
+            #...
+            #scan gTable and aTable for valid permutations,
+            #in the loop, we would have gKey, aKey, and permKey
+            #and emit that values
+                pTable.emit( permKey, [ gKey, aKey ] )
+            #...
+                
+            #now schedule the remap
+            self.addChildTarget("convert_out", Convert(pTable.getPath(), [gTable.getPath(), aTable.getPath()]) )
+
+    
+    """
 
     def __init__(self, keyTable, srcTables):
         self.keyTable = TableRef(keyTable)

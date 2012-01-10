@@ -28,7 +28,6 @@ SubmitTarget
 ------------
 .. autoclass:: remus.SubmitTarget
     :members:
-    :inherited-members:
 
 -----------------
 LocalSubmitTarget

@@ -348,7 +348,6 @@ class Manager:
                     errorRef = remus.db.TableRef(instance,tableBase + "@error")
                     for key, value in self.db.listKeyValue(tableRef):
                         if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
-                            print "FOUND TASK", instance, table, key
                             #self.task_manager.addTask(Task(self, instance, table, key))
                             task = Task(self, instance, table, value, key)
                             jobTree[ task.getName() ] = task
@@ -370,7 +369,6 @@ class Manager:
             jobTree = self.scan()
             if len(jobTree) == 0:
                 break
-            print "tree", jobTree
             added = False
             for j in jobTree:
                 print "info", jobTree[j].jobInfo
@@ -407,13 +405,11 @@ class Manager:
         return remus.db.table.ReadTable(fs, ref)
 
     def addChild(self, obj, child_name, child, depends=None):
-        print "child:", obj.__tablepath__
         if depends is None:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         else:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@follow")            
         if not self.db.hasTable(instRef):
-            print "create", instRef
             self.db.createTable(instRef)
         logging.info("Adding Child %s" % (child_name)) 
         meta = {}
