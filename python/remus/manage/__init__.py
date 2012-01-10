@@ -274,7 +274,7 @@ class Manager:
         else:
             self.task_manager = None
     
-    def submit(self, submitName, className, submitData):
+    def submit(self, submitName, className, submitData={}):
         """
         Create new pipeline instance.
         
@@ -288,14 +288,19 @@ class Manager:
         """
         inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
         submitData['_submitKey'] = submitName
-        submitData['_submitInit'] = className
         submitData['_instance'] = inst
-        submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
-
-        instRef = remus.db.TableRef(inst, "@request")
-        self.db.createTable(instRef)
-        self.db.addData( instRef, submitName, submitData)
         
+        if isinstance(className, str):       
+            submitData['_submitInit'] = className
+            submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
+            instRef = remus.db.TableRef(inst, "@request")
+            self.db.createTable(instRef)
+            self.db.addData( instRef, submitName, submitData)
+        elif isinstance(className, remus.LocalSubmitTarget):
+            self.import_applet(inst, className.__module__, submitData)
+            className.__setpath__(inst, submitName)
+            className.__setmanager__(self)
+            className.run()        
         return inst
 
     def import_applet(self, inst, applet, appletInfo):
@@ -397,7 +402,6 @@ class Manager:
         return remus.db.table.WriteTable(fs, ref)
 
     def openTable(self, inst, tablePath):
-        print "openTable", tablePath
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
