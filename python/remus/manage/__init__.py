@@ -47,9 +47,19 @@ class UnimplementedMethod(Exception):
         Exception.__init__(self)
 
 executorMap = {
-    'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor',
+    'auto' : 'remus.manage.autoSelect',
+    'process' : 'remus.manage.processExecutor.ProcessExecutor',
     'drmaa' : 'remus.manage.drmaaExecutor.DRMAAExecutor'
 }
+
+
+def autoSelect():
+    import remus.manage.drmaaExecutor
+    if remus.manage.drmaaExecutor.isReady():
+        return remus.manage.drmaaExecutor.DRMAAExecutor()
+    import remus.manage.processExecutor
+    return remus.manage.processExecutor.ProcessExecutor()
+    
 
 class Config:
     """
@@ -373,7 +383,6 @@ class Manager:
                 break
             added = False
             for j in jobTree:
-                print "info", jobTree[j].jobInfo
                 dfound = False
                 if "_depends" in jobTree[j].jobInfo:
                     dpath = jobTree[j].instance + ":" + jobTree[j].jobInfo["_depends"] + "/@request"

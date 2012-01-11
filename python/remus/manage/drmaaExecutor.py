@@ -6,19 +6,24 @@ import traceback
 
 try:
     import drmaa
+except ImportError:
+    logging.error("Python DRMAA not installed")
+    drmaa = None
 except RuntimeError:
     drmaa = None
     logging.error(traceback.format_exc())
 
 
 def isReady():
-    if drmma is None:
+    if drmaa is None:
         return False
     try:
         s = drmaa.Session()
+        s.initialize()
         s.exit()
         return True
     except Exception:
+        logging.error(traceback.format_exc())
         return False       
 
 class DRMAAExecutor(remus.manage.TaskExecutor):

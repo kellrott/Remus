@@ -7,13 +7,10 @@ import remus.manage
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config("tmp_dir", 'data_dir')
+        config = remus.manage.Config("tmp_dir", 'data_dir', 'auto')
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'SimpleTest.PipelineRoot', {})
-        #subprocess.check_call( [ sys.executable, "-m", "remus.manage.worker", 
-        #    "./", "workdir", instance, 'test'] )
-        subprocess.check_call( [ sys.executable, "-m", "remus.manage.manager", 
-            "tmp_dir", "data_dir", 'remus.manage.processExecutor.ProcessExecutor'] )
+        manager.wait()
 
     def tearDown(self):
         return
