@@ -306,7 +306,7 @@ class Manager:
             submitData['_submitInit'] = className
             submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
             instRef = remus.db.TableRef(inst, "@request")
-            self.db.createTable(instRef)
+            self.db.createTable(instRef, {})
             self.db.addData( instRef, submitName, submitData)
         elif isinstance(className, remus.LocalSubmitTarget):
             self.import_applet(inst, className.__module__, submitData)
@@ -323,7 +323,7 @@ class Manager:
         added = { a.getName() : True }
         
         envRef = remus.db.TableRef(inst, "@environment")
-        self.db.createTable(envRef)        
+        self.db.createTable(envRef, {})
         while len(impList):
             n = {}
             for modName in impList:
@@ -404,24 +404,24 @@ class Manager:
                     sleepTime += 1
             time.sleep(sleepTime)
             
-    def createTable(self, inst, tablePath):
+    def _createTable(self, inst, tablePath, tableInfo):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
-        fs.createTable(ref)
+        fs.createTable(ref, tableInfo)
         return remus.db.table.WriteTable(fs, ref)
 
-    def openTable(self, inst, tablePath):
+    def _openTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
 
-    def addChild(self, obj, child_name, child, depends=None):
+    def _addChild(self, obj, child_name, child, depends=None):
         if depends is None:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         else:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@follow")            
         if not self.db.hasTable(instRef):
-            self.db.createTable(instRef)
+            self.db.createTable(instRef, {})
         logging.info("Adding Child %s" % (child_name)) 
         meta = {}
         if depends is not None:

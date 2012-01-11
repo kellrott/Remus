@@ -145,7 +145,7 @@ class DBBase:
         """
         raise NotImplementedException()
 
-    def createTable(self, tableRef):
+    def createTable(self, tableRef, tableInfo):
         """
         Create a table in a given instance
         """
@@ -216,6 +216,25 @@ class DBBase:
         Copy file from attachment associated to a key
         """
         raise NotImplementedException()
+
+
+
+
+dbType = {
+"file" : "remus.db.FileDB"
+}
+
+def connect(path):
+    tmp = path.split("://")
+    if tmp[0] in dbType:
+        className = dbType[tmp[0]]
+        tmp1 = className.split('.')
+        mod = __import__(".".join(tmp1[:-1]))
+        cls = mod
+        for a in tmp1[1:]:
+            cls = getattr(cls, a)
+        return cls(tmp[1])        
+    return None
     
 
 def path_quote(word):
@@ -233,11 +252,13 @@ class FileDB(DBBase):
         fsPath = self._getFSPath(tableRef)
         return os.path.exists(fsPath)            
 
-    def createTable(self, tableRef):
+    def createTable(self, tableRef, tableInfo):
         fsDir = os.path.dirname(self._getFSPath(tableRef))
         if not os.path.exists(fsDir):
             os.makedirs(fsDir)
-    
+        handle = open(self._getFSPath(tableRef) + "@info", "w")
+        handle.write(json.dumps(tableInfo))
+        handle.close()    
     
     def _getFSPath(self, table):
         return os.path.join(self.basedir, table.instance, re.sub(r'^/', '', table.table))

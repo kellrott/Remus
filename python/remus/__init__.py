@@ -68,20 +68,22 @@ class Target(RemusApplet):
         
         
         """
-        self.__manager__.addChild(self, child_name, child)
+        self.__manager__._addChild(self, child_name, child)
     
     def addFollowTarget(self, child_name, child):
         """
         A follow target is a delayed callback, that isn't run until all 
         of a targets children have complete
         """
-        self.__manager__.addChild(self, child_name, child, self.__tablepath__)
+        self.__manager__._addChild(self, child_name, child, self.__tablepath__)
 
-    def createTable(self, tableName):
+    def createTable(self, tableName, tableInfo={}):
         """
         Create a table to output to
 
         :param tableName: Name of the table to be opened
+        
+        :param tableInfo: An object to descibe the characteristics of the table
         
         :return: :class:`remus.db.table.WriteTable`
         
@@ -99,7 +101,7 @@ class Target(RemusApplet):
        
 
         """
-        return self.__manager__.createTable(self.__instance__, self.__tablepath__ + "/" + tableName)
+        return self.__manager__._createTable(self.__instance__, self.__tablepath__ + "/" + tableName, tableInfo)
 
     def openTable(self, tableName):
         """
@@ -127,7 +129,7 @@ class Target(RemusApplet):
         
         """
         parentTable = "/".join( self.__tablepath__.split("/")[:-1] )
-        return self.__manager__.openTable(self.__instance__, parentTable + "/" + tableName)
+        return self.__manager__._openTable(self.__instance__, parentTable + "/" + tableName)
 
 
 class SubmitTarget(Target):
@@ -143,7 +145,7 @@ class SubmitTarget(Target):
     Example pipeline.py::
         
         class PipelineRoot(remus.SubmitTarget):
-	
+    
             def run(self, params):
                 self.addChildTarget( 'tableScan', GenerateTable(params['tableBase']) )
         
@@ -243,12 +245,13 @@ class TableTarget(Target):
     to the same output table
     """
     
-    def __init__(self, outTable):
+    def __init__(self, outTable, outTableInfo={}):
         """
         
         :param outTable: Name of the table to output to
         """
         self.__outTableRef__ = outTable
+        self.__outTableInfo__ = outTableInfo
         self.__outTable__ = None
     
     def run(self):
@@ -264,7 +267,7 @@ class TableTarget(Target):
         Emit a value to be stored in the output table
         """
         if self.__outTable__ is None:
-            self.__outTable__ = self.__manager__.createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)) )
+            self.__outTable__ = self.__manager__._createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)), self.__outTableInfo__ )
         
         self.__outTable__.emit(key, value)
 
@@ -279,7 +282,7 @@ class TableTarget(Target):
         :param name: Name of the attachment  
         """
         if self.__outTable__ is None:
-            self.__outTable__ = self.__manager__.createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)) )
+            self.__outTable__ = self.__manager__._createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)), self.__outTableInfo__ )
         self.__outTable__.copyTo(path, key, name)
     
 
@@ -319,7 +322,7 @@ class MapTarget(MultiApplet):
     def __run__(self):
         tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.__inTable__))
 
-        src = self.__manager__.openTable(self.__instance__, tpath)
+        src = self.__manager__._openTable(self.__instance__, tpath)
         for key, val in src:
             self.map(key, val)
             
@@ -396,18 +399,19 @@ class RemapTarget(MultiApplet):
     
     """
 
-    def __init__(self, keyTable, srcTables):
-        self.keyTable = TableRef(keyTable)
-        self.srcTables = []
-        self.outTable = None
+    def __init__(self, keyTable, srcTables, outTableInfo={}):
+        self._keyTable = TableRef(keyTable)
+        self._srcTables = []
+        self._outTable = None
+        self._outTableInfo = outTableInfo
         for src in srcTables:
-            self.srcTables.append(TableRef(src))
+            self._srcTables.append(TableRef(src))
     
     def __run__(self):
-        keySrc = self.__manager__.openTable(self.keyTable.instance, self.keyTable.table)
+        keySrc = self.__manager__._openTable(self._keyTable.instance, self._keyTable.table)
         src = {}
         for i, srcName in enumerate(self.__inputs__):
-            src[srcName] = self.__manager__.openTable(self.srcTables[i].instance, self.srcTables[i].table)
+            src[srcName] = self.__manager__._openTable(self._srcTables[i].instance, self._srcTables[i].table)
         for srcKey, keys in keySrc:
             valMap = {}
             i = 0
@@ -418,7 +422,7 @@ class RemapTarget(MultiApplet):
                 valMap[srcName] = valList
                 i += 1
             #print srcKey, self.__inputs__, valMap
-            self.__remapCall__(srcKey, self.__inputs__, valMap)        
+            self.__remapCall__(srcKey, self.__inputs__, valMap)
     
     def __remapCall__(self, key, srcNames, inputs, keys={}, vals={}):
         if len(srcNames):
@@ -446,16 +450,16 @@ class RemapTarget(MultiApplet):
         """
         for i, t in enumerate(self.__inputs__):
             if t == srcTable:
-                st = self.__manager__.openTable(self.srcTables[i].instance, self.srcTables[i].table)
+                st = self.__manager__._openTable(self._srcTables[i].instance, self._srcTables[i].table)
                 st.copyFrom(path, key, name)
     
     def emit(self, key, value):
         """
         Emit a value to be stored in the output table
         """
-        if self.outTable is None:
-            self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
-        self.outTable.emit(key, value)
+        if self._outTable is None:
+            self._outTable = self.__manager__._createTable(self.__instance__, self.__tablepath__, self._outTableInfo)
+        self._outTable.emit(key, value)
     
     def copyTo(self, path, key, name):
         """
@@ -468,12 +472,12 @@ class RemapTarget(MultiApplet):
         :param name: 
         
         """
-        if self.outTable is None:
-            self.outTable = self.__manager__.createTable(self.__instance__, self.__tablepath__)
-        self.outTable.copyTo(path, key, name)
+        if self._outTable is None:
+            self._outTable = self.__manager__._createTable(self.__instance__, self.__tablepath__, self._outTableInfo)
+        self._outTable.copyTo(path, key, name)
     
     def remap(self, srcKey, keys, vals):
-        raise Exception("Map method not implemented")
+        raise Exception("remap method not implemented")
 
         
 class Client(object):
