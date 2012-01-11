@@ -48,7 +48,7 @@ class UnimplementedMethod(Exception):
 
 executorMap = {
     'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor',
-    'drmaa' : 'remus.manage.drmmaExecutor.DRMAAExecutor'
+    'drmaa' : 'remus.manage.drmaaExecutor.DRMAAExecutor'
 }
 
 class Config:
@@ -217,9 +217,10 @@ class TaskManager:
         return len(self.task_queue)
     
     def cycle(self):
+        jMax = self.executor.getMaxJobs()
         for t in self.task_queue:
             if t not in self.active_tasks:
-                if len(self.active_tasks) < self.executor.getMaxJobs():
+                if jMax is None or len(self.active_tasks) < jMax:
                     self.executor.runTask(self.task_queue[t])
                     self.active_tasks[t] = True
         dmap = self.executor.poll()
