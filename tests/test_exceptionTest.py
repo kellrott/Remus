@@ -7,11 +7,11 @@ import remus.manage
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config("tmp_dir", 'data_dir')
+        config = remus.manage.Config('file://data_dir', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'remus_errortest.ExceptionSubmit', {})
         subprocess.check_call( [ sys.executable, "-m", "remus.manage.manager", 
-            "tmp_dir", "data_dir", 'auto'] )
+            "file://data_dir", 'auto', "tmp_dir"] )
 
     def tearDown(self):
         return

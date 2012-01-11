@@ -133,6 +133,14 @@ class DBBase:
     Base RemusDB interface. This interface can be implemented via file system
     ie :class:`remus.db.FileDB` or via network database interface
     """
+    
+    def getPath(self):
+        """
+        Get the connection URL of the server
+        """
+        raise NotImplementedException()
+        
+    
     def createInstance(self, instance):
         """
         Create an instance in the database
@@ -247,6 +255,9 @@ class FileDB(DBBase):
     def __init__(self, basedir):
         self.basedir = os.path.abspath(basedir)
         self.out_handle = {}
+    
+    def getPath(self):
+        return "file://" + self.basedir
     
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)

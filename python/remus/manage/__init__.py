@@ -65,14 +65,20 @@ class Config:
     """
     Remus Manager Configuration. Defines the database path, working directory
     and execution engine name(optional)
+    
+    :param dbpath: URL of the database, ie file://datadir or remus://server01:16016
+    
+    :param engineName: Name of the engine to do the work: ie 'auto', 'process', 'drmaa'
+    
+    :param wordir: Base temp directory for work 
     """
-    def __init__(self, workdir, dbpath, executorName=None):
+    def __init__(self, dbpath, engineName=None, workdir="/tmp"):
         self.workdir = os.path.abspath(workdir)
-        self.dbpath = os.path.abspath(dbpath)
-        if executorName is not None:
-            if executorName in executorMap:
-                executorName = executorMap[executorName]
-            tmp = executorName.split('.')
+        self.dbpath = dbpath
+        if engineName is not None:
+            if engineName in executorMap:
+                engineName = executorMap[engineName]
+            tmp = engineName.split('.')
             modName = ".".join(tmp[:-1])
             className = tmp[-1]
             mod = __import__(modName)            
@@ -90,7 +96,7 @@ class Worker:
         self.appletPath = appletPath
     
     def run(self):
-        db = remus.db.FileDB( self.config.dbpath )
+        db = remus.db.connect( self.config.dbpath )
         if not os.path.exists(self.config.workdir):
             os.mkdir(self.config.workdir)
         tmpdir = tempfile.mkdtemp(dir=self.config.workdir)
@@ -210,7 +216,7 @@ class Task:
         return "%s:%s:%s" % (self.instance, self.tablePath, self.key)
     
     def getCmdLine(self):        
-        return "%s -m remus.manage.worker %s %s %s:%s:%s" % (sys.executable, self.manager.config.workdir, self.manager.config.dbpath, self.instance, self.tablePath, self.key )
+        return "%s -m remus.manage.worker %s %s %s:%s:%s" % (sys.executable, self.manager.db.getPath(), self.manager.config.workdir, self.instance, self.tablePath, self.key )
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -280,7 +286,7 @@ class Manager:
         """
         self.config = config
         self.applet_map = {}
-        self.db = remus.db.FileDB(self.config.dbpath)
+        self.db = remus.db.connect(self.config.dbpath)
         if self.config.executor is not None:
             self.task_manager = TaskManager(self, self.config.executor)
         else:
@@ -406,13 +412,13 @@ class Manager:
             
     def _createTable(self, inst, tablePath, tableInfo):
         ref = remus.db.TableRef(inst, tablePath)
-        fs = remus.db.FileDB(self.config.dbpath)
+        fs = remus.db.connect(self.config.dbpath)
         fs.createTable(ref, tableInfo)
         return remus.db.table.WriteTable(fs, ref)
 
     def _openTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
-        fs = remus.db.FileDB(self.config.dbpath)
+        fs = remus.db.connect(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
 
     def _addChild(self, obj, child_name, child, depends=None):

@@ -7,7 +7,7 @@ import remus.manage
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config("tmp_dir", 'data_dir', 'auto')
+        config = remus.manage.Config('file://data_dir', 'auto', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'SimpleTest.PipelineRoot', {})
         manager.wait()

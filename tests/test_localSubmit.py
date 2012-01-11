@@ -27,7 +27,7 @@ class LocalSubmission(remus.LocalSubmitTarget):
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config("tmp_dir", 'data_dir', 'process')
+        config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         l = LocalSubmission()
         instance = manager.submit('test', l)

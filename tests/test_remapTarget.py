@@ -40,7 +40,7 @@ class Submission(remus.SubmitTarget):
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config("tmp_dir", 'data_dir', 'process')
+        config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('tableTest', 'test_remapTarget.Submission')
         manager.wait()
