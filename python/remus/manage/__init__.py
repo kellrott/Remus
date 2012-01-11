@@ -1,3 +1,27 @@
+"""
+The remus.manage module provide classes related to job submission/control 
+and task running.
+
+
+A python module can easily be turned into a Remus module with some simple 
+additions. File that need to be copied to the server for later execution on 
+remote nodes need to be identified. When a class is submitted to the remus
+manager, it examines the module the class comes from, and looks for two fields
+
+* __manifest__ : A list of files in the module to be copied to the server. 
+
+* __includes__ : A list of dependent remus modules that need to be copied as well
+
+
+So a module defined in file 'pipeline.py' could have the entries::
+    
+    __manifest__ = ['pipeline.py']
+    __include__ = ['hugoConvert', 'segmentMap']
+
+Remus would then copy the files pipeline.py and then scan the modules 'hugoConvert' 
+and 'segmentMap' for their manifest entries as well.
+
+"""
 
 import uuid
 import imp
@@ -14,41 +38,13 @@ import traceback
 import remus.db
 import remus.db.table
 
+
+
 logging.basicConfig(level=logging.DEBUG)
-
-global process_submission
-global process_runinfo
-
-process_submission = None
-process_runinfo = None
 
 class UnimplementedMethod(Exception):
     def __init__(self):
         Exception.__init__(self)
-
-def config():
-    return {}
-
-
-def get_submission():
-    global process_submission
-    return process_submission
-
-def set_submission(sub):
-    global process_submission
-    process_submission = sub
-
-def set_runInfo(info):
-    global process_runinfo
-    process_runinfo = info
-
-def run(target):
-    global process_runinfo
-    target.runInfo = process_runinfo
-    r = target.run()
-    for a in target.created_tables:
-        a.close()
-    return r
 
 executorMap = {
     'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor',
@@ -76,13 +72,6 @@ class Config:
             self.executor = cls()
         else:
             self.executor = None
-
-class Instance:
-    def __init__(self, uuid):
-        self.uuid = uuid
-    
-    def __str__(self):
-        return str(self.uuid)
 
 
 class Worker:
@@ -286,7 +275,7 @@ class Manager:
         else:
             self.task_manager = None
     
-    def submit(self, submitName, className, submitData):
+    def submit(self, submitName, className, submitData={}):
         """
         Create new pipeline instance.
         
@@ -300,14 +289,19 @@ class Manager:
         """
         inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
         submitData['_submitKey'] = submitName
-        submitData['_submitInit'] = className
         submitData['_instance'] = inst
-        submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
-
-        instRef = remus.db.TableRef(inst, "@request")
-        self.db.createTable(instRef)
-        self.db.addData( instRef, submitName, submitData)
         
+        if isinstance(className, str):       
+            submitData['_submitInit'] = className
+            submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
+            instRef = remus.db.TableRef(inst, "@request")
+            self.db.createTable(instRef)
+            self.db.addData( instRef, submitName, submitData)
+        elif isinstance(className, remus.LocalSubmitTarget):
+            self.import_applet(inst, className.__module__, submitData)
+            className.__setpath__(inst, submitName)
+            className.__setmanager__(self)
+            className.run()        
         return inst
 
     def import_applet(self, inst, applet, appletInfo):
@@ -355,7 +349,6 @@ class Manager:
                     errorRef = remus.db.TableRef(instance,tableBase + "@error")
                     for key, value in self.db.listKeyValue(tableRef):
                         if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
-                            print "FOUND TASK", instance, table, key
                             #self.task_manager.addTask(Task(self, instance, table, key))
                             task = Task(self, instance, table, value, key)
                             jobTree[ task.getName() ] = task
@@ -377,7 +370,6 @@ class Manager:
             jobTree = self.scan()
             if len(jobTree) == 0:
                 break
-            print "tree", jobTree
             added = False
             for j in jobTree:
                 print "info", jobTree[j].jobInfo
@@ -409,19 +401,16 @@ class Manager:
         return remus.db.table.WriteTable(fs, ref)
 
     def openTable(self, inst, tablePath):
-        print "openTable", tablePath
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.FileDB(self.config.dbpath)
         return remus.db.table.ReadTable(fs, ref)
 
     def addChild(self, obj, child_name, child, depends=None):
-        print "child:", obj.__tablepath__
         if depends is None:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         else:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@follow")            
         if not self.db.hasTable(instRef):
-            print "create", instRef
             self.db.createTable(instRef)
         logging.info("Adding Child %s" % (child_name)) 
         meta = {}
