@@ -104,6 +104,12 @@ class TableRef(object):
             self._instance = instance
             self._table = table
     
+    def __hash__(self):
+        return hash(self.toPath())
+    
+    def __eq__(self, other):
+        return str(self) == str(other)
+    
     @property
     def instance(self):
         """
@@ -158,6 +164,12 @@ class DBBase:
         Create a table in a given instance
         """
         raise NotImplementedException()
+    
+    def getTableInfo(self, tableRef):
+        """
+        Get table information
+        """
+        raise NotImplementedException()        
     
     def addData(self, table, key, value):
         """
@@ -263,6 +275,15 @@ class FileDB(DBBase):
         fsPath = self._getFSPath(tableRef)
         return os.path.exists(fsPath)            
 
+    def getTableInfo(self, tableRef):
+        path = self._getFSPath(tableRef) + "@info"
+        if not os.path.exists(path):
+            return {}
+        handle = open(path)
+        data = json.loads(handle.read())
+        handle.close()
+        return data
+
     def createTable(self, tableRef, tableInfo):
         fsDir = os.path.dirname(self._getFSPath(tableRef))
         if not os.path.exists(fsDir):
@@ -333,7 +354,9 @@ class FileDB(DBBase):
         out = {}
         for path in glob(os.path.join(dir, "*")):
             if path.count("@data"):
-                out[ re.sub( os.path.join(self.basedir, inst), "", re.sub("@data.*", "", path) ) ] = True
+                tableName = re.sub(os.path.join(self.basedir, inst), "", re.sub("@data.*", "", path))
+                tableRef = TableRef(inst, tableName)
+                out[ tableRef ] = True
             if os.path.isdir(path):
                 for a in self._dirscan( path, inst ):
                     out[a] = True

@@ -47,7 +47,7 @@ class TestCase(unittest.TestCase):
         
         db = remus.db.connect("file://data_dir")
         for table in db.listTables(instance):
-            assert not table.endswith("@error")
+            assert not table.toPath().endswith("@error")
 
     def tearDown(self):
         return

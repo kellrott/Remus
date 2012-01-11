@@ -187,17 +187,14 @@ class Task:
     """
     A task represents a target workload to be run by an executor
     """
-    def __init__(self, manager, instance, tablePath, jobInfo, key = None):
+    def __init__(self, manager, tableRef, jobInfo, key = None):
         """
         
         :param manager:
             The manager the task belongs to
-            
-        :param instance:
-            The pipeline instance the work belongs to
         
-        :param tablePath:
-            The path to the @request table that holds the work request
+        :param tableRef:
+            The tableRef of the @request table that holds the work request
         
         :param jobInfo:
             Job Information
@@ -206,17 +203,16 @@ class Task:
             The name of the particular task
         
         """
-        self.instance = instance
-        self.tablePath = tablePath
+        self.tableRef = tableRef
         self.key = key
         self.manager = manager
         self.jobInfo = jobInfo
     
     def getName(self):
-        return "%s:%s:%s" % (self.instance, self.tablePath, self.key)
+        return "%s:%s" % (self.tableRef, self.key)
     
     def getCmdLine(self):        
-        return "%s -m remus.manage.worker %s %s %s:%s:%s" % (sys.executable, self.manager.db.getPath(), self.manager.config.workdir, self.instance, self.tablePath, self.key )
+        return "%s -m remus.manage.worker %s %s %s:%s" % (sys.executable, self.manager.db.getPath(), self.manager.config.workdir, self.tableRef, self.key )
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -359,15 +355,14 @@ class Manager:
         jobTree = {}
         for instance in self.db.listInstances():
             for table in self.db.listTables(instance):
-                if table.endswith("@request") or table.endswith("@follow"):
-                    tableBase = re.sub(r'(@request|@follow)$', '', table)
-                    tableRef = remus.db.TableRef(instance,table)
-                    doneRef = remus.db.TableRef(instance,tableBase + "@done")
-                    errorRef = remus.db.TableRef(instance,tableBase + "@error")
-                    for key, value in self.db.listKeyValue(tableRef):
+                if table.toPath().endswith("@request") or table.toPath().endswith("@follow"):
+                    tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
+                    doneRef = remus.db.TableRef(tableBase + "@done")
+                    errorRef = remus.db.TableRef(tableBase + "@error")
+                    for key, value in self.db.listKeyValue(table):
                         if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
                             #self.task_manager.addTask(Task(self, instance, table, key))
-                            task = Task(self, instance, table, value, key)
+                            task = Task(self, table, value, key)
                             jobTree[ task.getName() ] = task
                             found = True
         #return found
@@ -391,7 +386,7 @@ class Manager:
             for j in jobTree:
                 dfound = False
                 if "_depends" in jobTree[j].jobInfo:
-                    dpath = jobTree[j].instance + ":" + jobTree[j].jobInfo["_depends"] + "/@request"
+                    dpath = jobTree[j].tableRef.instance + ":" + jobTree[j].jobInfo["_depends"] + "/@request"
                     print "dpath", dpath
                     for k in jobTree:
                         if k.startswith(dpath):
