@@ -51,7 +51,8 @@ def run(target):
     return r
 
 executorMap = {
-    'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor'
+    'processExecutor' : 'remus.manage.processExecutor.ProcessExecutor',
+    'drmaa' : 'remus.manage.drmmaExecutor.DRMAAExecutor'
 }
 
 class Config:

@@ -4,6 +4,9 @@ import multiprocessing
 
 import subprocess
 
+def isReady():
+	return True
+
 class ProcessExecutor(remus.manage.TaskExecutor):
 
     def __init__(self):
