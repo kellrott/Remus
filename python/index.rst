@@ -17,7 +17,7 @@ Remus Database
 ===============
 
 .. automodule:: remus.db
-	:members: TableRef, DBBase, FileDB
+	:members: connect, TableRef, DBBase, FileDB
 
 
 Target Classes

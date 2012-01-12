@@ -1,3 +1,26 @@
+"""
+
+Example of database scanning::
+            
+    #!/usr/bin/env python
+
+    import sys
+    import remus.db
+
+    db = remus.db.connect(sys.argv[1])
+
+    for inst in db.listInstances():
+        for table in db.listTables(inst):
+            meta = db.getTableInfo(table)
+            if 'datatype' in meta and meta['datatype'] == 'cgdata':
+                for key in db.listKeys(table):
+                    print key
+
+
+
+
+"""
+
 
 import os
 import json
@@ -245,6 +268,14 @@ dbType = {
 }
 
 def connect(path):
+    """
+    Connect to a Remus Database
+    
+    :param path: A string describing the address of the database, ie file://data_dir or remus://server01:16020
+    
+    :returns: :class:`remus.db.DBBase`
+    
+    """
     tmp = path.split("://")
     if tmp[0] in dbType:
         className = dbType[tmp[0]]

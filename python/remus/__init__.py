@@ -191,7 +191,7 @@ class LocalSubmitTarget(Target):
     file system and can be used to setup tables and input data based on the local files,
     before calculation start up on remote nodes. 
     
-    Example::
+    Example localSubmit.py::
         
         #this class will be run remotely
         class RemoteChild(remus.Target):
@@ -212,10 +212,18 @@ class LocalSubmitTarget(Target):
 
         
         if __name__ == '__main__':
+            import localSubmit
             config = remus.manage.Config("tmp_dir", 'data_dir', 'processExecutor')
             manager = remus.manage.Manager(config)
-            l = LocalSubmission()
+            l = localSubmit.LocalSubmission()
             instance = manager.submit('test', l)
+    
+    Note how in the __main__ block, the LocalSubmission class is referenced 
+    by importing localSubmit (the file we're already looking at) and refering to 
+    localSubmit.LocalSubmission. This is done to deal with issues in pickle.
+    If we refer to LocalSubmission directly, it's class module info is '__main__',
+    which will make no sense determining the module that provides the source for
+    RemoteChild.
        
     """
     

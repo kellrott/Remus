@@ -128,6 +128,7 @@ class Worker:
                     db.copyFrom(opath, envRef, env, name) 
 
         manager = remus.manage.Manager(self.config)
+        errorRef = remus.db.TableRef(instRef.instance, parentName + "@error")
 
         if '_submitInit' in runVal:
             runClass = runVal['_submitInit']
@@ -145,7 +146,11 @@ class Worker:
         elif db.hasAttachment(instRef, appName, "pickle"):
             db.copyFrom(tmpdir + "/pickle", instRef, appName, "pickle")
             handle = open(tmpdir + "/pickle")
-            obj = pickle.loads(handle.read())
+            try:
+                obj = pickle.loads(handle.read())
+            except Exception:
+                db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
+                return
             handle.close()
 
         os.chdir(tmpdir)
@@ -161,7 +166,6 @@ class Worker:
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
             db.addData(doneRef, appName, {})
         except Exception:
-            errorRef = remus.db.TableRef(instRef.instance, parentName + "@error")
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
 
 
