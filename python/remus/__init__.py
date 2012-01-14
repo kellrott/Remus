@@ -323,12 +323,13 @@ class MapTarget(MultiApplet):
     the 'tableMap' table
     
     """
-    def __init__(self, inputTable):
-        self.__inTable__ = inputTable
+    def __init__(self, inputTable, tableInfo={}):
+        self.__keyTable__ = inputTable
         self.__outTable__ = None
+        self.__tableInfo__ = tableInfo
         
     def __run__(self):
-        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.__inTable__))
+        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.__keyTable__))
 
         src = self.__manager__._openTable(self.__instance__, tpath)
         for key, val in src:
@@ -349,7 +350,7 @@ class MapTarget(MultiApplet):
         Emit a value to be stored in the output table
         """
         if self.__outTable__ is None:
-            self.__outTable__ = self.__manager__.createTable(self.__instance__, self.__tablepath__)
+            self.__outTable__ = self.__manager__._createTable(self.__instance__, self.__tablepath__, self.__tableInfo__)
         
         self.__outTable__.emit(key, value)
 
@@ -408,7 +409,7 @@ class RemapTarget(MultiApplet):
     """
 
     def __init__(self, keyTable, srcTables, outTableInfo={}):
-        self._keyTable = TableRef(keyTable)
+        self.__keyTable__ = TableRef(keyTable)
         self._srcTables = []
         self._outTable = None
         self._outTableInfo = outTableInfo
@@ -416,7 +417,7 @@ class RemapTarget(MultiApplet):
             self._srcTables.append(TableRef(src))
     
     def __run__(self):
-        keySrc = self.__manager__._openTable(self._keyTable.instance, self._keyTable.table)
+        keySrc = self.__manager__._openTable(self.__keyTable__.instance, self.__keyTable__.table)
         src = {}
         for i, srcName in enumerate(self.__inputs__):
             src[srcName] = self.__manager__._openTable(self._srcTables[i].instance, self._srcTables[i].table)

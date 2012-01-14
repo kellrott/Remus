@@ -431,6 +431,9 @@ class Manager:
         meta = {}
         if depends is not None:
             meta["_depends"]= depends
+        if isinstance(child, remus.MultiApplet):
+            tableRef = remus.db.TableRef(obj.__instance__, os.path.abspath(os.path.join(obj.__tablepath__, child.__keyTable__)))
+            meta["_keyTable"] = tableRef.toPath()
         self.db.addData(instRef, child_name, meta)        
         tmp = tempfile.NamedTemporaryFile()
         tmp.write(pickle.dumps(child))
