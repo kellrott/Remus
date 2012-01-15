@@ -126,6 +126,8 @@ class TableRef(object):
         else:
             self._instance = instance
             self._table = table
+        if not self._table.startswith("/"):
+            self._table = "/" + self._table
     
     def __hash__(self):
         return hash(self.toPath())
@@ -156,6 +158,13 @@ class TableRef(object):
         """
         return "%s:%s" % (self._instance, self._table)
 
+def join(*args):
+    if isinstance(args[0], TableRef):
+        return TableRef(args[0].instance, os.path.abspath( os.path.join( "/", args[0].table, *args[1:]))) 
+    if args[0].count(":"):
+        tmp = args[0].split(":")
+        return TableRef(tmp[0], os.path.abspath(os.path.join("/", tmp[1], *args[1:])))
+    return TableRef(args[0], os.path.abspath(os.path.join("/", *args[1:])))
 
 class DBBase:
     """

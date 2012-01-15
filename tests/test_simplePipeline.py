@@ -4,13 +4,25 @@ import sys
 import subprocess
 import shutil
 import remus.manage
-
+import remus.db
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config('file://data_dir', 'auto', workdir="tmp_dir")
+        
+        dbPath = 'file://data_dir'
+        
+        config = remus.manage.Config(dbPath, 'auto', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'SimpleTest.PipelineRoot', {})
-        manager.wait()
+        manager.wait(instance)
+        
+        table = remus.db.join(instance, 'test', 'tableMap')
+        conn = remus.db.connect(dbPath)
+        count = 0
+        for key in conn.listKeys(table):
+            assert key.startswith("gene_")
+            count += 1
+        
+        assert count == 99
 
     def tearDown(self):
         return

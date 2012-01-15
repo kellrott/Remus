@@ -409,7 +409,8 @@ class RemapTarget(MultiApplet):
     """
 
     def __init__(self, keyTable, srcTables, outTableInfo={}):
-        self.__keyTable__ = TableRef(keyTable)
+        self.__keyTable__ = keyTable
+        self.__keyTableRef__ = TableRef(keyTable)
         self._srcTables = []
         self._outTable = None
         self._outTableInfo = outTableInfo
@@ -417,7 +418,7 @@ class RemapTarget(MultiApplet):
             self._srcTables.append(TableRef(src))
     
     def __run__(self):
-        keySrc = self.__manager__._openTable(self.__keyTable__.instance, self.__keyTable__.table)
+        keySrc = self.__manager__._openTable(self.__keyTableRef__.instance, self.__keyTableRef__.table)
         src = {}
         for i, srcName in enumerate(self.__inputs__):
             src[srcName] = self.__manager__._openTable(self._srcTables[i].instance, self._srcTables[i].table)

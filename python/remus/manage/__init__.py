@@ -354,28 +354,28 @@ class Manager:
                     impList.append(inc)
         return added.keys()
         
-    def scan(self):
+    def scan(self, instance):
         found = False
         jobTree = {}
-        for instance in self.db.listInstances():
-            for table in self.db.listTables(instance):
-                if table.toPath().endswith("@request") or table.toPath().endswith("@follow"):
-                    tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
-                    doneRef = remus.db.TableRef(tableBase + "@done")
-                    errorRef = remus.db.TableRef(tableBase + "@error")
-                    for key, value in self.db.listKeyValue(table):
-                        if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
-                            #self.task_manager.addTask(Task(self, instance, table, key))
-                            task = Task(self, table, value, key)
-                            jobTree[ task.getName() ] = task
-                            found = True
+        for table in self.db.listTables(instance):
+            if table.toPath().endswith("@request") or table.toPath().endswith("@follow"):
+                tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
+                doneRef = remus.db.TableRef(tableBase + "@done")
+                errorRef = remus.db.TableRef(tableBase + "@error")
+                for key, value in self.db.listKeyValue(table):
+                    if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
+                        #self.task_manager.addTask(Task(self, instance, table, key))
+                        task = Task(self, table, value, key)
+                        jobTree[ task.getName() ] = task
+                        found = True
         #return found
         return jobTree
 
-    def wait(self):
+    def wait(self, instance):
         """
         Wait for the completion of a pipeline.
         
+        :param instance: The instance to wait for
         :raises: If an exector has not been defined in the configuration, then 
             an exception will be raised
         """
@@ -383,7 +383,7 @@ class Manager:
             raise Exception("Executor not defined")
         sleepTime = 1
         while 1:
-            jobTree = self.scan()
+            jobTree = self.scan(instance)
             if len(jobTree) == 0:
                 break
             added = False

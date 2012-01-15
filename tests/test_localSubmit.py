@@ -32,7 +32,7 @@ class TestCase(unittest.TestCase):
         manager = remus.manage.Manager(config)
         l = LocalSubmission()
         instance = manager.submit('test', l)
-        manager.wait()
+        manager.wait(instance)
         db = remus.db.connect("file://data_dir")
         for table in db.listTables(instance):
             assert not table.toPath().endswith("@error")
@@ -65,7 +65,7 @@ def main():
     manager = remus.manage.Manager(config)
     l = test_localSubmit.LocalSubmission()
     instance = manager.submit('test', l)
-    manager.wait()
+    manager.wait(instance)
 
 if __name__ == '__main__':
     main()

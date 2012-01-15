@@ -43,7 +43,7 @@ class TestCase(unittest.TestCase):
         config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('tableTest', 'test_remapTarget.Submission')
-        manager.wait()
+        manager.wait(instance)
         
         db = remus.db.connect("file://data_dir")
         for table in db.listTables(instance):

@@ -11,7 +11,7 @@ class TestCase(unittest.TestCase):
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'remus_errortest.ExceptionSubmit', {})
         subprocess.check_call( [ sys.executable, "-m", "remus.manage.manager", 
-            "file://data_dir", 'auto', "tmp_dir"] )
+            "file://data_dir", 'auto', "tmp_dir", instance] )
 
     def tearDown(self):
         return
