@@ -191,7 +191,7 @@ class Task:
     """
     A task represents a target workload to be run by an executor
     """
-    def __init__(self, manager, tableRef, jobInfo, key = None):
+    def __init__(self, manager, tableRef, jobName, jobInfo):
         """
         
         :param manager:
@@ -208,15 +208,17 @@ class Task:
         
         """
         self.tableRef = tableRef
-        self.key = key
+        self.jobName = jobName
         self.manager = manager
         self.jobInfo = jobInfo
     
     def getName(self):
-        return "%s:%s" % (self.tableRef, self.key)
+        return "%s:%s" % (self.tableRef, self.jobName)
     
-    def getCmdLine(self):        
-        return "%s -m remus.manage.worker %s %s %s:%s" % (sys.executable, self.manager.db.getPath(), self.manager.config.workdir, self.tableRef, self.key )
+    def getCmdLine(self):
+        if '_keyTable' in self.jobInfo:
+            print "keyTable" 
+        return [ sys.executable, "-m", "remus.manage.worker", self.manager.db.getPath(), self.manager.config.workdir, str(self.tableRef) + ":" + self.jobName ]
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -365,7 +367,7 @@ class Manager:
                 for key, value in self.db.listKeyValue(table):
                     if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
                         #self.task_manager.addTask(Task(self, instance, table, key))
-                        task = Task(self, table, value, key)
+                        task = Task(self, table, key, value)
                         jobTree[ task.getName() ] = task
                         found = True
         #return found

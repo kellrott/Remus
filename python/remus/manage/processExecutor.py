@@ -5,7 +5,7 @@ import multiprocessing
 import subprocess
 
 def isReady():
-	return True
+    return True
 
 class ProcessExecutor(remus.manage.TaskExecutor):
 
@@ -16,8 +16,9 @@ class ProcessExecutor(remus.manage.TaskExecutor):
         return multiprocessing.cpu_count()
     
     def runTask(self, task):
-        print "Running Task %s: %s" % (task.getName(), task.getCmdLine())        
-        self.task_queue[task.getName()] = subprocess.Popen(task.getCmdLine(), shell=True)
+        cmd = task.getCmdLine()
+        print "Running Task %s: %s" % (task.getName(), cmd)        
+        self.task_queue[task.getName()] = subprocess.Popen(cmd)
        
     def poll(self):
         out = {}

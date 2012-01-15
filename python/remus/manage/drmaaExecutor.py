@@ -37,7 +37,7 @@ class DRMAAExecutor(remus.manage.TaskExecutor):
         return None
     
     def runTask(self, task):
-        tmp = task.getCmdLine().split(" ")
+        tmp = task.getCmdLine()
         jt = self.sess.createJobTemplate()
         jt.remoteCommand = tmp[0]
         jt.args = tmp[1:]
