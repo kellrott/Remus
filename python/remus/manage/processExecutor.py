@@ -15,10 +15,9 @@ class ProcessExecutor(remus.manage.TaskExecutor):
     def getMaxJobs(self):
         return multiprocessing.cpu_count()
     
-    def runTask(self, task):
-        cmd = task.getCmdLine()
-        print "Running Task %s: %s" % (task.getName(), cmd)        
-        self.task_queue[task.getName()] = subprocess.Popen(cmd)
+    def runCmd(self, name, cmd):
+        print "Running Task %s: %s" % (name, cmd)        
+        self.task_queue[name] = subprocess.Popen(cmd)
        
     def poll(self):
         out = {}

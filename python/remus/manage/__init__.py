@@ -174,10 +174,10 @@ class TaskExecutor:
     The process executor handles the execution of child tasks. 
     """
 
-    def runTask(self, task):
+    def runCmd(self, name, cmdline, stdin=None):
         raise UnimplementedMethod()
     
-    def getMaxJobs(self):
+    def getSlotCount(self):
         raise UnimplementedMethod()
     
     def getActiveCount(self):
@@ -215,10 +215,10 @@ class Task:
     def getName(self):
         return "%s:%s" % (self.tableRef, self.jobName)
     
-    def getCmdLine(self):
-        if '_keyTable' in self.jobInfo:
-            print "keyTable" 
-        return [ sys.executable, "-m", "remus.manage.worker", self.manager.db.getPath(), self.manager.config.workdir, str(self.tableRef) + ":" + self.jobName ]
+    
+    def run(self, taskExec):
+        cmd = [ sys.executable, "-m", "remus.manage.worker", self.manager.db.getPath(), self.manager.config.workdir, str(self.tableRef) + ":" + self.jobName ]
+        taskExec.runCmd(self.getName(), cmd)
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -239,7 +239,7 @@ class TaskManager:
         for t in self.task_queue:
             if t not in self.active_tasks:
                 if jMax is None or len(self.active_tasks) < jMax:
-                    self.executor.runTask(self.task_queue[t])
+                    self.task_queue[t].run(self.executor)
                     self.active_tasks[t] = True
         dmap = self.executor.poll()
         for t in dmap:
