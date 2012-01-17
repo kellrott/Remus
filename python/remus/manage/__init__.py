@@ -32,7 +32,7 @@ import tempfile
 import logging
 import pickle
 import time
-
+import datetime
 import traceback
 
 import remus.db
@@ -170,9 +170,9 @@ class Worker:
             else:
                 obj.run()
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
-            db.addData(doneRef, appName, {})
+            db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat() })
         except Exception:
-            db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
+            db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat()})
 
 
 class TaskExecutor:
@@ -406,7 +406,7 @@ class Manager:
             for j in jobTree:
                 dfound = False
                 if "_depends" in jobTree[j].jobInfo:
-                    dpath = jobTree[j].tableRef.instance + ":" + jobTree[j].jobInfo["_depends"]
+                    dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
                     print "dpath", j, jobTree[j].tableRef.table, dpath
                     for k in jobTree:
                         if k.startswith(dpath) and jobTree[k].tableRef != jobTree[j].tableRef:
