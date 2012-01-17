@@ -76,16 +76,19 @@ class Config:
         self.workdir = os.path.abspath(workdir)
         self.dbpath = dbpath
         if engineName is not None:
-            if engineName in executorMap:
-                engineName = executorMap[engineName]
-            tmp = engineName.split('.')
-            modName = ".".join(tmp[:-1])
-            className = tmp[-1]
-            mod = __import__(modName)            
-            cls = mod
-            for n in tmp[1:]:
-                cls = getattr(cls, n)
-            self.executor = cls()
+            try:
+                if engineName in executorMap:
+                    engineName = executorMap[engineName]
+                tmp = engineName.split('.')
+                modName = ".".join(tmp[:-1])
+                className = tmp[-1]
+                mod = __import__(modName)            
+                cls = mod
+                for n in tmp[1:]:
+                    cls = getattr(cls, n)
+                self.executor = cls()
+            except Exception:
+                raise UnimplementedMethod()
         else:
             self.executor = None
 
@@ -131,18 +134,21 @@ class Worker:
         errorRef = remus.db.TableRef(instRef.instance, parentName + "@error")
 
         if '_submitInit' in runVal:
-            runClass = runVal['_submitInit']
-            sys.path.insert( 0, os.path.abspath(tmpdir) )
-            
-            tmp = runClass.split('.')
-            mod = __import__(tmp[0])
-            cls = mod
-            for n in tmp[1:]:
-                cls = getattr(cls, n)
-            if issubclass(cls, remus.SubmitTarget):
-                obj = cls()
-            else:
-                obj = cls(runVal)
+            try:
+                runClass = runVal['_submitInit']
+                sys.path.insert( 0, os.path.abspath(tmpdir) )            
+                tmp = runClass.split('.')
+                mod = __import__(tmp[0])
+                cls = mod
+                for n in tmp[1:]:
+                    cls = getattr(cls, n)
+                if issubclass(cls, remus.SubmitTarget):
+                    obj = cls()
+                else:
+                    obj = cls(runVal)
+            except Exception:
+                db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
+                return  
         elif db.hasAttachment(instRef, appName, "pickle"):
             db.copyFrom(tmpdir + "/pickle", instRef, appName, "pickle")
             handle = open(tmpdir + "/pickle")
@@ -294,7 +300,7 @@ class Manager:
         else:
             self.task_manager = None
     
-    def submit(self, submitName, className, submitData={}):
+    def submit(self, submitName, className, submitData={}, instance=None):
         """
         Create new pipeline instance.
         
@@ -306,22 +312,29 @@ class Manager:
         :param submitData: A block of data that can be processed via :func:`json.dumps` 
             and will be passed to an instance of the named class at run time 
         """
-        inst = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
+        
+        instRef = remus.db.TableRef(instance, "@request")
+        if instance is None:
+            instance = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
+        else:
+            if self.db.hasKey(instRef, submitName):
+                raise Exception("Submit Key Exists")
+            
         submitData['_submitKey'] = submitName
-        submitData['_instance'] = inst
+        submitData['_instance'] = instance
         
         if isinstance(className, str):       
             submitData['_submitInit'] = className
-            submitData['_environment'] = self.import_applet(inst, className.split('.')[0], submitData)
-            instRef = remus.db.TableRef(inst, "@request")
+            submitData['_environment'] = self.import_applet(instance, className.split('.')[0], submitData)
+            instRef = remus.db.TableRef(instance, "@request")
             self.db.createTable(instRef, {})
             self.db.addData( instRef, submitName, submitData)
         elif isinstance(className, remus.LocalSubmitTarget):
-            self.import_applet(inst, className.__module__, submitData)
-            className.__setpath__(inst, submitName)
+            self.import_applet(instance, className.__module__, submitData)
+            className.__setpath__(instance, submitName)
             className.__setmanager__(self)
             className.run()        
-        return inst
+        return instance
 
     def import_applet(self, inst, applet, appletInfo):
 

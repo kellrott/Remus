@@ -13,6 +13,7 @@ except ImportError:
     pass
 
 from remus.db import FileDB, TableRef
+from remus.db import join as db_join
 
 
 class RemusApplet(object):
@@ -171,14 +172,10 @@ class SubmitTarget(Target):
         raise Exception()
 
     def openTable(self, tableName):
-        """
-        LocalSubmitTarget inherits openTable from :class:`remus.Target`
-        but it doesn't make sence in this context because the target has 
-        no parents. It only raises an exception
+        i = db_join(self.__instance__, tableName)
+        print "open table:", i
+        return self.__manager__._openTable(i.instance, i.table)
         
-        :raises: Exception
-        """
-        raise Exception()
         
 
 class LocalSubmitTarget(Target):
