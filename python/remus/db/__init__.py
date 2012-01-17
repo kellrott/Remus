@@ -159,12 +159,64 @@ class TableRef(object):
         return "%s:%s" % (self._instance, self._table)
 
 def join(*args):
-    if isinstance(args[0], TableRef):
-        return TableRef(args[0].instance, os.path.abspath( os.path.join( "/", args[0].table, *args[1:]))) 
-    if args[0].count(":"):
-        tmp = args[0].split(":")
-        return TableRef(tmp[0], os.path.abspath(os.path.join("/", tmp[1], *args[1:])))
-    return TableRef(args[0], os.path.abspath(os.path.join("/", *args[1:])))
+    """
+    Join togeather series of strings and TableRefs to build absolute TableRef
+    
+    :params args: :class:`remus.db.TableRef` and strings
+    
+    If the first argument is a string, it is assumed to be the instance reference
+    
+    Valid examples
+    
+    Example 1::
+        
+        > inst_a = "f227a0af-826a-4617-90ee-136acbd42715"
+        > ref_a = remus.db.TableRef(inst_a, "tableTest")
+        > str(remus.db.join(ref_a, "child_a")) == "f227a0af-826a-4617-90ee-136acbd42715:/tableTest/child_a"
+        True
+    
+    Example 2::
+        
+        > inst_a = "f227a0af-826a-4617-90ee-136acbd42715"
+        > ref_a = remus.db.TableRef(inst_a, "tableTest")
+        str(remus.db.join(ref_a, "..", "child_a")) == "f227a0af-826a-4617-90ee-136acbd42715:/child_a"
+        
+    Example 3::
+        
+        > inst_a = "f227a0af-826a-4617-90ee-136acbd42715"
+        > ref_a = remus.db.TableRef(inst_a, "tableTest")        
+        > str(remus.db.join(ref_a, "/child_a")) == "f227a0af-826a-4617-90ee-136acbd42715:/child_a"
+        
+    Example 4::
+        
+        > inst_a = "f227a0af-826a-4617-90ee-136acbd42715"
+        > inst_b = "a061bfac-987e-4aa8-a3d5-567352b09ed3"
+        > ref_a = remus.db.TableRef(inst_a, "tableTest")        
+        > ref_b = remus.db.TableRef(inst_b, "child_1")
+        > remus.db.join(ref_a, ref_b) == "a061bfac-987e-4aa8-a3d5-567352b09ed3:/child_1"     
+        True
+        > remus.db.join(ref_a, "a061bfac-987e-4aa8-a3d5-567352b09ed3:/child_1") == "a061bfac-987e-4aa8-a3d5-567352b09ed3:/child_1"
+        True
+        > remus.db.join("f227a0af-826a-4617-90ee-136acbd42715:/tableTest/child_a", "a061bfac-987e-4aa8-a3d5-567352b09ed3:/child_1") == "a061bfac-987e-4aa8-a3d5-567352b09ed3:/child_1"
+        True
+        
+    """
+    inst = None
+    path = []
+    for a in args:
+        if isinstance(a, TableRef):
+            inst = a.instance
+            path = a.table.split("/")
+        elif a.count(":"):
+            tmp = a.split(":")
+            inst = tmp[0]
+            path = tmp[1].split("/")
+        else:
+            if inst is None:
+                inst = a
+            else:
+                path.append(a)
+    return TableRef(inst, os.path.abspath(os.path.join("/", *path)))
 
 class DBBase:
     """
