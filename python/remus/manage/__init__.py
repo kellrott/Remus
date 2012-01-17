@@ -225,6 +225,7 @@ class Task:
     def run(self, taskExec):
         cmd = [ sys.executable, "-m", "remus.manage.worker", self.manager.db.getPath(), self.manager.config.workdir, str(self.tableRef) + ":" + self.jobName ]
         taskExec.runCmd(self.getName(), cmd)
+   
 
 class TaskManager:
     def __init__(self, manager, executor):
@@ -405,10 +406,10 @@ class Manager:
             for j in jobTree:
                 dfound = False
                 if "_depends" in jobTree[j].jobInfo:
-                    dpath = jobTree[j].tableRef.instance + ":" + jobTree[j].jobInfo["_depends"] + "/@request"
-                    print "dpath", dpath
+                    dpath = jobTree[j].tableRef.instance + ":" + jobTree[j].jobInfo["_depends"]
+                    print "dpath", j, jobTree[j].tableRef.table, dpath
                     for k in jobTree:
-                        if k.startswith(dpath):
+                        if k.startswith(dpath) and jobTree[k].tableRef != jobTree[j].tableRef:
                             dfound = True
                 if not dfound:
                     if self.task_manager.addTask(jobTree[j]):
