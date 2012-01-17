@@ -9,7 +9,7 @@ class TestCase(unittest.TestCase):
     def test_submit(self):
         dbPath = 'file://data_dir'
         try:
-            config = remus.manage.Config(dbPath, 'drmaa', workdir="tmpdir")
+            config = remus.manage.Config(dbPath, 'drmaa', workdir="tmp_dir")
         except remus.manage.UnimplementedMethod:
             print "DRMAA not avalible"
             return
