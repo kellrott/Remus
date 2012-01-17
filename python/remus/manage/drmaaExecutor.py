@@ -36,19 +36,18 @@ class DRMAAExecutor(remus.manage.TaskExecutor):
     def getMaxJobs(self):
         return None
     
-    def runTask(self, task):
-        tmp = task.getCmdLine()
+    def runCmd(self, name, cmd):
         jt = self.sess.createJobTemplate()
-        jt.remoteCommand = tmp[0]
-        jt.args = tmp[1:]
+        jt.remoteCommand = cmd[0]
+        jt.args = cmd[1:]
         jt.joinFiles=True
         #self.jt.outputPath = ":/dev/null"
         #self.jt.errorPath = ":/dev/null"
         jt.jobEnvironment = os.environ
         jt.workingDirectory = os.getcwd()
         jobid = self.sess.runJob(jt)
-        print 'Your task %s has been submitted with id %s' % (task.getName(), jobid)
-        self.task_queue[task.getName()] = jobid
+        print 'Your task %s has been submitted with id %s' % (name, jobid)
+        self.task_queue[name] = jobid
         self.sess.deleteJobTemplate(jt)
        
     def poll(self):
