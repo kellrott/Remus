@@ -129,8 +129,8 @@ class Target(RemusApplet):
         
         
         """
-        parentTable = "/".join( self.__tablepath__.split("/")[:-1] )
-        return self.__manager__._openTable(self.__instance__, parentTable + "/" + tableName)
+        tablePath = db_join(self.__instance__, self.__tablepath__, "..", tableName)
+        return self.__manager__._openTable(tablePath.instance, tablePath.table)
 
 
 class SubmitTarget(Target):
