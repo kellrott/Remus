@@ -41,9 +41,6 @@ class TestCase(unittest.TestCase):
         self.clear()
         subprocess.check_call( [ sys.executable, "test_localSubmit.py"] )
         db = remus.db.connect("file://data_dir")
-        for instance in db.listInstances():
-            for table in db.listTables(instance):
-                assert not table.toPath().endswith("@error")
 
     def tearDown(self):
         self.clear()
