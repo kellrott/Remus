@@ -55,7 +55,8 @@ class Target(RemusApplet):
         
         :param child:
             Target object to be pickled and run as a remote 
-            
+        
+        
         Example::
             
             class MyWorker(remus.Target):
@@ -71,12 +72,17 @@ class Target(RemusApplet):
         """
         self.__manager__._addChild(self, child_name, child)
     
-    def addFollowTarget(self, child_name, child):
+    def addFollowTarget(self, child_name, child, depends=None):
         """
         A follow target is a delayed callback, that isn't run until all 
         of a targets children have complete
         """
-        self.__manager__._addChild(self, child_name, child, self.__tablepath__)
+        if depends is None:
+            self.__manager__._addChild(self, child_name, child, depends=self.__tablepath__)
+        else:
+            ref = db_join(self.__instance__, self.__tablepath__, depends)
+            self.__manager__._addChild(self, child_name, child, depends=ref.table)
+            
 
     def createTable(self, tableName, tableInfo={}):
         """

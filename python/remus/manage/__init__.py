@@ -162,6 +162,9 @@ class Worker:
         os.chdir(tmpdir)
         obj.__setpath__(instRef.instance, appPath)
         obj.__setmanager__(manager)
+        self.inputList = []
+        self.outputList = []
+        manager._set_callback(self)
         try:
             if isinstance(obj, remus.SubmitTarget):
                 obj.run(runVal)
@@ -170,9 +173,15 @@ class Worker:
             else:
                 obj.run()
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
-            db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat() })
+            db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
         except Exception:
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat()})
+
+    def callback_openTable(self, ref):
+        self.inputList.append(str(ref))
+
+    def callback_createTable(self, ref):
+        self.outputList.append(str(ref))
 
 
 class TaskExecutor:
@@ -295,13 +304,17 @@ class Manager:
         """
         self.config = config
         self.applet_map = {}
+        self.callback = None
         self.db = remus.db.connect(self.config.dbpath)
         if self.config.executor is not None:
             self.task_manager = TaskManager(self, self.config.executor)
         else:
             self.task_manager = None
+
+    def _set_callback(self, callback):
+        self.callback = callback
     
-    def submit(self, submitName, className, submitData={}, instance=None):
+    def submit(self, submitName, className, submitData={}, instance=None, depends=None):
         """
         Create new pipeline instance.
         
@@ -323,7 +336,8 @@ class Manager:
             
         submitData['_submitKey'] = submitName
         submitData['_instance'] = instance
-        
+        if depends is not None:
+            submitData['_depends'] = depends
         if isinstance(className, str):       
             submitData['_submitInit'] = className
             submitData['_environment'] = self.import_applet(instance, className.split('.')[0], submitData)
@@ -429,11 +443,15 @@ class Manager:
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.connect(self.config.dbpath)
         fs.createTable(ref, tableInfo)
+        if self.callback is not None:
+            self.callback.callback_createTable(ref)
         return remus.db.table.WriteTable(fs, ref)
 
     def _openTable(self, inst, tablePath):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.connect(self.config.dbpath)
+        if self.callback is not None:
+            self.callback.callback_openTable(ref)
         return remus.db.table.ReadTable(fs, ref)
 
     def _addChild(self, obj, child_name, child, depends=None):

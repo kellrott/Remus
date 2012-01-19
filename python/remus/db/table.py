@@ -74,6 +74,16 @@ class ReadTable(object):
         """
         return self.db.getValue(self.table_ref, key)
     
+    def hasKey(self, key):
+        """
+        Does table have the key?
+        
+        :param key: the key
+        
+        :returns: Boolean
+        """
+        return self.db.hasKey(self.table_ref, key)
+    
     def copyFrom(self, path, key, name):
         """
         Copy file from table

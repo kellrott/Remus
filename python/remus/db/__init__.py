@@ -457,6 +457,7 @@ class FileDB(DBBase):
     
     def listTables(self, instance):
         out = self._dirscan( os.path.abspath(os.path.join(self.basedir, instance) ), instance )
+        out.sort()
         return out
         
     def hasAttachment(self, table, key, name):
