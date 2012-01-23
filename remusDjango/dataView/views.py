@@ -6,6 +6,9 @@ from django.conf import settings
 from django.template import Context, loader
 
 import json
+import subprocess
+import tempfile
+
 import remus.db
 
 def home(request):
@@ -19,7 +22,7 @@ def home(request):
 
 def instance(request, instance):
     dbi = remus.db.connect(settings.REMUSDB_PATH)
-    t = loader.get_template('instanceList.html')
+    t = loader.get_template('instancePage.html')
     tList = []
     for table in dbi.listTables(instance):
         tList.append("/" + table.instance + table.table)
@@ -52,8 +55,44 @@ def key(request, instance, table, key):
     for name in dbi.listAttachments(tRef, key):
     	aList.append(name)
     c = Context({
+        'tableName' : "/" + instance + "/" + table + ":" + key,
     	'attachList' : aList,
         'valueList': tList
     })
     return HttpResponse(t.render(c))
+
+def attachment(request, instance, table, key, name):
+    dbi = remus.db.connect(settings.REMUSDB_PATH)
+    tmp = tempfile.NamedTemporaryFile(delete=True)
+    tmp.close()
+    tRef = remus.db.TableRef(instance, table)
+    dbi.copyFrom(tmp.name, tRef, key, name)
+    handle = open(tmp.name, "rb")
+    return HttpResponse(handle)
+
     
+def history(request, instance):
+    dbi = remus.db.connect(settings.REMUSDB_PATH)
+    wSet = {}
+    text = "digraph G {"
+    for table in dbi.listTables(instance):
+        if table.table.endswith("/@done"):
+            tname = str(table.table).replace("/@done", "")
+            for key, value in dbi.listKeyValue(table):
+                for inTable in value["input"]:
+                    iname = inTable.split(':')[1]
+                    hname = iname + "->" + tname
+                    if hname not in wSet:
+                        text += "\t\"%s\" -> \"%s\";\n" % (iname, tname)
+                        wSet[hname] = True
+                for outTable in value["output"]:
+                    oname = outTable.split(':')[1]
+                    hname = tname + "->" + oname
+                    if hname not in wSet:
+                        text += "\t\"%s\" -> \"%s\";\n" % (tname, oname)
+                        wSet[hname] = True
+    text += "}"
+    p = subprocess.Popen( [ "dot", "-Tpng" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE )
+    stdoutdata, stderrdata = p.communicate(text)
+    
+    return HttpResponse(stdoutdata, "image/png" )

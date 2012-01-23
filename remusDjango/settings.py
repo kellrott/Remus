@@ -1,5 +1,5 @@
 import os
-REMUSDB_PATH = "file:///opt/data/tcgaData/data_db/"
+REMUSDB_PATH = "file:///opt/data/KIRC/data_db/"
 
 # Django settings for remusWeb project.
 

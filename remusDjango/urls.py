@@ -15,8 +15,10 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
     url(r'^$', 'dataView.views.home'),
+    url(r'^history/(?P<instance>[\w\-]+)$', 'dataView.views.history'),
     url(r'^(?P<instance>[\w\-]+)$', 'dataView.views.instance'),
     url(r'^(?P<instance>[\w\-]+)/(?P<table>[^:]*$)', 'dataView.views.table'),
-    url(r'^(?P<instance>[\w\-]+)/(?P<table>[^:]*):(?P<key>.*$)', 'dataView.views.key')
+    url(r'^(?P<instance>[\w\-]+)/(?P<table>[^:]*):(?P<key>[^:]*$)', 'dataView.views.key'),
+    url(r'^(?P<instance>[\w\-]+)/(?P<table>[^:]*):(?P<key>[^:]*):(?P<name>[^:]*$)', 'dataView.views.attachment')
 
 )
