@@ -129,6 +129,12 @@ class TableRef(object):
         if not self._table.startswith("/"):
             self._table = "/" + self._table
     
+    def __repr__(self):
+        return repr( (self._instance, self._table) )
+    
+    def __cmp__(self, other):
+        return cmp(str(self), str(other))
+    
     def __hash__(self):
         return hash(self.toPath())
     
@@ -439,6 +445,7 @@ class FileDB(DBBase):
         out = []
         for path in glob(os.path.join(self.basedir, "*")):
             out.append(os.path.basename(path))
+        out.sort()
         return out
     
     
