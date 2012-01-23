@@ -68,7 +68,7 @@ def attachment(request, instance, table, key, name):
     tRef = remus.db.TableRef(instance, table)
     dbi.copyFrom(tmp.name, tRef, key, name)
     handle = open(tmp.name, "rb")
-    return HttpResponse(handle)
+    return HttpResponse(handle, "text/plain")
 
     
 def history(request, instance):
@@ -76,9 +76,9 @@ def history(request, instance):
     wSet = {}
     text = "digraph G {"
     for table in dbi.listTables(instance):
-        if table.table.endswith("/@done"):
-            tname = str(table.table).replace("/@done", "")
+        if table.table.endswith("@done"):
             for key, value in dbi.listKeyValue(table):
+                tname = str(table.table).replace("@done", "") + key
                 for inTable in value["input"]:
                     iname = inTable.split(':')[1]
                     hname = iname + "->" + tname
