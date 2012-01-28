@@ -16,9 +16,6 @@ Example of database scanning::
                 for key in db.listKeys(table):
                     print key
 
-
-
-
 """
 
 
@@ -223,6 +220,9 @@ def join(*args):
             else:
                 path.append(a)
     return TableRef(inst, os.path.abspath(os.path.join("/", *path)))
+
+def basename(path):
+    return os.path.basename(str(path))
 
 class DBBase:
     """
