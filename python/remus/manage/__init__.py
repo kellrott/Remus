@@ -111,9 +111,9 @@ class Worker:
         appName = app[2]
         appPath = parentName + app[2]
         
-        print "instanceREF", instRef
-        print "parent", parentName
-        print "appname", appName
+        logging.info("instanceREF: " + str(instRef))
+        logging.info("parent" +  parentName)
+        logging.info("appname" + appName)
         
         runVal = None
         for val in db.getValue(instRef, appName):
@@ -232,6 +232,7 @@ class Task:
     
     
     def run(self, taskExec):
+        logging.info("Task Start:" + self.getName())
         cmd = [ sys.executable, "-m", "remus.manage.worker", self.manager.db.getPath(), self.manager.config.workdir, str(self.tableRef) + ":" + self.jobName ]
         taskExec.runCmd(self.getName(), cmd)
    
@@ -245,6 +246,7 @@ class TaskManager:
 
     def addTask(self, task):
         if task.getName() not in self.task_queue:
+            logging.debug("Adding Task: " + task.getName())
             self.task_queue[ task.getName() ] = task
     
     def taskCount(self):
@@ -259,6 +261,7 @@ class TaskManager:
                     self.active_tasks[t] = True
         dmap = self.executor.poll()
         for t in dmap:
+            logging.info("Task Complete: " + t)
             del self.task_queue[t]
             del self.active_tasks[t]
 
@@ -372,7 +375,7 @@ class Manager:
                 self.db.addData(envRef, modName, {})
                 dirname = os.path.abspath(a.getBase())
                 for f in a.getManifest():
-                    print "copy", modbase,  os.path.join( dirname, f ).replace(modbase, "")
+                    logging.info("copy: " + modbase + " " +  os.path.join( dirname, f ).replace(modbase, ""))
                     self.db.copyTo( os.path.join(a.getBase(), f), envRef, modName, os.path.join( dirname, f ).replace(modbase, "") )
                 
                 for inc in a.getIncludes():
@@ -417,20 +420,30 @@ class Manager:
             if len(jobTree) == 0:
                 break
             added = False
+            
+            activeSet = {}
+            for j in jobTree:
+                tmp = j.split(":")
+                dpath = tmp[0] + ":" + re.sub("(@request|@follow)$", "", tmp[1]) + tmp[2]
+                if tmp[1].endswith("@request"):
+                    activeSet[dpath] = True
+                else:
+                    activeSet[dpath] = False
+                    
+            print "activeSet", activeSet
             for j in jobTree:
                 dfound = False
                 if "_depends" in jobTree[j].jobInfo:
                     dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
-                    print "dpath", j, jobTree[j].tableRef.table, dpath
-                    for k in jobTree:
-                        if k.startswith(dpath) and jobTree[k].tableRef != jobTree[j].tableRef:
+                    logging.debug("dpath: " +  j + " " + jobTree[j].tableRef.table + " "+ dpath)
+                    for k in activeSet:
+                        if k.startswith(dpath) and activeSet[k]: # and jobTree[k].tableRef != jobTree[j].tableRef:
                             dfound = True
                 if not dfound:
                     if self.task_manager.addTask(jobTree[j]):
                         added = True
                 else:
-                    print "delay", j
-            print jobTree
+                    logging.debug( "delay: " + j )
             self.task_manager.cycle()
             if added:
                 sleepTime = 1

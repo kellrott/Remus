@@ -40,6 +40,7 @@ class Submit(remus.SubmitTarget):
         child1 = Child_wait()        
         self.addChildTarget('child_1', child1)
         self.addFollowTarget('follow_1', Child_follow('child_1/output'))
+        self.addFollowTarget('a_follow_1', Child_follow('child_1/output'), "child_1")
         
         self.addChildTarget('child_2', Child_parent())
         self.addFollowTarget('follow_2', Child_follow('child_2/child_a/output'))
