@@ -34,6 +34,7 @@ import pickle
 import time
 import datetime
 import traceback
+import shutil
 
 import remus.db
 import remus.db.table
@@ -159,6 +160,7 @@ class Worker:
                 return
             handle.close()
 
+        cwd = os.getcwd()
         os.chdir(tmpdir)
         obj.__setpath__(instRef.instance, appPath)
         obj.__setmanager__(manager)
@@ -176,6 +178,8 @@ class Worker:
             db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
         except Exception:
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat()})
+        os.chdir(cwd)
+        shutil.rmtree(tmpdir)
 
     def callback_openTable(self, ref):
         self.inputList.append(str(ref))
