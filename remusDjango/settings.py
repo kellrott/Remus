@@ -1,5 +1,5 @@
 import os
-REMUSDB_PATH = "file:///opt/data/KIRC/data_db/"
+REMUSDB_PATH = os.environ.get("REMUSDB", "file://remus_db")
 
 # Django settings for remusWeb project.
 
