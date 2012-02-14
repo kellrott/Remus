@@ -20,19 +20,19 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAddress._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("PeerAddress");
+public class TableRef implements org.apache.thrift.TBase<TableRef, TableRef._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableRef");
 
-  private static final org.apache.thrift.protocol.TField HOST_FIELD_DESC = new org.apache.thrift.protocol.TField("host", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField PORT_FIELD_DESC = new org.apache.thrift.protocol.TField("port", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField INSTANCE_FIELD_DESC = new org.apache.thrift.protocol.TField("instance", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)2);
 
-  public String host;
-  public int port;
+  public String instance;
+  public String table;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    HOST((short)1, "host"),
-    PORT((short)2, "port");
+    INSTANCE((short)1, "instance"),
+    TABLE((short)2, "table");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -47,10 +47,10 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // HOST
-          return HOST;
-        case 2: // PORT
-          return PORT;
+        case 1: // INSTANCE
+          return INSTANCE;
+        case 2: // TABLE
+          return TABLE;
         default:
           return null;
       }
@@ -91,118 +91,115 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
   }
 
   // isset id assignments
-  private static final int __PORT_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.HOST, new org.apache.thrift.meta_data.FieldMetaData("host", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.INSTANCE, new org.apache.thrift.meta_data.FieldMetaData("instance", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.PORT, new org.apache.thrift.meta_data.FieldMetaData("port", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PeerAddress.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableRef.class, metaDataMap);
   }
 
-  public PeerAddress() {
+  public TableRef() {
   }
 
-  public PeerAddress(
-    String host,
-    int port)
+  public TableRef(
+    String instance,
+    String table)
   {
     this();
-    this.host = host;
-    this.port = port;
-    setPortIsSet(true);
+    this.instance = instance;
+    this.table = table;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public PeerAddress(PeerAddress other) {
-    __isset_bit_vector.clear();
-    __isset_bit_vector.or(other.__isset_bit_vector);
-    if (other.isSetHost()) {
-      this.host = other.host;
+  public TableRef(TableRef other) {
+    if (other.isSetInstance()) {
+      this.instance = other.instance;
     }
-    this.port = other.port;
+    if (other.isSetTable()) {
+      this.table = other.table;
+    }
   }
 
-  public PeerAddress deepCopy() {
-    return new PeerAddress(this);
+  public TableRef deepCopy() {
+    return new TableRef(this);
   }
 
   @Override
   public void clear() {
-    this.host = null;
-    setPortIsSet(false);
-    this.port = 0;
+    this.instance = null;
+    this.table = null;
   }
 
-  public String getHost() {
-    return this.host;
+  public String getInstance() {
+    return this.instance;
   }
 
-  public PeerAddress setHost(String host) {
-    this.host = host;
+  public TableRef setInstance(String instance) {
+    this.instance = instance;
     return this;
   }
 
-  public void unsetHost() {
-    this.host = null;
+  public void unsetInstance() {
+    this.instance = null;
   }
 
-  /** Returns true if field host is set (has been assigned a value) and false otherwise */
-  public boolean isSetHost() {
-    return this.host != null;
+  /** Returns true if field instance is set (has been assigned a value) and false otherwise */
+  public boolean isSetInstance() {
+    return this.instance != null;
   }
 
-  public void setHostIsSet(boolean value) {
+  public void setInstanceIsSet(boolean value) {
     if (!value) {
-      this.host = null;
+      this.instance = null;
     }
   }
 
-  public int getPort() {
-    return this.port;
+  public String getTable() {
+    return this.table;
   }
 
-  public PeerAddress setPort(int port) {
-    this.port = port;
-    setPortIsSet(true);
+  public TableRef setTable(String table) {
+    this.table = table;
     return this;
   }
 
-  public void unsetPort() {
-    __isset_bit_vector.clear(__PORT_ISSET_ID);
+  public void unsetTable() {
+    this.table = null;
   }
 
-  /** Returns true if field port is set (has been assigned a value) and false otherwise */
-  public boolean isSetPort() {
-    return __isset_bit_vector.get(__PORT_ISSET_ID);
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
+  public boolean isSetTable() {
+    return this.table != null;
   }
 
-  public void setPortIsSet(boolean value) {
-    __isset_bit_vector.set(__PORT_ISSET_ID, value);
+  public void setTableIsSet(boolean value) {
+    if (!value) {
+      this.table = null;
+    }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case HOST:
+    case INSTANCE:
       if (value == null) {
-        unsetHost();
+        unsetInstance();
       } else {
-        setHost((String)value);
+        setInstance((String)value);
       }
       break;
 
-    case PORT:
+    case TABLE:
       if (value == null) {
-        unsetPort();
+        unsetTable();
       } else {
-        setPort((Integer)value);
+        setTable((String)value);
       }
       break;
 
@@ -211,11 +208,11 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case HOST:
-      return getHost();
+    case INSTANCE:
+      return getInstance();
 
-    case PORT:
-      return new Integer(getPort());
+    case TABLE:
+      return getTable();
 
     }
     throw new IllegalStateException();
@@ -228,10 +225,10 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
     }
 
     switch (field) {
-    case HOST:
-      return isSetHost();
-    case PORT:
-      return isSetPort();
+    case INSTANCE:
+      return isSetInstance();
+    case TABLE:
+      return isSetTable();
     }
     throw new IllegalStateException();
   }
@@ -240,30 +237,30 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof PeerAddress)
-      return this.equals((PeerAddress)that);
+    if (that instanceof TableRef)
+      return this.equals((TableRef)that);
     return false;
   }
 
-  public boolean equals(PeerAddress that) {
+  public boolean equals(TableRef that) {
     if (that == null)
       return false;
 
-    boolean this_present_host = true && this.isSetHost();
-    boolean that_present_host = true && that.isSetHost();
-    if (this_present_host || that_present_host) {
-      if (!(this_present_host && that_present_host))
+    boolean this_present_instance = true && this.isSetInstance();
+    boolean that_present_instance = true && that.isSetInstance();
+    if (this_present_instance || that_present_instance) {
+      if (!(this_present_instance && that_present_instance))
         return false;
-      if (!this.host.equals(that.host))
+      if (!this.instance.equals(that.instance))
         return false;
     }
 
-    boolean this_present_port = true;
-    boolean that_present_port = true;
-    if (this_present_port || that_present_port) {
-      if (!(this_present_port && that_present_port))
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
         return false;
-      if (this.port != that.port)
+      if (!this.table.equals(that.table))
         return false;
     }
 
@@ -275,30 +272,30 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
     return 0;
   }
 
-  public int compareTo(PeerAddress other) {
+  public int compareTo(TableRef other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    PeerAddress typedOther = (PeerAddress)other;
+    TableRef typedOther = (TableRef)other;
 
-    lastComparison = Boolean.valueOf(isSetHost()).compareTo(typedOther.isSetHost());
+    lastComparison = Boolean.valueOf(isSetInstance()).compareTo(typedOther.isSetInstance());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetHost()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.host, typedOther.host);
+    if (isSetInstance()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.instance, typedOther.instance);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPort()).compareTo(typedOther.isSetPort());
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPort()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.port, typedOther.port);
+    if (isSetTable()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -320,17 +317,16 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
         break;
       }
       switch (field.id) {
-        case 1: // HOST
+        case 1: // INSTANCE
           if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.host = iprot.readString();
+            this.instance = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // PORT
-          if (field.type == org.apache.thrift.protocol.TType.I32) {
-            this.port = iprot.readI32();
-            setPortIsSet(true);
+        case 2: // TABLE
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.table = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -343,9 +339,6 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
     iprot.readStructEnd();
 
     // check for required fields of primitive type, which can't be checked in the validate method
-    if (!isSetPort()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'port' was not found in serialized data! Struct: " + toString());
-    }
     validate();
   }
 
@@ -353,33 +346,39 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.host != null) {
-      oprot.writeFieldBegin(HOST_FIELD_DESC);
-      oprot.writeString(this.host);
+    if (this.instance != null) {
+      oprot.writeFieldBegin(INSTANCE_FIELD_DESC);
+      oprot.writeString(this.instance);
       oprot.writeFieldEnd();
     }
-    oprot.writeFieldBegin(PORT_FIELD_DESC);
-    oprot.writeI32(this.port);
-    oprot.writeFieldEnd();
+    if (this.table != null) {
+      oprot.writeFieldBegin(TABLE_FIELD_DESC);
+      oprot.writeString(this.table);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("PeerAddress(");
+    StringBuilder sb = new StringBuilder("TableRef(");
     boolean first = true;
 
-    sb.append("host:");
-    if (this.host == null) {
+    sb.append("instance:");
+    if (this.instance == null) {
       sb.append("null");
     } else {
-      sb.append(this.host);
+      sb.append(this.instance);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("port:");
-    sb.append(this.port);
+    sb.append("table:");
+    if (this.table == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.table);
+    }
     first = false;
     sb.append(")");
     return sb.toString();
@@ -387,10 +386,12 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (host == null) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'host' was not present! Struct: " + toString());
+    if (instance == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'instance' was not present! Struct: " + toString());
     }
-    // alas, we cannot check 'port' because it's a primitive and you chose the non-beans generator.
+    if (table == null) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'table' was not present! Struct: " + toString());
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -403,8 +404,6 @@ public class PeerAddress implements org.apache.thrift.TBase<PeerAddress, PeerAdd
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
