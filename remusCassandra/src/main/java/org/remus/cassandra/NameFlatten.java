@@ -1,4 +1,4 @@
-package org.remus.fs;
+package org.remus.cassandra;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -22,9 +22,8 @@ public class NameFlatten {
 		return out;
 	}
 	
-	public static File flatten(File workbase, String pipeline, String instance, String applet, String key, String attachment) {
-		File out = new File( workbase, encode(pipeline) );
-		out = new File(out, encode(instance) );
+	public static File flatten(File workbase, String instance, String applet, String key, String attachment) {
+		File out = new File( workbase, encode(instance) );
 		out = new File(out, encode(applet) );
 		out = new File(out, encode(key) );
 		out = new File(out, encode(attachment) );

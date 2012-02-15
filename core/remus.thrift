@@ -43,8 +43,6 @@ exception BadPeerName {
 
 service RemusNet {
 	
-	string status();
-	
 	/**
 	 * Data access related methods
 	 *
@@ -66,7 +64,7 @@ service RemusNet {
 
 	void deleteTable( 1:TableRef table ) throws (1:NotImplemented e);
 		
-	list<string> stackSlice(1:string startKey, 2:i32 count) throws (1:NotImplemented e);
+	list<string> tableSlice(1:string startKey, 2:i32 count) throws (1:NotImplemented e);
 		
 	/**
 	 * Attachment methods

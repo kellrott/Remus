@@ -34,19 +34,16 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import org.remus.ConnectionException;
-import org.remus.PeerInfo;
 import org.remus.RemusDB;
-import org.remus.core.TableUtils;
-import org.remus.plugin.PluginManager;
-import org.remus.thrift.AppletRef;
+import org.remus.TableUtils;
+import org.remus.thrift.TableRef;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class Server extends RemusDB {
+public class Server extends FileServer {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	ThriftClientPool clientPool;
@@ -62,7 +59,6 @@ public class Server extends RemusDB {
 	public static final String INST_COLUMNS = "instColumns";
 	public static final int CASSANDRA_PORT = 9160;
 
-	@Override
 	public void init( Map paramMap) throws ConnectionException {
 
 		logger = LoggerFactory.getLogger(Server.class);
@@ -164,20 +160,16 @@ public class Server extends RemusDB {
 	}
 
 
-	@Override
-	public void stop() {
-	}
 
 
 	@Override
-	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
-			String data) throws TException {
+	public void addDataJSON(TableRef stack, String key, String data) throws TException {
 
 
 		final String column = TableUtils.RefToString(stack);
 		final ByteBuffer superColumn = ByteBuffer.wrap(key.getBytes());
-		final String colName = 
-			Long.toString(jobID) + "_" + Long.toString(emitID);
+		//BUG: Need to add mux to prevent value overwrite
+		final String colName = ""; //Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap(data.getBytes());
 
 		final ColumnParent cp = new ColumnParent(columnFamily);
@@ -209,7 +201,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public boolean containsKey(AppletRef stack, String key) throws TException {
+	public boolean containsKey(TableRef stack, String key) throws TException {
 
 		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnPath cp = new ColumnPath(columnFamily);
@@ -242,7 +234,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public void deleteStack(AppletRef stack) throws TException {
+	public void deleteTable(TableRef stack) throws TException {
 
 		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnPath cp = new ColumnPath(columnFamily);
@@ -266,56 +258,9 @@ public class Server extends RemusDB {
 		}
 	}
 
-	@Override
-	public void deleteValue(AppletRef stack, String key) throws TException {
-		final String column = TableUtils.RefToString(stack);
-		final ColumnPath cp = new ColumnPath(columnFamily);
-
-		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
-
-		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
-			@Override
-			protected Boolean request(Client client)
-			throws InvalidRequestException, UnavailableException,
-			TimedOutException, TException {
-				long clock = System.currentTimeMillis() * 1000;
-				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
-				return null;
-			}
-		};
-		try {
-			delCall.call();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 
 	@Override
-	public long getTimeStamp(AppletRef stack) throws TException {
-		String superColumn = TableUtils.RefToString(stack);
-		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, columnFamily, "","") {				
-			@Override
-			void processColumn(ColumnOrSuperColumn scol) {
-				for (Column col : scol.getSuper_column().getColumns()) {
-					addElement(col.timestamp);
-				}
-			}
-		};
-
-		long timestamp = 0;
-		while (out.hasNext()) {
-			long cur = out.next();
-			if (cur > timestamp) {
-				timestamp = cur;
-			}
-		}
-		return timestamp;
-	}
-
-	@Override
-	public List<String> getValueJSON(AppletRef stack, String key) throws TException {
+	public List<String> getValueJSON(TableRef stack, String key) throws TException {
 
 		final String superColumn = TableUtils.RefToString(stack);		
 		final ColumnPath cp = new ColumnPath(columnFamily);
@@ -350,7 +295,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public long keyCount(AppletRef stack, final int maxCount) throws TException {
+	public long keyCount(TableRef stack, final int maxCount) throws TException {
 		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnParent cp = new ColumnParent(columnFamily);
 		ThriftCaller<Long> getKeyCount = new ThriftCaller<Long>(clientPool) {
@@ -377,7 +322,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public List<String> keySlice(AppletRef stack, final String keyStart, final int count)
+	public List<String> keySlice(TableRef stack, final String keyStart, final int count)
 	throws TException {
 		final String superColumn = TableUtils.RefToString(stack);		
 		final ColumnParent cp = new ColumnParent(columnFamily);
@@ -408,7 +353,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, final String startKey,
+	public List<KeyValJSONPair> keyValJSONSlice(TableRef stack, final String startKey,
 			final int count) throws TException {
 		final String superColumn = TableUtils.RefToString(stack);
 		final ColumnParent cp = new ColumnParent(columnFamily);
@@ -451,7 +396,7 @@ public class Server extends RemusDB {
 	}
 
 	@Override
-	public List<String> stackSlice(final String startKey, final int count)
+	public List<String> tableSlice(final String startKey, final int count)
 	throws NotImplemented, TException {
 		ThriftCaller<List<String>> stackSlice = new ThriftCaller<List<String>>(clientPool) {
 			@Override
@@ -469,7 +414,7 @@ public class Server extends RemusDB {
 				List<String> out = new ArrayList<String>(res.size());
 				for (KeySlice key : res) {
 					if (!key.columns.isEmpty()) {
-						AppletRef a = TableUtils.StringToRef(new String(key.getKey()));
+						TableRef a = TableUtils.StringToRef(new String(key.getKey()));
 						out.add( TableUtils.RefToString(a));
 					}
 				}
@@ -482,21 +427,6 @@ public class Server extends RemusDB {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	@Override
-	public PeerInfo getPeerInfo() {
-		PeerInfo out = new PeerInfo();
-		out.peerType = PeerType.DB_SERVER;
-		out.name = "Remus Cassandra Link";
-		return out;
-	}
-
-
-	@Override
-	public void start(PluginManager pluginManager) throws Exception {
-		// TODO Auto-generated method stub
-
 	}
 
 

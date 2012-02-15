@@ -15,8 +15,8 @@ import org.remus.ConnectionException;
 import org.remus.KeyValPair;
 import org.remus.RemusDB;
 import org.remus.RemusDBSliceIterator;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.NotImplemented;
+import org.remus.thrift.TableRef;
 
 public class MPStoreTest {
 
@@ -43,8 +43,8 @@ public class MPStoreTest {
 	@Test public void insertTest() throws TException, NotImplemented {
 
 		
-		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
-		AppletRef aRef2 = new AppletRef("unitTest", instance2, applet2);
+		TableRef aRef1 = new TableRef(instance1, applet1);
+		TableRef aRef2 = new TableRef(instance2, applet2);
 		
 		String keyPath2 ="hello";
 
@@ -110,36 +110,7 @@ public class MPStoreTest {
 		Assert.assertTrue( ds.containsKey(aRef1, key1) );
 		Assert.assertTrue( !ds.containsKey(aRef1, key2) );
 
-		Date curDate = new Date();
-		//Assert that the timestamp is within the last 10 seconds
-		Assert.assertTrue( (curDate.getTime() - (ds.getTimeStamp(aRef1)/1000)) < 10000   );
-
-		ds.deleteValue(aRef1, key1 );
-		
-		Assert.assertTrue( !ds.containsKey(aRef1, key1)  );
-		
-		//Delete half the keys and make sure 50 are left
-		for ( int i = 0; i < 50; i++ ) {
-			ds.deleteValue(aRef2, "key_" + Integer.toString(i) );
-		}
-		count = 0;
-		for ( String key : ds.keySlice(aRef2, "", 100)) {
-			count++;
-		}
-		Assert.assertTrue( count == 50 );
-		//delete the rest of the keys
-		for ( int i = 50; i < 100; i++ ) {
-			ds.deleteValue( aRef2, "key_" + Integer.toString(i) );
-		}
-		count = 0;
-		for ( String key : ds.keySlice(aRef2, "", 200)) {
-			count++;
-		}
-		Assert.assertTrue( count == 0 );
-		
-		//assert that keys have been deleted
-		Assert.assertTrue( !ds.containsKey(aRef1, key1) );
-		Assert.assertTrue( !ds.containsKey(aRef1, key2) );
+	
 	}
 
 	
@@ -147,7 +118,7 @@ public class MPStoreTest {
 	private static final int CYCLE_2 = 100;
 	
 	@Test public void slicerTest() throws TException, NotImplemented {
-		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
+		TableRef aRef1 = new TableRef(instance1, applet1);
 		String key = "key_";
 		for (long i = 0; i < CYCLE_1; i++) {
 			for (long j = 0; j < CYCLE_2; j++) {
@@ -168,27 +139,27 @@ public class MPStoreTest {
 			count++;
 		}		
 		Assert.assertEquals(count, CYCLE_1 * CYCLE_2);
-		ds.deleteStack(aRef1);
+		ds.deleteTable(aRef1);
 	}
 	
 	
 	@Test public void stackTest() throws NotImplemented, TException {
-		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
+		TableRef aRef1 = new TableRef( instance1, applet1);
 		
 		String key1 = "key_1";
 		for ( long i =0; i < 100; i++) {
 			ds.add( aRef1, 0L, i, key1, "value_" + Long.toString(i) );
 		}
 		
-		List<String> stacks = ds.stackSlice("", 500);
+		List<String> stacks = ds.tableSlice("", 500);
 		for (String ar : stacks) {
 			System.out.println("Stack: " + ar);
 		}		
-		ds.deleteStack(aRef1);
+		ds.deleteTable(aRef1);
 	}
 	
 	@After public void shutdown() throws NotImplemented, TException {
-		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
-		ds.deleteStack(aRef1);
+		TableRef aRef1 = new TableRef(instance1, applet1);
+		ds.deleteTable(aRef1);
 	}
 }

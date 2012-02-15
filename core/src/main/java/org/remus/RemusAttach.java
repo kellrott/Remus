@@ -11,19 +11,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.remus.plugin.PluginInterface;
-import org.remus.plugin.PluginManager;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.AttachmentInfo;
-import org.remus.thrift.BadPeerName;
-import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
-import org.remus.thrift.WorkDesc;
+import org.remus.thrift.TableRef;
 
-public abstract class RemusAttach extends RemusPeer {
+public abstract class RemusAttach implements RemusNet.Iface {
 
 	static public final int BLOCK_SIZE=1048576; 
 	
@@ -36,48 +30,38 @@ public abstract class RemusAttach extends RemusPeer {
 			return (RemusAttach) attach;
 		}
 		return new RemusAttach() {
+					
 			
 			@Override
-			public void stop() {}
-			
-			@Override
-			public void start(PluginManager pluginManager) throws Exception {}
-			
-			@Override
-			public PeerInfo getPeerInfo() {
-				return ((PluginInterface) attach).getPeerInfo();
-			}					
-			
-			@Override
-			public ByteBuffer readBlock(AppletRef stack, String key, String name,
+			public ByteBuffer readBlock(TableRef stack, String key, String name,
 					long offset, int length) throws NotImplemented, TException {
 				return attach.readBlock(stack, key, name, offset, length);
 			}
 			
 			@Override
-			public List<String> listAttachments(AppletRef stack, String key)
+			public List<String> listAttachments(TableRef stack, String key)
 					throws NotImplemented, TException {
 				return attach.listAttachments(stack, key);
 			}
 			
 			@Override
-			public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, TException {
+			public void initAttachment(TableRef stack, String key, String name) throws NotImplemented, TException {
 				attach.initAttachment(stack, key, name);				
 			}
 			
 			@Override
-			public boolean hasAttachment(AppletRef stack, String key, String name)
+			public boolean hasAttachment(TableRef stack, String key, String name)
 					throws NotImplemented, TException {
 				return attach.hasAttachment(stack, key, name);
 			}
 			
 			@Override
-			public void deleteStack(AppletRef stack) throws NotImplemented, TException {
-				attach.deleteStack(stack);
+			public void deleteTable(TableRef stack) throws NotImplemented, TException {
+				attach.deleteTable(stack);
 			}
 			
 			@Override
-			public void deleteAttachment(AppletRef stack, String key, String name)
+			public void deleteAttachment(TableRef stack, String key, String name)
 					throws NotImplemented, TException {
 				attach.deleteAttachment(stack, key, name);
 			}
@@ -85,20 +69,15 @@ public abstract class RemusAttach extends RemusPeer {
 			@Override
 			public void init(Map params) {}
 
+			
 			@Override
-			public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-					throws NotImplemented, BadPeerName, TException {
-				return attach.peerInfo(info);
-			}
-
-			@Override
-			public void appendBlock(AppletRef stack, String key, String name,
+			public void appendBlock(TableRef stack, String key, String name,
 					ByteBuffer data) throws NotImplemented, TException {
 				attach.appendBlock(stack, key, name, data);
 			}
 
 			@Override
-			public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+			public AttachmentInfo getAttachmentInfo(TableRef stack, String key,
 					String name) throws NotImplemented, TException {
 				return attach.getAttachmentInfo(stack, key, name);
 			}
@@ -110,7 +89,7 @@ public abstract class RemusAttach extends RemusPeer {
 	@SuppressWarnings("unchecked")
 	abstract public void init(Map params);
 
-	public long copyTo(File file, AppletRef stack, String key, String name) throws TException, IOException, NotImplemented {
+	public long copyTo(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		initAttachment(stack, key, name);		
 		byte [] buffer = new byte[BLOCK_SIZE];
 		int size;
@@ -125,7 +104,7 @@ public abstract class RemusAttach extends RemusPeer {
 		return total;
 	}
 
-	public long copyFrom(File file, AppletRef stack, String key, String name) throws TException, IOException, NotImplemented {
+	public long copyFrom(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		AttachmentInfo info = getAttachmentInfo(stack, key, name);
 		long fileSize = info.size;
 		
@@ -144,10 +123,10 @@ public abstract class RemusAttach extends RemusPeer {
 		long fileSize;
 		byte [] buffer;
 		long offset, fileOffset;
-		AppletRef stack;
+		TableRef stack;
 		String key;
 		String name;
-		public BlockReader(AppletRef stack, String key, String name) throws TException, NotImplemented {
+		public BlockReader(TableRef stack, String key, String name) throws TException, NotImplemented {
 			this.stack = stack;
 			this.name = name;
 			this.key = key;
@@ -181,7 +160,7 @@ public abstract class RemusAttach extends RemusPeer {
 
 	}
 
-	public InputStream readAttachment(AppletRef stack, String key,
+	public InputStream readAttachment(TableRef stack, String key,
 			String name) throws NotImplemented {
 		try {
 			return new BlockReader(stack, key, name);
@@ -193,13 +172,13 @@ public abstract class RemusAttach extends RemusPeer {
 
 	
 	private class SendOnClose extends OutputStream {
-		private AppletRef stack;
+		private TableRef stack;
 		private String key;
 		private String name;
 		private File file;
 		private FileOutputStream fos;
 		
-		public SendOnClose(AppletRef stack, String key, String name) throws IOException {
+		public SendOnClose(TableRef stack, String key, String name) throws IOException {
 			this.stack = stack;
 			this.key = key;
 			this.name = name;
@@ -242,84 +221,60 @@ public abstract class RemusAttach extends RemusPeer {
 	}
 	
 
-	public OutputStream writeAttachment(AppletRef stack, String key, String name) throws IOException {
+	public OutputStream writeAttachment(TableRef stack, String key, String name) throws IOException {
 		return new SendOnClose(stack, key, name);		
 	}
-
+	
 	@Override
-	public String status() throws TException {
-		return "OK";
-	}
-
-	@Override
-	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(TableRef stack, String key,
 			String data) throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
 	@Override
-	public boolean containsKey(AppletRef stack, String key)
+	public boolean containsKey(TableRef stack, String key)
 			throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
-
+	
 	@Override
-	public void deleteValue(AppletRef stack, String key) throws NotImplemented,
-			TException {
-		throw new NotImplemented();		
-	}
-
-	@Override
-	public long getTimeStamp(AppletRef stack) throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public List<String> getValueJSON(AppletRef stack, String key)
+	public List<String> getValueJSON(TableRef stack, String key)
 			throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
+	
 
 	@Override
-	public String jobRequest(String dataServer, String attachServer, WorkDesc work)
-			throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public long keyCount(AppletRef stack, int maxCount) throws NotImplemented,
+	public long keyCount(TableRef stack, int maxCount) throws NotImplemented,
 			TException {
 		throw new NotImplemented();
 	}
 
 	@Override
-	public List<String> keySlice(AppletRef stack, String keyStart, int count)
+	public List<String> keySlice(TableRef stack, String keyStart, int count)
 			throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
 
 	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack,
+	public List<KeyValJSONPair> keyValJSONSlice(TableRef stack,
 			String startKey, int count) throws NotImplemented, TException {
 		throw new NotImplemented();
 	}
+	
 
 	@Override
-	public JobStatus jobStatus(String jobID) throws NotImplemented,
+	public void createTable(TableRef table) throws NotImplemented,
 			TException {
-		throw new NotImplemented();
+		// TODO Auto-generated method stub
+		
 	}
-	
+
 	@Override
-	public int jobCancel(String jobID) throws NotImplemented, TException {
-		throw new NotImplemented();	
-	}
-	
-	@Override
-	public List<String> stackSlice(String startKey, int count)
+	public List<String> tableSlice(String startKey, int count)
 			throws NotImplemented, TException {
-		throw new NotImplemented();	
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
 	
 }

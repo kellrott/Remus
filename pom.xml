@@ -10,10 +10,7 @@
   <name>Remus</name>
   <modules>
     <module>core</module>
-    <module>web</module>
     <module>remusCassandra</module>
-    <module>remusFS</module>
-    <module>jsEngine</module>
     <module>tools</module>
   </modules>   
 </project>

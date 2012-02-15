@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Formatter;
-import java.util.Properties;
 
 import junit.framework.Assert;
 
@@ -20,7 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.remus.ConnectionException;
 import org.remus.RemusAttach;
-import org.remus.thrift.AppletRef;
+import org.remus.thrift.TableRef;
 import org.remus.thrift.NotImplemented;
 
 public class AttachTest {
@@ -48,8 +47,8 @@ public class AttachTest {
 		String applet1 = "@testfile_1";
 		String applet2 = "@testfile_2";
 
-		AppletRef aRef1 = new AppletRef("unitTest", instance1, applet1);
-		AppletRef aRef2 = new AppletRef("unitTest", instance2, applet2);
+		TableRef aRef1 = new TableRef(instance1, applet1);
+		TableRef aRef2 = new TableRef(instance2, applet2);
 
 		InputStream is = AttachTest.class.getResourceAsStream("test.txt");
 		

@@ -7,16 +7,13 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.BadPeerName;
-import org.remus.thrift.JobStatus;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerInfoThrift;
 import org.remus.thrift.RemusNet;
-import org.remus.thrift.WorkDesc;
 import org.remus.thrift.RemusNet.Iface;
+import org.remus.thrift.TableRef;
 
 public class RemusRemote implements RemusNet.Iface {
 	public static final int REMOTE_TIMEOUT = 60000;
@@ -44,17 +41,17 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void addDataJSON(AppletRef stack, long jobID, long emitID,
+	public void addDataJSON(TableRef stack, 
 			String key, String data) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
-			iface.addDataJSON(stack, jobID, emitID, key, data);
+			iface.addDataJSON(stack, key, data);
 		}
 	}
 
 
 	@Override
-	public boolean containsKey(AppletRef stack, String key)
+	public boolean containsKey(TableRef stack, String key)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -63,7 +60,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void deleteAttachment(AppletRef stack, String key, String name)
+	public void deleteAttachment(TableRef stack, String key, String name)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -72,34 +69,17 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void deleteStack(AppletRef stack) throws NotImplemented,
+	public void deleteTable(TableRef stack) throws NotImplemented,
 	TException {
 		synchronized (lock) {
 			checkIface();
-			iface.deleteStack(stack);
+			iface.deleteTable(stack);
 		}
 	}
+	
 
 	@Override
-	public void deleteValue(AppletRef stack, String key)
-	throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			iface.deleteValue(stack, key);
-		}
-	}
-
-	@Override
-	public long getTimeStamp(AppletRef stack) throws NotImplemented,
-	TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.getTimeStamp(stack);
-		}
-	}
-
-	@Override
-	public List<String> getValueJSON(AppletRef stack, String key)
+	public List<String> getValueJSON(TableRef stack, String key)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -108,7 +88,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public boolean hasAttachment(AppletRef stack, String key, String name)
+	public boolean hasAttachment(TableRef stack, String key, String name)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -117,41 +97,16 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name) throws NotImplemented, TException {
+	public void initAttachment(TableRef stack, String key, String name) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
 			iface.initAttachment(stack, key, name);		
 		}
 	}
 
-	@Override
-	public int jobCancel(String jobID) throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.jobCancel(jobID);
-		}
-	}
 
 	@Override
-	public String jobRequest(String dataServer, String attachServer,
-			WorkDesc work) throws NotImplemented, TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.jobRequest(dataServer, attachServer, work);
-		}
-	}
-
-	@Override
-	public JobStatus jobStatus(String jobID) throws NotImplemented,
-	TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.jobStatus(jobID);
-		}
-	}
-
-	@Override
-	public long keyCount(AppletRef stack, int maxCount)
+	public long keyCount(TableRef stack, int maxCount)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -160,7 +115,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public List<String> keySlice(AppletRef stack, String keyStart, int count)
+	public List<String> keySlice(TableRef stack, String keyStart, int count)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -169,7 +124,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack,
+	public List<KeyValJSONPair> keyValJSONSlice(TableRef stack,
 			String startKey, int count) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -178,7 +133,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public List<String> listAttachments(AppletRef stack, String key)
+	public List<String> listAttachments(TableRef stack, String key)
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -187,7 +142,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public ByteBuffer readBlock(AppletRef stack, String key, String name,
+	public ByteBuffer readBlock(TableRef stack, String key, String name,
 			long offset, int length) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -196,15 +151,7 @@ public class RemusRemote implements RemusNet.Iface {
 	}
 
 	@Override
-	public String status() throws TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.status();
-		}
-	}
-
-	@Override
-	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) 
+	public void appendBlock(TableRef stack, String key, String name, ByteBuffer data) 
 	throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
@@ -212,36 +159,34 @@ public class RemusRemote implements RemusNet.Iface {
 		}
 	}
 
-	@Override
-	public List<PeerInfoThrift> peerInfo(List<PeerInfoThrift> info)
-	throws NotImplemented, BadPeerName, TException {
-		synchronized (lock) {
-			checkIface();
-			return iface.peerInfo(info);
-		}
-	}
 	
 	@Override
-	public List<String> stackSlice(String startKey, int count)
+	public List<String> tableSlice(String startKey, int count)
 			throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
-			return iface.stackSlice(startKey, count);
+			return iface.tableSlice(startKey, count);
 		}
 	}
 
 	public void close() {
-		((RemusNet.Client) iface).getInputProtocol().getTransport().close();
+		//((RemusNet.Client) iface)..getInputProtocol().getTransport().close();
 		iface = null;
 	}
 
 	@Override
-	public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+	public AttachmentInfo getAttachmentInfo(TableRef stack, String key,
 			String name) throws NotImplemented, TException {
 		synchronized (lock) {
 			checkIface();
 			return iface.getAttachmentInfo(stack, key, name);
 		}
+	}
+
+	@Override
+	public void createTable(TableRef table) throws NotImplemented, TException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

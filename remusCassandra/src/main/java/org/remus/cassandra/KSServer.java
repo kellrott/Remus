@@ -32,18 +32,16 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import org.remus.ConnectionException;
-import org.remus.PeerInfo;
 import org.remus.RemusDB;
-import org.remus.plugin.PluginManager;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerType;
+import org.remus.thrift.RemusNet;
+import org.remus.thrift.TableRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class KSServer extends RemusDB {
+public class KSServer extends FileServer implements RemusNet.Iface {
 	private static final ConsistencyLevel CL = ConsistencyLevel.ONE;
 
 	ThriftClientPool clientPool;
@@ -122,14 +120,10 @@ public class KSServer extends RemusDB {
 			e.printStackTrace();
 		}
 	}
+	
 
-
-	@Override
-	public void stop() {
-	}
-
-	private String stackName(AppletRef stack) {
-		String out = stack.pipeline + stack.instance + stack.applet;
+	private String stackName(TableRef stack) {
+		String out = stack.instance + stack.table;
 		out = out.replace("_","__");
 		out = out.replace("-", "_0");
 		out = out.replace("@", "_1");
@@ -137,7 +131,7 @@ public class KSServer extends RemusDB {
 		return out;
 	}
 	
-	private String getColumnFamily( AppletRef stack ) throws ConnectionException {
+	private String getColumnFamily( TableRef stack ) throws ConnectionException {
 		
 		String sName = stackName(stack);
 		
@@ -193,20 +187,20 @@ public class KSServer extends RemusDB {
 	}
 
 
-	private String stack2column(AppletRef stack) {
-		return stack.instance + "/" + stack.pipeline + "/" + stack.applet;
+	private String stack2column(TableRef stack) {
+		return stack.instance + "/" + stack.table;
 	}
 
 
 	@Override
-	public void addDataJSON(AppletRef stack, long jobID, long emitID, String key,
+	public void addDataJSON(TableRef stack, String key,
 			String data) throws TException {
 
 
 		final String column = stack2column(stack);
 		final ByteBuffer superColumn = ByteBuffer.wrap(key.getBytes());
-		final String colName = 
-			Long.toString(jobID) + "_" + Long.toString(emitID);
+		//BUG: Need multi-key mux to prevent value overwrite
+		final String colName = ""; //Long.toString(jobID) + "_" + Long.toString(emitID);
 		final ByteBuffer colData = ByteBuffer.wrap(data.getBytes());
 
 		String curCF = null;
@@ -244,7 +238,7 @@ public class KSServer extends RemusDB {
 	}
 
 	@Override
-	public boolean containsKey(AppletRef stack, String key) throws TException {
+	public boolean containsKey(TableRef stack, String key) throws TException {
 		final String superColumn = stack2column(stack);
 		String curCF = null;
 		try {
@@ -282,7 +276,7 @@ public class KSServer extends RemusDB {
 	}
 
 	@Override
-	public void deleteStack(AppletRef stack) throws TException {
+	public void deleteTable(TableRef stack) throws TException {
 
 		final String column = stack2column(stack);
 		String curCF = null;
@@ -313,71 +307,10 @@ public class KSServer extends RemusDB {
 			e.printStackTrace();
 		}
 	}
+	
 
 	@Override
-	public void deleteValue(AppletRef stack, String key) throws TException {
-		final String column = stack2column(stack);
-		String curCF = null;
-		try {
-			curCF = getColumnFamily(stack);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-		final ColumnPath cp = new ColumnPath( curCF );
-
-		cp.setSuper_column(ByteBuffer.wrap(key.getBytes()));
-
-		ThriftCaller<Boolean> delCall = new ThriftCaller<Boolean>(clientPool) {
-			@Override
-			protected Boolean request(Client client)
-			throws InvalidRequestException, UnavailableException,
-			TimedOutException, TException {
-
-				long clock = System.currentTimeMillis() * 1000;
-				client.remove(ByteBuffer.wrap(column.getBytes()), cp, clock, CL);
-				return null;
-			}
-		};
-		try {
-			delCall.call();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
-
-	@Override
-	public long getTimeStamp(AppletRef stack) throws TException {
-		String superColumn = stack2column(stack);
-		String curCF = null;
-		try {
-			curCF = getColumnFamily(stack);
-		} catch (ConnectionException e1) {
-			e1.printStackTrace();
-		}
-
-		ThriftSliceIterator<Long> out = new ThriftSliceIterator<Long>(clientPool, superColumn, curCF, "","") {				
-			@Override
-			void processColumn(ColumnOrSuperColumn scol) {
-				for (Column col : scol.getSuper_column().getColumns()) {
-					addElement(col.timestamp);
-				}
-			}
-		};
-
-		long timestamp = 0;
-		while (out.hasNext()) {
-			long cur = out.next();
-			if (cur > timestamp) {
-				timestamp = cur;
-			}
-		}
-		return timestamp;
-	}
-
-	@Override
-	public List<String> getValueJSON(AppletRef stack, String key) throws TException {
+	public List<String> getValueJSON(TableRef stack, String key) throws TException {
 
 		final String superColumn = stack2column(stack);
 		String curCF = null;
@@ -419,7 +352,7 @@ public class KSServer extends RemusDB {
 	}
 
 	@Override
-	public long keyCount(AppletRef stack, final int maxCount) throws TException {
+	public long keyCount(TableRef stack, final int maxCount) throws TException {
 		final String superColumn = stack2column(stack);
 		String curCF = null;
 		try {
@@ -453,7 +386,7 @@ public class KSServer extends RemusDB {
 	}
 
 	@Override
-	public List<String> keySlice(AppletRef stack, final String keyStart, final int count)
+	public List<String> keySlice(TableRef stack, final String keyStart, final int count)
 	throws TException {
 		final String superColumn = stack2column(stack);
 		String curCF = null;
@@ -491,7 +424,7 @@ public class KSServer extends RemusDB {
 	}
 
 	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(AppletRef stack, final String startKey,
+	public List<KeyValJSONPair> keyValJSONSlice(TableRef stack, final String startKey,
 			final int count) throws TException {
 
 		final String superColumn = stack2column(stack);
@@ -540,32 +473,5 @@ public class KSServer extends RemusDB {
 		return null;
 
 	}
-
-	
-	@Override
-	public List<String> stackSlice(String startKey, int count)
-			throws NotImplemented, TException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
-	@Override
-	public PeerInfo getPeerInfo() {
-		PeerInfo out = new PeerInfo();
-		out.peerType = PeerType.DB_SERVER;
-		out.name = "Remus Cassandra Link";
-		return out;
-	}
-
-
-	
-	
-	@Override
-	public void start(PluginManager pluginManager) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
 	
 }

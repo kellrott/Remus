@@ -1,4 +1,4 @@
-package org.remus.fs;
+package org.remus.cassandra;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,17 +12,14 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 
-import org.remus.PeerInfo;
 import org.remus.RemusAttach;
-import org.remus.plugin.PluginManager;
-import org.remus.thrift.AppletRef;
 import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.NotImplemented;
-import org.remus.thrift.PeerType;
+import org.remus.thrift.TableRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FileServer extends RemusAttach {
+abstract public class FileServer extends RemusAttach {
 
 	/**
 	 * Location in the file system the attachments are stored
@@ -48,9 +45,9 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public void deleteAttachment(AppletRef stack, String key, String name)
+	public void deleteAttachment(TableRef stack, String key, String name)
 			throws TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		attachFile.delete();
 	}
 
@@ -67,17 +64,17 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public void deleteStack(AppletRef stack) throws TException {
+	public void deleteTable(TableRef stack) throws TException {
 		logger.debug("DELETE ATTACH STACK:" + stack);
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, null, null);
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, null, null);
 		File stackDir = attachFile.getParentFile().getParentFile();
 		deleteDir(stackDir);
 	}
 
 	@Override
-	public boolean hasAttachment(AppletRef stack, String key, String name)
+	public boolean hasAttachment(TableRef stack, String key, String name)
 			throws TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		if (attachFile.exists()) {
 			return true;
 		}
@@ -85,8 +82,8 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public void initAttachment(AppletRef stack, String key, String name) throws TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+	public void initAttachment(TableRef stack, String key, String name) throws TException {
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		try {
 			if (!attachFile.getParentFile().exists()) {
 				attachFile.getParentFile().mkdirs();
@@ -103,9 +100,9 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public List<String> listAttachments(AppletRef stack, String key)
+	public List<String> listAttachments(TableRef stack, String key)
 			throws TException {
-		File attachDir = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, null).getParentFile();
+		File attachDir = NameFlatten.flatten(basePath, stack.instance, stack.table, key, null).getParentFile();
 		LinkedList<String> out = new LinkedList<String>();
 		if ( attachDir.exists() ) {
 			for ( File file : attachDir.listFiles() ) {
@@ -116,9 +113,9 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public ByteBuffer readBlock(AppletRef stack, String key, String name,
+	public ByteBuffer readBlock(TableRef stack, String key, String name,
 			long offset, int length) throws TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		try {
 			RandomAccessFile f = new RandomAccessFile(attachFile, "rw");
 			f.seek(offset);
@@ -137,8 +134,8 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public void appendBlock(AppletRef stack, String key, String name, ByteBuffer data) throws TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+	public void appendBlock(TableRef stack, String key, String name, ByteBuffer data) throws TException {
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		try {
 			FileOutputStream f = new FileOutputStream(attachFile, true);
 			byte [] array = data.array();
@@ -153,9 +150,9 @@ public class FileServer extends RemusAttach {
 	}
 
 	@Override
-	public AttachmentInfo getAttachmentInfo(AppletRef stack, String key,
+	public AttachmentInfo getAttachmentInfo(TableRef stack, String key,
 			String name) throws NotImplemented, TException {
-		File attachFile = NameFlatten.flatten(basePath, stack.pipeline, stack.instance, stack.applet, key, name);
+		File attachFile = NameFlatten.flatten(basePath, stack.instance, stack.table, key, name);
 		AttachmentInfo out = new AttachmentInfo(name);
 		if (attachFile.exists()) {
 			out.setSize(attachFile.length());
@@ -165,26 +162,5 @@ public class FileServer extends RemusAttach {
 		}
 		return out;
 	}
-
-	@Override
-	public PeerInfo getPeerInfo() {
-		PeerInfo out = new PeerInfo();
-		out.peerType = PeerType.ATTACH_SERVER;
-		out.name = "Remus FileSystem";
-		return out;
-	}
-
-	@Override
-	public void start(PluginManager pluginManager) throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void stop() {
-		// TODO Auto-generated method stub
-
-	}
-
 
 }
