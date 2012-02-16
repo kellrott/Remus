@@ -410,8 +410,16 @@ class Manager:
                 tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
                 doneRef = remus.db.TableRef(tableBase + "@done")
                 errorRef = remus.db.TableRef(tableBase + "@error")
+                
+                doneHash = {}
+                errorHash = {}
+                for k in self.db.listKeys(doneRef):
+                    doneHash[k] = True
+                for k in self.db.listKeys(errorRef):
+                    errorHash[k] = True
+                
                 for key, value in self.db.listKeyValue(table):
-                    if not self.db.hasKey(doneRef, key) and not self.db.hasKey(errorRef, key):
+                    if key not in doneHash and key not in errorHash:
                         #self.task_manager.addTask(Task(self, instance, table, key))
                         task = Task(self, table, key, value)
                         jobTree[ task.getName() ] = task
