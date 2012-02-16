@@ -456,9 +456,11 @@ class FileDB(DBBase):
                 tableName = re.sub(os.path.join(self.basedir, inst), "", re.sub("@data.*", "", path))
                 tableRef = TableRef(inst, tableName)
                 out[ tableRef ] = True
-            if os.path.isdir(path):
-                for a in self._dirscan( path, inst ):
-                    out[a] = True
+            else:
+                if not path.endswith("@attach"):
+                    if os.path.isdir(path):
+                        for a in self._dirscan( path, inst ):
+                            out[a] = True
         return out.keys()
             
     
