@@ -182,9 +182,25 @@ class SubmitTarget(Target):
         print "open table:", i
         return self.__manager__._openTable(i.instance, i.table)
         
-        
 
-class LocalSubmitTarget(Target):
+
+class LocalTarget(Target):
+    """
+    This class allows the user to schedule local process. These child classes
+    will be run on the same node as the parent process.
+    Useful for parallel processes that require access to the same local resources
+    (such as a local file system)
+    """
+    
+    def run(self):
+        """
+        The run method is user provided and run on the same node as the 
+        parent class
+        """
+        raise Exception()
+
+    
+class LocalSubmitTarget(LocalTarget):
     """
     Local Submit target.
     
@@ -295,7 +311,22 @@ class TableTarget(Target):
         if self.__outTable__ is None:
             self.__outTable__ = self.__manager__._createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)), self.__outTableInfo__ )
         self.__outTable__.copyTo(path, key, name)
+
+
     
+class LocalTableTarget(LocalTarget,TableTarget):
+    
+    def __init__(self, outTable, outTableInfo={}):
+        TableTarget.__init__(self, outTable, outTableInfo)
+
+    
+    def run(self):
+        """
+        The run method is user provided and run on the same node as the 
+        parent class
+        """
+        raise Exception()
+        
 
 
 class MultiApplet(RemusApplet):

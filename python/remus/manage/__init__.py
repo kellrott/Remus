@@ -256,18 +256,28 @@ class TaskManager:
     def taskCount(self):
         return len(self.task_queue)
     
+    def isFull(self):
+        jMax = self.executor.getMaxJobs()
+        if jMax is None or len(self.task_queue) < jMax:
+            return False
+        return True
+    
     def cycle(self):
+        change = False
         jMax = self.executor.getMaxJobs()
         for t in self.task_queue:
             if t not in self.active_tasks:
                 if jMax is None or len(self.active_tasks) < jMax:
                     self.task_queue[t].run(self.executor)
                     self.active_tasks[t] = True
+                    change = True
         dmap = self.executor.poll()
         for t in dmap:
             logging.info("Task Complete: " + t)
             del self.task_queue[t]
             del self.active_tasks[t]
+            change = True
+        return change
 
 class Applet(str):
     def __init__(self, applet):
@@ -351,7 +361,7 @@ class Manager:
             instRef = remus.db.TableRef(instance, "@request")
             self.db.createTable(instRef, {})
             self.db.addData( instRef, submitName, submitData)
-        elif isinstance(className, remus.LocalSubmitTarget):
+        elif isinstance(className, remus.LocalTarget):
             self.import_applet(instance, className.__module__, submitData)
             className.__setpath__(instance, submitName)
             className.__setmanager__(self)
@@ -394,6 +404,7 @@ class Manager:
     def scan(self, instance):
         found = False
         jobTree = {}
+        logging.debug("START_TASKSCAN:" + datetime.datetime.now().isoformat())
         for table in self.db.listTables(instance):
             if table.toPath().endswith("@request") or table.toPath().endswith("@follow"):
                 tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
@@ -405,6 +416,7 @@ class Manager:
                         task = Task(self, table, key, value)
                         jobTree[ task.getName() ] = task
                         found = True
+        logging.debug("END_TASKSCAN:" + datetime.datetime.now().isoformat())
         #return found
         return jobTree
 
@@ -420,40 +432,45 @@ class Manager:
             raise Exception("Executor not defined")
         sleepTime = 1
         while 1:
-            jobTree = self.scan(instance)
-            if len(jobTree) == 0:
-                break
             added = False
             
-            activeSet = {}
-            for j in jobTree:
-                tmp = j.split(":")
-                dpath = tmp[0] + ":" + re.sub("(@request|@follow)$", "", tmp[1]) + tmp[2]
-                if tmp[1].endswith("@request"):
-                    activeSet[dpath] = True
-                else:
-                    activeSet[dpath] = False
-                    
-            print "activeSet", activeSet
-            for j in jobTree:
-                dfound = False
-                if "_depends" in jobTree[j].jobInfo:
-                    dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
-                    logging.debug("dpath: " +  j + " " + jobTree[j].tableRef.table + " "+ dpath)
-                    for k in activeSet:
-                        if k.startswith(dpath) and activeSet[k]: # and jobTree[k].tableRef != jobTree[j].tableRef:
-                            dfound = True
-                if not dfound:
-                    if self.task_manager.addTask(jobTree[j]):
-                        added = True
-                else:
-                    logging.debug( "delay: " + j )
-            self.task_manager.cycle()
+            if not self.task_manager.isFull():
+                jobTree = self.scan(instance)
+                if len(jobTree) == 0:
+                    break
+            
+                activeSet = {}
+                for j in jobTree:
+                    tmp = j.split(":")
+                    dpath = tmp[0] + ":" + re.sub("(@request|@follow)$", "", tmp[1]) + tmp[2]
+                    if tmp[1].endswith("@request"):
+                        activeSet[dpath] = True
+                    else:
+                        activeSet[dpath] = False
+                        
+                #print "activeSet", activeSet
+                for j in jobTree:
+                    dfound = False
+                    if "_depends" in jobTree[j].jobInfo:
+                        dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
+                        logging.debug("dpath: " +  j + " " + jobTree[j].tableRef.table + " "+ dpath)
+                        for k in activeSet:
+                            if k.startswith(dpath) and activeSet[k]: # and jobTree[k].tableRef != jobTree[j].tableRef:
+                                dfound = True
+                    if not dfound:
+                        if self.task_manager.addTask(jobTree[j]):
+                            added = True
+                    else:
+                        logging.debug( "delay: " + j )
+
+            if self.task_manager.cycle():
+                added = True
             if added:
                 sleepTime = 1
             else:
                 if sleepTime < 30:
                     sleepTime += 1
+            logging.debug("SleepTime:" + str(sleepTime))
             time.sleep(sleepTime)
             
     def _createTable(self, inst, tablePath, tableInfo):
