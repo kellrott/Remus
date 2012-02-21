@@ -48,6 +48,11 @@ class UnimplementedMethod(Exception):
     def __init__(self):
         Exception.__init__(self)
 
+class InvalidScheduleRequest(Exception):
+    def __init__(self, msg):
+        Exception.__init__(self, msg)
+    
+
 executorMap = {
     'auto' : 'remus.manage.autoSelect',
     'process' : 'remus.manage.processExecutor.ProcessExecutor',
@@ -99,7 +104,8 @@ class Worker:
     def __init__(self, config, appletPath):
         self.config = config
         self.appletPath = appletPath
-    
+        self.local_children = False
+        
     def run(self):
         db = remus.db.connect( self.config.dbpath )
         if not os.path.exists(self.config.workdir):
@@ -181,12 +187,26 @@ class Worker:
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
         os.chdir(cwd)
         shutil.rmtree(tmpdir)
+        
+        #if we have spawned local children, take care of them using the process manager
+        if self.local_children:
+            logging.info("Starting Local Process manager")
+            cConf = Config(self.config.dbpath, "process", workdir=self.config.workdir)
+            cManager = Manager(cConf)
+            cManager.wait(instRef.instance, appPath + "/@request")
+            
+        
 
     def callback_openTable(self, ref):
         self.inputList.append(str(ref))
 
     def callback_createTable(self, ref):
         self.outputList.append(str(ref))
+    
+    def callback_addChild(self, child):
+        if isinstance(child, remus.LocalTarget):
+            self.local_children = True
+        
 
 
 class TaskExecutor:
@@ -251,7 +271,7 @@ class TaskManager:
 
     def addTask(self, task):
         if task.getName() not in self.task_queue:
-            logging.debug("Adding Task: " + task.getName())
+            logging.debug("TaskManager Adding Task: " + task.getName())
             self.task_queue[ task.getName() ] = task
     
     def taskCount(self):
@@ -362,11 +382,13 @@ class Manager:
             instRef = remus.db.TableRef(instance, "@request")
             self.db.createTable(instRef, {})
             self.db.addData( instRef, submitName, submitData)
-        elif isinstance(className, remus.LocalTarget):
+        elif isinstance(className, remus.LocalSubmitTarget):
             self.import_applet(instance, className.__module__, submitData)
             className.__setpath__(instance, submitName)
             className.__setmanager__(self)
-            className.run()        
+            className.run()
+        else:
+            raise InvalidScheduleRequest("Invalid Submission Class")
         return instance
 
     def import_applet(self, inst, applet, appletInfo):
@@ -402,34 +424,40 @@ class Manager:
                     impList.append(inc)
         return added.keys()
         
-    def scan(self, instance):
+    def scan(self, instance, table=None):
         found = False
         jobTree = {}
-        logging.debug("START_TASKSCAN:" + datetime.datetime.now().isoformat())
-        for table in self.db.listTables(instance):
-            if table.toPath().endswith("@request") or table.toPath().endswith("@follow"):
-                tableBase = re.sub(r'(@request|@follow)$', '', table.toPath())
-                doneRef = remus.db.TableRef(tableBase + "@done")
-                errorRef = remus.db.TableRef(tableBase + "@error")
-                
-                doneHash = {}
-                errorHash = {}
-                for k in self.db.listKeys(doneRef):
-                    doneHash[k] = True
-                for k in self.db.listKeys(errorRef):
-                    errorHash[k] = True
-                
-                for key, value in self.db.listKeyValue(table):
-                    if key not in doneHash and key not in errorHash:
-                        #self.task_manager.addTask(Task(self, instance, table, key))
-                        task = Task(self, table, key, value)
-                        jobTree[ task.getName() ] = task
-                        found = True
-        logging.debug("END_TASKSCAN:" + datetime.datetime.now().isoformat())
+        if table is None:
+            logging.debug("START_TASKSCAN:" + datetime.datetime.now().isoformat())
+            for tableRef in self.db.listTables(instance):
+                if tableRef.toPath().endswith("@request") or tableRef.toPath().endswith("@follow"):
+                    jt = self.scan(instance, tableRef.table)
+                    for k in jt:
+                        jobTree[k] = jt[k]
+            logging.debug("END_TASKSCAN:" + datetime.datetime.now().isoformat())        
+        else:
+            tableRef = remus.db.TableRef(instance, table)
+            tableBase = re.sub(r'(@request|@follow)$', '', tableRef.toPath())
+            doneRef = remus.db.TableRef(tableBase + "@done")
+            errorRef = remus.db.TableRef(tableBase + "@error")
+            
+            doneHash = {}
+            errorHash = {}
+            for k in self.db.listKeys(doneRef):
+                doneHash[k] = True
+            for k in self.db.listKeys(errorRef):
+                errorHash[k] = True
+            
+            for key, value in self.db.listKeyValue(tableRef):
+                if key not in doneHash and key not in errorHash:
+                    #self.task_manager.addTask(Task(self, instance, table, key))
+                    task = Task(self, tableRef, key, value)
+                    jobTree[ task.getName() ] = task
+                    found = True
         #return found
         return jobTree
 
-    def wait(self, instance):
+    def wait(self, instance, table=None):
         """
         Wait for the completion of a pipeline.
         
@@ -441,37 +469,48 @@ class Manager:
             raise Exception("Executor not defined")
         sleepTime = 1
         while 1:
-            added = False
-            
+            added = False            
             if not self.task_manager.isFull():
-                jobTree = self.scan(instance)
-                if len(jobTree) == 0:
-                    break
-            
-                activeSet = {}
-                for j in jobTree:
-                    tmp = j.split(":")
-                    dpath = tmp[0] + ":" + re.sub("(@request|@follow)$", "", tmp[1]) + tmp[2]
-                    if tmp[1].endswith("@request"):
-                        activeSet[dpath] = True
-                    else:
-                        activeSet[dpath] = False
-                        
-                #print "activeSet", activeSet
-                for j in jobTree:
-                    dfound = False
-                    if "_depends" in jobTree[j].jobInfo:
-                        dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
-                        logging.debug("dpath: " +  j + " " + jobTree[j].tableRef.table + " "+ dpath)
-                        for k in activeSet:
-                            if k.startswith(dpath) and activeSet[k]: # and jobTree[k].tableRef != jobTree[j].tableRef:
-                                dfound = True
-                    if not dfound:
-                        if self.task_manager.addTask(jobTree[j]):
-                            added = True
-                    else:
-                        logging.debug( "delay: " + j )
-
+                #this is the global parent, so scan the whole tree
+                if table is None:
+                    jobTree = self.scan(instance)
+                    if len(jobTree) == 0:
+                        break
+                
+                    activeSet = {}
+                    for j in jobTree:
+                        tmp = j.split(":")
+                        dpath = tmp[0] + ":" + re.sub("(@request|@follow)$", "", tmp[1]) + tmp[2]
+                        if tmp[1].endswith("@request"):
+                            activeSet[dpath] = True
+                        else:
+                            activeSet[dpath] = False
+                           
+                    for j in jobTree:
+                        dfound = False
+                        if "_local" not in jobTree[j].jobInfo:
+                            if "_depends" in jobTree[j].jobInfo:
+                                dpath = str(remus.db.join(jobTree[j].tableRef.instance, jobTree[j].jobInfo["_depends"]))
+                                logging.debug("dpath: " +  j + " " + jobTree[j].tableRef.table + " "+ dpath)
+                                for k in activeSet:
+                                    if k.startswith(dpath) and activeSet[k]: # and jobTree[k].tableRef != jobTree[j].tableRef:
+                                        dfound = True
+                            if not dfound:
+                                if self.task_manager.addTask(jobTree[j]):
+                                    added = True
+                            else:
+                                logging.debug( "delay: " + j )
+                else:
+                    #this is a child (local) instance watcher
+                    #NOTE: this doesn't handle followOn targets
+                    jobTree = self.scan(instance, table)
+                    if len(jobTree) == 0:
+                        break
+                    for j in jobTree:
+                        if "_local" in jobTree[j].jobInfo:
+                            if self.task_manager.addTask(jobTree[j]):
+                                added = True                    
+                    
             if self.task_manager.cycle():
                 added = True
             if added:
@@ -511,9 +550,15 @@ class Manager:
         if isinstance(child, remus.MultiApplet):
             tableRef = remus.db.TableRef(obj.__instance__, os.path.abspath(os.path.join(obj.__tablepath__, child.__keyTable__)))
             meta["_keyTable"] = tableRef.toPath()
+        if isinstance(child, remus.LocalTarget):
+            if isinstance(obj, remus.LocalSubmitTarget):
+                raise InvalidScheduleRequest("LocalSubmitTarget Cannot have LocalChildren")
+            meta["_local"] = remus.db.TableRef(obj.__instance__, obj.__tablepath__).toPath()
         self.db.addData(instRef, child_name, meta)        
         tmp = tempfile.NamedTemporaryFile()
         tmp.write(pickle.dumps(child))
         tmp.flush()        
         self.db.copyTo(tmp.name, instRef, child_name, "pickle")
         tmp.close()
+        if self.callback is not None:
+            self.callback.callback_addChild(child)
