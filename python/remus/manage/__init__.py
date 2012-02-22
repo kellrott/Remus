@@ -35,6 +35,7 @@ import time
 import datetime
 import traceback
 import shutil
+import socket
 
 import remus.db
 import remus.db.table
@@ -183,7 +184,7 @@ class Worker:
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
             db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
         except Exception:
-            db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat()})
+            db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
         os.chdir(cwd)
         shutil.rmtree(tmpdir)
         
