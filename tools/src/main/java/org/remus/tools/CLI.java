@@ -12,7 +12,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
 import org.apache.thrift.TException;
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -88,8 +88,8 @@ public class CLI extends CLIInterface {
 		return RemusDB.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()));
 	}
 
-	public RemusAttach getAttachStore() throws TException {
-		return RemusAttach.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
+	public RemusInterface getAttachStore() throws TException {
+		return RemusInterface.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
 	}
 
 	@Override

@@ -18,21 +18,21 @@ import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
 import org.remus.ConnectionException;
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.thrift.TableRef;
 import org.remus.thrift.NotImplemented;
 
 public class AttachTest {
 
-	RemusAttach fs;
+	RemusInterface fs;
 
 	String driver = "org.remus.fs.FileServer";
 	@Before public void setUp() throws FileNotFoundException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ConnectionException {
 		
-		Class<RemusAttach> cls = (Class<RemusAttach>) Class.forName( driver );
+		Class<RemusInterface> cls = (Class<RemusInterface>) Class.forName( driver );
 		
 		fs = cls.newInstance();
-		fs.init(null);
+		//fs.init(null);
 		
 		//ds = new ThriftStore();//"testCluster", "localhost:9160", "remus", "remusTable" );
 		//ds.initMPStore(new JsonSerializer(), prop );

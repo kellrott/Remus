@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.remus.JSON;
 import org.remus.KeyValPair;
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.AppletInstance;
@@ -178,7 +178,7 @@ public class CLICommand {
 			String [] tmp = stack.split(":");
 			RemusPipeline pipeline = cli.getPipeline();
 			RemusDB db = cli.getDataSource();
-			RemusAttach attach = cli.getAttachStore();
+			RemusInterface attach = cli.getAttachStore();
 			if (tmp.length == 2) {
 				RemusApplet applet = pipeline.getApplet(tmp[1]);
 				AppletInstance ai = applet.getAppletInstance(tmp[0]);
@@ -246,7 +246,7 @@ public class CLICommand {
 		RemusPipeline pipeline = cli.getPipeline();
 		BaseStackNode curStack = null;
 		RemusDB db = cli.getDataSource();
-		RemusAttach attach = cli.getAttachStore();
+		RemusInterface attach = cli.getAttachStore();
 		if (tmp.length == 2) {
 			RemusApplet applet = pipeline.getApplet(tmp[1]);
 			AppletInstance ai = applet.getAppletInstance(tmp[0]);

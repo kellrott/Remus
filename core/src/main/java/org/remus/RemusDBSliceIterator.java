@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.thrift.TException;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.TableRef;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
@@ -20,10 +21,10 @@ public abstract class RemusDBSliceIterator<T> implements Iterable<T>, Iterator<T
 	ByteBuffer superColumn;
 	protected boolean stop = false;
 
-	RemusDB db;
+	RemusNet.Iface db;
 	private TableRef stack;
 	boolean loadVal;
-	public RemusDBSliceIterator(RemusDB db, TableRef stack, String keyStart, String keyEnd, boolean loadVal) {
+	public RemusDBSliceIterator(RemusNet.Iface db, TableRef stack, String keyStart, String keyEnd, boolean loadVal) {
 		this.db = db;
 		this.stack = stack;
 		this.keyStart = keyStart;

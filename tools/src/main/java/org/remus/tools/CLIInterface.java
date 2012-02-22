@@ -6,7 +6,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
 import org.apache.thrift.TException;
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -47,7 +47,7 @@ public abstract class CLIInterface {
 	public abstract void changePipeline(String pipelineName);
 	public abstract RemusPipeline getPipeline()  throws RemusDatabaseException, TException;
 	public abstract RemusDB getDataSource()  throws RemusDatabaseException, TException;
-	public abstract RemusAttach getAttachStore()  throws RemusDatabaseException, TException;
+	public abstract RemusInterface getAttachStore()  throws RemusDatabaseException, TException;
 	public abstract void println(String string) throws IOException;
 	public abstract RemusNet.Iface getManager() throws TException;
 }

@@ -12,14 +12,14 @@ import java.util.Map;
 
 import org.apache.thrift.TException;
 
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.thrift.AttachmentInfo;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.TableRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract public class FileServer extends RemusAttach {
+abstract public class FileServer extends RemusInterface {
 
 	/**
 	 * Location in the file system the attachments are stored

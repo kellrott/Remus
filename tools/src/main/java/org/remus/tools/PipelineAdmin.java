@@ -20,7 +20,7 @@ import org.apache.thrift.TException;
 import org.json.simple.JSONValue;
 import org.remus.JSON;
 import org.remus.KeyValPair;
-import org.remus.RemusAttach;
+import org.remus.RemusInterface;
 import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
 import org.remus.core.RemusApp;
@@ -128,7 +128,7 @@ public class PipelineAdmin {
 
 				if (curKey == null || kv.getKey().compareTo(curKey) != 0) {
 					curKey = kv.getKey();
-					RemusAttach att = applet.getAttachStore();
+					RemusInterface att = applet.getAttachStore();
 
 					for (String name : att.listAttachments(ar, curKey)) {
 						File appletDir = new File(instDir, applet.getID());
@@ -216,7 +216,7 @@ public class PipelineAdmin {
 			plugMan.start();
 			PeerManager pm = plugMan.getPeerManager();
 			RemusApp app = new RemusApp((RemusDB) pm.getPeer(pm.getDataServer()),
-					(RemusAttach) pm.getPeer(pm.getAttachStore()));
+					(RemusInterface) pm.getPeer(pm.getAttachStore()));
 			String cmd = null;
 			if (args.length > 1) {
 				cmd = args[1];

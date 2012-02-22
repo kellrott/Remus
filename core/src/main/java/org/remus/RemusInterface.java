@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.thrift.AttachmentInfo;
@@ -17,59 +17,56 @@ import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.TableRef;
 
-public abstract class RemusAttach implements RemusNet.Iface {
+public abstract class RemusInterface implements RemusNet.Iface {
 
 	static public final int BLOCK_SIZE=1048576; 
-	
-	
-	public static RemusAttach wrap(final RemusNet.Iface attach) {
+
+
+	public static RemusInterface wrap(final RemusNet.Iface attach) {
 		if (attach == null) {
 			return null;
 		}
-		if (attach instanceof RemusAttach) {
-			return (RemusAttach) attach;
+		if (attach instanceof RemusInterface) {
+			return (RemusInterface) attach;
 		}
-		return new RemusAttach() {
-					
-			
+		return new RemusInterface() {
+
+
 			@Override
 			public ByteBuffer readBlock(TableRef stack, String key, String name,
 					long offset, int length) throws NotImplemented, TException {
 				return attach.readBlock(stack, key, name, offset, length);
 			}
-			
+
 			@Override
 			public List<String> listAttachments(TableRef stack, String key)
 					throws NotImplemented, TException {
 				return attach.listAttachments(stack, key);
 			}
-			
+
 			@Override
 			public void initAttachment(TableRef stack, String key, String name) throws NotImplemented, TException {
 				attach.initAttachment(stack, key, name);				
 			}
-			
+
 			@Override
 			public boolean hasAttachment(TableRef stack, String key, String name)
 					throws NotImplemented, TException {
 				return attach.hasAttachment(stack, key, name);
 			}
-			
+
 			@Override
 			public void deleteTable(TableRef stack) throws NotImplemented, TException {
 				attach.deleteTable(stack);
 			}
-			
+
 			@Override
 			public void deleteAttachment(TableRef stack, String key, String name)
 					throws NotImplemented, TException {
 				attach.deleteAttachment(stack, key, name);
 			}
-			
-			@Override
-			public void init(Map params) {}
 
-			
+
 			@Override
 			public void appendBlock(TableRef stack, String key, String name,
 					ByteBuffer data) throws NotImplemented, TException {
@@ -81,13 +78,60 @@ public abstract class RemusAttach implements RemusNet.Iface {
 					String name) throws NotImplemented, TException {
 				return attach.getAttachmentInfo(stack, key, name);
 			}
-			
+
+			@Override
+			public boolean containsKey(TableRef table, String key)
+					throws NotImplemented, TException {
+				return attach.containsKey(table, key);
+			}
+
+			@Override
+			public List<String> keySlice(TableRef table, String keyStart,
+					int count) throws NotImplemented, TException {
+				return attach.keySlice(table, keyStart, count);
+			}
+
+			@Override
+			public List<String> getValueJSON(TableRef table, String key)
+					throws NotImplemented, TException {
+				return attach.getValueJSON(table, key);
+			}
+
+			@Override
+			public long keyCount(TableRef table, int maxCount)
+					throws NotImplemented, TException {
+				return attach.keyCount(table, maxCount);
+			}
+
+			@Override
+			public void addDataJSON(TableRef table, String key, String data)
+					throws NotImplemented, TException {
+				attach.addDataJSON(table, key, data);				
+			}
+
+			@Override
+			public List<KeyValJSONPair> keyValJSONSlice(TableRef table,
+					String startKey, int count) throws NotImplemented,
+					TException {
+				return attach.keyValJSONSlice(table, startKey, count);
+			}
+
+			@Override
+			public void createTable(TableRef table) throws NotImplemented,
+			TException {
+				attach.createTable(table);				
+			}
+
+			@Override
+			public List<String> tableSlice(String startKey, int count)
+					throws NotImplemented, TException {
+				return attach.tableSlice(startKey, count);
+			}
+
 		};
 	}
-	
-	
-	@SuppressWarnings("unchecked")
-	abstract public void init(Map params);
+
+
 
 	public long copyTo(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		initAttachment(stack, key, name);		
@@ -107,7 +151,7 @@ public abstract class RemusAttach implements RemusNet.Iface {
 	public long copyFrom(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		AttachmentInfo info = getAttachmentInfo(stack, key, name);
 		long fileSize = info.size;
-		
+
 		FileOutputStream fos = new FileOutputStream(file);
 
 		long offset = 0;
@@ -170,14 +214,14 @@ public abstract class RemusAttach implements RemusNet.Iface {
 		return null;
 	}
 
-	
+
 	private class SendOnClose extends OutputStream {
 		private TableRef stack;
 		private String key;
 		private String name;
 		private File file;
 		private FileOutputStream fos;
-		
+
 		public SendOnClose(TableRef stack, String key, String name) throws IOException {
 			this.stack = stack;
 			this.key = key;
@@ -185,12 +229,12 @@ public abstract class RemusAttach implements RemusNet.Iface {
 			file = File.createTempFile("remus", "trans");
 			fos = new FileOutputStream(file);
 		}
-		
+
 		@Override
 		public void write(int b) throws IOException {
 			fos.write(b);			
 		}
-		
+
 		@Override
 		public void close() throws IOException {
 			super.close();
@@ -219,62 +263,58 @@ public abstract class RemusAttach implements RemusNet.Iface {
 			}
 		}		
 	}
-	
+
 
 	public OutputStream writeAttachment(TableRef stack, String key, String name) throws IOException {
 		return new SendOnClose(stack, key, name);		
 	}
-	
-	@Override
-	public void addDataJSON(TableRef stack, String key,
-			String data) throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
 
-	@Override
-	public boolean containsKey(TableRef stack, String key)
-			throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-	
-	@Override
-	public List<String> getValueJSON(TableRef stack, String key)
-			throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
 	
 
-	@Override
-	public long keyCount(TableRef stack, int maxCount) throws NotImplemented,
-			TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public List<String> keySlice(TableRef stack, String keyStart, int count)
-			throws NotImplemented, TException {
-		throw new NotImplemented();
-	}
-
-	@Override
-	public List<KeyValJSONPair> keyValJSONSlice(TableRef stack,
-			String startKey, int count) throws NotImplemented, TException {
-		throw new NotImplemented();
+	public void add( TableRef stack, long jobID, long emitID, String key, Object object ) throws TException, NotImplemented {
+		addDataJSON(stack, key, JSON.dumps(object));
 	}
 	
-
-	@Override
-	public void createTable(TableRef table) throws NotImplemented,
-			TException {
-		// TODO Auto-generated method stub
+	
+	public List<Object> get(TableRef stack, String key)
+			throws TException, NotImplemented {
 		
+		List<String> i = getValueJSON(stack, key);
+
+		List<Object> out = new ArrayList<Object>(i.size());
+		for (String j : i) {
+			out.add(JSON.loads(j));
+		}
+		return out;
+	}
+	
+	public List<KeyValPair> keyValSlice(TableRef stack,
+			String startKey, int count) throws TException, NotImplemented {
+		List<KeyValJSONPair> i = keyValJSONSlice(stack, startKey, count);
+		
+		List<KeyValPair> out = new ArrayList<KeyValPair>(i.size());
+		for (KeyValJSONPair kv : i) {
+			out.add(new KeyValPair(kv));
+		}
+		return out;
 	}
 
-	@Override
-	public List<String> tableSlice(String startKey, int count)
-			throws NotImplemented, TException {
-		// TODO Auto-generated method stub
-		return null;
+	public Iterable<String> listKeys(TableRef applet) {
+		return new RemusDBSliceIterator<String>(this, applet, "", "", false) {
+			@Override
+			public void processKeyValue(String key, Object val, long jobID, long emitID) {
+				addElement(key);
+			}			
+		};		
+	}
+
+	public Iterable<KeyValPair> listKeyPairs(TableRef applet) {	
+		return new RemusDBSliceIterator<KeyValPair>(this, applet, "", "", true) {
+			@Override
+			public void processKeyValue(String key, Object val, long jobID, long emitID) {
+				addElement(new KeyValPair(key, val, jobID, emitID));
+			}			
+		};		
 	}
 	
 }
