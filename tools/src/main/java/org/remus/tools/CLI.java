@@ -13,23 +13,21 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
 import org.apache.thrift.TException;
 import org.remus.RemusInterface;
-import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.core.RemusApp;
-import org.remus.core.RemusPipeline;
-import org.remus.plugin.PluginManager;
+import org.remus.RemusRemote;
+import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Iface;
 import org.remus.tools.antlr.RemusCliLexer;
 import org.remus.tools.antlr.RemusCliParser;
 
 public class CLI extends CLIInterface {
 
-	private PluginManager pm;
+	private RemusInterface remus;
 	private String curPipeline = null;
 	private ConsoleReader reader;
 
-	public CLI(PluginManager pm) {
-		this.pm = pm;
+	public CLI(RemusInterface remus) {
+		this.remus = remus;
 	}
 	
 	public void start() throws IOException {
@@ -50,15 +48,10 @@ public class CLI extends CLIInterface {
 
 	public static void main(String [] args) throws Exception {	
 		Map params = new HashMap();
-		List<String> l = new LinkedList<String>();
-		l.add(args[0] + ":" + args[1]);		
-		params.put("seeds", l);
+		RemusInterface remote = RemusInterface.wrap(new RemusRemote(args[0], Integer.parseInt(args[1])));
 		System.err.println("Connecting: " + args[0] + ":" + args[1]);
-		PluginManager pm = new PluginManager(params);				
-		pm.start();
-		CLI cli = new CLI(pm);
-		cli.start();		
-		pm.close();
+		CLI cli = new CLI(remote);
+		cli.start();
 	}
 
 	public void println(String string) throws IOException {
@@ -70,31 +63,9 @@ public class CLI extends CLIInterface {
 		curPipeline = pipelineName;
 	}
 
-	public RemusApp getRemusApp() throws RemusDatabaseException, TException {
-		RemusApp app = new RemusApp(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()), 
-				pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
-		return app;
-	}
-
-	public RemusPipeline getPipeline() throws RemusDatabaseException, TException {
-		if (curPipeline != null) {
-			RemusApp app = getRemusApp();
-			return app.getPipeline(curPipeline);
-		}
-		return null;
-	}
-
-	public RemusDB getDataSource() throws TException {
-		return RemusDB.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getDataServer()));
-	}
-
-	public RemusInterface getAttachStore() throws TException {
-		return RemusInterface.wrap(pm.getPeerManager().getPeer(pm.getPeerManager().getAttachStore()));
-	}
-
 	@Override
-	public Iface getManager() throws TException {
-		return pm.getPeerManager().getPeer(pm.getPeerManager().getManager());
+	public RemusInterface getRemusDB() {
+		return remus;
 	}
 
 }

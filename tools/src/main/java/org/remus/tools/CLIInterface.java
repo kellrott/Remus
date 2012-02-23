@@ -7,10 +7,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.TokenStream;
 import org.apache.thrift.TException;
 import org.remus.RemusInterface;
-import org.remus.RemusDB;
 import org.remus.RemusDatabaseException;
-import org.remus.core.RemusApp;
-import org.remus.core.RemusPipeline;
 import org.remus.thrift.RemusNet;
 import org.remus.tools.antlr.RemusCliLexer;
 import org.remus.tools.antlr.RemusCliParser;
@@ -41,13 +38,7 @@ public abstract class CLIInterface {
 			println("UNKNOWN COMMAND");
 		}		
 	}
-	
-	
-	public abstract RemusApp getRemusApp() throws RemusDatabaseException, TException;
-	public abstract void changePipeline(String pipelineName);
-	public abstract RemusPipeline getPipeline()  throws RemusDatabaseException, TException;
-	public abstract RemusDB getDataSource()  throws RemusDatabaseException, TException;
-	public abstract RemusInterface getAttachStore()  throws RemusDatabaseException, TException;
+		
 	public abstract void println(String string) throws IOException;
-	public abstract RemusNet.Iface getManager() throws TException;
+	public abstract RemusInterface getRemusDB();
 }

@@ -15,14 +15,14 @@ import org.junit.*;
 
 import org.remus.ConnectionException;
 import org.remus.KeyValPair;
-import org.remus.RemusDB;
+import org.remus.RemusInterface;
 import org.remus.RemusDBSliceIterator;
 import org.remus.thrift.TableRef;
 import org.remus.thrift.NotImplemented;
 
 public class MPStoreTest {
 
-	RemusDB ds;
+	RemusInterface ds;
 
 	String instance1 = "00-testing-01";
 	String instance2 = "00-testing-02";
@@ -30,9 +30,9 @@ public class MPStoreTest {
 	String applet1 = "@testfile_1";
 	String applet2 = "@testfile_2";
 
-	@Before public void setUp() throws FileNotFoundException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ConnectionException {
+	@Before public void setUp() throws Exception {
 		String CLASS_NAME = "org.remus.cassandra.Server";
-		Class<RemusDB> cls = (Class<RemusDB>) Class.forName( CLASS_NAME );
+		Class<RemusInterface> cls = (Class<RemusInterface>) Class.forName( CLASS_NAME );
 		
 		Map config = new HashMap();
 		config.put("columnFamily", "remusTest");
@@ -42,7 +42,7 @@ public class MPStoreTest {
 		ds.init(config);		
 	}
 
-	@Test public void insertTest() throws TException, NotImplemented {
+	@Test public void insertTest() throws Exception {
 
 		
 		TableRef aRef1 = new TableRef(instance1, applet1);
@@ -57,13 +57,13 @@ public class MPStoreTest {
 		String val2 = "value_2";
 
 		for ( long i =0; i < 100; i++) {
-			ds.add( aRef1, 0L, i, key1, "value_" + Long.toString(i) );
+			ds.add( aRef1, key1, "value_" + Long.toString(i) );
 		}
 
 		for ( int i = 0; i < 100; i++) {
-			ds.add( aRef2, 0L, 0L, "key_" + Integer.toString(i), "value_" + i );
+			ds.add( aRef2, "key_" + Integer.toString(i), "value_" + i );
 		}
-
+		ds.flush();
 		int count = 0;
 
 		count=10;
@@ -123,7 +123,7 @@ public class MPStoreTest {
 		String key = "key_";
 		for (long i = 0; i < CYCLE_1; i++) {
 			for (long j = 0; j < CYCLE_2; j++) {
-				ds.add(aRef1, i, j, key + Long.toString(i), "value_" + Long.toString(i) + "_" + Long.toString(j));
+				ds.add(aRef1, key + Long.toString(i), "value_" + Long.toString(i) + "_" + Long.toString(j));
 			}
 		}
 	

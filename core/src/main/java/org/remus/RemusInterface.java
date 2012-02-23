@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.remus.thrift.AttachmentInfo;
@@ -31,6 +32,8 @@ public abstract class RemusInterface implements RemusNet.Iface {
 		}
 		return new RemusInterface() {
 
+			@Override
+			public void init(Map config) {}
 
 			@Override
 			public ByteBuffer readBlock(TableRef stack, String key, String name,
@@ -128,10 +131,15 @@ public abstract class RemusInterface implements RemusNet.Iface {
 				return attach.tableSlice(startKey, count);
 			}
 
+			@Override
+			public void flush() throws Exception {
+			}
+
 		};
 	}
 
-
+	public abstract void init(Map config) throws Exception;
+	public abstract void flush() throws Exception;
 
 	public long copyTo(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		initAttachment(stack, key, name);		
@@ -271,7 +279,7 @@ public abstract class RemusInterface implements RemusNet.Iface {
 
 	
 
-	public void add( TableRef stack, long jobID, long emitID, String key, Object object ) throws TException, NotImplemented {
+	public void add( TableRef stack, String key, Object object ) throws TException, NotImplemented {
 		addDataJSON(stack, key, JSON.dumps(object));
 	}
 	
