@@ -97,6 +97,25 @@ class ReadTable(object):
         """
         return self.db.copyFrom(path, self.table_ref, key, name)
 
+    def readAttachment(self, key, name):
+        """
+        Get file like handle to read from attachment
+        
+        :param path: Path to store file at:
+        
+        :param key: Key to copy attachment from
+        
+        :param name: Name of the attachment
+        
+        """
+        return self.db.readAttachment(self.table_ref, key, name)
+    
+    def listKeys(self):
+        """
+        List keys in table
+        """
+        return self.db.listKeys(self.table_ref)
+
     def getPath(self):
         """
         Get absolute path of table

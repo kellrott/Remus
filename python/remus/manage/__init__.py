@@ -133,6 +133,7 @@ class Worker:
             envRef = remus.db.TableRef(instRef.instance, "@environment")
             for env in runVal["_environment"]:
                 for name in db.listAttachments(envRef, env):
+                    print "copy", name
                     opath = os.path.join(tmpdir, name)
                     if not os.path.exists(os.path.dirname(opath)):
                         os.makedirs(os.path.dirname(opath))
@@ -186,7 +187,7 @@ class Worker:
         except Exception:
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
         os.chdir(cwd)
-        shutil.rmtree(tmpdir)
+        #shutil.rmtree(tmpdir)
         
         #if we have spawned local children, take care of them using the process manager
         if self.local_children:
@@ -378,12 +379,12 @@ class Manager:
             submitData['_depends'] = depends
         if isinstance(className, str):       
             submitData['_submitInit'] = className
-            submitData['_environment'] = self.import_applet(instance, className.split('.')[0], submitData)
+            submitData['_environment'] = self.import_applet(instance, className.split('.')[0])
             instRef = remus.db.TableRef(instance, "@request")
             self.db.createTable(instRef, {})
             self.db.addData( instRef, submitName, submitData)
         elif isinstance(className, remus.LocalSubmitTarget):
-            self.import_applet(instance, className.__module__, submitData)
+            self.import_applet(instance, className.__module__)
             className.__setpath__(instance, submitName)
             className.__setmanager__(self)
             className.run()
@@ -391,7 +392,7 @@ class Manager:
             raise InvalidScheduleRequest("Invalid Submission Class")
         return instance
 
-    def import_applet(self, inst, applet, appletInfo):
+    def import_applet(self, inst, applet):
 
         a = Applet(applet)
         
@@ -536,7 +537,7 @@ class Manager:
             self.callback.callback_openTable(ref)
         return remus.db.table.ReadTable(fs, ref)
 
-    def _addChild(self, obj, child_name, child, depends=None):
+    def _addChild(self, obj, child_name, child, depends=None, params={}):
         if depends is None:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         else:
@@ -544,21 +545,27 @@ class Manager:
         if not self.db.hasTable(instRef):
             self.db.createTable(instRef, {})
         logging.info("Adding Child %s" % (child_name)) 
-        meta = {}
+        meta = params
         if depends is not None:
             meta["_depends"]= depends
+        if isinstance(child, str):
+            meta['_submitInit'] = child
+            meta['_environment'] = self.import_applet(obj.__instance__, child.split('.')[0])
         if isinstance(child, remus.MultiApplet):
             tableRef = remus.db.TableRef(obj.__instance__, os.path.abspath(os.path.join(obj.__tablepath__, child.__keyTable__)))
             meta["_keyTable"] = tableRef.toPath()
+            meta["_environment"] = [child.__module__]
         if isinstance(child, remus.LocalTarget):
             if isinstance(obj, remus.LocalSubmitTarget):
                 raise InvalidScheduleRequest("LocalSubmitTarget Cannot have LocalChildren")
             meta["_local"] = remus.db.TableRef(obj.__instance__, obj.__tablepath__).toPath()
+            meta["_environment"] = [ child.__module__ ]
         self.db.addData(instRef, child_name, meta)        
-        tmp = tempfile.NamedTemporaryFile()
-        tmp.write(pickle.dumps(child))
-        tmp.flush()        
-        self.db.copyTo(tmp.name, instRef, child_name, "pickle")
-        tmp.close()
+        if not isinstance(child, str):
+            tmp = tempfile.NamedTemporaryFile()
+            tmp.write(pickle.dumps(child))
+            tmp.flush()        
+            self.db.copyTo(tmp.name, instRef, child_name, "pickle")
+            tmp.close()
         if self.callback is not None:
             self.callback.callback_addChild(child)

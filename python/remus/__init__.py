@@ -46,7 +46,7 @@ class Target(RemusApplet):
         """
         raise Exception()
 
-    def addChildTarget(self, child_name, child):
+    def addChildTarget(self, child_name, child, params={}):
         """
         Add child target to be executed
         
@@ -70,7 +70,7 @@ class Target(RemusApplet):
         
         
         """
-        self.__manager__._addChild(self, child_name, child)
+        self.__manager__._addChild(self, child_name, child, params=params)
     
     def addFollowTarget(self, child_name, child, depends=None):
         """
@@ -329,7 +329,7 @@ class LocalTableTarget(LocalTarget,TableTarget):
         
 
 
-class MultiApplet(RemusApplet):
+class MultiApplet(Target):
     
     def __run__(self):
         raise Exception("Map method not implemented")
@@ -363,11 +363,21 @@ class MapTarget(MultiApplet):
         self.__tableInfo__ = tableInfo
         
     def __run__(self):
-        tpath = os.path.abspath(os.path.join( self.__tablepath__, "..", self.__keyTable__))
-
-        src = self.__manager__._openTable(self.__instance__, tpath)
+        tpath = db_join( self.__tablepath__, "..", self.__keyTable__)
+        self.init()
+        src = self.__manager__._openTable(tpath.instance, tpath.table)
+        print "src", src.getPath()
         for key, val in src:
+            print key
             self.map(key, val)
+    
+    def init(self):
+        """
+        Init is called once on the client side, before the map method is called.
+        Gives the user the opertunity to set up resources before the mapping operations 
+        begin. This will be called by every mapping object that the system allocates
+        """
+        pass
             
     def map(self, key, value):
         """
@@ -454,6 +464,7 @@ class RemapTarget(MultiApplet):
     def __run__(self):
         keySrc = self.__manager__._openTable(self.__keyTableRef__.instance, self.__keyTableRef__.table)
         src = {}
+        self.init()
         for i, srcName in enumerate(self.__inputs__):
             src[srcName] = self.__manager__._openTable(self._srcTables[i].instance, self._srcTables[i].table)
         for srcKey, keys in keySrc:
@@ -479,6 +490,14 @@ class RemapTarget(MultiApplet):
         else:
             print key, keys, vals
             self.remap(key, keys, vals)
+    
+    def init(self):
+        """
+        Init is called once on the client side, before the map method is called.
+        Gives the user the opertunity to set up resources before the mapping operations 
+        begin. This will be called by every mapping object that the system allocates
+        """
+        pass
     
     def copyFrom(self, path, srcTable, key, name):
         """

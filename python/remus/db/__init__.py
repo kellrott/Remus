@@ -326,6 +326,13 @@ class DBBase:
         Copy file from attachment associated to a key
         """
         raise NotImplementedException()
+    
+    def readAttachment(self, table, key, name):
+        """
+        Get file like handle to read attachment
+        """
+        raise NotImplementedException()
+    
 
 
 
@@ -493,3 +500,7 @@ class FileDB(DBBase):
         attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
         shutil.copy( attachPath, path )
     
+    def readAttachment(self, table, key, name):
+        fspath = self._getFSPath(table)
+        attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
+        return open(attachPath)
