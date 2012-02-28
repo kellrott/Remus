@@ -26,6 +26,11 @@ from glob import glob
 import shutil
 from urllib import quote, unquote
 import tempfile
+import socket
+import threading
+import time
+import sys
+import errno
 
 class NotImplementedException(Exception):
     def __init__(self):
@@ -237,7 +242,7 @@ class DBBase:
         raise NotImplementedException()
         
     
-    def createInstance(self, instance):
+    def createInstance(self, instance, instanceInfo):
         """
         Create an instance in the database
         """
@@ -365,6 +370,168 @@ def connect(path):
 def path_quote(word):
     return quote(word).replace("/", '%2F')
 
+"""
+Codeblock from Lockfile: http://code.google.com/p/pylockfile/
+"""
+
+class Error(Exception):
+    """
+    Base class for other exceptions.
+
+    >>> try:
+    ...   raise Error
+    ... except Exception:
+    ...   pass
+    """
+    pass
+
+class LockError(Error):
+    """
+    Base class for error arising from attempts to acquire the lock.
+
+    >>> try:
+    ...   raise LockError
+    ... except Error:
+    ...   pass
+    """
+    pass
+
+
+class UnlockError(Error):
+    """
+    Base class for errors arising from attempts to release the lock.
+
+    >>> try:
+    ...   raise UnlockError
+    ... except Error:
+    ...   pass
+    """
+    pass
+
+class LockFailed(LockError):
+    """Lock file creation failed for some other reason.
+
+    >>> try:
+    ...   raise LockFailed
+    ... except LockError:
+    ...   pass
+    """
+    pass
+
+
+class NotLocked(UnlockError):
+    """Raised when an attempt is made to unlock an unlocked file.
+
+    >>> try:
+    ...   raise NotLocked
+    ... except UnlockError:
+    ...   pass
+    """
+    pass
+
+class MkdirLockFile:
+    """Lock file by creating a directory."""
+    def __init__(self, path, threaded=True):
+        """
+        >>> lock = MkdirLockFile('somefile')
+        >>> lock = MkdirLockFile('somefile', threaded=False)
+        """
+        self.path = path
+        self.lock_file = os.path.abspath(path) + ".lock"
+        self.hostname = socket.gethostname()
+        self.pid = os.getpid()
+        if threaded:
+            t = threading.current_thread()
+            # Thread objects in Python 2.4 and earlier do not have ident
+            # attrs.  Worm around that.
+            ident = getattr(t, "ident", hash(t))
+            self.tname = "-%x" % (ident & 0xffffffff)
+        else:
+            self.tname = ""
+        dirname = os.path.dirname(self.lock_file)
+        self.unique_name = os.path.join(dirname,
+                                        "%s%s.%s" % (self.hostname,
+                                                     self.tname,
+                                                     self.pid))
+        # Lock file itself is a directory.  Place the unique file name into
+        # it.
+        self.unique_name  = os.path.join(self.lock_file,
+                                         "%s.%s%s" % (self.hostname,
+                                                      self.tname,
+                                                      self.pid))
+
+    def acquire(self, timeout=None):
+        end_time = time.time()
+        if timeout is not None and timeout > 0:
+            end_time += timeout
+
+        if timeout is None:
+            wait = 0.1
+        else:
+            wait = max(0, timeout / 10)
+
+        while True:
+            try:
+                os.mkdir(self.lock_file)
+            except OSError:
+                err = sys.exc_info()[1]
+                if err.errno == errno.EEXIST:
+                    # Already locked.
+                    if os.path.exists(self.unique_name):
+                        # Already locked by me.
+                        return
+                    if timeout is not None and time.time() > end_time:
+                        if timeout > 0:
+                            raise LockTimeout
+                        else:
+                            # Someone else has the lock.
+                            raise AlreadyLocked
+                    time.sleep(wait)
+                else:
+                    # Couldn't create the lock for some other reason
+                    raise LockFailed("failed to create %s" % self.lock_file)
+            else:
+                open(self.unique_name, "wb").close()
+                return
+
+    def release(self):
+        if not self.is_locked():
+            raise NotLocked
+        elif not os.path.exists(self.unique_name):
+            raise NotMyLock
+        try:
+            os.unlink(self.unique_name)
+        except OSError:
+            pass
+        os.rmdir(self.lock_file)
+
+    def is_locked(self):
+        return os.path.exists(self.lock_file)
+
+    def i_am_locking(self):
+        return (self.is_locked() and
+                os.path.exists(self.unique_name))
+
+    def break_lock(self):
+        if os.path.exists(self.lock_file):
+            for name in os.listdir(self.lock_file):
+                os.unlink(os.path.join(self.lock_file, name))
+            os.rmdir(self.lock_file)
+            
+    def __enter__(self):
+        """
+        Context manager support.
+        """
+        self.acquire()
+        return self
+
+    def __exit__(self, *_exc):
+        """
+        Context manager support.
+        """
+        self.release()
+
+
 class FileDB(DBBase):
     """
     Implementation of RemusDB API using a file system
@@ -376,6 +543,14 @@ class FileDB(DBBase):
     def getPath(self):
         return "file://" + self.basedir
     
+    def createInstance(self, instance, instanceInfo):
+        instdir = os.path.join(self.basedir, instance)
+        if not os.path.exists(instdir):
+            os.makedirs(instdir)
+        handle = open( os.path.join(instdir, "@info"), "w")
+        handle.write(json.dumps(instanceInfo))
+        handle.close()
+        
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
         return os.path.exists(fsPath)            
@@ -392,7 +567,10 @@ class FileDB(DBBase):
     def createTable(self, tableRef, tableInfo):
         fsDir = os.path.dirname(self._getFSPath(tableRef))
         if not os.path.exists(fsDir):
-            os.makedirs(fsDir)
+            try:
+                os.makedirs(fsDir)
+            except OSError:
+                pass
         handle = open(self._getFSPath(tableRef) + "@info", "w")
         handle.write(json.dumps(tableInfo))
         handle.close()    
@@ -401,49 +579,54 @@ class FileDB(DBBase):
         return os.path.join(self.basedir, table.instance, re.sub(r'^/', '', table.table))
     
     def addData(self, table, key, value):
-        if table not in self.out_handle:
-            fspath = self._getFSPath(table)
-            self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.dirname(fspath), prefix=os.path.basename(table.table) + "@data.", delete=False)
-        self.out_handle[table].write( key )
-        self.out_handle[table].write( "\t" )
-        self.out_handle[table].write(json.dumps(value))
-        self.out_handle[table].write( "\n" )
-        self.out_handle[table].flush() 
+        fspath = self._getFSPath(table)
+        with MkdirLockFile(fspath):
+            if table not in self.out_handle:
+                self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.dirname(fspath), prefix=os.path.basename(table.table) + "@data.", delete=False)
+            self.out_handle[table].write( key )
+            self.out_handle[table].write( "\t" )
+            self.out_handle[table].write(json.dumps(value))
+            self.out_handle[table].write( "\n" )
+            self.out_handle[table].flush() 
 
     def getValue(self, table, key):
         path = self._getFSPath(table)
-        out = []
-        for path in glob(path + "@data" + "*"):
-            handle = open(path)
-            for line in handle:
-                tmp = line.split("\t")
-                if tmp[0] == key:
-                    out.append(json.loads(tmp[1]))
-            handle.close()
-        return out
-    
+        with MkdirLockFile(path):
+            out = []
+            for path in glob(path + "@data" + "*"):
+                handle = open(path)
+                for line in handle:
+                    tmp = line.split("\t")
+                    if tmp[0] == key:
+                        out.append(json.loads(tmp[1]))
+                handle.close()
+            return out
+        
     def listKeyValue(self, table):
         path = self._getFSPath(table)
-        out = []
-        for path in glob(path + "@data" + "*"):
-            handle = open(path)
-            for line in handle:
-                tmp = line.split("\t")
-                out.append( (tmp[0], json.loads(tmp[1]) ) )
-            handle.close()
-        return out
+        print path
+        with MkdirLockFile(path):
+            out = []
+            for path in glob(path + "@data" + "*"):
+                handle = open(path)
+                for line in handle:
+                    tmp = line.split("\t")
+                    out.append( (tmp[0], json.loads(tmp[1]) ) )
+                handle.close()
+            return out
 
     def listKeys(self, table):
         out = []
         fspath = self._getFSPath(table)
-        for path in glob(fspath + "@data" + "*"):
-            handle = open(path)
-            for line in handle:
-                tmp = line.split("\t")
-                out.append(tmp[0])
-            handle.close()
-        return out
-    
+        with MkdirLockFile(fspath):
+            for path in glob(fspath + "@data" + "*"):
+                handle = open(path)
+                for line in handle:
+                    tmp = line.split("\t")
+                    out.append(tmp[0])
+                handle.close()
+            return out
+        
     def hasKey(self, table, key):
         o = self.listKeys(table)
         return key in o
@@ -478,29 +661,39 @@ class FileDB(DBBase):
         
     def hasAttachment(self, table, key, name):
         path = self._getFSPath(table)
-        attachPath = os.path.join(path + "@attach", key, name)
-        return os.path.exists(attachPath)
+        with MkdirLockFile(path):        
+            attachPath = os.path.join(path + "@attach", key, name)
+            return os.path.exists(attachPath)
 
     def listAttachments(self, table, key):
         path = self._getFSPath(table)
-        attachPath = os.path.join( path + "@attach", key)
-        for path in glob( os.path.join(attachPath, "*") ):
-            yield unquote(os.path.basename(path))
+        out = []
+        with MkdirLockFile(path):        
+            attachPath = os.path.join( path + "@attach", key)
+            for path in glob( os.path.join(attachPath, "*") ):
+                out.append(unquote(os.path.basename(path)))
+            return out
 
     def copyTo(self, path, table, key, name):
         fspath = self._getFSPath(table)
-        attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
-        keyDir = os.path.dirname(attachPath)
-        if not os.path.exists(keyDir):
-            os.makedirs(keyDir)
-        shutil.copy( path, attachPath )
+        with MkdirLockFile(fspath):        
+            attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
+            keyDir = os.path.dirname(attachPath)
+            if not os.path.exists(keyDir):
+                try:
+                    os.makedirs(keyDir)
+                except OSError:
+                    pass
+            shutil.copy( path, attachPath )
     
     def copyFrom(self, path, table, key, name):
         fspath = self._getFSPath(table)
-        attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
-        shutil.copy( attachPath, path )
+        with MkdirLockFile(fspath):        
+            attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
+            shutil.copy( attachPath, path )
     
     def readAttachment(self, table, key, name):
         fspath = self._getFSPath(table)
         attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
         return open(attachPath)
+       
