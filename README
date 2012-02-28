@@ -1,79 +1,17 @@
 REMUS
 
-A map reduce pipeline engine.
+A parallel processing pipeline with NoSQL storage
 
 For more detailed documentation, go to https://github.com/kellrott/Remus/wiki
 
-
-Remus is web oriented database founded pipeline engine. It 
-is comprised of a series of key/value stacks that are 
-linked together by set operations. 
-
-There are two primary components:
-
-1) The master server: is handles job coordination, assigning
-work to the worker nodes in an orderly fashion.  It also provides 
-a primary web based interface to all of the data.
-
-2) The worker process: these processes check in the master
-asking for work assignments. They then execute the requested code 
-and return results.
-
+Remus is a Python directed pipeline engine. As computations occur, results are
+stored in a series of key/value stacks (with binary attachements).
 
 INSTALLATION
 
-
-1) Download and Install Cassandra
-Download Page
-http://cassandra.apache.org/download/
-
-Getting Started Page:
-http://wiki.apache.org/cassandra/GettingStarted
-
-After configuration, run ./bin/cassandra to start the Cassandra database.
-
-2) Download Remus
+1) Download Remus
 Remus can be downloaded at https://github.com/kellrott/Remus 
 
 REMUS_DIR is the downloaded directory, and should have a ‘README’ file, a ‘bin’ folder, and an ‘etc’ folder. 
 
-3) Build:
-make
 
-4) Server properties file:
-
-Edit the ‘remusProp.yaml’ file to setup your custom parameters. 
-
-Example Server Properties:
-
-#JavaScript Worker
-org.remus.js.JSWorker : ~
-
-#The Web Server
-org.remus.server.JettyServer : ~ 
-
-#Cassandra Data Server
-org.remus.cassandra.Server :
-    config :
-        columnFamily : remusTable
-        keySpace : remus
-
-#File System Attachment Server
-org.remus.fs.FileServer : 
-    config :
-        dir : /opt/remus
-        shared : false
-
-#Work Management Server
-org.remus.manage.WorkManager : ~
-
-#Instance configuration (logging information)
-config:
-    log4jParamFile : log4j.properties
-
-
-5) Server Startup
-To start the master server, in REMUS_DIR run ./bin/remusMaster remusProp.yaml
-
-6) Load site
-Point your web browser to the server, for example: http://localhost:16017/@manage/
