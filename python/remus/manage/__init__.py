@@ -353,7 +353,7 @@ class Manager:
     def _set_callback(self, callback):
         self.callback = callback
     
-    def submit(self, submitName, className, submitData={}, instance=None, depends=None):
+    def submit(self, submitName, className, submitData={}, instance=None, instanceData={}, depends=None):
         """
         Create new pipeline instance.
         
@@ -369,6 +369,7 @@ class Manager:
         instRef = remus.db.TableRef(instance, "@request")
         if instance is None:
             instance = str(uuid.uuid4()) #Instance(str(uuid.uuid4()))
+            self.db.createInstance(instance, instanceData)
         else:
             if self.db.hasKey(instRef, submitName):
                 raise Exception("Submit Key Exists")

@@ -363,7 +363,7 @@ class MapTarget(MultiApplet):
         self.__tableInfo__ = tableInfo
         
     def __run__(self):
-        tpath = db_join( self.__tablepath__, "..", self.__keyTable__)
+        tpath = db_join( self.__instance__, self.__tablepath__, "..", self.__keyTable__)
         self.init()
         src = self.__manager__._openTable(tpath.instance, tpath.table)
         print "src", src.getPath()
