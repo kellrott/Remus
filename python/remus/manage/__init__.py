@@ -194,7 +194,7 @@ class Worker:
             cConf = Config(self.config.dbpath, "process", workdir=self.config.workdir)
             cManager = Manager(cConf)
             cManager.wait(instRef.instance, appPath + "/@request")
-            
+            cManager.wait(instRef.instance, appPath + "/@follow")
         
 
     def callback_openTable(self, ref):
