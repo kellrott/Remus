@@ -17,6 +17,7 @@ import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.TableRef;
+import org.remus.thrift.TableStatus;
 
 public abstract class RemusInterface implements RemusNet.Iface {
 
@@ -132,14 +133,21 @@ public abstract class RemusInterface implements RemusNet.Iface {
 			}
 
 			@Override
-			public void flush() throws Exception {
+			public boolean syncTable(TableRef table) throws NotImplemented,
+					TException {
+				return attach.syncTable(table);				
+			}
+
+			@Override
+			public TableStatus tableStatus(TableRef table)
+					throws NotImplemented, TException {
+				return attach.tableStatus(table);
 			}
 
 		};
 	}
 
 	public abstract void init(Map config) throws Exception;
-	public abstract void flush() throws Exception;
 
 	public long copyTo(File file, TableRef stack, String key, String name) throws TException, IOException, NotImplemented {
 		initAttachment(stack, key, name);		

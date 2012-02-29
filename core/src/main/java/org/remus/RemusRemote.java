@@ -8,12 +8,12 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.remus.thrift.AttachmentInfo;
-import org.remus.thrift.BadPeerName;
 import org.remus.thrift.KeyValJSONPair;
 import org.remus.thrift.NotImplemented;
 import org.remus.thrift.RemusNet;
 import org.remus.thrift.RemusNet.Iface;
 import org.remus.thrift.TableRef;
+import org.remus.thrift.TableStatus;
 
 public class RemusRemote implements RemusNet.Iface {
 	public static final int REMOTE_TIMEOUT = 60000;
@@ -185,8 +185,27 @@ public class RemusRemote implements RemusNet.Iface {
 
 	@Override
 	public void createTable(TableRef table) throws NotImplemented, TException {
-		// TODO Auto-generated method stub
-		
+		synchronized (lock) {
+			checkIface();
+			iface.createTable(table);
+		}		
+	}
+
+	@Override
+	public boolean syncTable(TableRef table) throws NotImplemented, TException {
+		synchronized (lock) {
+			checkIface();
+			return iface.syncTable(table);
+		}		
+	}
+
+	@Override
+	public TableStatus tableStatus(TableRef table) throws NotImplemented,
+			TException {
+		synchronized (lock) {
+			checkIface();
+			return iface.tableStatus(table);
+		}
 	}
 
 }

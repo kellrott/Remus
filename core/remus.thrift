@@ -40,6 +40,12 @@ exception BadPeerName {
 
 }
 
+enum TableStatus
+{
+  READY = 1,
+  NOT_AVAILABLE,
+  NOT_SYNCED,
+}
 
 service RemusNet {
 	
@@ -63,6 +69,10 @@ service RemusNet {
 	void createTable( 1:TableRef table ) throws (1:NotImplemented e);
 
 	void deleteTable( 1:TableRef table ) throws (1:NotImplemented e);
+
+	bool syncTable( 1:TableRef table ) throws (1:NotImplemented e);
+	
+	TableStatus tableStatus( 1:TableRef table ) throws (1:NotImplemented e);
 		
 	list<string> tableSlice(1:string startKey, 2:i32 count) throws (1:NotImplemented e);
 		

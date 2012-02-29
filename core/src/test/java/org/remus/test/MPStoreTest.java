@@ -63,7 +63,7 @@ public class MPStoreTest {
 		for ( int i = 0; i < 100; i++) {
 			ds.add( aRef2, "key_" + Integer.toString(i), "value_" + i );
 		}
-		ds.flush();
+		ds.syncTable(aRef2);
 		int count = 0;
 
 		count=10;
