@@ -247,6 +247,13 @@ class DBBase:
         Create an instance in the database
         """
         raise NotImplementedException()
+
+    def getInstanceInfo(self, instance):
+        """
+        Get info about an instance
+        """
+        raise NotImplementedException()
+
     
     def hasTable(self, tableRef):
         """
@@ -550,6 +557,13 @@ class FileDB(DBBase):
         handle = open( os.path.join(instdir, "@info"), "w")
         handle.write(json.dumps(instanceInfo))
         handle.close()
+
+    def getInstanceInfo(self, instance):
+        instdir = os.path.join(self.basedir, instance)
+        handle = open( os.path.join(instdir, "@info"))
+        info = json.loads(handle.read())
+        handle.close()
+        return info
         
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)

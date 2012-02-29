@@ -11,11 +11,14 @@ from distutils.extension import Extension
 
 
 PACKAGES = [
-	'remus',
-	'remus.db',
-	'remus.manage'
+    'remus',
+    'remus.db',
+    'remus.manage'
 ]
 
+SCRIPTS = [
+    'bin/remus_dbi'
+]
 
 __version__="undefined"
 
@@ -46,6 +49,7 @@ setup(
     url='http://github.com/kellrott/Remus',
     description='Remus Parallel Pipeline Engine',
     download_url='http://github.com/kellrott/Remus',
+    scripts=SCRIPTS,
     cmdclass={
             "test" : test_remus
     },
