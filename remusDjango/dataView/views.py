@@ -14,8 +14,18 @@ import remus.db
 def home(request):
     dbi = remus.db.connect(settings.REMUSDB_PATH)
     t = loader.get_template('instanceList.html')
+    instList = []
+    for inst in dbi.listInstances():
+        row = { 'name' : inst }
+        info = dbi.getInstanceInfo(inst)
+        if "_description" in info:
+            row['desc'] = info['_description']
+        else:
+            row['desc'] = ""
+        instList.append(row)
+        
     c = Context({
-        'instanceList': dbi.listInstances(),
+        'instanceList': instList,
     })
     return HttpResponse(t.render(c))
 
@@ -24,8 +34,12 @@ def instance(request, instance):
     dbi = remus.db.connect(settings.REMUSDB_PATH)
     t = loader.get_template('instancePage.html')
     tList = []
+    showAll = False
+    if 'showall' in request.GET:
+        showAll = True
     for table in dbi.listTables(instance):
-        tList.append("/" + table.instance + table.table)
+        if showAll or table.table.count('@') == 0:
+            tList.append("/" + table.instance + table.table)
     c = Context({
         'instanceList': tList,
     })

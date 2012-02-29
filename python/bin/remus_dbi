@@ -3,7 +3,7 @@
 import sys
 import json
 import remus.db
-
+import remus.db.util
 
 if __name__ == "__main__":
     dbi = remus.db.connect(sys.argv[1])
@@ -22,5 +22,11 @@ if __name__ == "__main__":
         for key in dbi.listKeys(t):
             print key
     if cmd == 'info':
-        t = remus.db.TableRef(sts.argv[3])
+        t = remus.db.TableRef(sys.argv[3])
         print json.dumps(dbi.getInfo(t))
+
+    if cmd == "cp" or cmd == "copy":
+        inst = sys.argv[3]
+        dst = sys.argv[4]        
+        dst_dbi = remus.db.connect(dst)        
+        remus.db.util.copy_instance(dbi, inst, dst_dbi)
