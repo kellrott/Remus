@@ -42,7 +42,7 @@ import remus.db.table
 
 
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 class UnimplementedMethod(Exception):
     def __init__(self):
