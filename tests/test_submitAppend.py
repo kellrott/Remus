@@ -5,7 +5,7 @@ import subprocess
 import shutil
 import remus.manage
 import remus
-
+import config_test
 
 __manifest__ = [ "test_submitAppend.py" ]
 
@@ -36,18 +36,16 @@ class Submit_2(remus.SubmitTarget):
         
         oTable.close()
 
-dbBase = "file://data_dir"
-
 class TestCase(unittest.TestCase):    
     def test_submit(self):
         self.clear()
         
-        config = remus.manage.Config(dbBase, 'process', workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'test_submitAppend.Submit_1', {})
         manager.wait(instance)
         
-        db = remus.db.connect(dbBase)
+        db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
             assert not table.toPath().endswith("@error")
             
@@ -75,7 +73,7 @@ class TestCase(unittest.TestCase):
             
 def main():
     import test_localSubmit
-    config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
+    config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
     manager = remus.manage.Manager(config)
     l = test_localSubmit.LocalSubmission()
     instance = manager.submit('test', l)

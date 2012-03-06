@@ -7,6 +7,7 @@ import remus.manage
 import remus
 import remus.db
 
+import config_test
 
 __manifest__ = [ "test_tableTarget.py" ]
 
@@ -27,7 +28,7 @@ class Submission(remus.SubmitTarget):
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('tableTest', 'test_tableTarget.Submission', {'opcount' : 15})
         manager.wait(instance)

@@ -4,14 +4,15 @@ import sys
 import subprocess
 import shutil
 import remus.manage
+import config_test
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config('file://data_dir', workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'remus_errortest.ExceptionSubmit', {})
         subprocess.check_call( [ sys.executable, "-m", "remus.manage.manager", 
-            "file://data_dir", 'auto', "tmp_dir", instance] )
+            config_test.DEFAULT_DB, 'auto', "tmp_dir", instance] )
 
     def tearDown(self):
         return

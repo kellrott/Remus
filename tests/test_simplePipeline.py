@@ -5,10 +5,12 @@ import subprocess
 import shutil
 import remus.manage
 import remus.db
+import config_test
+
 class TestCase(unittest.TestCase):
     def test_submit(self):
         
-        dbPath = 'file://data_dir'
+        dbPath = config_test.DEFAULT_DB
         
         config = remus.manage.Config(dbPath, 'auto', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
