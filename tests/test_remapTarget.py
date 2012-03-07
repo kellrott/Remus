@@ -47,7 +47,9 @@ class TestCase(unittest.TestCase):
         
         db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
+            if table.table.endswith("@error"):
+                keys = list(db.listKeys(table))
+                assert len(keys) == 0
 
     def tearDown(self):
         return

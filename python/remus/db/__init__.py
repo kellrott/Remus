@@ -32,13 +32,20 @@ import time
 import sys
 import errno
 
+try:
+    from remus.net.ttypes import TableRef as TableRefBase
+except ImportError:
+    TableRefBase = object
+    
+    
+
 class NotImplementedException(Exception):
     def __init__(self):
         Exception.__init__(self)
 
 
 
-class TableRef(object):
+class TableRef(TableRefBase):
     """
     All tables in Remus identified by two values:
     
@@ -350,7 +357,8 @@ class DBBase:
 
 
 dbType = {
-"file" : "remus.db.FileDB"
+"file" : "remus.db.FileDB",
+"remus" : "remus.db.thrift_net.Client"
 }
 
 def connect(path):
@@ -567,8 +575,20 @@ class FileDB(DBBase):
         
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
-        return os.path.exists(fsPath)            
-
+        return os.path.exists(fsPath + "@info")            
+    
+    def deleteTable(self, tableRef):
+        fsPath = self._getFSPath(tableRef)
+        for path in glob(fsPath + "@data" + "*"):
+            os.unlink(path)
+        os.unlink(fsPath + "@info")
+        if os.path.exists(fsPath + "@archive"):
+            shutil.rmtree(fsPath + "@archive")
+    
+    def deleteInstance(self, instance):
+        fspath = os.path.join(self.basedir, instance)
+        shutil.rmtree(fspath)
+        
     def getTableInfo(self, tableRef):
         path = self._getFSPath(tableRef) + "@info"
         if not os.path.exists(path):
@@ -604,10 +624,10 @@ class FileDB(DBBase):
             self.out_handle[table].flush() 
 
     def getValue(self, table, key):
-        path = self._getFSPath(table)
-        with MkdirLockFile(path):
+        fsPath = self._getFSPath(table)
+        with MkdirLockFile(fsPath):
             out = []
-            for path in glob(path + "@data" + "*"):
+            for path in glob(fsPath + "@data" + "*"):
                 handle = open(path)
                 for line in handle:
                     tmp = line.split("\t")

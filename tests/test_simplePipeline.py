@@ -24,7 +24,7 @@ class TestCase(unittest.TestCase):
             assert key.startswith("gene_")
             count += 1
         
-        assert count == 99
+        assert count == 99, "written keys == %d" % (count)
 
     def tearDown(self):
         return

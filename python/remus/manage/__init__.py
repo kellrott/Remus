@@ -42,7 +42,7 @@ import remus.db.table
 
 
 
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 class UnimplementedMethod(Exception):
     def __init__(self):
@@ -120,8 +120,8 @@ class Worker:
         appPath = parentName + app[2]
         
         logging.info("instanceREF: " + str(instRef))
-        logging.info("parent" +  parentName)
-        logging.info("appname" + appName)
+        logging.info("parent: " +  parentName)
+        logging.info("appname: " + appName)
         
         runVal = None
         for val in db.getValue(instRef, appName):
@@ -175,6 +175,7 @@ class Worker:
         self.inputList = []
         self.outputList = []
         manager._set_callback(self)
+        logging.debug("Starting user code")
         try:
             if isinstance(obj, remus.SubmitTarget):
                 obj.run(runVal)
@@ -185,9 +186,13 @@ class Worker:
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
             db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
         except Exception:
+            logging.error("user code error")
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
+        logging.info("user code done")
+        
         os.chdir(cwd)
-        #shutil.rmtree(tmpdir)
+        shutil.rmtree(tmpdir)
+        
         
         #if we have spawned local children, take care of them using the process manager
         if self.local_children:
@@ -383,6 +388,8 @@ class Manager:
             submitData['_environment'] = self.import_applet(instance, className.split('.')[0])
             instRef = remus.db.TableRef(instance, "@request")
             self.db.createTable(instRef, {})
+            self.db.createTable(remus.db.TableRef(instance, "@done"), {})
+            self.db.createTable(remus.db.TableRef(instance, "@error"), {})            
             self.db.addData( instRef, submitName, submitData)
         elif isinstance(className, remus.LocalSubmitTarget):
             self.import_applet(instance, className.__module__)
@@ -432,16 +439,16 @@ class Manager:
         if table is None:
             logging.debug("START_TASKSCAN:" + datetime.datetime.now().isoformat())
             for tableRef in self.db.listTables(instance):
-                if tableRef.toPath().endswith("@request") or tableRef.toPath().endswith("@follow"):
+                if tableRef.table.endswith("@request") or tableRef.table.endswith("@follow"):
                     jt = self.scan(instance, tableRef.table)
                     for k in jt:
                         jobTree[k] = jt[k]
             logging.debug("END_TASKSCAN:" + datetime.datetime.now().isoformat())        
         else:
             tableRef = remus.db.TableRef(instance, table)
-            tableBase = re.sub(r'(@request|@follow)$', '', tableRef.toPath())
-            doneRef = remus.db.TableRef(tableBase + "@done")
-            errorRef = remus.db.TableRef(tableBase + "@error")
+            tableBase = re.sub(r'(@request|@follow)$', '', tableRef.table)
+            doneRef = remus.db.TableRef(tableRef.instance, tableBase + "@done")
+            errorRef = remus.db.TableRef(tableRef.instance, tableBase + "@error")
             
             doneHash = {}
             errorHash = {}
@@ -545,6 +552,9 @@ class Manager:
             instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@follow")            
         if not self.db.hasTable(instRef):
             self.db.createTable(instRef, {})
+            self.db.createTable(remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@done"), {})
+            self.db.createTable(remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@error"), {})
+            
         logging.info("Adding Child %s" % (child_name)) 
         meta = params
         if depends is not None:

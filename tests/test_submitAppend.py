@@ -47,13 +47,17 @@ class TestCase(unittest.TestCase):
         
         db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
+            if table.table.endswith("@error"):
+                keys = list(db.listKeys(table))
+                assert len(keys) == 0
             
         manager.submit('test_2', 'test_submitAppend.Submit_2', {'inTable' : '/test/output_1'}, instance=instance)
         manager.wait(instance)
 
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
+            if table.table.endswith("@error"):
+                keys = list(db.listKeys(table))
+                assert len(keys) == 0
 
 
     def tearDown(self):
