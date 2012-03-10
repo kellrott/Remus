@@ -12,7 +12,7 @@ __manifest__ = [ "test_tableTarget.py" ]
 
 class OPChild(remus.RemapTarget):
     
-    __inputs__ = [ 'table_a', 'table_b' ]	
+    __inputs__ = [ 'table_a', 'table_b' ]    
 
     def remap(self, srcKey, keys, vals):
         self.emit( srcKey, { 'key' : keys['table_a'] + keys['table_b'], 'vals' : vals['table_a'] + vals['table_b']} )
@@ -50,6 +50,17 @@ class TestCase(unittest.TestCase):
             if table.table.endswith("@error"):
                 keys = list(db.listKeys(table))
                 assert len(keys) == 0
+        
+        table = remus.db.TableRef(instance, "/tableTest/remap_child")
+        keys = []
+        for key in db.listKeys(table):
+            keys.append(key)
+        
+        assert "mix_0" in keys
+        assert "mix_1" in keys
+        assert "mix_2" in keys
+        assert "mix_3" in keys
+        assert "mix_4" in keys
 
     def tearDown(self):
         return

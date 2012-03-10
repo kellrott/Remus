@@ -37,13 +37,13 @@ try:
 except ImportError:
     TableRefBase = object
     
+    class NotImplementedException(Exception):
+        def __init__(self):
+            Exception.__init__(self)
     
-
-class NotImplementedException(Exception):
-    def __init__(self):
-        Exception.__init__(self)
-
-
+    class TableError(Exception):
+        def __init__(self, message):
+            Exception.__init__(self, message)
 
 class TableRef(TableRefBase):
     """
