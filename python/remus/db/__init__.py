@@ -560,10 +560,13 @@ class FileDB(DBBase):
 
     def getInstanceInfo(self, instance):
         instdir = os.path.join(self.basedir, instance)
-        handle = open( os.path.join(instdir, "@info"))
-        info = json.loads(handle.read())
-        handle.close()
-        return info
+        ipath = os.path.join(instdir, "@info")
+        if os.path.exists(ipath):
+            handle = open( ipath )
+            info = json.loads(handle.read())
+            handle.close()
+            return info
+        return {}
         
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
@@ -618,7 +621,6 @@ class FileDB(DBBase):
         
     def listKeyValue(self, table):
         path = self._getFSPath(table)
-        print path
         with MkdirLockFile(path):
             out = []
             for path in glob(path + "@data" + "*"):
