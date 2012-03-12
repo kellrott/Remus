@@ -78,10 +78,14 @@ class Target(RemusApplet):
         of a targets children have complete
         """
         if depends is None:
-            self.__manager__._addChild(self, child_name, child, depends=self.__tablepath__)
+            self.__manager__._addChild(self, child_name, child, depends=self.__tablepath__ + "@follow")
         else:
-            ref = db_join(self.__instance__, self.__tablepath__, depends)
-            self.__manager__._addChild(self, child_name, child, depends=ref.table)
+            refs = []
+            if isinstance(depends, str):
+                depends = [depends]
+            for d in depends:
+                refs.append(db_join(self.__instance__, self.__tablepath__, d).table)
+            self.__manager__._addChild(self, child_name, child, depends=refs)
             
 
     def createTable(self, tableName, tableInfo={}):

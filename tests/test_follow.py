@@ -6,6 +6,7 @@ import shutil
 import remus.manage
 import remus
 import time
+import config_test
 
 __manifest__ = [ "test_follow.py" ]
 
@@ -45,20 +46,23 @@ class Submit(remus.SubmitTarget):
         self.addChildTarget('child_2', Child_parent())
         self.addFollowTarget('follow_2', Child_follow('child_2/child_a/output'))
 
-dbBase = "file://data_dir"
-
 class TestCase(unittest.TestCase):    
     def test_submit(self):
         self.clear()
         
-        config = remus.manage.Config(dbBase, 'process', workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('test', 'test_follow.Submit', {})
         manager.wait(instance)
         
-        db = remus.db.connect(dbBase)
+        db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
+            if table.table.endswith("@error"):
+                errorFound = False
+                for key, value in db.listKeyValue(table):
+                    print key, value['error']
+                    errorFound = True
+                assert not errorFound
 
     def tearDown(self):
         self.clear()
@@ -77,7 +81,7 @@ class TestCase(unittest.TestCase):
             
 def main():
     import test_localSubmit
-    config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
+    config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
     manager = remus.manage.Manager(config)
     l = test_localSubmit.LocalSubmission()
     instance = manager.submit('test', l)

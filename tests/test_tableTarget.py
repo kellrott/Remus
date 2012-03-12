@@ -7,6 +7,7 @@ import remus.manage
 import remus
 import remus.db
 
+import config_test
 
 __manifest__ = [ "test_tableTarget.py" ]
 
@@ -27,14 +28,18 @@ class Submission(remus.SubmitTarget):
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config('file://data_dir', 'process', workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, 'process', workdir="tmp_dir")
         manager = remus.manage.Manager(config)
         instance = manager.submit('tableTest', 'test_tableTarget.Submission', {'opcount' : 15})
         manager.wait(instance)
         
-        db = remus.db.connect("file://data_dir")
+        db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
+            if table.table.endswith("@error"):
+                hasError = False
+                for key in db.listKeys(table):
+                    hasError = True
+                assert not hasError
 
     def tearDown(self):
         return

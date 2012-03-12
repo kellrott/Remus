@@ -1,6 +1,7 @@
 
 import os
 import json
+import remus.db
 
 class WriteTable(object):
     """
@@ -57,6 +58,8 @@ class ReadTable(object):
     def __init__(self, db, table_ref):
         self.db = db
         self.table_ref = table_ref
+        if not self.db.hasTable(table_ref):
+            raise remus.db.TableError("Table not found:" + str(table_ref))    
     
     def __iter__(self):
         """

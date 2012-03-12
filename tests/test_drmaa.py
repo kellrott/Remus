@@ -4,12 +4,12 @@ import sys
 import subprocess
 import shutil
 import remus.manage
+import config_test
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        dbPath = 'file://data_dir'
         try:
-            config = remus.manage.Config(dbPath, 'drmaa', workdir="tmp_dir")
+            config = remus.manage.Config(config_test.DEFAULT_DB, 'drmaa', workdir="tmp_dir")
         except remus.manage.UnimplementedMethod:
             print "DRMAA not avalible"
             return
