@@ -71,7 +71,7 @@ class LockFile:
         >>> lock = LinkLockFile('somefile', threaded=False)
         """
         self.path = path
-        self.lock_file = os.path.abspath(path) + ".lock"
+        self.lock_file = os.path.abspath(path) + "@lock"
         self.hostname = socket.gethostname()
         self.pid = os.getpid()
         if threaded:

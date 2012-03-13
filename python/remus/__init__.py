@@ -12,7 +12,7 @@ try:
 except ImportError:
     pass
 
-from remus.db import FileDB, TableRef
+from remus.db import TableRef
 from remus.db import join as db_join
 
 
