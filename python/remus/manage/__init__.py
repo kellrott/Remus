@@ -36,11 +36,10 @@ import datetime
 import traceback
 import shutil
 import socket
+import json
 
 import remus.db
 import remus.db.table
-
-
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -51,7 +50,18 @@ class UnimplementedMethod(Exception):
 class InvalidScheduleRequest(Exception):
     def __init__(self, msg):
         Exception.__init__(self, msg)
-    
+
+
+
+def inherit_config():
+    """
+    This checks environmental variables to look for configuration info
+    left from a parent Remus process
+    """    
+    if "REMUS_DB" in os.environ:
+        config = Config(os.environ["REMUS_DB"], os.environ.get("REMUS_ENGINE", None))
+        return config
+    return None
 
 executorMap = {
     'auto' : 'remus.manage.autoSelect',
@@ -129,12 +139,14 @@ class Worker:
         if runVal is None:
             raise Exception("Instance Entry not found")
         
+        #look at the submission record to determine with environments need 
+        #to be copied to the workdir
         if "_environment" in runVal:
             envRef = remus.db.TableRef(instRef.instance, "@environment")
             for env in runVal["_environment"]:
                 for name in db.listAttachments(envRef, env):
-                    logging.info("copy: " + name)
                     opath = os.path.join(tmpdir, name)
+                    logging.info("client copy: " + opath)
                     if not os.path.exists(os.path.dirname(opath)):
                         os.makedirs(os.path.dirname(opath))
                     db.copyFrom(opath, envRef, env, name) 
@@ -190,6 +202,7 @@ class Worker:
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
         logging.info("user code done")
         
+        #clean up workspace
         os.chdir(cwd)
         shutil.rmtree(tmpdir)
         
@@ -314,8 +327,17 @@ class Applet(str):
         return os.path.dirname( self.module.__file__ )
         
     def getManifest(self):
-        return self.module.__manifest__
-    
+        if hasattr(self.module, "__manifest__"):
+            return self.module.__manifest__
+        remus_file = os.path.join(self.getBase(), "remus.info")
+        if os.path.exists(remus_file):
+            handle = open(remus_file)
+            data = handle.read()
+            handle.close()
+            meta = json.loads(data)
+            return meta['manifest']
+        return None
+        
     def getIncludes(self):
         return getattr( self.module, '__include__', [] )
     
@@ -568,15 +590,18 @@ class Manager:
         if isinstance(child, str):
             meta['_submitInit'] = child
             meta['_environment'] = self.import_applet(obj.__instance__, child.split('.')[0])
-        if isinstance(child, remus.MultiApplet):
+        elif isinstance(child, remus.MultiApplet):
             tableRef = remus.db.TableRef(obj.__instance__, os.path.abspath(os.path.join(obj.__tablepath__, child.__keyTable__)))
             meta["_keyTable"] = tableRef.toPath()
             meta["_environment"] = [child.__module__]
-        if isinstance(child, remus.LocalTarget):
+        elif isinstance(child, remus.LocalTarget):
             if isinstance(obj, remus.LocalSubmitTarget):
                 raise InvalidScheduleRequest("LocalSubmitTarget Cannot have LocalChildren")
             meta["_local"] = remus.db.TableRef(obj.__instance__, obj.__tablepath__).toPath()
             meta["_environment"] = [ child.__module__ ]
+        else:
+            meta["_environment"] = [ child.__module__ ]
+        
         self.db.addData(instRef, child_name, meta)        
         if not isinstance(child, str):
             tmp = tempfile.NamedTemporaryFile()
