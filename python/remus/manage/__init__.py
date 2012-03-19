@@ -150,7 +150,10 @@ class Worker:
                     if not os.path.exists(os.path.dirname(opath)):
                         os.makedirs(os.path.dirname(opath))
                     db.copyFrom(opath, envRef, env, name) 
-
+            #add work dir to path list, so code can be used for pickel and object instances
+            sys.path.insert(0, tmpdir)
+            
+            
         manager = remus.manage.Manager(self.config)
         errorRef = remus.db.TableRef(instRef.instance, parentName + "@error")
 
@@ -176,7 +179,7 @@ class Worker:
             try:
                 obj = pickle.loads(handle.read())
             except Exception:
-                db.addData(errorRef, appName, {'error' : str(traceback.format_exc())})
+                db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'host' : socket.gethostname(), 'dir' : tmpdir})
                 return
             handle.close()
 
@@ -188,6 +191,14 @@ class Worker:
         self.outputList = []
         manager._set_callback(self)
         logging.debug("Starting user code")
+        stdout_backup = sys.stdout
+        stderr_backup = sys.stderr
+        
+        stdout_path = os.path.abspath(os.path.join(tmpdir, "remus.stdout"))
+        stderr_path = os.path.abspath(os.path.join(tmpdir, "remus.stderr"))
+        
+        sys.stdout = open(stdout_path, "w")
+        sys.stderr = open(stderr_path, "w")        
         try:
             if isinstance(obj, remus.SubmitTarget):
                 obj.run(runVal)
@@ -195,11 +206,20 @@ class Worker:
                 obj.__run__()
             else:
                 obj.run()
+            sys.stdout.close()
+            sys.stderr.close()
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
             db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
         except Exception:
+            sys.stdout.close()
+            sys.stderr.close()
             logging.error("user code error")
             db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
+            db.copyTo(stdout_path, errorRef, appName, "stdout")
+            db.copyTo(stderr_path, errorRef, appName, "stderr")
+        sys.stdout = stdout_backup
+        sys.stderr = stderr_backup
+        
         logging.info("user code done")
         
         #clean up workspace
