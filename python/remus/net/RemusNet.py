@@ -476,6 +476,8 @@ class Client(Iface):
     result = createTableJSON_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
+    if result.err is not None:
+      raise result.err
     return
 
   def hasTable(self, table):
@@ -1079,7 +1081,10 @@ class Processor(Iface, TProcessor):
     args.read(iprot)
     iprot.readMessageEnd()
     result = createTableJSON_result()
-    self._handler.createTableJSON(args.table, args.tableJSON)
+    try:
+      self._handler.createTableJSON(args.table, args.tableJSON)
+    except TableError, err:
+      result.err = err
     oprot.writeMessageBegin("createTableJSON", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -2296,9 +2301,18 @@ class createTableJSON_args:
     return not (self == other)
 
 class createTableJSON_result:
+  """
+  Attributes:
+   - err
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'err', (TableError, TableError.thrift_spec), None, ), # 1
   )
+
+  def __init__(self, err=None,):
+    self.err = err
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2309,6 +2323,12 @@ class createTableJSON_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.err = TableError()
+          self.err.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -2319,6 +2339,10 @@ class createTableJSON_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('createTableJSON_result')
+    if self.err is not None:
+      oprot.writeFieldBegin('err', TType.STRUCT, 1)
+      self.err.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 

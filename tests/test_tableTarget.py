@@ -12,8 +12,7 @@ import config_test
 __manifest__ = [ "test_tableTarget.py" ]
 
 class OPChild(remus.TableTarget):
-    def __init__(self, tableName, op):
-        remus.TableTarget.__init__(self, tableName)
+    def __init__(self, op):
         self.op = op
     def run(self):
         self.emit('test_%d' % (self.op), self.op * 2)
@@ -23,7 +22,7 @@ class Submission(remus.SubmitTarget):
     def run(self, params):
         print "submitted:", params
         for i in range(params['opcount']):
-            self.addChildTarget('child_%d' % (i), OPChild('opTable', i))
+            self.addChildTarget('child_%d' % (i), OPChild(i), out_table='opTable')
 
 
 class TestCase(unittest.TestCase):

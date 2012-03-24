@@ -46,7 +46,7 @@ class Target(RemusApplet):
         """
         raise Exception()
 
-    def addChildTarget(self, child_name, child, params={}):
+    def addChildTarget(self, child_name, child, params={}, out_table=None):
         """
         Add child target to be executed
         
@@ -70,7 +70,7 @@ class Target(RemusApplet):
         
         
         """
-        self.__manager__._addChild(self, child_name, child, params=params)
+        self.__manager__._addChild(self, child_name, child, params=params, out_table=out_table)
     
     def addFollowTarget(self, child_name, child, depends=None):
         """
@@ -276,15 +276,6 @@ class TableTarget(Target):
     to the same output table
     """
     
-    def __init__(self, outTable, outTableInfo={}):
-        """
-        
-        :param outTable: Name of the table to output to
-        """
-        self.__outTableRef__ = outTable
-        self.__outTableInfo__ = outTableInfo
-        self.__outTable__ = None
-    
     def run(self):
         """
         The run method is user provided and run on the local node during the 
@@ -297,9 +288,6 @@ class TableTarget(Target):
         """
         Emit a value to be stored in the output table
         """
-        if self.__outTable__ is None:
-            self.__outTable__ = self.__manager__._createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)), self.__outTableInfo__ )
-        
         self.__outTable__.emit(key, value)
 
     def copyTo(self, path, key, name):
@@ -312,9 +300,8 @@ class TableTarget(Target):
         
         :param name: Name of the attachment  
         """
-        if self.__outTable__ is None:
-            self.__outTable__ = self.__manager__._createTable(self.__instance__, os.path.abspath( os.path.join(self.__tablepath__, "..", self.__outTableRef__)), self.__outTableInfo__ )
         self.__outTable__.copyTo(path, key, name)
+	
 
 
     
