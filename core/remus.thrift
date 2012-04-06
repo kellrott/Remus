@@ -1,6 +1,7 @@
 
 namespace java org.remus.thrift
 namespace py remus.net
+namespace cpp remus_thrift
 
 const string STATIC_INSTANCE =  "00000000-0000-0000-0000-000000000000";
 const string ERROR_APPLET = "@error";
@@ -58,7 +59,7 @@ service RemusNet {
 	
 	void createInstanceJSON( 1:string instance, 2:string instanceJSON );
 
-	void createTableJSON( 1:TableRef table, 2:string tableJSON );
+	void createTableJSON( 1:TableRef table, 2:string tableJSON ) throws(1:TableError err);
 
     bool hasTable(1:TableRef table);
     

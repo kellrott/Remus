@@ -182,7 +182,7 @@ class Worker:
                 db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'host' : socket.gethostname(), 'dir' : tmpdir})
                 return
             handle.close()
-
+        
         cwd = os.getcwd()
         os.chdir(tmpdir)
         obj.__setpath__(instRef.instance, appPath)
@@ -190,6 +190,9 @@ class Worker:
         self.inputList = []
         self.outputList = []
         manager._set_callback(self)
+        if '_outTable' in runVal:
+            obj.__outTableRef__ = remus.db.TableRef(instRef.instance, runVal['_outTable'])
+            obj.__outTable__ =  remus.db.table.WriteTable(db, obj.__outTableRef__)
         logging.debug("Starting user code")
         stdout_backup = sys.stdout
         stderr_backup = sys.stderr
@@ -581,6 +584,7 @@ class Manager:
     def _createTable(self, inst, tablePath, tableInfo):
         ref = remus.db.TableRef(inst, tablePath)
         fs = remus.db.connect(self.config.dbpath)
+        logging.info("Creating Table %s:%s" % (inst, tablePath)) 
         fs.createTable(ref, tableInfo)
         if self.callback is not None:
             self.callback.callback_createTable(ref)
@@ -593,7 +597,7 @@ class Manager:
             self.callback.callback_openTable(ref)
         return remus.db.table.ReadTable(fs, ref)
 
-    def _addChild(self, obj, child_name, child, depends=None, params={}):
+    def _addChild(self, obj, child_name, child, depends=None, out_table=None, params={}):
         instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         if not self.db.hasTable(instRef):
             self.db.createTable(instRef, {})
@@ -621,6 +625,15 @@ class Manager:
             meta["_environment"] = [ child.__module__ ]
         else:
             meta["_environment"] = [ child.__module__ ]
+        
+        if isinstance(child, remus.TableTarget) and out_table is None:
+            raise InvalidScheduleRequest("Must define output table for TableTarget")
+        
+        if out_table is not None:
+            meta["_outTable"] = out_table
+            tableRef = remus.db.TableRef(obj.__instance__, out_table)
+            if not self.db.hasTable(tableRef):
+                self.db.createTable(tableRef, {})
         
         self.db.addData(instRef, child_name, meta)        
         if not isinstance(child, str):

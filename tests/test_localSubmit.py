@@ -35,8 +35,12 @@ class TestCase(unittest.TestCase):
         manager.wait(instance)
         db = remus.db.connect(config_test.DEFAULT_DB)
         for table in db.listTables(instance):
-            assert not table.toPath().endswith("@error")
-
+            if table.table.endswith("@error"):
+                hasError = False
+                for key in db.listKeys(table):
+                    hasError = True
+                assert not hasError
+                
     def test_mainsubmit(self):
         self.clear()
         subprocess.check_call( [ sys.executable, "test_localSubmit.py"] )

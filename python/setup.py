@@ -20,7 +20,7 @@ SCRIPTS = [
     'bin/remus_dbi'
 ]
 
-__version__="undefined"
+__version__="0.1.0"
 
 class test_remus(Command):
     tests = None
@@ -53,6 +53,18 @@ setup(
     cmdclass={
             "test" : test_remus
     },
-    packages=PACKAGES
+    packages=PACKAGES,
+    classifiers = [
+		"Development Status :: 3 - Alpha",
+		"Intended Audience :: Developers",
+		"License :: OSI Approved :: Apache Software License",
+		"Operating System :: Unix",
+		"Programming Language :: Python"
+    ],
+    long_description = """
+Remus is a parallel programming environment, with roots in JobTree    
+http://hgwdev.cse.ucsc.edu/~benedict/code/jobTree.html
+
+    """
 )
 

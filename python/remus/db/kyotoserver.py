@@ -20,10 +20,92 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
+logging.basicConfig(level=logging.DEBUG)
 
 def path_quote(word):
     return quote(word).replace("/", '%2F')
 
+
+class DBError(Exception):
+    def __init__(self):
+        Exception.__init__(self)
+
+
+class KyotoTable:
+    def __init__(self, path):
+        self.path = path
+        self.db = DB()
+        self.db_lock = threading.Lock()
+        if not self.db.open(self.path , DB.OWRITER | DB.OCREATE):
+            logging.error("db_open_error: " + self.path + " : " + str(self.db.error().message()))
+            raise DBError()
+    
+    def append(self, key, val):
+        self.db.append(key,val)
+    
+    def cursor(self):
+        return self.db.cursor()
+    
+    def get(self, key):
+        return self.db.get(key)
+    
+    def close(self):
+        self.db.close()
+        
+    def lock(self):
+        self.db_lock.acquire()
+    
+    def unlock(self):
+        self.db_lock.release()
+            
+        
+class KyotoManager:
+    def __init__(self, filebase):
+        self.filebase = filebase
+        self.tableLock = threading.Lock()
+        self.tables = {}
+        
+    def getFSPath(self, table):
+        return os.path.join(self.filebase, table.instance, re.sub(r'^/', '', table.table))
+
+    def createDB(self, tableRef):
+        self.tableLock.acquire()
+        fspath = self.getFSPath(tableRef) + "@data.kct"        
+        if os.path.exists(fspath):
+            raise TableError("Table Already Exists")
+
+        out = KyotoTable(fspath)
+        self.tables[fspath] = out
+        self.tableLock.release()        
+
+    def deleteDB(self, tableRef):
+        self.tableLock.acquire()
+        spath = self.getFSPath(tableRef) + "@data.kct"
+        db = self.tables[fspath]
+        del self.tables[fspath]
+        self.tableLock.release()
+        db.lock()
+        db.close()
+        if os.path.exists(fspath + "@data.kct"):
+            os.unlink(fspath + "@data.kct")
+
+
+    def getDB(self, tableRef):
+        self.tableLock.acquire()
+        fspath = self.getFSPath(tableRef) + "@data.kct"        
+        out = None
+        if fspath in self.tables:
+            out = self.tables[fspath]
+        else:
+            if os.path.exists(fspath):
+                try:
+                    out = KyotoTable(fspath)
+                    self.tables[fspath] = out
+                except DBError:
+                    pass
+        self.tableLock.release()
+        return out
+   
 
 class RemusKyoto(RemusNet.Iface):
 
@@ -31,6 +113,7 @@ class RemusKyoto(RemusNet.Iface):
         self.filebase = os.path.abspath(filebase)
         if not os.path.exists(self.filebase):
             os.mkdir(self.filebase)
+        self.manager = KyotoManager(self.filebase)
     
     
     def createInstanceJSON(self, instance, instanceJSON):
@@ -42,8 +125,6 @@ class RemusKyoto(RemusNet.Iface):
         handle.write(instanceJSON)
         handle.close()
 
-    def _getFSPath(self, table):
-        return os.path.join(self.filebase, table.instance, re.sub(r'^/', '', table.table))
                 
     def _dirscan(self, dir, inst):
         out = {}
@@ -76,9 +157,10 @@ class RemusKyoto(RemusNet.Iface):
         raise NotImplemented()
 
     def keySlice(self, table, keyStart, count):
-        db = self._opendb(table)
+        db = self.manager.getDB(table)
         if db is None:
             return []
+        db.lock()
         if keyStart == "":
             keyStart = None
         cursor = db.cursor()
@@ -89,54 +171,42 @@ class RemusKyoto(RemusNet.Iface):
         else:
             out = []
         cursor.disable()
-        db.close()
+        db.unlock()
         return out
         
     def getValueJSON(self, table, key):
-        db = self._opendb(table)
+        db = self.manager.getDB(table)
+        if db is None:
+            raise TableError("unable to open table" + str(table))
+        db.lock()
         val = db.get(key)
-        db.close()
+        db.unlock()
         return [ val ] 
     
     def keyCount(self, table, maxCount):
         raise NotImplemented()
     
-    def _opendb(self, table):
-        db = DB()
-        fspath = self._getFSPath(table) + "@data.kct"
-        if not os.path.exists(fspath):
-            return None
-        if not db.open(fspath , DB.OWRITER):
-            logging.error("db_open_error: " + fspath + " : " + str(db.error().message()))
-            return None
-        return db
     
     def addDataJSON(self, table, key, data):
-        db = self._opendb(table)
-        """
-        origS = db.get(key)
-        if origS is not None:
-            val = pickle.loads(origS)
-        else:
-            val = []
-        val.append(data)
-        db.set(key, val)
-        """
+        db = self.manager.getDB(table)
         if db is None:
             raise TableError("unable to open table" + str(table))
+        db.lock()
         db.append(key, data)
-        db.close()
+        db.unlock()
     
     def hasKey(self, table, key):
-        db = self._opendb(table)
+        db = self.manager.getDB(table)
+        db.lock()
         ret = db.get(key) is not None
-        db.close()
+        db.unlock()
         return ret
     
     def keyValJSONSlice(self, table, keyStart, count):
-        db = self._opendb(table)
+        db = self.manager.getDB(table)
         if db is None:
             return []
+        db.lock()
         if keyStart == "":
             keyStart = None
         cursor = db.cursor()
@@ -147,31 +217,27 @@ class RemusKyoto(RemusNet.Iface):
         else:
             out = []
         cursor.disable()
-        db.close()
+        db.unlock()
         return out
     
     def createTableJSON(self, table, tableJSON):
         logging.info("Creating: " + str(table))
-        fspath = self._getFSPath(table)
+        
+        fspath = self.manager.getFSPath(table)
         if not os.path.exists(os.path.dirname(fspath)):
             os.makedirs(os.path.dirname(fspath))
-        db = DB()
-        if not db.open(fspath + "@data.kct",  DB.OCREATE |  DB.OWRITER):
-            logging.error("db_create_error: " + str(db.error()))
-        db.clear()
-        db.close()
         handle = open(fspath + "@info", "w")
         handle.write(tableJSON)
         handle.close()
-    
+        self.manager.createDB(table)
+        
     def hasTable(self, table):
-        fspath = self._getFSPath(table) + "@data.kct"
+        fspath = self.manager.getFSPath(table) + "@data.kct"
         return os.path.exists(fspath)
     
     def deleteTable(self, table):
-        fspath = self._getFSPath(table)
-        if os.path.exists(fspath + "@data.kct"):
-            os.unlink(fspath + "@data.kct")
+        self.manager.deleteTable(table)
+        fspath = self.manager.getFSPath(table)
         if os.path.exists(fspath + "@info"):
             os.unlink(fspath + "@info")
         if os.path.exists(fspath + "@attach"):
@@ -184,7 +250,7 @@ class RemusKyoto(RemusNet.Iface):
         print "not implemented"
     
     def initAttachment(self, table, key, name):
-        fspath = self._getFSPath(table)
+        fspath = self.manager.getFSPath(table)
         attdir = os.path.join(fspath + "@attach", key)
         if not os.path.exists(attdir):
             os.makedirs(attdir)
@@ -193,7 +259,7 @@ class RemusKyoto(RemusNet.Iface):
         print "not implemented"
     
     def readBlock(self, table, key, name, offset, length):
-        fspath = self._getFSPath(table)
+        fspath = self.manager.getFSPath(table)
         attachPath = os.path.join(fspath + "@attach", key, path_quote(name))
         handle = open(attachPath, "rb")
         handle.seek(offset)
@@ -202,19 +268,19 @@ class RemusKyoto(RemusNet.Iface):
 
     
     def appendBlock(self, table, key, name, data):
-        fspath = self._getFSPath(table)
+        fspath = self.manager.getFSPath(table)
         attdir = os.path.join(fspath + "@attach", key)
         handle = open(os.path.join(attdir, path_quote(name)), "ab")
         handle.write(data)
         handle.close()
 
     def hasAttachment(self, table, key, name):
-        path = self._getFSPath(table)
+        path = self.manager.getFSPath(table)
         attachPath = os.path.join(path + "@attach", key, name)
         return os.path.exists(attachPath)
 
     def listAttachments(self, table, key):
-        path = self._getFSPath(table)
+        path = self.manager.getFSPath(table)
         out = []
         attachPath = os.path.join( path + "@attach", key)
         for path in glob( os.path.join(attachPath, "*") ):
@@ -246,7 +312,9 @@ class RemusThriftServer:
         self.server = TServer.TThreadPoolServer( self.processor, self.socket, tfactory, pfactory)
         self.t = ServerThread(self.server)
         self.t.start()
-
+        #self.server = TServer.TSimpleServer( self.processor, self.socket, tfactory, pfactory)
+        #self.server.serve()
+        
     def stop(self):
         pass
 
