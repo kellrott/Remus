@@ -538,7 +538,7 @@ class Manager:
                         jobTree = self.scan(instance)
                     except ErrorFound:
                         break
-                    if len(jobTree) == 0:
+                    if len(jobTree) == 0 and self.task_manager.taskCount() == 0:
                         break
                     
                     logging.debug(str(jobTree))
@@ -561,7 +561,7 @@ class Manager:
                     #this is a child (local) instance watcher
                     #NOTE: this doesn't handle followOn targets
                     jobTree = self.scan(instance, table)
-                    if len(jobTree) == 0:
+                    if len(jobTree) == 0 and self.task_manager.taskCount() == 0:
                         break
                     for j in jobTree:
                         if "_local" in jobTree[j].jobInfo:
