@@ -596,7 +596,19 @@ class Manager:
         if self.callback is not None:
             self.callback.callback_openTable(ref)
         return remus.db.table.ReadTable(fs, ref)
-
+    
+    def _createFile(self, tablePath, tableInfo):
+        fs = remus.db.connect(self.config.dbpath)
+        fs.createFile(tablePath, tableInfo)
+        
+    def _copyTo(self, path, dstPath):
+        fs = remus.db.connect(self.config.dbpath)
+        fs.copyTo(path, dstPath)
+    
+    def _copyFrom(self, path, srcPath):
+        fs = remus.db.connect(self.config.dbpath)
+        fs.copyFrom(path, srcPath)
+    
     def _addChild(self, obj, child_name, child, depends=None, out_table=None, params={}):
         instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         if not self.db.hasTable(instRef):

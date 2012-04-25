@@ -273,6 +273,12 @@ class DBBase:
         """
         raise NotImplementedException()
     
+    def createFile(self, path, fileInfo):
+        """
+        Create a file in a given instance
+        """
+        raise NotImplementedException()
+    
     def getTableInfo(self, tableRef):
         """
         Get table information
@@ -333,13 +339,13 @@ class DBBase:
         """
         raise NotImplementedException()
 
-    def copyTo(self, path, table, key, name):
+    def copyTo(self, path, table, key=None, name=None):
         """
         Copy file to attachment associated to a key
         """
         raise NotImplementedException()
     
-    def copyFrom(self, path, table, key, name):
+    def copyFrom(self, path, table, key=None, name=None):
         """
         Copy file from attachment associated to a key
         """

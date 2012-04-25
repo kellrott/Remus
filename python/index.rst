@@ -7,6 +7,15 @@ Remus Dynamic Pipeline Engine
 =============================
 
 
+Installation
+============
+
+You can do a pip based install with the command::
+    pip install http://hgwdev.cse.ucsc.edu/~kellrott/remus/remus-0.1.0.tar.gz
+
+
+
+
 Manager Interface
 =================
 

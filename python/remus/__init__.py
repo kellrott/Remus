@@ -141,6 +141,19 @@ class Target(RemusApplet):
         """
         tablePath = db_join(self.__instance__, self.__tablepath__, "..", tableName)
         return self.__manager__._openTable(tablePath.instance, tablePath.table)
+    
+    def createFile(self, dstPath, info = {}):
+        dstPath = db_join(self.__instance__, self.__tablepath__, dstPath)
+        self.__manager__._createFile(dstPath, info)
+    
+    def copyTo(self, path, dstPath):
+        dstPath = db_join(self.__instance__, self.__tablepath__, dstPath)
+        self.__manager__._copyTo(path, dstPath)
+
+
+    def copyFrom(self, path, srcPath):
+        srcPath = db_join(self.__instance__, self.__tablepath__, srcPath)
+        self.__manager__._copyFrom(path, srcPath)
 
 
 class SubmitTarget(Target):

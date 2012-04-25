@@ -47,7 +47,11 @@ class FileDB(DBBase):
     def hasTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
         return os.path.exists(fsPath + "@info")            
-    
+
+    def hasFile(self, tableRef):
+        fsPath = self._getFSPath(tableRef)
+        return os.path.exists(fsPath + "@finfo")            
+
     def deleteTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
         for path in glob(fsPath + "@data" + "*"):
@@ -55,6 +59,11 @@ class FileDB(DBBase):
         os.unlink(fsPath + "@info")
         if os.path.exists(fsPath + "@archive"):
             shutil.rmtree(fsPath + "@archive")
+
+    def deleteFile(self, tableRef):
+        fsPath = self._getFSPath(tableRef)
+        os.unlink(fsPath + "@finfo")
+        os.unlink(fsPath + "@file")
     
     def deleteInstance(self, instance):
         fspath = os.path.join(self.basedir, instance)
@@ -78,7 +87,18 @@ class FileDB(DBBase):
                 pass
         handle = open(self._getFSPath(tableRef) + "@info", "w")
         handle.write(json.dumps(tableInfo))
-        handle.close()    
+        handle.close()
+        
+    def createFile(self, pathRef, fileInfo):
+        fsDir = os.path.dirname(self._getFSPath(pathRef))
+        if not os.path.exists(fsDir):
+            try:
+                os.makedirs(fsDir)
+            except OSError:
+                pass
+        handle = open(self._getFSPath(pathRef) + "@finfo", "w")
+        handle.write(json.dumps(fileInfo))
+        handle.close()
     
     def _getFSPath(self, table):
         return os.path.join(self.basedir, table.instance, re.sub(r'^/', '', table.table))
@@ -178,23 +198,31 @@ class FileDB(DBBase):
                 out.append(unquote(os.path.basename(path)))
             return out
 
-    def copyTo(self, path, table, key, name):
+    def copyTo(self, path, table, key=None, name=None):
         fspath = self._getFSPath(table)
-        with LockFile(fspath):        
-            attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
-            keyDir = os.path.dirname(attachPath)
-            if not os.path.exists(keyDir):
-                try:
-                    os.makedirs(keyDir)
-                except OSError:
-                    pass
-            shutil.copy( path, attachPath )
+        with LockFile(fspath):            
+            if key is None:
+                attachPath = fspath + "@file"
+                shutil.copy( path, attachPath )                
+            else:  
+                attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
+                keyDir = os.path.dirname(attachPath)
+                if not os.path.exists(keyDir):
+                    try:
+                        os.makedirs(keyDir)
+                    except OSError:
+                        pass
+                shutil.copy( path, attachPath )
     
-    def copyFrom(self, path, table, key, name):
+    def copyFrom(self, path, table, key=None, name=None):
         fspath = self._getFSPath(table)
-        with LockFile(fspath):        
-            attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
-            shutil.copy( attachPath, path )
+        with LockFile(fspath):
+            if key is None:
+                attachPath = fspath + "@file"
+                shutil.copy( attachPath, path )                
+            else:            
+                attachPath = os.path.join( fspath + "@attach", key, path_quote(name))
+                shutil.copy( attachPath, path )
     
     def readAttachment(self, table, key, name):
         fspath = self._getFSPath(table)
