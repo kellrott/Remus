@@ -3,6 +3,7 @@ import os
 import socket
 import threading
 import time
+import errno
 
 """
 NFS ready file lock based on Lockfile (http://code.google.com/p/pylockfile/)
@@ -63,6 +64,18 @@ class NotLocked(UnlockError):
     """
     pass
 
+
+class NotMyLock(UnlockError):
+    """Raised when an attempt is made to unlock an unlocked file.
+
+    >>> try:
+    ...   raise NotLocked
+    ... except UnlockError:
+    ...   pass
+    """
+    pass
+
+
 class LockFile:
     """Lock file by creating a directory."""
     def __init__(self, path, threaded=True):
@@ -82,9 +95,7 @@ class LockFile:
             self.tname = "-%x" % (ident & 0xffffffff)
         else:
             self.tname = ""
-        dirname = os.path.dirname(self.lock_file)
-        # Lock file itself is a directory.  Place the unique file name into
-        # it.
+
         self.unique_name  = "%s.%s.%s%s" % (self.lock_file,
                                             self.hostname,
                                             self.tname,
@@ -100,26 +111,33 @@ class LockFile:
         else:
             wait = max(0, timeout / 10)
 
-        fp = open(self.unique_name, 'w')
-        try:
-            fp.write(self.unique_name)
-        finally:
-            fp.close()
         while True:
+            try:
+                fp = open(self.unique_name, 'w')
+                fp.write(self.unique_name)
+            finally:
+                fp.close()
             try:                
                 os.link(self.unique_name, self.lock_file)
-                if os.stat(self.lock_file).st_nlink == 2:
-                    return
+                return
+            except OSError as error:            
+                if error.errno == errno.ENOENT:                
+                    if timeout is not None and time.time() > end_time:
+                        if timeout > 0:
+                            raise LockTimeout("Timeout waiting to acquire"
+                                              " lock for %s" %
+                                              self.path)
+                        else:
+                            raise AlreadyLocked("%s is already locked" %
+                                                self.path)
+                    time.sleep(timeout/10 if timeout is not None else 0.1)
+                #if os.stat(self.unique_name).st_nlink == 2:
+                #     return
+                
+            try:
+                os.unlink(self.unique_name)
             except OSError:
-                if timeout is not None and time.time() > end_time:
-                    if timeout > 0:
-                        raise LockTimeout("Timeout waiting to acquire"
-                                          " lock for %s" %
-                                          self.path)
-                    else:
-                        raise AlreadyLocked("%s is already locked" %
-                                            self.path)
-                time.sleep(timeout/10 if timeout is not None else 0.1)
+                pass
         
 
     def release(self):
@@ -127,8 +145,14 @@ class LockFile:
             raise NotLocked
         elif not os.path.exists(self.unique_name):
             raise NotMyLock
-        os.unlink(self.lock_file)
-        os.unlink(self.unique_name)
+        try:
+            os.unlink(self.lock_file)
+        except OSError:
+            pass
+        try:
+            os.unlink(self.unique_name)
+        except OSError:
+            pass
         
     def is_locked(self):
         return os.path.exists(self.lock_file)
