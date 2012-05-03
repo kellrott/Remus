@@ -563,11 +563,14 @@ class Manager:
                 else:
                     #this is a child (local) instance watcher
                     #NOTE: this doesn't handle followOn targets
-                    jobTree = self.scan(instance, table)
+                    try:
+                        jobTree = self.scan(instance, table)
+                    except ErrorFound:
+                        break
                     if len(jobTree) == 0 and self.task_manager.taskCount() == 0:
                         break
                     for j in jobTree:
-                        if "_local" in jobTree[j].jobInfo:
+                        if jobTree[j] is not None and "_local" in jobTree[j].jobInfo:
                             if self.task_manager.addTask(jobTree[j]):
                                 added = True                    
                     
