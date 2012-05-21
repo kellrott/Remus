@@ -20,7 +20,7 @@ SCRIPTS = [
     'bin/remus_dbi'
 ]
 
-__version__="0.1.0"
+__version__="0.1.1"
 
 class test_remus(Command):
     tests = None
