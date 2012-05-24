@@ -46,7 +46,10 @@ class Target(RemusApplet):
         """
         raise Exception()
 
-    def addChildTarget(self, child_name, child, params={}, out_table=None):
+    def getcwd(self):
+        return db_join(self.__instance__, self.__tablepath__)
+    
+    def addChildTarget(self, child_name, child, params={}, out_table=None, chdir=None):
         """
         Add child target to be executed
         
@@ -70,7 +73,7 @@ class Target(RemusApplet):
         
         
         """
-        self.__manager__._addChild(self, child_name, child, params=params, out_table=out_table)
+        self.__manager__._addChild(self, child_name, child, params=params, out_table=out_table, chdir=chdir)
     
     def runTarget(self, child):
         """
@@ -81,20 +84,20 @@ class Target(RemusApplet):
         
         self.__manager__._runTarget(self, child)
     
-    def addFollowTarget(self, child_name, child, depends=None):
+    def addFollowTarget(self, child_name, child, depends=None, chdir=None):
         """
         A follow target is a delayed callback, that isn't run until all 
         of a targets children have complete
         """
         if depends is None:
-            self.__manager__._addChild(self, child_name, child, depends=self.__tablepath__ + "@follow")
+            self.__manager__._addChild(self, child_name, child, depends=self.__tablepath__ + "@follow", chdir=chdir)
         else:
             refs = []
             if isinstance(depends, str):
                 depends = [depends]
             for d in depends:
                 refs.append(db_join(self.__instance__, self.__tablepath__, d).table)
-            self.__manager__._addChild(self, child_name, child, depends=refs)
+            self.__manager__._addChild(self, child_name, child, depends=refs, chdir=chdir)
             
 
     def createTable(self, tableName, tableInfo={}):

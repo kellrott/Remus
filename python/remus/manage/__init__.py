@@ -617,12 +617,16 @@ class Manager:
         obj.__setmanager__(self)
         obj.run()
     
-    def _addChild(self, obj, child_name, child, depends=None, out_table=None, params={}):
-        instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
+    def _addChild(self, obj, child_name, child, depends=None, out_table=None, params={}, chdir=None):
+        if chdir is None:
+            instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
+        else:
+            instRef = remus.db.TableRef(obj.__instance__, os.path.join(obj.__tablepath__, chdir) + "/@request")
+            
         if not self.db.hasTable(instRef):
             self.db.createTable(instRef, {})
-            self.db.createTable(remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@done"), {})
-            self.db.createTable(remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@error"), {})
+            self.db.createTable(remus.db.TableRef(instRef.instance, instRef.table.replace("/@request", "/@done")), {})
+            self.db.createTable(remus.db.TableRef(instRef.instance, instRef.table.replace("/@request", "/@error")), {})
             
         logging.info("Adding Child %s" % (child_name)) 
         meta = params
