@@ -612,6 +612,11 @@ class Manager:
         fs = remus.db.connect(self.config.dbpath)
         fs.copyFrom(path, srcPath)
     
+    def _runTarget(self, parent, obj):
+        obj.__setpath__(parent.__instance__, parent.__tablepath__)
+        obj.__setmanager__(self)
+        obj.run()
+    
     def _addChild(self, obj, child_name, child, depends=None, out_table=None, params={}):
         instRef = remus.db.TableRef(obj.__instance__, obj.__tablepath__ + "/@request")
         if not self.db.hasTable(instRef):

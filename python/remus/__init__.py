@@ -72,6 +72,15 @@ class Target(RemusApplet):
         """
         self.__manager__._addChild(self, child_name, child, params=params, out_table=out_table)
     
+    def runTarget(self, child):
+        """
+        Run a target directly (inline). This method give the manager a chance
+        to setup table and run path info for the target class before calling the 'run' method
+        
+        """
+        
+        self.__manager__._runTarget(self, child)
+    
     def addFollowTarget(self, child_name, child, depends=None):
         """
         A follow target is a delayed callback, that isn't run until all 
