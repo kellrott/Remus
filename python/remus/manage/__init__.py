@@ -200,29 +200,35 @@ class Worker:
         stdout_path = os.path.abspath(os.path.join(tmpdir, "remus.stdout"))
         stderr_path = os.path.abspath(os.path.join(tmpdir, "remus.stderr"))
         
-        sys.stdout = open(stdout_path, "w")
-        sys.stderr = open(stderr_path, "w")        
-        try:
-            if isinstance(obj, remus.SubmitTarget):
-                obj.run(runVal)
-            elif isinstance(obj, remus.MultiApplet):
-                obj.__run__()
-            else:
-                obj.run()
-            sys.stdout.close()
-            sys.stderr.close()
+        child = os.fork()
+        if not child:
+            sys.stdout = open(stdout_path, "w")
+            sys.stderr = open(stderr_path, "w")        
+            try:
+                if isinstance(obj, remus.SubmitTarget):
+                    obj.run(runVal)
+                elif isinstance(obj, remus.MultiApplet):
+                    obj.__run__()
+                else:
+                    obj.run()
+                sys.stdout.close()
+                sys.stderr.close()
+            except Exception:
+                sys.stdout.close()
+                sys.stderr.close()
+                logging.error("user code error")
+                db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
+                db.copyTo(stdout_path, errorRef, appName, "stdout")
+                db.copyTo(stderr_path, errorRef, appName, "stderr")
+            sys.stdout = stdout_backup
+            sys.stderr = stderr_backup
+            sys.exit(0)
+        else:
+            pid, stat = os.waitpid(child,0)
             doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
             db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
-        except Exception:
-            sys.stdout.close()
-            sys.stderr.close()
-            logging.error("user code error")
-            db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
-            db.copyTo(stdout_path, errorRef, appName, "stdout")
-            db.copyTo(stderr_path, errorRef, appName, "stderr")
-        sys.stdout = stdout_backup
-        sys.stderr = stderr_backup
-        
+            
+            
         logging.info("user code done")
         
         #clean up workspace
