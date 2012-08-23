@@ -16,3 +16,15 @@ Running unit tests
 After build:
 
 cd tests && python ./run_tests.py
+
+
+To run with DRMAA support:
+
+pip install http://drmaa-python.googlecode.com/files/drmaa-0.5.tar.gz
+
+(if you don't have root access use 'install --user')
+
+And then set the environmental variable to the local DRMAA library, ie:
+
+export DRMAA_LIBRARY_PATH=/opt/gridengine/lib/lx26-amd64/libdrmaa.so
+
