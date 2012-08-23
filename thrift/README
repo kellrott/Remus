@@ -1,0 +1,3 @@
+
+This is a thrift based description of the code internal REMUS I/O interface.
+In includes java wrappers to enable easier adaption of server code.

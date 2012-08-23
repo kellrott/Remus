@@ -1,0 +1,8 @@
+This is a simple DJANGO based web server that allows for an interactive interrogation of 
+a REMUS database.
+
+To run: 
+export REMUSDB=file:///path/to/remus/database
+python2.7 manage.py runserver
+
+

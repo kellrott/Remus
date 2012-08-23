@@ -9,9 +9,10 @@ stored in a series of key/value stacks (with binary attachements).
 
 INSTALLATION
 
-1) Download Remus
-Remus can be downloaded at https://github.com/kellrott/Remus 
+cd python && python setup.py build && python setup.py install
 
-REMUS_DIR is the downloaded directory, and should have a ‘README’ file, a ‘bin’ folder, and an ‘etc’ folder. 
+Running unit tests
 
+After build:
 
+cd tests && python ./run_tests.py
