@@ -8,12 +8,21 @@ import config_test
 
 class TestCase(unittest.TestCase):
     def test_submit(self):
-        config = remus.manage.Config(config_test.DEFAULT_DB, workdir="tmp_dir")
+        config = remus.manage.Config(config_test.DEFAULT_DB, config_test.DEFAULT_EXE,  workdir="tmp_dir")
         manager = remus.manage.Manager(config)
-        instance = manager.submit('test', 'remus_errortest.ExceptionSubmit', {})
-        subprocess.check_call( [ sys.executable, "-m", "remus.manage.manager", 
-            config_test.DEFAULT_DB, 'auto', "tmp_dir", instance] )
+        instance = manager.submit('except_test', 'remus_errortest.ExceptionSubmit', {})
+        
+        manager.wait(instance)
 
+        errorFound = False        
+        db = remus.db.connect(config_test.DEFAULT_DB)
+        for table in db.listTables(instance):
+            if table.table.endswith("@error"):
+                for key, value in db.listKeyValue(table):
+                    errorFound = True
+        assert errorFound         
+
+"""
     def tearDown(self):
         return
         try:
@@ -24,6 +33,7 @@ class TestCase(unittest.TestCase):
             shutil.rmtree( "data_dir" )
         except OSError:
             pass
+"""
             
 def main():
     sys.argv = sys.argv[:1]

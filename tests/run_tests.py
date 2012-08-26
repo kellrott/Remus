@@ -5,6 +5,7 @@ import sys
 import os
 import distutils.util
 import unittest
+import shutil
 from glob import glob
         
 def main( names ): 
@@ -26,6 +27,10 @@ def main( names ):
             sys.path.insert(1, src_path)
             os.environ[ "PYTHONPATH" ] = src_path + ":.:" + os.environ.get("PYTHONPATH", "")
     
+    if os.path.exists("tmp_dir"):
+        shutil.rmtree( "tmp_dir" )
+    if os.path.exists("data_dir"):
+        shutil.rmtree( "data_dir" )
     moduleList = []
     for moduleName in names:
         testClass = (__import__( moduleName )).TestCase 

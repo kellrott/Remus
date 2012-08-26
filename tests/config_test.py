@@ -8,3 +8,4 @@
 REMOTE_SSH=None
 
 DEFAULT_DB="file://data_dir"
+DEFAULT_EXE="process"

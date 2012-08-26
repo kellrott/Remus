@@ -63,6 +63,10 @@ def inherit_config():
         return config
     return None
 
+"""
+Map of names of execution engines to the actual code
+that implements them
+"""
 executorMap = {
     'auto' : 'remus.manage.autoSelect',
     'process' : 'remus.manage.processExecutor.ProcessExecutor',
@@ -117,6 +121,10 @@ class Worker:
         self.local_children = False
         
     def run(self):
+        """
+        The work running method
+        
+        """
         db = remus.db.connect( self.config.dbpath )
         if not os.path.exists(self.config.workdir):
             os.mkdir(self.config.workdir)
@@ -194,16 +202,18 @@ class Worker:
             obj.__outTableRef__ = remus.db.TableRef(instRef.instance, runVal['_outTable'])
             obj.__outTable__ =  remus.db.table.WriteTable(db, obj.__outTableRef__)
         logging.debug("Starting user code")
-        stdout_backup = sys.stdout
-        stderr_backup = sys.stderr
         
         stdout_path = os.path.abspath(os.path.join(tmpdir, "remus.stdout"))
         stderr_path = os.path.abspath(os.path.join(tmpdir, "remus.stderr"))
         
         child = os.fork()
         if not child:
-            sys.stdout = open(stdout_path, "w")
-            sys.stderr = open(stderr_path, "w")        
+            stdout_backup = os.dup(1)
+            stderr_backup = os.dup(2)
+            os.close(1)
+            os.open(stdout_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
+            os.close(2)
+            os.open(stderr_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC)
             try:
                 if isinstance(obj, remus.SubmitTarget):
                     obj.run(runVal)
@@ -211,17 +221,19 @@ class Worker:
                     obj.__run__()
                 else:
                     obj.run()
-                sys.stdout.close()
-                sys.stderr.close()
+                os.close(1)
+                os.dup(stdout_backup)
+                os.close(2)
+                os.dup(stderr_backup)                
             except Exception:
-                sys.stdout.close()
-                sys.stderr.close()
+                os.close(1)
+                os.dup(stdout_backup)
+                os.close(2)
+                os.dup(stderr_backup)                
                 logging.error("user code error")
                 db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
                 db.copyTo(stdout_path, errorRef, appName, "stdout")
                 db.copyTo(stderr_path, errorRef, appName, "stderr")
-            sys.stdout = stdout_backup
-            sys.stderr = stderr_backup
             sys.exit(0)
         else:
             pid, stat = os.waitpid(child,0)
@@ -453,6 +465,9 @@ class Manager:
         return instance
 
     def import_applet(self, inst, applet):
+        """
+        Scan remus module and copy dependency files into environment table
+        """
 
         a = Applet(applet)
         
@@ -486,6 +501,9 @@ class Manager:
         return added.keys()
         
     def scan(self, instance, table=None):
+        """
+        Scan an instance, or just one table in an instance, looking for work requests
+        """
         found = False
         jobTree = {}
         if table is None:
