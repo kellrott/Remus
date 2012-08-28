@@ -54,7 +54,7 @@ class DRMAAExecutor(remus.manage.TaskExecutor):
         out = {}
         for t in self.task_queue:
             ret = self.sess.jobStatus(self.task_queue[t])
-            if ret in [ drmaa.JobState.DONE, drmaa.JobState.FAILED, drmaa.JobState.UNDETERMINED, drmaa.SYSTEM_SUSPENDED, drmaa.USER_SUSPENDED ]:
+            if ret in [ drmaa.JobState.DONE, drmaa.JobState.FAILED, drmaa.JobState.UNDETERMINED, drmaa.JobState.SYSTEM_SUSPENDED, drmaa.JobState.USER_SUSPENDED ]:
                 if ret is not None:
                     out[t] = ret
         
