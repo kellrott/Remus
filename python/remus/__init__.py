@@ -29,6 +29,9 @@ class RemusApplet(object):
     def __setpath__(self, instance, tablePath):
         self.__instance__ = instance
         self.__tablepath__ = tablePath
+    
+    def __close__(self):
+        pass
 
 
 
@@ -326,7 +329,7 @@ class TableTarget(Target):
         :param name: Name of the attachment  
         """
         self.__outTable__.copyTo(path, key, name)
-	
+    
 
 
     
@@ -413,6 +416,10 @@ class MapTarget(MultiApplet):
             self.__outTable__ = self.__manager__._createTable(self.__instance__, self.__tablepath__, self.__tableInfo__)
         
         self.__outTable__.emit(key, value)
+    
+    def __close__(self):
+        if self.__outTable__ is not None:
+            self.__outTable__.close()
 
 class RemapTarget(MultiApplet):
     
@@ -539,6 +546,10 @@ class RemapTarget(MultiApplet):
         if self._outTable is None:
             self._outTable = self.__manager__._createTable(self.__instance__, self.__tablepath__, self._outTableInfo)
         self._outTable.emit(key, value)
+    
+    def __close__(self):
+        if self._outTable is not None:
+            self._outTable.close()
     
     def copyTo(self, path, key, name):
         """

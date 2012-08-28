@@ -188,6 +188,7 @@ class Worker:
                 obj = pickle.loads(handle.read())
             except Exception:
                 db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'host' : socket.gethostname(), 'dir' : tmpdir})
+                db.flush()
                 return
             handle.close()
         
@@ -234,13 +235,18 @@ class Worker:
                 db.addData(errorRef, appName, {'error' : str(traceback.format_exc()), 'time' : datetime.datetime.now().isoformat(), 'host' : socket.gethostname()})
                 db.copyTo(stdout_path, errorRef, appName, "stdout")
                 db.copyTo(stderr_path, errorRef, appName, "stderr")
+            obj.__close__()
+            doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
+            db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
+            db.flush()
             sys.exit(0)
         else:
             pid, stat = os.waitpid(child,0)
-            doneRef = remus.db.TableRef(instRef.instance, parentName + "@done")
-            db.addData(doneRef, appName, { 'time' : datetime.datetime.now().isoformat(), 'input' : self.inputList, 'output' : self.outputList })
             
-            
+        
+        #send our writes to the DB
+        db.flush()
+        
         logging.info("user code done")
         
         #clean up workspace
@@ -455,6 +461,7 @@ class Manager:
             self.db.createTable(remus.db.TableRef(instance, "@done"), {})
             self.db.createTable(remus.db.TableRef(instance, "@error"), {})            
             self.db.addData( instRef, submitName, submitData)
+            self.db.flush()
         elif isinstance(className, remus.LocalSubmitTarget):
             self.import_applet(instance, className.__module__)
             className.__setpath__(instance, submitName)
@@ -490,7 +497,7 @@ class Manager:
                 for f in a.getManifest():
                     logging.info("copy: " + modbase + " " +  os.path.join( dirname, f ).replace(modbase, ""))
                     self.db.copyTo( os.path.join(a.getBase(), f), envRef, modName, os.path.join( dirname, f ).replace(modbase, "") )
-                
+                self.db.flush()
                 for inc in a.getIncludes():
                     n[inc] = True
             
@@ -692,3 +699,5 @@ class Manager:
             tmp.close()
         if self.callback is not None:
             self.callback.callback_addChild(child)
+        
+        self.db.flush()

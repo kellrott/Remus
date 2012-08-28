@@ -20,7 +20,7 @@ class OPChild(remus.Target):
         time.sleep(random.randint(5,15))
         out = self.createTable("test")
         out.emit(self.val, 'test_%s' % (self.val))
-
+        out.close()
 
 class OPFollow(remus.Target):
     def __init__(self, src, val):
@@ -34,6 +34,7 @@ class OPFollow(remus.Target):
         
         out = self.createTable("test")
         out.emit(self.val, 'test_%s' % (self.val))
+        out.close()
 
 class OPFollow2(remus.Target):
     def __init__(self, src1, val1, src2, val2):

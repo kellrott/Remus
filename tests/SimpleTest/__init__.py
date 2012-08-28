@@ -133,6 +133,7 @@ class GenerateTable(remus.Target):
 					for i, col in enumerate( row[1:] ):
 						out[ header[i] ] = float(col)
 					inTable.emit( row[0], out )
+		inTable.close()
 
 class TableMap(remus.MapTarget):
 	

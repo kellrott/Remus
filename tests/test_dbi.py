@@ -19,6 +19,8 @@ class TestCase(unittest.TestCase):
         db.addData(table_a_ref, "key_1", {"data" : "key_1"})
         db.addData(table_a_ref, "key_2", {"data" : "key_2"})
         
+        db.flush()
+        
         i = {}
         for key in db.listKeys(table_a_ref):
             i[key] = True
@@ -43,6 +45,8 @@ class TestCase(unittest.TestCase):
         db.createTable(table_b_ref, {})
         db.addData(table_b_ref, "key_1", {})
         db.copyTo("run_tests.py", table_b_ref, "key_1", "run_tests.py")
+        
+        db.flush()
         
         db.copyFrom("tmp.out", table_b_ref, "key_1", "run_tests.py")
         

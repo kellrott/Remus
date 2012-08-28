@@ -23,6 +23,12 @@ class FileDB(DBBase):
         self.basedir = os.path.abspath(basedir)
         self.out_handle = {}
     
+    def flush(self):
+        for a in self.out_handle:
+            self.out_handle[a].close()
+            shutil.move( self.out_handle[a].name, self.out_handle[a].name.replace("@data_shard.", "@data.") )
+        self.out_handle = {}
+    
     def getPath(self):
         return "file://" + self.basedir
     
@@ -54,7 +60,7 @@ class FileDB(DBBase):
 
     def deleteTable(self, tableRef):
         fsPath = self._getFSPath(tableRef)
-        for path in glob(fsPath + "@data" + "*"):
+        for path in glob(fsPath + "@data.*"):
             os.unlink(path)
         os.unlink(fsPath + "@info")
         if os.path.exists(fsPath + "@archive"):
@@ -105,51 +111,47 @@ class FileDB(DBBase):
     
     def addData(self, table, key, value):
         fspath = self._getFSPath(table)
-        with LockFile(fspath, lock_break=120):
-            if table not in self.out_handle:
-                self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.dirname(fspath), prefix=os.path.basename(table.table) + "@data.", delete=False)
-            self.out_handle[table].write( key )
-            self.out_handle[table].write( "\t" )
-            self.out_handle[table].write(json.dumps(value))
-            self.out_handle[table].write( "\n" )
-            self.out_handle[table].flush() 
+        if table not in self.out_handle:
+            self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.dirname(fspath), prefix=os.path.basename(table.table) + "@data_shard.", delete=False)
+        self.out_handle[table].write( key )
+        self.out_handle[table].write( "\t" )
+        self.out_handle[table].write(json.dumps(value))
+        self.out_handle[table].write( "\n" )
+        self.out_handle[table].flush() 
 
     def getValue(self, table, key):
         fsPath = self._getFSPath(table)
-        with LockFile(fsPath, lock_break=120):
-            out = []
-            for path in glob(fsPath + "@data" + "*"):
-                handle = open(path)
-                for line in handle:
-                    tmp = line.split("\t")
-                    if tmp[0] == key:
-                        out.append(json.loads(tmp[1]))
-                handle.close()
-            return out
+        out = []
+        for path in glob(fsPath + "@data.*"):
+            handle = open(path)
+            for line in handle:
+                tmp = line.split("\t")
+                if tmp[0] == key:
+                    out.append(json.loads(tmp[1]))
+            handle.close()
+        return out
         
     def listKeyValue(self, table):
         path = self._getFSPath(table)
-        with LockFile(path, lock_break=120):
-            out = []
-            for path in glob(path + "@data" + "*"):
-                handle = open(path)
-                for line in handle:
-                    tmp = line.split("\t")
-                    out.append( (tmp[0], json.loads(tmp[1]) ) )
-                handle.close()
-            return out
+        out = []
+        for path in glob(path + "@data.*"):
+            handle = open(path)
+            for line in handle:
+                tmp = line.split("\t")
+                out.append( (tmp[0], json.loads(tmp[1]) ) )
+            handle.close()
+        return out
 
     def listKeys(self, table):
         out = []
         fspath = self._getFSPath(table)
-        with LockFile(fspath, lock_break=120):
-            for path in glob(fspath + "@data" + "*"):
-                handle = open(path)
-                for line in handle:
-                    tmp = line.split("\t")
-                    out.append(tmp[0])
-                handle.close()
-            return out
+        for path in glob(fspath + "@data.*"):
+            handle = open(path)
+            for line in handle:
+                tmp = line.split("\t")
+                out.append(tmp[0])
+            handle.close()
+        return out
         
     def hasKey(self, table, key):
         o = self.listKeys(table)
@@ -185,18 +187,16 @@ class FileDB(DBBase):
         
     def hasAttachment(self, table, key, name):
         path = self._getFSPath(table)
-        with LockFile(path, lock_break=120):        
-            attachPath = os.path.join(path + "@attach", key, name)
-            return os.path.exists(attachPath)
+        attachPath = os.path.join(path + "@attach", key, name)
+        return os.path.exists(attachPath)
 
     def listAttachments(self, table, key):
         path = self._getFSPath(table)
         out = []
-        with LockFile(path, lock_break=120):        
-            attachPath = os.path.join( path + "@attach", key)
-            for path in glob( os.path.join(attachPath, "*") ):
-                out.append(unquote(os.path.basename(path)))
-            return out
+        attachPath = os.path.join( path + "@attach", key)
+        for path in glob( os.path.join(attachPath, "*") ):
+            out.append(unquote(os.path.basename(path)))
+        return out
 
     def copyTo(self, path, table, key=None, name=None):
         fspath = self._getFSPath(table)

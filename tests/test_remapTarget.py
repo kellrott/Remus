@@ -26,14 +26,17 @@ class Submission(remus.SubmitTarget):
         
         for i in range(26):
             table_a.emit( "key_%d" % (i), str(i))
-
+        
+        table_a.close()
         for i in range(ord('a'), ord('z')):
             table_b.emit( "key_%s" % chr(i), chr(i))
+        table_b.close()
                     
         table_perm = self.createTable('perm_table')
         
         for i in range(5):
             table_perm.emit( "mix_%d" % (i), [ "key_%d" % (i), "key_%s" % chr(ord('a')+i) ] )
+        table_perm.close()
         
         self.addChildTarget( 'remap_child', OPChild( table_perm.getPath(), [ table_a.getPath(), table_b.getPath() ] ) )
 

@@ -15,6 +15,7 @@ class WriteTable(object):
         """
         Properly flush and close table
         """
+        self.db.flush()
         self.handle = None
 
     def emit(self, key, value):
