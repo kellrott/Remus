@@ -81,6 +81,20 @@ class TestCase(unittest.TestCase):
         assert os.path.exists(testFile) == False
         assert os.path.exists(testFile + ".lock") == False
         assert len(list(glob(testFile + ".lock*"))) == 0
+    
+    def test_lockbreak(self):
+        
+        testFile = uniq_file()
+        l1 = LockFile(testFile, uniq_mux="1")
+        l1.acquire()
+        
+        
+        l2 = LockFile(testFile, uniq_mux="2")
+        t1 = time.time()
+        l2.acquire(lock_break=5)
+        assert time.time() - t1 > 4
+        l2.release()       
+    
 
 def main():
     sys.argv = sys.argv[:1]
