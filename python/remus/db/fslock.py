@@ -78,7 +78,7 @@ class NotMyLock(UnlockError):
 
 class LockFile:
     """Lock file by creating a directory."""
-    def __init__(self, path, threaded=True, uniq_mux=None):
+    def __init__(self, path, threaded=True, uniq_mux=None, lock_break=None):
         """
         >>> lock = LinkLockFile('somefile')
         >>> lock = LinkLockFile('somefile', threaded=False)
@@ -102,8 +102,11 @@ class LockFile:
                                             self.pid)
         if uniq_mux is not None:
             self.unique_name = self.unique_name + "." + uniq_mux
+        self.lock_break = lock_break
 
     def acquire(self, timeout=None, lock_break=None):
+        if lock_break is None:
+            lock_break = self.lock_break
         end_time = time.time()
         if timeout is not None and timeout > 0:
             end_time += timeout

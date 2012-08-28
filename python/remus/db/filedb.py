@@ -105,7 +105,7 @@ class FileDB(DBBase):
     
     def addData(self, table, key, value):
         fspath = self._getFSPath(table)
-        with LockFile(fspath):
+        with LockFile(fspath, lock_break=120):
             if table not in self.out_handle:
                 self.out_handle[table] = tempfile.NamedTemporaryFile(dir=os.path.dirname(fspath), prefix=os.path.basename(table.table) + "@data.", delete=False)
             self.out_handle[table].write( key )
@@ -116,7 +116,7 @@ class FileDB(DBBase):
 
     def getValue(self, table, key):
         fsPath = self._getFSPath(table)
-        with LockFile(fsPath):
+        with LockFile(fsPath, lock_break=120):
             out = []
             for path in glob(fsPath + "@data" + "*"):
                 handle = open(path)
@@ -129,7 +129,7 @@ class FileDB(DBBase):
         
     def listKeyValue(self, table):
         path = self._getFSPath(table)
-        with LockFile(path):
+        with LockFile(path, lock_break=120):
             out = []
             for path in glob(path + "@data" + "*"):
                 handle = open(path)
@@ -142,7 +142,7 @@ class FileDB(DBBase):
     def listKeys(self, table):
         out = []
         fspath = self._getFSPath(table)
-        with LockFile(fspath):
+        with LockFile(fspath, lock_break=120):
             for path in glob(fspath + "@data" + "*"):
                 handle = open(path)
                 for line in handle:
@@ -185,14 +185,14 @@ class FileDB(DBBase):
         
     def hasAttachment(self, table, key, name):
         path = self._getFSPath(table)
-        with LockFile(path):        
+        with LockFile(path, lock_break=120):        
             attachPath = os.path.join(path + "@attach", key, name)
             return os.path.exists(attachPath)
 
     def listAttachments(self, table, key):
         path = self._getFSPath(table)
         out = []
-        with LockFile(path):        
+        with LockFile(path, lock_break=120):        
             attachPath = os.path.join( path + "@attach", key)
             for path in glob( os.path.join(attachPath, "*") ):
                 out.append(unquote(os.path.basename(path)))
@@ -200,7 +200,7 @@ class FileDB(DBBase):
 
     def copyTo(self, path, table, key=None, name=None):
         fspath = self._getFSPath(table)
-        with LockFile(fspath):            
+        with LockFile(fspath, lock_break=120):            
             if key is None:
                 attachPath = fspath + "@file"
                 shutil.copy( path, attachPath )                
@@ -216,7 +216,7 @@ class FileDB(DBBase):
     
     def copyFrom(self, path, table, key=None, name=None):
         fspath = self._getFSPath(table)
-        with LockFile(fspath):
+        with LockFile(fspath, lock_break=120):
             if key is None:
                 attachPath = fspath + "@file"
                 shutil.copy( attachPath, path )                
